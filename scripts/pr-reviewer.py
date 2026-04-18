@@ -2,25 +2,26 @@ import os
 import subprocess
 import json
 
-def get_pr_diff_stats():
-    # In GitHub Actions, we can use the environment variables
-    # or just run git commands if the repo is checked out.
-    try:
-        # Get diff summary
-        # git diff --stat origin/master
-        result = subprocess.run(['git', 'diff', '--stat', 'origin/master'], capture_output=True, text=True)
-        return result.stdout
-    except Exception as e:
-        return str(e)
-
 def analyze_changes():
     # Get the list of changed files and line counts
     # git diff --numstat origin/master
-    result = subprocess.run(['git', 'diff', '--numstat', 'origin/master'], capture_output=True, text=True)
-    lines = result.stdout.strip().split('\n')
+    try:
+        result = subprocess.run(['git', 'diff', '--numstat', 'origin/master'], capture_output=True, text=True)
+        lines = result.stdout.strip().split('\n')
+    except Exception as e:
+        return [f"❌ Error running git diff: {str(e)}"]
     
     warnings = []
     total_deletions = 0
+    modified_areas = set()
+    
+    # Define area mapping
+    area_map = {
+        'src/app/dashboard/pre-evaluation': 'Pre-Evaluation',
+        'src/app/dashboard/evaluation': 'Evaluation',
+        'src/app/dashboard/grading': 'Grading',
+        # Add more as they are created
+    }
     
     critical_files = ['next.config.ts', 'package.json', 'vercel.json', 'tsconfig.json']
     
@@ -35,14 +36,26 @@ def analyze_changes():
         
         total_deletions += deleted
         
-        if deleted > 50:
-            warnings.append(f"⚠️ **High Deletion**: `{filename}` has {deleted} lines deleted.")
+        # Check for area crossing
+        for path, area_name in area_map.items():
+            if filename.startswith(path):
+                modified_areas.add(area_name)
+                break
+        
+        # Flag deletions in any file
+        if deleted > 20: # Lowered threshold as requested for "multiple things"
+            warnings.append(f"⚠️ **Deletions Detected**: `{filename}` has {deleted} lines removed.")
             
         if filename in critical_files:
-            warnings.append(f"🛡️ **Critical File Modified**: `{filename}` is a system configuration file.")
+            warnings.append(f"🛡️ **System File Modified**: `{filename}` is a critical configuration file.")
             
-    if total_deletions > 200:
-        warnings.append(f"🚨 **Drastic Changes**: Total deletions across all files is {total_deletions} lines.")
+    # Cross-area warning
+    if len(modified_areas) > 1:
+        areas_str = ", ".join(sorted(list(modified_areas)))
+        warnings.append(f"🔄 **Cross-Team Impact**: This PR modifies multiple areas: **{areas_str}**. Please ensure you have coordinated with the respective teams.")
+        
+    if total_deletions > 100:
+        warnings.append(f"🚨 **Large Scale Deletions**: Total deletions across the project is {total_deletions} lines.")
         
     return warnings
 
@@ -50,14 +63,11 @@ def main():
     warnings = analyze_changes()
     
     if warnings:
-        comment = "### 🤖 EducAItors PR Review Bot\n\nI've detected some significant changes in this PR:\n\n"
+        comment = "### 🤖 EducAItors PR Review Bot\n\nI've analyzed the changes and found some potential risks:\n\n"
         comment += "\n".join(warnings)
-        comment += "\n\n**Professor @Sangeethramuk**, please review these changes carefully before merging."
+        comment += "\n\n**Professor @Sangeethramuk**, these changes involve deletions or impact multiple team areas. Please review carefully."
         
-        # Output the comment for the next step in GitHub Actions
         print(comment)
-        
-        # Create a file that the workflow can read
         with open('bot_comment.md', 'w') as f:
             f.write(comment)
 
