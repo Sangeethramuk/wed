@@ -3,17 +3,17 @@ import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { DashboardHeader } from "@/components/dashboard/header"
 
 export default function DashboardLayout({
-  children,
+ children,
 }: {
-  children: React.ReactNode
+ children: React.ReactNode
 }) {
-  return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <DashboardHeader />
-        <main className="flex-1 overflow-auto p-4">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
-  )
+ return (
+ <SidebarProvider>
+ <AppSidebar />
+ <SidebarInset>
+ <DashboardHeader />
+ <main className="flex-1 overflow-auto p-4">{children}</main>
+ </SidebarInset>
+ </SidebarProvider>
+ )
 }

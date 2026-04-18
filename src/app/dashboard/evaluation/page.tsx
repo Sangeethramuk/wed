@@ -6,35 +6,35 @@ import { FilterBar } from "@/components/evaluation/overview/filter-bar"
 import { AssignmentTable } from "@/components/evaluation/overview/assignment-table"
 
 export default function EvaluationDashboard() {
-  const { getStats } = useEvaluationOverviewStore()
-  const stats = getStats()
+ const { getStats } = useEvaluationOverviewStore()
+ const stats = getStats()
 
-  return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500 pb-20">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div className="space-y-1">
-          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/40">Academic Evaluation Suite</p>
-          <h1 className="text-3xl font-bold tracking-tight">Triage Desk</h1>
-          <p className="text-muted-foreground text-sm">
-            All assignments across your courses — calibrate AI alignment before entering the grading desk.
-          </p>
-        </div>
-      </div>
+ return (
+ <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500 pb-20">
+ {/* Page Header */}
+ <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+ <div className="space-y-1">
+ <p className="text-xs font-medium tracking-[0.25em] text-muted-foreground/40">Academic Evaluation Suite</p>
+ <h1 className="text-3xl font-medium tracking-tight">Triage Desk</h1>
+ <p className="text-muted-foreground text-sm">
+ All assignments across your courses — calibrate AI alignment before entering the grading desk.
+ </p>
+ </div>
+ </div>
 
-      {/* Stats */}
-      <StatsHeader
-        total={stats.total}
-        pendingCalibration={stats.pendingCalibration}
-        inGrading={stats.inGrading}
-        complete={stats.complete}
-      />
+ {/* Stats */}
+ <StatsHeader
+ total={stats.total}
+ pendingCalibration={stats.pendingCalibration}
+ inGrading={stats.inGrading}
+ complete={stats.complete}
+ />
 
-      {/* Filters */}
-      <FilterBar />
+ {/* Filters */}
+ <FilterBar />
 
-      {/* Grouped Assignment Table */}
-      <AssignmentTable />
-    </div>
-  )
+ {/* Grouped Assignment Table */}
+ <AssignmentTable />
+ </div>
+ )
 }

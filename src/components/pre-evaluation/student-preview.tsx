@@ -6,359 +6,359 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import {
-  ArrowLeft,
-  Eye,
-  BookOpen,
-  Clock,
-  FileText,
-  Scale,
-  CheckCircle2,
-  ChevronRight,
-  GraduationCap,
-  Monitor,
-  Sparkles,
-  ShieldCheck,
-  Copy,
-  Mail,
-  Database,
-  ArrowRight,
-  LayoutDashboard
+ ArrowLeft,
+ Eye,
+ BookOpen,
+ Clock,
+ FileText,
+ Scale,
+ CheckCircle2,
+ ChevronRight,
+ GraduationCap,
+ Monitor,
+ Sparkles,
+ ShieldCheck,
+ Copy,
+ Mail,
+ Database,
+ ArrowRight,
+ LayoutDashboard
 } from "lucide-react"
 import { useState } from "react"
 
 export function StudentPreview() {
-  const { assignment, rubric, prevStep, reset } = usePreEvalStore()
-  const [view, setView] = useState<"preview" | "launch">("preview")
-  const [copied, setCopied] = useState(false)
+ const { assignment, rubric, prevStep, reset } = usePreEvalStore()
+ const [view, setView] = useState<"preview" | "launch">("preview")
+ const [copied, setCopied] = useState(false)
 
-  const totalWeight = assignment.sections.reduce((acc, sec) =>
-    acc + sec.deliverables.reduce((s, d) => s + Number(d.weight), 0), 0
-  )
+ const totalWeight = assignment.sections.reduce((acc, sec) =>
+ acc + sec.deliverables.reduce((s, d) => s + Number(d.weight), 0), 0
+ )
 
-  const deadlineDate = assignment.deadline
-    ? new Date(assignment.deadline).toLocaleDateString("en-IN", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : "No deadline set"
+ const deadlineDate = assignment.deadline
+ ? new Date(assignment.deadline).toLocaleDateString("en-IN", {
+ weekday: "long",
+ year: "numeric",
+ month: "long",
+ day: "numeric",
+ })
+ : "No deadline set"
 
-  const deadlineTime = assignment.deadline
-    ? new Date(assignment.deadline).toLocaleTimeString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : ""
+ const deadlineTime = assignment.deadline
+ ? new Date(assignment.deadline).toLocaleTimeString("en-IN", {
+ hour: "2-digit",
+ minute: "2-digit",
+ })
+ : ""
 
-  const latePolicyLabel: Record<string, string> = {
-    "no-late": "No late submissions accepted",
-    "grace-24": "24-hour grace period",
-    "penalty-10": "10% penalty per day late",
-    "penalty-20": "20% penalty per day late",
-  }
+ const latePolicyLabel: Record<string, string> = {
+ "no-late": "No late submissions accepted",
+ "grace-24": "24-hour grace period",
+ "penalty-10": "10% penalty per day late",
+ "penalty-20": "20% penalty per day late",
+ }
 
-  const shareLink = `https://edu.univ.edu/eval/${assignment.title?.toLowerCase().replace(/\s+/g, '-') || 'assignment'}`
+ const shareLink = `https://edu.univ.edu/eval/${assignment.title?.toLowerCase().replace(/\s+/g, '-') || 'assignment'}`
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(shareLink)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+ const copyToClipboard = () => {
+ navigator.clipboard.writeText(shareLink)
+ setCopied(true)
+ setTimeout(() => setCopied(false), 2000)
+ }
 
-  if (view === "launch") {
-    return (
-      <div className="max-w-2xl mx-auto py-20 space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-500">
-        <div className="text-center space-y-6">
-          <div className="relative inline-flex mb-4">
-            <div className="h-32 w-32 rounded-3xl bg-primary/5 border-2 border-primary/20 flex items-center justify-center relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-50 group-hover:scale-150 transition-transform duration-1000" />
-              <Monitor className="h-16 w-16 text-primary group-hover:scale-110 transition-transform duration-500" />
-              <div className="absolute bottom-4 right-4 h-8 w-8 rounded-xl bg-emerald-500 flex items-center justify-center border-4 border-background shadow-lg">
-                <CheckCircle2 className="h-4 w-4 text-white" />
-              </div>
-              <Sparkles className="absolute top-4 right-4 h-4 w-4 text-primary/40 animate-pulse" />
-            </div>
-            <div className="absolute inset-0 border border-primary/10 rounded-full -m-4 animate-[spin_10s_linear_infinite] pointer-events-none" />
-            <div className="absolute inset-0 border border-primary/5 rounded-full -m-8 animate-[spin_15s_linear_infinite_reverse] pointer-events-none" />
-          </div>
+ if (view === "launch") {
+ return (
+ <div className="max-w-2xl mx-auto py-20 space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-500">
+ <div className="text-center space-y-6">
+ <div className="relative inline-flex mb-4">
+ <div className="h-32 w-32 rounded-3xl bg-primary/5 border-2 border-primary/20 flex items-center justify-center relative overflow-hidden group">
+ <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-50 group-hover:scale-150 transition-transform duration-1000" />
+ <Monitor className="h-16 w-16 text-primary group-hover:scale-110 transition-transform duration-500" />
+ <div className="absolute bottom-4 right-4 h-8 w-8 rounded-xl bg-emerald-500 flex items-center justify-center border-4 border-background shadow-lg">
+ <CheckCircle2 className="h-4 w-4 text-white" />
+ </div>
+ <Sparkles className="absolute top-4 right-4 h-4 w-4 text-primary/40 animate-pulse" />
+ </div>
+ <div className="absolute inset-0 border border-primary/10 rounded-full -m-4 animate-[spin_10s_linear_infinite] pointer-events-none" />
+ <div className="absolute inset-0 border border-primary/5 rounded-full -m-8 animate-[spin_15s_linear_infinite_reverse] pointer-events-none" />
+ </div>
 
-          <div className="space-y-2">
-            <h1 className="text-4xl font-black tracking-tight secondary-text uppercase">Your assignment is live!</h1>
-            <p className="text-muted-foreground font-semibold text-base opacity-70">Your students can now submit their work.</p>
-          </div>
-        </div>
+ <div className="space-y-2">
+ <h1 className="text-4xl font-medium tracking-tight secondary-text ">Your assignment is live!</h1>
+ <p className="text-muted-foreground font-semibold text-base opacity-70">Your students can now submit their work.</p>
+ </div>
+ </div>
 
-        <Card className="border border-border/20 rounded-2xl overflow-hidden bg-card">
-          <CardContent className="p-8 space-y-8">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">Submission link for students</p>
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-3 w-3 text-emerald-500" />
-                  <span className="text-[9px] font-bold text-emerald-600/60 uppercase tracking-widest">Verified</span>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <Input
-                  readOnly
-                  value={shareLink}
-                  className="h-12 bg-muted/10 border border-border/30 rounded-xl font-black text-sm px-5 focus-visible:ring-primary/10 tracking-tight"
-                />
-                <Button
-                  variant="secondary"
-                  className="h-12 w-12 rounded-xl border border-border/30 bg-background hover:bg-primary/5 hover:text-primary transition-all active:scale-90 shadow-none"
-                  onClick={copyToClipboard}
-                >
-                  {copied ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <Copy className="h-5 w-5" />}
-                </Button>
-              </div>
-            </div>
+ <Card className="border border-border/20 rounded-2xl overflow-hidden bg-card">
+ <CardContent className="p-8 space-y-8">
+ <div className="space-y-4">
+ <div className="flex items-center justify-between">
+ <p className="text-xs font-medium tracking-[0.2em] text-muted-foreground/50">Submission link for students</p>
+ <div className="flex items-center gap-2">
+ <ShieldCheck className="h-3 w-3 text-emerald-500" />
+ <span className="text-xs font-medium text-emerald-600/60 tracking-widest">Verified</span>
+ </div>
+ </div>
+ <div className="flex gap-3">
+ <Input
+ readOnly
+ value={shareLink}
+ className="h-12 bg-muted/10 border border-border/30 rounded-xl font-medium text-sm px-5 focus-visible:ring-primary/10 tracking-tight"
+ />
+ <Button
+ variant="secondary"
+ className="h-12 w-12 rounded-xl border border-border/30 bg-background hover:bg-primary/5 hover:text-primary transition-all active:scale-90 shadow-none"
+ onClick={copyToClipboard}
+ >
+ {copied ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <Copy className="h-5 w-5" />}
+ </Button>
+ </div>
+ </div>
 
-            <div className="space-y-4">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">What's next</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Button
-                  variant="outline"
-                  className="h-auto p-5 flex flex-col items-start gap-3 rounded-xl border border-border/30 hover:border-primary/30 hover:bg-primary/[0.02] transition-all group text-left shadow-none"
-                >
-                  <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/10">
-                    <Database className="h-4 w-4 text-blue-500 opacity-60 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <span className="text-[10px] font-black uppercase tracking-widest block">Connect to LMS</span>
-                    <span className="text-[9px] font-bold text-muted-foreground/40 leading-none">Sync with Canvas or Moodle</span>
-                  </div>
-                </Button>
+ <div className="space-y-4">
+ <p className="text-xs font-medium tracking-[0.2em] text-muted-foreground/50">What's next</p>
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+ <Button
+ variant="outline"
+ className="h-auto p-5 flex flex-col items-start gap-3 rounded-xl border border-border/30 hover:border-primary/30 hover:bg-primary/[0.02] transition-all group text-left shadow-none"
+ >
+ <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/10">
+ <Database className="h-4 w-4 text-blue-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+ </div>
+ <div className="space-y-0.5">
+ <span className="text-xs font-medium tracking-widest block">Connect to LMS</span>
+ <span className="text-xs font-bold text-muted-foreground/40 leading-none">Sync with Canvas or Moodle</span>
+ </div>
+ </Button>
 
-                <Button
-                  variant="outline"
-                  className="h-auto p-5 flex flex-col items-start gap-3 rounded-xl border border-border/30 hover:border-primary/30 hover:bg-primary/[0.02] transition-all group text-left shadow-none"
-                >
-                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/10">
-                    <Mail className="h-4 w-4 text-primary opacity-60 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <span className="text-[10px] font-black uppercase tracking-widest block">Share with staff</span>
-                    <span className="text-[9px] font-bold text-muted-foreground/40 leading-none">Send this assignment to other teachers</span>
-                  </div>
-                </Button>
-              </div>
-            </div>
+ <Button
+ variant="outline"
+ className="h-auto p-5 flex flex-col items-start gap-3 rounded-xl border border-border/30 hover:border-primary/30 hover:bg-primary/[0.02] transition-all group text-left shadow-none"
+ >
+ <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/10">
+ <Mail className="h-4 w-4 text-primary opacity-60 group-hover:opacity-100 transition-opacity" />
+ </div>
+ <div className="space-y-0.5">
+ <span className="text-xs font-medium tracking-widest block">Share with staff</span>
+ <span className="text-xs font-bold text-muted-foreground/40 leading-none">Send this assignment to other teachers</span>
+ </div>
+ </Button>
+ </div>
+ </div>
 
-            <Button
-              className="h-14 px-12 w-full text-lg font-black tracking-tight rounded-xl shadow-none active:scale-95 transition-all bg-primary hover:bg-primary/90"
-              onClick={() => (window.location.href = "/dashboard")}
-            >
-              Go to Grading Desk
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </CardContent>
-        </Card>
+ <Button
+ className="h-14 px-12 w-full text-lg font-medium tracking-tight rounded-xl shadow-none active:scale-95 transition-all bg-primary hover:bg-primary/90"
+ onClick={() => (window.location.href = "/dashboard")}
+ >
+ Go to Grading Desk
+ <ArrowRight className="ml-2 h-5 w-5" />
+ </Button>
+ </CardContent>
+ </Card>
 
-        <div className="flex justify-center pt-4">
-          <button
-            className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 hover:text-primary transition-all"
-            onClick={reset}
-          >
-            <div className="h-8 w-8 rounded-full border border-border/40 flex items-center justify-center group-hover:border-primary/40 transition-all">
-              <LayoutDashboard className="h-3.5 w-3.5" />
-            </div>
-            Return to course dashboard
-          </button>
-        </div>
-      </div>
-    )
-  }
+ <div className="flex justify-center pt-4">
+ <button
+ className="group flex items-center gap-3 text-xs font-medium tracking-widest text-muted-foreground/30 hover:text-primary transition-all"
+ onClick={reset}
+ >
+ <div className="h-8 w-8 rounded-full border border-border/40 flex items-center justify-center group-hover:border-primary/40 transition-all">
+ <LayoutDashboard className="h-3.5 w-3.5" />
+ </div>
+ Return to course dashboard
+ </button>
+ </div>
+ </div>
+ )
+ }
 
-  return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 pt-6 px-4">
-      <div className="flex items-center justify-between border-b border-border/10 pb-6 sticky top-0 z-50 bg-background/80 backdrop-blur-md -mx-4 px-4 pt-4">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 border border-border/20 shadow-none" onClick={prevStep}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-black tracking-tight secondary-text">Student Preview</h1>
-            <p className="text-[10px] font-semibold text-muted-foreground/40 uppercase tracking-widest">How your students will see this assignment</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 bg-primary/5 border border-primary/10 px-3 py-1.5 rounded-lg">
-          <Eye className="h-3.5 w-3.5 text-primary" />
-          <span className="text-[9px] font-black uppercase tracking-widest text-primary">Preview Mode</span>
-        </div>
-      </div>
+ return (
+ <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 pt-6 px-4">
+ <div className="flex items-center justify-between border-b border-border/10 pb-6 sticky top-0 z-50 bg-background/80 backdrop-blur-md -mx-4 px-4 pt-4">
+ <div className="flex items-center gap-4">
+ <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 border border-border/20 shadow-none" onClick={prevStep}>
+ <ArrowLeft className="h-4 w-4" />
+ </Button>
+ <div>
+ <h1 className="text-2xl font-medium tracking-tight secondary-text">Student Preview</h1>
+ <p className="text-xs font-semibold text-muted-foreground/40 tracking-widest">How your students will see this assignment</p>
+ </div>
+ </div>
+ <div className="flex items-center gap-2 bg-primary/5 border border-primary/10 px-3 py-1.5 rounded-lg">
+ <Eye className="h-3.5 w-3.5 text-primary" />
+ <span className="text-xs font-medium tracking-widest text-primary">Preview Mode</span>
+ </div>
+ </div>
 
-      <div className="border border-border/20 rounded-xl overflow-hidden bg-card">
-        <div className="bg-muted/5 border-b border-border/10 px-8 py-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center border border-primary/10">
-              <GraduationCap className="h-4 w-4 text-primary" />
-            </div>
-            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">
-              {assignment.institution.name} — {assignment.institution.dept}
-            </p>
-          </div>
-          <h2 className="text-2xl font-black tracking-tight secondary-text">
-            {assignment.title || "Untitled Assignment"}
-          </h2>
-          {assignment.type && (
-            <Badge variant="outline" className="mt-3 bg-primary/5 text-primary border-primary/20 text-[9px] font-black uppercase tracking-widest px-2 h-5 rounded-full">
-              {assignment.type}
-            </Badge>
-          )}
-        </div>
+ <div className="border border-border/20 rounded-xl overflow-hidden bg-card">
+ <div className="bg-muted/5 border-b border-border/10 px-8 py-6">
+ <div className="flex items-center gap-3 mb-4">
+ <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center border border-primary/10">
+ <GraduationCap className="h-4 w-4 text-primary" />
+ </div>
+ <p className="text-xs font-medium tracking-widest text-muted-foreground/40">
+ {assignment.institution.name} — {assignment.institution.dept}
+ </p>
+ </div>
+ <h2 className="text-2xl font-medium tracking-tight secondary-text">
+ {assignment.title || "Untitled Assignment"}
+ </h2>
+ {assignment.type && (
+ <Badge variant="outline" className="mt-3 bg-primary/5 text-primary border-primary/20 text-xs font-medium tracking-widest px-2 h-5 rounded-full">
+ {assignment.type}
+ </Badge>
+ )}
+ </div>
 
-        <div className="px-8 py-6 space-y-6">
-          {assignment.brief && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <FileText className="h-3.5 w-3.5 text-muted-foreground/40" />
-                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">What students need to do</p>
-              </div>
-              <p className="text-sm text-foreground leading-relaxed font-medium">{assignment.brief}</p>
-            </div>
-          )}
+ <div className="px-8 py-6 space-y-6">
+ {assignment.brief && (
+ <div className="space-y-2">
+ <div className="flex items-center gap-2">
+ <FileText className="h-3.5 w-3.5 text-muted-foreground/40" />
+ <p className="text-xs font-medium tracking-widest text-muted-foreground/40">What students need to do</p>
+ </div>
+ <p className="text-sm text-foreground leading-relaxed font-medium">{assignment.brief}</p>
+ </div>
+ )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/5 border border-border/10">
-              <Clock className="h-4 w-4 text-primary/60" />
-              <div className="space-y-0">
-                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Deadline</p>
-                <p className="text-sm font-bold text-foreground">{deadlineDate}</p>
-                {deadlineTime && <p className="text-[11px] text-muted-foreground font-medium">{deadlineTime}</p>}
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/5 border border-border/10">
-              <Scale className="h-4 w-4 text-primary/60" />
-              <div className="space-y-0">
-                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Late Policy</p>
-                <p className="text-sm font-bold text-foreground">{latePolicyLabel[assignment.latePolicy] || "No policy set"}</p>
-              </div>
-            </div>
-          </div>
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+ <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/5 border border-border/10">
+ <Clock className="h-4 w-4 text-primary/60" />
+ <div className="space-y-0">
+ <p className="text-xs font-medium tracking-widest text-muted-foreground/40">Deadline</p>
+ <p className="text-sm font-bold text-foreground">{deadlineDate}</p>
+ {deadlineTime && <p className="text-xs text-muted-foreground font-medium">{deadlineTime}</p>}
+ </div>
+ </div>
+ <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/5 border border-border/10">
+ <Scale className="h-4 w-4 text-primary/60" />
+ <div className="space-y-0">
+ <p className="text-xs font-medium tracking-widest text-muted-foreground/40">Late Policy</p>
+ <p className="text-sm font-bold text-foreground">{latePolicyLabel[assignment.latePolicy] || "No policy set"}</p>
+ </div>
+ </div>
+ </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-3.5 w-3.5 text-muted-foreground/40" />
-                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Assignment sections</p>
-              </div>
-              <p className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-widest">Total: {totalWeight}%</p>
-            </div>
+ <div className="space-y-4">
+ <div className="flex items-center justify-between">
+ <div className="flex items-center gap-2">
+ <BookOpen className="h-3.5 w-3.5 text-muted-foreground/40" />
+ <p className="text-xs font-medium tracking-widest text-muted-foreground/40">Assignment sections</p>
+ </div>
+ <p className="text-xs font-medium text-muted-foreground/30 tracking-widest">Total: {totalWeight}%</p>
+ </div>
 
-            {assignment.sections.map((sec) => (
-              <Card key={sec.id} className="border border-border/20 rounded-lg overflow-hidden shadow-none">
-                <div className="px-5 py-3 bg-muted/5 border-b border-border/10">
-                  <p className="text-xs font-black text-foreground tracking-tight">{sec.title}</p>
-                  {sec.description && (
-                    <p className="text-[11px] text-muted-foreground font-medium mt-0.5">{sec.description}</p>
-                  )}
-                </div>
-                <div className="divide-y divide-border/10">
-                  {sec.deliverables.map((d) => (
-                    <div key={d.id} className="px-5 py-3 flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <p className="text-[12px] font-bold text-foreground">{d.name}</p>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest px-1.5 h-4 bg-muted/30 border-border/20 rounded">
-                            {d.bloomLevel}
-                          </Badge>
-                          <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest px-1.5 h-4 bg-muted/30 border-border/20 rounded">
-                            {d.format}
-                          </Badge>
-                          {d.linkedCOs.map(co => (
-                            <Badge key={co} variant="outline" className="text-[8px] font-black uppercase tracking-widest px-1.5 h-4 bg-primary/5 text-primary border-primary/20 rounded">
-                              {co}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                      <span className="text-sm font-black text-foreground tabular-nums">{d.weight}%</span>
-                    </div>
-                  ))}
-                  {sec.deliverables.length === 0 && (
-                    <div className="px-5 py-3 text-[11px] text-muted-foreground/40 font-medium italic">No deliverables defined</div>
-                  )}
-                </div>
-              </Card>
-            ))}
-          </div>
+ {assignment.sections.map((sec) => (
+ <Card key={sec.id} className="border border-border/20 rounded-lg overflow-hidden shadow-none">
+ <div className="px-5 py-3 bg-muted/5 border-b border-border/10">
+ <p className="text-xs font-medium text-foreground tracking-tight">{sec.title}</p>
+ {sec.description && (
+ <p className="text-xs text-muted-foreground font-medium mt-0.5">{sec.description}</p>
+ )}
+ </div>
+ <div className="divide-y divide-border/10">
+ {sec.deliverables.map((d) => (
+ <div key={d.id} className="px-5 py-3 flex items-center justify-between">
+ <div className="space-y-0.5">
+ <p className="text-[12px] font-bold text-foreground">{d.name}</p>
+ <div className="flex items-center gap-2">
+ <Badge variant="outline" className="text-xs font-medium tracking-widest px-1.5 h-4 bg-muted/30 border-border/20 rounded">
+ {d.bloomLevel}
+ </Badge>
+ <Badge variant="outline" className="text-xs font-medium tracking-widest px-1.5 h-4 bg-muted/30 border-border/20 rounded">
+ {d.format}
+ </Badge>
+ {d.linkedCOs.map(co => (
+ <Badge key={co} variant="outline" className="text-xs font-medium tracking-widest px-1.5 h-4 bg-primary/5 text-primary border-primary/20 rounded">
+ {co}
+ </Badge>
+ ))}
+ </div>
+ </div>
+ <span className="text-sm font-medium text-foreground tabular-nums">{d.weight}%</span>
+ </div>
+ ))}
+ {sec.deliverables.length === 0 && (
+ <div className="px-5 py-3 text-xs text-muted-foreground/40 font-medium italic">No deliverables defined</div>
+ )}
+ </div>
+ </Card>
+ ))}
+ </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Scale className="h-3.5 w-3.5 text-muted-foreground/40" />
-              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">How it will be graded</p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b border-border/10">
-                    <th className="p-3 text-left text-[9px] font-black uppercase tracking-widest text-muted-foreground/30 w-48">Criterion</th>
-                    {rubric.length > 0 && rubric[0].levels.map((lvl) => (
-                      <th key={lvl.label} className="p-3 text-center text-[9px] font-black uppercase tracking-widest text-muted-foreground/30 min-w-[120px]">{lvl.label}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rubric.map((crit) => (
-                    <tr key={crit.id} className="border-b border-border/5">
-                      <td className="p-3">
-                        <p className="text-[11px] font-bold text-foreground">{crit.name}</p>
-                        <Badge variant="outline" className="mt-1 text-[7px] font-black uppercase tracking-widest px-1 h-3 bg-primary/5 text-primary border-primary/20 rounded">
-                          {crit.linkedCO}
-                        </Badge>
-                      </td>
-                      {crit.levels.map((lvl) => (
-                        <td key={lvl.label} className="p-3 text-center text-[11px] text-muted-foreground font-medium">
-                          {lvl.description}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+ <div className="space-y-4">
+ <div className="flex items-center gap-2">
+ <Scale className="h-3.5 w-3.5 text-muted-foreground/40" />
+ <p className="text-xs font-medium tracking-widest text-muted-foreground/40">How it will be graded</p>
+ </div>
+ <div className="overflow-x-auto">
+ <table className="w-full border-collapse">
+ <thead>
+ <tr className="border-b border-border/10">
+ <th className="p-3 text-left text-xs font-medium tracking-widest text-muted-foreground/30 w-48">Criterion</th>
+ {rubric.length > 0 && rubric[0].levels.map((lvl) => (
+ <th key={lvl.label} className="p-3 text-center text-xs font-medium tracking-widest text-muted-foreground/30 min-w-[120px]">{lvl.label}</th>
+ ))}
+ </tr>
+ </thead>
+ <tbody>
+ {rubric.map((crit) => (
+ <tr key={crit.id} className="border-b border-border/5">
+ <td className="p-3">
+ <p className="text-xs font-bold text-foreground">{crit.name}</p>
+ <Badge variant="outline" className="mt-1 text-xs font-medium tracking-widest px-1 h-3 bg-primary/5 text-primary border-primary/20 rounded">
+ {crit.linkedCO}
+ </Badge>
+ </td>
+ {crit.levels.map((lvl) => (
+ <td key={lvl.label} className="p-3 text-center text-xs text-muted-foreground font-medium">
+ {lvl.description}
+ </td>
+ ))}
+ </tr>
+ ))}
+ </tbody>
+ </table>
+ </div>
+ </div>
 
-          {assignment.artifacts.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Required submissions</p>
-              <div className="flex flex-wrap gap-2">
-                {assignment.artifacts.map((art) => (
-                  <Badge key={art} variant="outline" className="text-[9px] font-bold px-2 h-5 bg-muted/30 border-border/20 rounded-full">
-                    {art}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+ {assignment.artifacts.length > 0 && (
+ <div className="space-y-2">
+ <p className="text-xs font-medium tracking-widest text-muted-foreground/40">Required submissions</p>
+ <div className="flex flex-wrap gap-2">
+ {assignment.artifacts.map((art) => (
+ <Badge key={art} variant="outline" className="text-xs font-bold px-2 h-5 bg-muted/30 border-border/20 rounded-full">
+ {art}
+ </Badge>
+ ))}
+ </div>
+ </div>
+ )}
+ </div>
 
-        <div className="border-t border-border/10 bg-muted/5 px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-muted-foreground/30">
-              <CheckCircle2 className="h-3 w-3" />
-              <span className="text-[8px] font-black uppercase tracking-widest">Verified</span>
-            </div>
-            <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/20">
-              {assignment.institution.accreditation.join(" · ")}
-            </span>
-          </div>
-        </div>
-      </div>
+ <div className="border-t border-border/10 bg-muted/5 px-8 py-4">
+ <div className="flex items-center justify-between">
+ <div className="flex items-center gap-2 text-muted-foreground/30">
+ <CheckCircle2 className="h-3 w-3" />
+ <span className="text-xs font-medium tracking-widest">Verified</span>
+ </div>
+ <span className="text-xs font-medium tracking-widest text-muted-foreground/20">
+ {assignment.institution.accreditation.join(" · ")}
+ </span>
+ </div>
+ </div>
+ </div>
 
-      <div className="flex justify-end pt-10 gap-3">
-        <Button variant="ghost" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 hover:text-foreground h-14 px-8 rounded-xl transition-all" onClick={reset}>
-          Save as draft
-        </Button>
-        <Button
-          className="h-14 px-12 text-lg font-black tracking-tight rounded-xl shadow-none active:scale-95 transition-all bg-primary hover:bg-primary/90"
-          onClick={() => setView("launch")}
-        >
-          Publish Assignment <ChevronRight className="ml-1 h-5 w-5" />
-        </Button>
-      </div>
-    </div>
-  )
+ <div className="flex justify-end pt-10 gap-3">
+ <Button variant="ghost" className="text-xs font-medium tracking-widest text-muted-foreground/40 hover:text-foreground h-14 px-8 rounded-xl transition-all" onClick={reset}>
+ Save as draft
+ </Button>
+ <Button
+ className="h-14 px-12 text-lg font-medium tracking-tight rounded-xl shadow-none active:scale-95 transition-all bg-primary hover:bg-primary/90"
+ onClick={() => setView("launch")}
+ >
+ Publish Assignment <ChevronRight className="ml-1 h-5 w-5" />
+ </Button>
+ </div>
+ </div>
+ )
 }
