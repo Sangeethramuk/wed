@@ -83,7 +83,7 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
     if (assignment.gradingStatus === "complete") return "View Results"
     if (!isCalibrated && (!calData || calData.phase === "not_started")) return "Begin Calibration"
     if (!isCalibrated && calData?.phase && calData.phase !== "complete") return "Continue Calibration"
-    return "Enter Desk"
+    return "Open"
   }
 
   const actionVariant = () => {
@@ -125,7 +125,7 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
       {/* Papers count */}
       <div className="w-16 text-right shrink-0">
         <p className="text-sm font-black tabular-nums text-foreground">{assignment.totalSubmissions}</p>
-        <p className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-wider">Papers</p>
+        <p className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-wider">Submissions</p>
       </div>
 
       {/* Flags */}
@@ -137,7 +137,7 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
                 <ShieldAlert className="h-2.5 w-2.5" /> {assignment.integrityFlags}
               </Badge>
             </TooltipTrigger>
-            <TooltipContent>{assignment.integrityFlags} integrity flag{assignment.integrityFlags > 1 ? "s" : ""} detected</TooltipContent>
+            <TooltipContent>{assignment.integrityFlags} review alert{assignment.integrityFlags > 1 ? "s" : ""} detected</TooltipContent>
           </Tooltip>
         ) : (
           <span className="text-[9px] font-black text-muted-foreground/20">—</span>
@@ -202,7 +202,7 @@ function DeptGroup({ department, assignments }: { department: string; assignment
           </Tooltip>
           {totalFlags > 0 && (
             <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
-              <AlertCircle className="h-3 w-3" /> {totalFlags} flag{totalFlags !== 1 ? "s" : ""}
+              <AlertCircle className="h-3 w-3" /> {totalFlags} alert{totalFlags !== 1 ? "s" : ""}
             </span>
           )}
         </div>
@@ -214,8 +214,8 @@ function DeptGroup({ department, assignments }: { department: string; assignment
         <div className="flex items-center gap-4 px-5 py-2 bg-muted/5 border-t border-border/20 border-b border-border/20">
           <div className="w-1.5 shrink-0" />
           <div className="flex-1 text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">Assignment</div>
-          <div className="w-16 text-right text-[8px] font-black uppercase tracking-widest text-muted-foreground/30 shrink-0">Papers</div>
-          <div className="w-14 text-center text-[8px] font-black uppercase tracking-widest text-muted-foreground/30 shrink-0">Flags</div>
+          <div className="w-16 text-right text-[8px] font-black uppercase tracking-widest text-muted-foreground/30 shrink-0">Submissions</div>
+          <div className="w-14 text-center text-[8px] font-black uppercase tracking-widest text-muted-foreground/30 shrink-0">Alerts</div>
           <div className="w-24 text-right text-[8px] font-black uppercase tracking-widest text-muted-foreground/30 shrink-0">Progress</div>
           <div className="w-36 shrink-0" />
         </div>

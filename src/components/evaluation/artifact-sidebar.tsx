@@ -223,7 +223,7 @@ export default function ArtifactSidebar({
           {expanded ? (
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground truncate">
-                {totalCount} Artifact{totalCount !== 1 ? "s" : ""}
+                {totalCount} File{totalCount !== 1 ? "s" : ""}
               </span>
             </div>
           ) : (
