@@ -88,11 +88,11 @@ export function CourseSelection() {
 
           <div className="space-y-3">
             <h1 className="text-4xl font-black tracking-tighter secondary-text">Set up your assignment</h1>
-            <p className="text-base text-muted-foreground font-medium opacity-70">Select a course to begin</p>
+            <p className="text-base text-muted-foreground font-medium opacity-70">Select a course to begin setup</p>
             <div className="flex items-center gap-2 pt-1">
               <Sparkles className="h-3.5 w-3.5 text-primary opacity-50" />
               <p className="text-[11px] text-muted-foreground opacity-60 font-medium">
-                We&apos;ll help you structure, evaluate, and validate your assignment as you go.
+                We&apos;ll guide you through setting up the assignment step by step.
               </p>
             </div>
           </div>
