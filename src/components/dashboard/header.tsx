@@ -11,15 +11,29 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Bell, Search } from "lucide-react"
+import { Bell, Search, ScanSearch } from "lucide-react"
 import { ThemeSwitcher } from "@/components/theme-switcher"
+import { useGradingStore } from "@/lib/store/grading-store"
+import { SpotCheckModal } from "@/components/dashboard/spot-check-modal"
 
 export function DashboardHeader() {
+  const { triggerSpotCheck } = useGradingStore()
+
   return (
+    <>
     <header className="flex h-14 items-center gap-2 border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <SidebarTrigger />
 
       <div className="flex flex-1 items-center justify-end gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={triggerSpotCheck}
+          className="h-8 px-3 gap-1.5 text-[11px] font-semibold border-border text-foreground/70 hover:text-foreground hover:bg-accent"
+        >
+          <ScanSearch className="h-3.5 w-3.5" />
+          Spot check
+        </Button>
         <ThemeSwitcher />
         <Button variant="ghost" size="icon-sm">
           <Search className="h-4 w-4" />
@@ -55,5 +69,7 @@ export function DashboardHeader() {
         </DropdownMenu>
       </div>
     </header>
+    <SpotCheckModal />
+    </>
   )
 }

@@ -172,6 +172,10 @@ export default function WorkspacePage() {
               </div>
            </div>
 
+           <Button size="sm" variant="outline" className="h-9 px-4 rounded-lg font-bold text-[10px] uppercase tracking-[0.15em] border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+             Spot check
+           </Button>
+
            <Button size="sm" className={`h-9 px-6 rounded-lg font-bold text-[10px] uppercase tracking-[0.15em] transition-all hover:scale-105 active:scale-95 ${
              isGateUnlocked ? 'bg-slate-900 text-white shadow-xl shadow-slate-200' : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200 shadow-none'
            }`} disabled={!isGateUnlocked} onClick={phase === 'blind' ? handleReveal : handleFinalize}>
