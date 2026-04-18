@@ -31,13 +31,14 @@ function ConfidenceBars({ confidence }: { confidence: number }) {
   )
 }
 
-function UserHighlightedSpan({ text, criterionId }: { text: string; criterionId: number }) {
+function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterionId: number; id?: string }) {
   const c = CRITERION_COLORS[criterionId] ?? CRITERION_COLORS[1]
   const label = CRITERION_LABELS[criterionId] ?? `Criterion ${criterionId}`
   return (
     <HoverCard>
       <HoverCardTrigger
-        className={`bg-amber-100/90 border-b-2 border-amber-400 border-dashed px-1 rounded cursor-pointer hover:bg-amber-200/80 transition-colors`}
+        id={id}
+        className={`bg-amber-100/90 border-b-2 border-amber-400 border-dashed px-1 rounded cursor-pointer hover:bg-amber-200/80 transition-colors scroll-mt-20`}
       >
         {text}
       </HoverCardTrigger>
@@ -57,9 +58,9 @@ function UserHighlightedSpan({ text, criterionId }: { text: string; criterionId:
 
 function splitByEvidence(
   text: string,
-  evidences: { text: string; criterionId: number }[]
-): Array<{ text: string; evidence?: { criterionId: number } }> {
-  let segments: Array<{ text: string; evidence?: { criterionId: number } }> = [{ text }]
+  evidences: { id: string; text: string; criterionId: number }[]
+): Array<{ text: string; evidence?: { criterionId: number; id: string } }> {
+  let segments: Array<{ text: string; evidence?: { criterionId: number; id: string } }> = [{ text }]
   for (const ev of evidences) {
     const next: typeof segments = []
     for (const seg of segments) {
@@ -67,7 +68,7 @@ function splitByEvidence(
       const idx = seg.text.indexOf(ev.text)
       if (idx === -1) { next.push(seg); continue }
       if (idx > 0) next.push({ text: seg.text.slice(0, idx) })
-      next.push({ text: ev.text, evidence: { criterionId: ev.criterionId } })
+      next.push({ text: ev.text, evidence: { criterionId: ev.criterionId, id: ev.id } })
       const tail = seg.text.slice(idx + ev.text.length)
       if (tail) next.push({ text: tail })
     }
@@ -210,7 +211,7 @@ export default function ManuscriptRenderer({
   userEvidence = [],
 }: {
   elements: ManuscriptElement[]
-  userEvidence?: { text: string; criterionId: number }[]
+  userEvidence?: { id: string; text: string; criterionId: number }[]
 }) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -232,10 +233,10 @@ export default function ManuscriptRenderer({
             if (matches.length > 0) {
               const segments = splitByEvidence(el.text, matches)
               return (
-                <p key={i} className="text-lg leading-[1.8] text-foreground/90 p-2 -m-2 rounded transition-colors">
+                <p key={i} className="text-lg leading-[1.8] text-foreground/90 p-2 -m-2 rounded transition-colors font-serif">
                   {segments.map((seg, j) =>
                     seg.evidence ? (
-                      <UserHighlightedSpan key={j} text={seg.text} criterionId={seg.evidence.criterionId} />
+                      <UserHighlightedSpan key={j} text={seg.text} criterionId={seg.evidence.criterionId} id={`evidence-${seg.evidence.id}`} />
                     ) : (
                       <span key={j}>{seg.text}</span>
                     )

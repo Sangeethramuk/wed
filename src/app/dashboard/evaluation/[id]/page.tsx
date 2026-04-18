@@ -409,6 +409,16 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     recognition.start()
     setRecordingId(criterionId)
   }
+  
+  const scrollToEvidence = (evidenceId: string) => {
+    const el = document.getElementById(`evidence-${evidenceId}`)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      // Add a quick visual pulse/blink
+      el.classList.add('animate-pulse')
+      setTimeout(() => el.classList.remove('animate-pulse'), 2000)
+    }
+  }
 
   // Mock data for 4 pages
   const totalPages = 4
@@ -425,17 +435,43 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     return (
       <div 
         id={`page-${index}`}
-        className="bg-white shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-[#E6E1D6]/50 mx-auto transition-all duration-300 relative group/page cursor-text"
+        className={`bg-white shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-[#E6E1D6]/50 mx-auto transition-all duration-300 relative group/page ${textSelectionMode.active ? 'cursor-crosshair' : 'cursor-text'}`}
         onMouseUp={(e) => {
           const sel = window.getSelection()
-          if (sel && sel.toString().length > 0) {
+          if (sel && sel.toString().trim().length > 0) {
               const range = sel.getRangeAt(0)
               const rect = range.getBoundingClientRect()
-              setSelection({
-                text: sel.toString(),
-                x: rect.left + rect.width / 2,
-                y: rect.top
-              })
+              const selectedText = sel.toString().trim()
+              
+              if (textSelectionMode.active && textSelectionMode.criterionId !== null) {
+                // Auto-map if in selection mode
+                const evidenceId = Math.random().toString(36).substring(2, 9)
+                setMappedEvidence(prev => [...prev, { id: evidenceId, text: selectedText, criterionId: textSelectionMode.criterionId! }])
+                
+                // If there's an active override draft, add to it as well
+                if (overrideDrafts[textSelectionMode.criterionId]) {
+                  handleUpdateDraft(textSelectionMode.criterionId, { 
+                    linkedEvidence: [...(overrideDrafts[textSelectionMode.criterionId].linkedEvidence || []), { id: evidenceId, text: selectedText, page: index }] 
+                  })
+                }
+
+                addRevisionEvent({
+                  type: 'evidence_mapped',
+                  criterionId: textSelectionMode.criterionId,
+                  criterionLabel: rubricPoints.find(p => p.id === textSelectionMode.criterionId)?.label || '',
+                  details: { evidenceText: selectedText }
+                })
+                setTextSelectionMode({ active: false, criterionId: null })
+                setSelection(null)
+                // Clear the browser selection
+                sel.removeAllRanges()
+              } else {
+                setSelection({
+                  text: selectedText,
+                  x: rect.left + rect.width / 2,
+                  y: rect.top
+                })
+              }
           } else {
               setSelection(null)
           }
@@ -447,6 +483,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
           marginBottom: "60px"
         }}
       >
+        <div className={`absolute inset-0 transition-all duration-300 pointer-events-none z-10 ${textSelectionMode.active ? 'ring-4 ring-blue-500/20 ring-inset bg-blue-500/[0.02]' : ''}`} />
         <div className="absolute top-8 left-8 flex flex-col items-start gap-1">
           <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary/40 group-hover/page:text-primary transition-colors">Digital Manuscript</span>
           <span className="text-[10px] font-black uppercase tracking-widest text-[#E6E1D6] group-hover/page:text-slate-400 transition-colors">Folio {index} / {totalPages}</span>
@@ -993,24 +1030,59 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                         <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${rubricAccordionOpen[`evidence-${point.id}`] ? 'rotate-180' : ''}`} />
                       </button>
                       {rubricAccordionOpen[`evidence-${point.id}`] && (
-                        <div className="px-4 pb-4 space-y-2">
+                        <div className="px-4 pb-4 space-y-4">
                           {pointEvidence.length === 0 ? (
-                            <div className="border-2 border-dashed border-purple-200 rounded-lg p-4 text-center">
-                              <p className="text-[10px] text-purple-400 leading-relaxed">No evidence linked yet &mdash; select text in the left panel to add evidence</p>
+                            <div className="border-2 border-dashed border-purple-200 rounded-lg p-6 text-center bg-purple-50/30">
+                              <p className="text-[10px] text-purple-400 font-bold leading-relaxed uppercase tracking-widest">No evidence linked yet</p>
+                              <p className="text-[9px] text-purple-300 italic mt-1">Select text in the manuscript to map it here</p>
                             </div>
                           ) : (
-                            pointEvidence.map((ev, i) => (
-                              <div key={ev.id} className="flex items-start gap-2 p-2.5 rounded-lg bg-muted/20 border border-border group/ev">
-                                <span className="text-[9px] font-mono font-bold text-primary shrink-0">E{i+1}</span>
-                                <p className="text-[11px] font-serif italic text-foreground/70 flex-1 leading-relaxed">&quot;{ev.text.length > 80 ? ev.text.substring(0, 80) + '...' : ev.text}&quot;</p>
-                                <button onClick={() => setMappedEvidence(prev => prev.filter(e => e.id !== ev.id))} className="opacity-0 group-hover/ev:opacity-100 transition-opacity shrink-0">
-                                  <X className="h-3 w-3 text-red-400 hover:text-red-600" />
-                                </button>
-                              </div>
-                            ))
+                            <div className="flex flex-wrap gap-2 py-1">
+                              {pointEvidence.map((ev, i) => (
+                                <Tooltip key={ev.id}>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      onClick={() => scrollToEvidence(ev.id)}
+                                      className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-border hover:border-primary hover:bg-primary/5 transition-all active:scale-95 shadow-sm"
+                                    >
+                                      <div className="w-1.5 h-1.5 rounded-full bg-primary group-hover:animate-pulse" />
+                                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">
+                                        Evidence #{i+1}
+                                      </span>
+                                      <div 
+                                        role="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          setMappedEvidence(prev => prev.filter(e => e.id !== ev.id))
+                                        }}
+                                        className="ml-1 opacity-0 group-hover:opacity-100 p-0.5 hover:bg-red-50 rounded-full transition-all"
+                                      >
+                                        <X className="h-2.5 w-2.5 text-red-400 hover:text-red-600" />
+                                      </div>
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="bottom" className="max-w-xs p-3 z-[100] bg-popover text-popover-foreground border border-border shadow-xl">
+                                    <div className="space-y-1">
+                                      <span className="text-[9px] font-black uppercase tracking-widest text-primary/60">Source Text</span>
+                                      <p className="text-[11px] font-serif italic leading-relaxed">
+                                        &ldquo;{ev.text || "No text available"}&rdquo;
+                                      </p>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              ))}
+                            </div>
                           )}
-                          <button className="w-full border-2 border-dashed border-border rounded-lg p-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:border-primary/30 hover:text-foreground transition-colors">
-                            + Add evidence
+                          <button 
+                            onClick={() => setTextSelectionMode({ active: true, criterionId: point.id })}
+                            className={`w-full border-2 border-dashed rounded-xl p-3 text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                              textSelectionMode.active && textSelectionMode.criterionId === point.id
+                                ? 'bg-primary border-primary text-white shadow-lg'
+                                : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground'
+                            }`}
+                          >
+                            <LinkIcon className={`h-3.5 w-3.5 ${textSelectionMode.active && textSelectionMode.criterionId === point.id ? 'animate-bounce' : ''}`} />
+                            {textSelectionMode.active && textSelectionMode.criterionId === point.id ? 'Selecting Evidence...' : '+ Add Evidence'}
                           </button>
                         </div>
                       )}
