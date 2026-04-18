@@ -1,7 +1,7 @@
 "use client"
 
 import { usePreEvalStore } from "@/lib/store/pre-evaluation-store"
-import { CourseSelection } from "@/components/pre-evaluation/course-selection"
+import { CourseSelection, MOCK_COURSES } from "@/components/pre-evaluation/course-selection"
 import { CreationMode } from "@/components/pre-evaluation/creation-mode"
 import { AssignmentSpecs } from "@/components/pre-evaluation/assignment-specs"
 import { RubricTweak } from "@/components/pre-evaluation/rubric-tweak"
@@ -14,7 +14,8 @@ import { useEffect, useState } from "react"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
 export default function PreEvaluationPage() {
-  const { currentStep, lastSaved } = usePreEvalStore()
+  const { currentStep, lastSaved, selectedCourse } = usePreEvalStore()
+  const courseData = MOCK_COURSES.find(c => c.name === selectedCourse)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -77,6 +78,17 @@ export default function PreEvaluationPage() {
                 <AuditSidebar />
               </div>
             </div>
+            {selectedCourse && courseData && (
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">IIM Bangalore</span>
+                <span className="text-muted-foreground/20 text-[9px]">·</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-foreground/60">{courseData.name}</span>
+                <span className="text-muted-foreground/20 text-[9px]">·</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">{courseData.semester}</span>
+                <span className="text-muted-foreground/20 text-[9px]">·</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">{courseData.code}</span>
+              </div>
+            )}
             <Progress value={progressPercent} className="h-0.5 transition-all duration-1000 ease-in-out bg-primary/10" />
           </div>
         </div>
