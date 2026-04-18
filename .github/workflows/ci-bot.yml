@@ -1,0 +1,32 @@
+name: EducAItors PR Bot
+
+on:
+  pull_request:
+    branches: [ master ]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Important for diffing against master
+          
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          
+      - name: Run PR Analysis
+        run: python scripts/pr-reviewer.py
+        
+      - name: Post Comment
+        if: hashFiles('bot_comment.md') != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body-file bot_comment.md

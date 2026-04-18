@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-export type Step = 1 | 2 | 3 | 4 | 5;
+export type Step = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface AuditEvent {
   id: string;
@@ -167,7 +167,7 @@ export interface DraftAssignment {
   type: AssignmentType;
   course: string;
   semester: string;
-  step: 2 | 3 | 4 | 5;
+  step: 2 | 3 | 4 | 5 | 6;
   lastEdited: string;
 }
 
@@ -182,10 +182,15 @@ interface PreEvalState {
   lastSaved: string;
   viewMode: "cards" | "table";
 
+  calibrationConfirmed: boolean;
+  calibrationStatus: "good" | "needs_attention" | null;
+
   // Actions
   setStep: (step: Step) => void;
   nextStep: () => void;
   prevStep: () => void;
+  setCalibrationConfirmed: (confirmed: boolean) => void;
+  setCalibrationStatus: (status: "good" | "needs_attention") => void;
   setCourse: (course: string) => void;
   setCreationMode: (mode: "history" | "scratch" | "suggestions" | null) => void;
   selectHistory: (id: string) => void;
@@ -543,10 +548,28 @@ export const usePreEvalStore = create<PreEvalState>()(
       auditLog: mockAudit,
       lastSaved: new Date().toLocaleTimeString(),
       viewMode: "cards",
+      calibrationConfirmed: false,
+      calibrationStatus: null,
 
       setStep: (step) => set({ currentStep: step }),
-      nextStep: () => set((state) => ({ currentStep: Math.min(state.currentStep + 1, 5) as Step })),
-      prevStep: () => set((state) => ({ currentStep: Math.max(state.currentStep - 1, 1) as Step })),
+      nextStep: () => set((state) => {
+        const next = state.currentStep + 1;
+        // Skip calibration (step 5) for reused assignments
+        if (next === 5 && state.creationMode === "history" && state.selectedHistoryId) {
+          return { currentStep: 6 as Step };
+        }
+        return { currentStep: Math.min(next, 6) as Step };
+      }),
+      prevStep: () => set((state) => {
+        const prev = state.currentStep - 1;
+        // Skip back over calibration (step 5) for reused assignments
+        if (prev === 5 && state.creationMode === "history" && state.selectedHistoryId) {
+          return { currentStep: 4 as Step };
+        }
+        return { currentStep: Math.max(prev, 1) as Step };
+      }),
+      setCalibrationConfirmed: (confirmed) => set({ calibrationConfirmed: confirmed }),
+      setCalibrationStatus: (status) => set({ calibrationStatus: status }),
       
       setCourse: (course) => {
         set({ selectedCourse: course });
@@ -888,14 +911,16 @@ export const usePreEvalStore = create<PreEvalState>()(
         ].slice(0, 50)
       })),
       
-      reset: () => set({ 
-        currentStep: 1, 
-        selectedCourse: null, 
-        creationMode: null, 
+      reset: () => set({
+        currentStep: 1,
+        selectedCourse: null,
+        creationMode: null,
         selectedHistoryId: null,
         assignment: initialAssignment,
         rubric: initialMatrixRubric,
-        auditLog: mockAudit
+        auditLog: mockAudit,
+        calibrationConfirmed: false,
+        calibrationStatus: null,
       }),
     }),
     {

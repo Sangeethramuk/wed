@@ -6,10 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Clock, ArrowRight, ChevronDown, Sparkles, Plus } from "lucide-react"
 import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from "@/components/ui/tooltip"
 
 const STEP_LABELS: Record<number, string> = {

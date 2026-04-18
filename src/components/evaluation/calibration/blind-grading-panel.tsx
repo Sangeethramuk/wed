@@ -4,7 +4,6 @@ import { useGradingStore } from "@/lib/store/grading-store"
 import { useState, useEffect, useRef } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
@@ -26,7 +25,6 @@ import {
   ShieldAlert,
   Wifi,
   AlertTriangle,
-  Zap,
 } from "lucide-react"
 
 const MOCK_MANUSCRIPT_CONTENT: Record<string, string[]> = {
@@ -60,6 +58,10 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
 
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false)
   const [inspectionTime, setInspectionTime] = useState(0)
+  const [activeCriterionIdx, setActiveCriterionIdx] = useState(0)
+  const [reasons, setReasons] = useState<Record<string, string>>({})
+  const [feedbacks, setFeedbacks] = useState<Record<string, string>>({})
+  const [accordionOpen, setAccordionOpen] = useState<Record<string, boolean>>({})
   const manuscriptRef = useRef<HTMLDivElement>(null)
 
   const papers    = cal?.papers ?? []
@@ -80,10 +82,16 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
     scores.filter(s => s.paperId === p.paperId).every(s => s.instructorLevel > 0)
   ).length
 
+  const activeCriterion = criteria[activeCriterionIdx]
+  const isLastCriterion = activeCriterionIdx === criteria.length - 1
+  const activeScore = paperScores.find(s => s.criterionId === activeCriterion?.id)?.instructorLevel ?? 0
+  const toggleAccordion = (key: string) => setAccordionOpen(prev => ({ ...prev, [key]: !prev[key] }))
+
   // Reset gates when switching papers
   useEffect(() => {
     setInspectionTime(0)
     setHasScrolledToBottom(false)
+    setActiveCriterionIdx(0)
     if (manuscriptRef.current) manuscriptRef.current.scrollTop = 0
     const interval = setInterval(() => setInspectionTime(t => t + 1), 1000)
     return () => clearInterval(interval)
@@ -291,134 +299,206 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
 
           <ResizableHandle withHandle className="bg-border" />
 
-          {/* ── Right Panel: Criteria Scoring ── */}
+          {/* ── Right Panel: Rubric Evaluation (double-blind stepper) ── */}
           <ResizablePanel defaultSize={30} minSize={20}>
             <div className="h-full flex flex-col border-l border-border bg-background">
-              {/* Header */}
-              <div className="p-6 border-b border-border bg-muted/20 shrink-0">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-black text-[10px] uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2">
-                    <Zap className="h-3.5 w-3.5 text-primary" /> Score Without AI Bias
-                  </h2>
-                  <Badge variant="outline" className="text-[9px] font-black tracking-widest bg-background border-border shadow-sm">
-                    {gradedCriteria.length}/{criteria.length} SCORED
-                  </Badge>
+
+              {/* Sticky nav */}
+              <div className="bg-background border-b border-border px-4 pt-3 pb-0 shrink-0">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[13px] font-semibold text-foreground">Rubric evaluation</span>
+                  <span className="text-[11px] font-mono text-muted-foreground/60 bg-muted/40 border border-border/60 rounded-full px-2 py-0.5">
+                    {gradedCriteria.length} of {criteria.length} scored
+                  </span>
                 </div>
-                <Progress
-                  value={(gradedCriteria.length / Math.max(criteria.length, 1)) * 100}
-                  className="h-1 bg-primary/10"
-                />
+                <div className="h-[3px] bg-muted/30 rounded-full mb-3 overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full transition-all duration-500"
+                    style={{ width: `${(gradedCriteria.length / Math.max(criteria.length, 1)) * 100}%` }}
+                  />
+                </div>
+                {/* Stepper */}
+                <div className="flex">
+                  {criteria.map((c, i) => {
+                    const sc = paperScores.find(s => s.criterionId === c.id)
+                    const isDone = (sc?.instructorLevel ?? 0) > 0
+                    const isActive = i === activeCriterionIdx
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={() => setActiveCriterionIdx(i)}
+                        className={`flex-1 flex flex-col items-center gap-1 px-1 pt-1.5 pb-2.5 border-b-2 transition-all cursor-pointer bg-transparent font-sans ${
+                          isActive ? 'border-primary' : 'border-transparent hover:bg-muted/20'
+                        }`}
+                      >
+                        <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center text-[10px] font-semibold transition-all ${
+                          isDone
+                            ? 'bg-primary border-primary text-primary-foreground'
+                            : isActive
+                            ? 'border-[1.5px] border-primary bg-primary/10 text-primary'
+                            : 'border border-border/60 bg-background text-muted-foreground/50'
+                        }`}>
+                          {isDone ? '✓' : i + 1}
+                        </div>
+                        <span className={`text-[10px] font-medium text-center leading-tight max-w-[70px] ${
+                          isDone ? 'text-muted-foreground' : isActive ? 'text-primary' : 'text-muted-foreground/50'
+                        }`}>{c.name}</span>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
-              {/* Criteria list */}
-              <ScrollArea className="flex-1 p-6">
-                <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/60">Assessment Annotations</h3>
-                  <div className="space-y-4">
-                    {criteria.map(criterion => {
-                      const score    = paperScores.find(s => s.criterionId === criterion.id)
-                      const selected = score?.instructorLevel ?? 0
+              {/* Scrollable body */}
+              <ScrollArea className="flex-1">
+                <div className="p-3 space-y-2.5">
+                  {activeCriterion && (
+                    <>
+                      {/* Main criterion card */}
+                      <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
+                        <div className="p-3.5 space-y-3.5">
+                          <div>
+                            <h4 className="text-[15px] font-semibold text-foreground leading-snug">{activeCriterion.name}</h4>
+                            <p className="text-[12px] text-muted-foreground leading-relaxed mt-1">
+                              {activeCriterion.levelLabels.join(' → ')}
+                            </p>
+                          </div>
 
-                      return (
-                        <Card
-                          key={criterion.id}
-                          className={`group border border-border/50 shadow-sm overflow-hidden transition-all duration-500 hover:shadow-md hover:border-primary/20 ${
-                            selected > 0 ? "border-primary/20 shadow-sm" : ""
-                          }`}
-                        >
-                          <div className={`h-1.5 w-full transition-colors ${
-                            selected > 0 ? 'bg-primary' : 'bg-muted'
-                          }`} />
-                          <CardContent className="p-6 space-y-5">
-                            <div className="flex justify-between items-start">
-                              <Badge variant="secondary" className="text-[8px] font-black tracking-widest uppercase bg-accent/50 text-accent-foreground border-none px-2">{criterion.id}</Badge>
-                              {selected > 0 && <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 transition-all scale-100 opacity-100" />}
-                            </div>
-
-                            <div>
-                              <p className="text-sm font-bold text-foreground mb-1.5 leading-tight">{criterion.name}</p>
-                            </div>
-
+                          {/* Score */}
+                          <div>
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-2">Your score</span>
                             <div className="flex gap-1.5">
-                              {[1, 2, 3, 4, 5].map(level => (
+                              {[1, 2, 3, 4, 5].map(v => (
                                 <button
-                                  key={level}
-                                  onClick={() => handleLevelSelect(criterion.id, level)}
-                                  className={`flex-1 aspect-[4/3] rounded-lg text-sm font-black border transition-all ${
-                                    selected === level
-                                      ? "bg-foreground border-foreground text-background scale-[1.08] shadow-lg z-10"
-                                      : "bg-background border-border/50 text-muted-foreground/60 hover:border-primary/40 hover:text-primary hover:bg-primary/5"
+                                  key={v}
+                                  onClick={() => handleLevelSelect(activeCriterion.id, v)}
+                                  className={`w-[38px] h-[38px] rounded-md border text-sm font-medium cursor-pointer transition-all font-sans ${
+                                    activeScore === v
+                                      ? 'bg-foreground border-foreground text-background shadow-sm'
+                                      : 'bg-background border-border/70 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5'
                                   }`}
                                 >
-                                  {level}
+                                  {v}
                                 </button>
                               ))}
                             </div>
+                          </div>
 
-                            {selected > 0 && (
-                              <p className="text-[9px] font-black uppercase tracking-widest text-primary/60 text-center animate-in fade-in zoom-in duration-300">
-                                {criterion.levelLabels[selected - 1]}
-                              </p>
-                            )}
-                          </CardContent>
-                        </Card>
-                      )
-                    })}
-                  </div>
+                          {/* Reason (shown once score is selected) */}
+                          {activeScore > 0 && (
+                            <div>
+                              <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-1.5">Reason for this score</span>
+                              <textarea
+                                value={reasons[activeCriterion.id] ?? ''}
+                                onChange={e => setReasons(r => ({ ...r, [activeCriterion.id]: e.target.value }))}
+                                rows={3}
+                                placeholder="Explain your reasoning for this score…"
+                                className="w-full text-[13px] leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[72px] transition-colors"
+                              />
+                            </div>
+                          )}
+
+                          {/* Feedback */}
+                          <div>
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-1.5">Feedback</span>
+                            <textarea
+                              value={feedbacks[activeCriterion.id] ?? ''}
+                              onChange={e => setFeedbacks(f => ({ ...f, [activeCriterion.id]: e.target.value }))}
+                              rows={4}
+                              placeholder="Write feedback for this criterion…"
+                              className="w-full text-[13px] leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[90px] transition-colors"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Evidence accordion */}
+                      <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
+                        <button
+                          onClick={() => toggleAccordion('evidence')}
+                          className="w-full flex items-center justify-between px-3.5 py-2.5 text-[13px] font-medium text-foreground hover:bg-muted/20 transition-colors text-left gap-2 bg-transparent border-none cursor-pointer font-sans"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 rounded-[5px] bg-primary/10 flex items-center justify-center shrink-0 text-primary">
+                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h5M2 9h6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                            </div>
+                            Evidence (0 linked)
+                          </div>
+                          <ChevronRight className={`h-4 w-4 text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen.evidence ? 'rotate-90' : ''}`} />
+                        </button>
+                        {accordionOpen.evidence && (
+                          <div className="border-t border-border p-3.5 space-y-2">
+                            <div className="text-[12px] text-primary bg-primary/5 border border-dashed border-primary/30 rounded-md p-2.5">
+                              No evidence linked yet — select text in the left panel to add evidence
+                            </div>
+                            <button className="w-full flex items-center gap-1.5 text-[12px] text-primary font-medium border border-dashed border-primary/30 rounded-md px-3 py-1.5 hover:bg-primary/5 transition-all bg-transparent cursor-pointer font-sans">
+                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                              Add evidence — select text in left panel
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               </ScrollArea>
 
-              {/* Footer gate */}
-              <div className="p-6 border-t border-border bg-background space-y-5 shadow-[0_-12px_40px_rgba(0,0,0,0.03)] shrink-0 z-10">
-                {/* Paper navigation */}
-                <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">
+              {/* Footer */}
+              <div className="px-4 py-3 border-t border-border bg-background shrink-0 space-y-2">
+                {isLastCriterion && (
+                  <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 pb-1">
+                    <span>Paper {currentPaperIndex + 1} of {papers.length}</span>
+                    <span>{totalGradedPapers} complete</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between gap-2">
                   <button
-                    disabled={currentPaperIndex === 0}
-                    onClick={() => setActiveCalibrationPaper(assignmentId, papers[currentPaperIndex - 1]?.paperId)}
-                    className="flex items-center gap-1 disabled:opacity-20 hover:text-foreground transition-colors"
+                    onClick={() => setActiveCriterionIdx(i => Math.max(0, i - 1))}
+                    disabled={activeCriterionIdx === 0}
+                    className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium text-muted-foreground rounded-md hover:bg-muted/30 transition-colors disabled:opacity-30 bg-transparent border-none cursor-pointer font-sans"
                   >
-                    <ChevronLeft className="h-3 w-3" /> Prev
+                    <ChevronLeft className="h-3.5 w-3.5" /> Previous
                   </button>
-                  <span>Paper {currentPaperIndex + 1} of {papers.length}</span>
-                  <span className="opacity-40">{totalGradedPapers} complete</span>
-                </div>
 
-                <div className="grid grid-cols-5 gap-3">
-                  <Button
-                    variant="outline"
-                    disabled={currentPaperIndex === 0}
-                    onClick={() => setActiveCalibrationPaper(assignmentId, papers[currentPaperIndex - 1]?.paperId)}
-                    className="col-span-2 rounded-full h-14 border-border text-foreground font-black text-[10px] uppercase tracking-widest hover:bg-accent transition-all active:scale-[0.98] disabled:opacity-30"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1.5">
+                    <button className="px-3 py-1.5 text-[13px] font-medium text-foreground bg-muted/40 border border-border/60 rounded-md hover:bg-muted/60 transition-colors cursor-pointer font-sans">
+                      Save
+                    </button>
 
-                  <Tooltip>
-                    <TooltipTrigger render={<div className="col-span-3" />}>
+                    {!isLastCriterion ? (
                       <button
-                        onClick={isGateUnlocked ? handleNext : undefined}
-                        className={`w-full rounded-full h-14 font-black text-[10px] uppercase tracking-widest transition-all active:scale-[0.98] group flex items-center justify-center ${
-                          isGateUnlocked
-                            ? "bg-primary text-primary-foreground shadow-2xl shadow-primary/20 hover:opacity-90 hover:scale-[1.02] cursor-pointer"
-                            : "opacity-40 cursor-not-allowed bg-primary text-primary-foreground"
-                        }`}
+                        onClick={() => setActiveCriterionIdx(i => i + 1)}
+                        className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors cursor-pointer font-sans"
                       >
-                        {isGateUnlocked ? (
-                          <><Unlock className="mr-2 h-3.5 w-3.5" />{isLastPaper ? "View Delta" : "Next Paper"}<ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" /></>
-                        ) : (
-                          <><Lock className="mr-2 h-3.5 w-3.5" />{isLastPaper ? "View Delta" : "Next Paper"}</>
-                        )}
+                        Next criterion <ArrowRight className="h-3.5 w-3.5" />
                       </button>
-                    </TooltipTrigger>
-                    {!isGateUnlocked && (
-                      <TooltipContent className="max-w-xs p-4 space-y-2 mb-2 ml-4">
-                        <p className="font-bold text-xs uppercase tracking-widest text-primary">Protocol Gate Locked</p>
-                        <p className="text-[11px] font-medium leading-relaxed italic text-muted-foreground">
-                          Complete all three gates: scroll through the full manuscript, spend 3s reviewing, and score all {criteria.length} criteria.
-                        </p>
-                      </TooltipContent>
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger render={<span className="inline-flex" />}>
+                          <button
+                            onClick={isGateUnlocked ? handleNext : undefined}
+                            className={`flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors font-sans ${
+                              isGateUnlocked
+                                ? 'text-primary-foreground bg-primary hover:bg-primary/90 cursor-pointer'
+                                : 'opacity-40 text-primary-foreground bg-primary cursor-not-allowed'
+                            }`}
+                          >
+                            {isGateUnlocked ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
+                            {isLastPaper ? 'View Delta' : 'Next Paper'}
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        {!isGateUnlocked && (
+                          <TooltipContent className="max-w-xs p-3 space-y-1 mb-2">
+                            <p className="font-bold text-xs uppercase tracking-widest text-primary">Protocol Gate Locked</p>
+                            <p className="text-[11px] italic text-muted-foreground">
+                              Scroll the manuscript, spend 3s reviewing, and score all {criteria.length} criteria.
+                            </p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
                     )}
-                  </Tooltip>
+                  </div>
                 </div>
               </div>
             </div>
