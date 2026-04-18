@@ -5,6 +5,7 @@ import { CourseSelection } from "@/components/pre-evaluation/course-selection"
 import { CreationMode } from "@/components/pre-evaluation/creation-mode"
 import { AssignmentSpecs } from "@/components/pre-evaluation/assignment-specs"
 import { RubricTweak } from "@/components/pre-evaluation/rubric-tweak"
+import { CalibrationCheck } from "@/components/pre-evaluation/calibration-check"
 import { StudentPreview } from "@/components/pre-evaluation/student-preview"
 import { Progress } from "@/components/ui/progress"
 import { AuditSidebar } from "@/components/pre-evaluation/audit-sidebar"
@@ -23,7 +24,7 @@ export default function PreEvaluationPage() {
 
   if (!mounted) return null
 
-  const progressPercent = (currentStep / 5) * 100
+  const progressPercent = (currentStep / 6) * 100
 
   const renderStep = () => {
     switch (currentStep) {
@@ -36,6 +37,8 @@ export default function PreEvaluationPage() {
       case 4:
         return <RubricTweak />
       case 5:
+        return <CalibrationCheck />
+      case 6:
         return <StudentPreview />
       default:
         return <CourseSelection />
@@ -47,7 +50,8 @@ export default function PreEvaluationPage() {
     { id: 2, label: "Starting point" },
     { id: 3, label: "Assignment details" },
     { id: 4, label: "Grading rubric" },
-    { id: 5, label: "Preview & publish" },
+    { id: 5, label: "Calibration" },
+    { id: 6, label: "Preview & publish" },
   ]
 
   const currentStepData = steps.find(s => s.id === currentStep)
@@ -60,7 +64,7 @@ export default function PreEvaluationPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] transition-all">
                 <div className="flex items-center gap-3">
-                    <span className="text-primary opacity-100 font-black">Step {currentStep} of 5 — {currentStepData?.label}</span>
+                    <span className="text-primary opacity-100 font-black">Step {currentStep} of 6 — {currentStepData?.label}</span>
                 </div>
                 <div className="flex gap-2 text-muted-foreground/10 px-4">
                     {steps.map(s => (
