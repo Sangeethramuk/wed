@@ -1,0 +1,2214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EducAItors — Pre-Evaluation v2</title>
+<style>
+:root {
+  --primary:#5B4FD9; --primary-light:#EDE9FF; --primary-dark:#3D34A8;
+  --success:#16A34A; --success-light:#DCFCE7;
+  --warning:#D97706; --warning-light:#FEF3C7;
+  --danger:#DC2626;  --danger-light:#FEE2E2;
+  --ai:#8B5CF6;      --ai-light:#F5F3FF;
+  --n50:#FAFAFA; --n100:#F4F4F5; --n200:#E4E4E7; --n300:#D4D4D8;
+  --n400:#A1A1AA; --n500:#71717A; --n600:#52525B; --n700:#3F3F46;
+  --n800:#27272A; --n900:#18181B; --white:#fff;
+  --sh-md:0 4px 12px rgba(0,0,0,.08); --sh-lg:0 8px 28px rgba(0,0,0,.14);
+  --r-sm:6px; --r-md:10px; --r-lg:16px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'SF Mono','Fira Code',monospace;
+  --hdr:64px; --sidebar:164px; --drawer:440px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);background:var(--n50);color:var(--n800);font-size:14px;line-height:1.5}
+button{cursor:pointer;font-family:inherit;border:none;background:none}
+input,textarea,select{font-family:inherit;font-size:14px}
+
+/* ── LAYOUT ─────────────────────────────────────────── */
+#app{display:grid;grid-template-rows:var(--hdr) 1fr;grid-template-columns:var(--sidebar) 1fr;height:100vh;overflow:hidden}
+
+/* ── HEADER ─────────────────────────────────────────── */
+#hdr{grid-column:1/-1;grid-row:1;background:var(--white);border-bottom:1px solid var(--n200);
+  display:flex;align-items:center;padding:0 24px;gap:12px;z-index:200}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;color:var(--primary);letter-spacing:-.3px}
+.logo-mark{width:34px;height:34px;background:var(--primary);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;flex-shrink:0}
+.phase-pill{margin-left:auto;background:var(--primary-light);color:var(--primary);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600}
+.hdr-btn{display:flex;align-items:center;gap:6px;color:var(--n600);font-size:13px;padding:7px 13px;border-radius:var(--r-sm);border:1px solid var(--n200);transition:all .15s;white-space:nowrap}
+.hdr-btn:hover{background:var(--n100)}
+.hdr-btn.preview-active{background:var(--primary-light);border-color:var(--primary);color:var(--primary);font-weight:600}
+#preview-updated{font-size:10px;background:var(--primary);color:#fff;padding:1px 6px;border-radius:99px;margin-left:2px}
+
+/* ── PHASE SIDEBAR ──────────────────────────────────── */
+#sidebar{grid-column:1;grid-row:2;background:var(--white);border-right:1px solid var(--n200);
+  display:flex;flex-direction:column;align-items:flex-start;padding:20px 10px;gap:0;overflow:hidden;width:164px;flex-shrink:0}
+/* ── NAV STEP ROW ── */
+.phase-step{display:flex;align-items:center;gap:10px;cursor:pointer;padding:2px 0;border-radius:var(--r-md);
+  transition:background .15s;width:100%}
+.phase-step:hover{background:var(--n50)}
+.phase-step.locked{opacity:.4;cursor:not-allowed;pointer-events:none}
+/* dot circle */
+.phase-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .2s;position:relative}
+.phase-dot .pd-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;border:2px solid var(--n300);color:var(--n500);background:var(--white);transition:all .2s}
+.phase-step.active .pd-num{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.phase-step.done .pd-num{border-color:var(--success);background:var(--success);color:#fff;font-size:0}
+.phase-step.done .pd-num::after{content:'✓';font-size:14px}
+/* label */
+.phase-step-label{display:flex;flex-direction:column;gap:1px;min-width:0}
+.psl-name{font-size:12px;font-weight:700;color:var(--n400);white-space:nowrap;transition:color .15s;line-height:1.2}
+.psl-tip{font-size:10px;color:var(--n400);white-space:normal;overflow:hidden;max-width:100px;transition:color .15s;line-height:1.3;margin-top:1px}
+.phase-step.active .psl-name{color:var(--primary)}
+.phase-step.active .psl-tip{color:var(--primary);opacity:.75}
+.phase-step.done .psl-name{color:var(--success)}
+.phase-step.done .psl-tip{color:var(--success);opacity:.7}
+/* connector */
+.phase-connector{width:2px;height:16px;background:var(--n200);border-radius:99px;margin-left:17px}
+.phase-connector.done{background:var(--success)}
+/* remove old tooltip — label replaces it */
+.phase-dot-tip{display:none}
+#phase-nav{width:100%}
+#overall-bar{margin-top:auto;padding:0 12px 4px;width:100%}
+.prog-track{height:4px;background:var(--n200);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;background:var(--primary);border-radius:99px;transition:width .4s}
+
+/* ── MAIN ───────────────────────────────────────────── */
+#main{grid-column:2;grid-row:2;overflow-y:auto;padding:36px;transition:padding-right .3s}
+#main.drawer-open{padding-right:calc(var(--drawer) + 24px)}
+.phase-panel{display:none;max-width:820px;margin:0 auto;animation:fadeIn .2s ease}
+.phase-panel.visible{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── STUDENT PREVIEW DRAWER ─────────────────────────── */
+#preview-drawer{position:fixed;top:var(--hdr);right:0;width:var(--drawer);height:calc(100vh - var(--hdr));
+  background:var(--white);border-left:1px solid var(--n200);z-index:190;
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;box-shadow:var(--sh-lg)}
+#preview-drawer.open{transform:translateX(0)}
+.drawer-hdr{background:var(--primary);color:#fff;padding:16px 20px;flex-shrink:0}
+.drawer-hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.drawer-hdr h3{font-size:14px;font-weight:700}
+.drawer-close{background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:6px;
+  font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.drawer-close:hover{background:rgba(255,255,255,.35)}
+.drawer-meta{font-size:11px;opacity:.75}
+.drawer-body{flex:1;overflow-y:auto;padding:20px}
+.drawer-section{margin-bottom:22px}
+.drawer-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--n400);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--n100)}
+.drawer-empty{text-align:center;padding:40px 20px;color:var(--n400);font-size:13px}
+.drawer-footer{padding:14px 20px;border-top:1px solid var(--n200);background:var(--n50);flex-shrink:0;display:flex;gap:8px}
+
+/* ── TYPOGRAPHY ─────────────────────────────────────── */
+.phase-hdr{margin-bottom:28px}
+.phase-hdr h1{font-size:24px;font-weight:800;color:var(--n900);margin-bottom:4px;letter-spacing:-.3px}
+.phase-hdr p{color:var(--n500);font-size:14px}
+.section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--n500);margin-bottom:10px}
+
+/* ── BUTTONS ─────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r-sm);font-size:14px;font-weight:600;transition:all .15s;white-space:nowrap;cursor:pointer}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover:not(:disabled){background:var(--primary-dark)}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover:not(:disabled){background:#15803D}
+.btn-outline{background:transparent;color:var(--n600);border:1px solid var(--n300)}.btn-outline:hover{background:var(--n100)}
+.btn-ghost{background:transparent;color:var(--n500)}.btn-ghost:hover{background:var(--n100);color:var(--n800)}
+.btn-ai{background:var(--ai);color:#fff}.btn-ai:hover{background:#7C3AED}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── CARDS ───────────────────────────────────────────── */
+.card{background:var(--white);border:1px solid var(--n200);border-radius:var(--r-md);padding:20px;margin-bottom:16px}
+.card-ai{border-left:3px solid var(--ai);background:var(--ai-light)}
+.card-success{border-left:3px solid var(--success);background:var(--success-light)}
+.card-warning{border-left:3px solid var(--warning);background:var(--warning-light)}
+
+/* ── FORMS ───────────────────────────────────────────── */
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:13px;font-weight:600;color:var(--n700);margin-bottom:6px}
+.fg label .opt{font-weight:400;color:var(--n400);font-size:12px}
+.fi{width:100%;padding:9px 12px;border:1.5px solid var(--n300);border-radius:var(--r-sm);font-size:14px;color:var(--n800);transition:border-color .15s;background:var(--white)}
+.fi:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+.fi.warn{border-color:var(--warning);background:var(--warning-light)}
+.fi-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fi-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+select.fi{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%2371717A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
+textarea.fi{resize:vertical;min-height:72px}
+
+/* ── BADGES ──────────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600}
+.b-ai{background:var(--ai-light);color:var(--ai)}
+.b-success{background:var(--success-light);color:var(--success)}
+.b-warning{background:var(--warning-light);color:var(--warning)}
+.b-neutral{background:var(--n100);color:var(--n600)}
+.b-primary{background:var(--primary-light);color:var(--primary)}
+
+/* ── UPLOAD ZONE ─────────────────────────────────────── */
+.upload-zone{border:2px dashed var(--n300);border-radius:20px;padding:56px 40px;text-align:center;cursor:pointer;
+  transition:all .2s;background:var(--white);position:relative}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--primary);background:var(--primary-light)}
+.upload-zone input{display:none}
+.uz-icon{font-size:48px;margin-bottom:16px;display:block}
+.uz-title{font-size:20px;font-weight:700;color:var(--n800);margin-bottom:6px}
+.uz-sub{color:var(--n500);font-size:14px;margin-bottom:20px}
+.uz-formats{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.uz-fmt{background:var(--n100);color:var(--n600);padding:3px 10px;border-radius:99px;font-size:12px;font-weight:500}
+.upload-alts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.upload-alt-btn{display:flex;align-items:center;gap:10px;padding:14px 16px;border:1.5px solid var(--n200);
+  border-radius:var(--r-md);cursor:pointer;transition:all .15s;background:var(--white);text-align:left}
+.upload-alt-btn:hover{border-color:var(--primary);background:var(--primary-light)}
+.upload-alt-icon{font-size:22px;flex-shrink:0}
+.upload-alt-text strong{display:block;font-size:13px;color:var(--n800);margin-bottom:1px}
+.upload-alt-text span{font-size:11px;color:var(--n500)}
+
+/* ── OCR PROGRESS ────────────────────────────────────── */
+.ocr-wrap{text-align:center;padding:48px 24px}
+.ocr-spinner{width:48px;height:48px;border:3px solid var(--n200);border-top-color:var(--primary);
+  border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ocr-stage{font-size:14px;color:var(--n600);margin-bottom:14px;min-height:20px}
+.prog-bar{background:var(--n100);border-radius:99px;height:6px;overflow:hidden;max-width:300px;margin:0 auto}
+.prog-fill-bar{height:100%;background:var(--primary);border-radius:99px;transition:width .35s ease}
+
+/* ── CONFIDENCE ROWS ─────────────────────────────────── */
+.conf-row{display:flex;align-items:flex-start;gap:14px;padding:10px 0;border-bottom:1px solid var(--n100)}
+.conf-row:last-child{border:none}
+.conf-key{width:130px;flex-shrink:0;font-size:13px;color:var(--n600);padding-top:9px}
+.conf-val{flex:1}
+.conf-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-top:4px}
+.ct-hi{background:var(--success-light);color:var(--success)}
+.ct-lo{background:var(--warning-light);color:var(--warning)}
+
+/* ── FLAG DECISION CARDS ─────────────────────────────── */
+.flag-deck{margin-bottom:20px}
+.flag-deck-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  background:var(--warning-light);border:1px solid var(--warning);border-radius:var(--r-md) var(--r-md) 0 0;border-bottom:none}
+.flag-deck-hdr.all-resolved{background:var(--success-light);border-color:var(--success)}
+.flag-deck-title{font-size:12px;font-weight:700;color:var(--warning)}
+.flag-deck-hdr.all-resolved .flag-deck-title{color:var(--success)}
+.flag-deck-count{font-size:11px;font-weight:600;color:var(--n600)}
+.flag-card{border:1px solid var(--warning);border-top:none;background:var(--white)}
+.flag-card:last-child{border-radius:0 0 var(--r-md) var(--r-md)}
+.flag-card.resolved{border-color:var(--success)}
+.flag-card-top{padding:12px 14px;border-bottom:1px solid var(--n100);display:flex;align-items:flex-start;gap:10px}
+.flag-field-tag{font-size:11px;font-weight:700;background:var(--warning);color:#fff;padding:2px 8px;border-radius:3px;flex-shrink:0;margin-top:1px}
+.flag-card.resolved .flag-field-tag{background:var(--success)}
+.flag-msg{font-size:12px;color:var(--n700);line-height:1.6;flex:1}
+.flag-card-body{padding:12px 14px}
+.flag-decision-q{font-size:12px;font-weight:700;color:var(--n800);margin-bottom:10px}
+.flag-choice{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--n200);
+  border-radius:var(--r-sm);font-size:12px;font-weight:600;color:var(--n700);background:var(--white);
+  cursor:pointer;transition:all .15s;margin-bottom:6px;width:100%;text-align:left}
+.flag-choice:hover{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
+.flag-choice.selected{border-color:var(--success);background:var(--success-light);color:var(--success)}
+.flag-choice-icon{font-size:14px;flex-shrink:0;width:20px;text-align:center}
+.flag-resolved-note{display:flex;align-items:center;gap:8px;padding:10px 14px;
+  background:var(--success-light);font-size:12px;color:var(--success);font-weight:600}
+
+/* ── CO OPTION CARDS ─────────────────────────────────── */
+.co-opt-card{border:2px solid var(--n200);border-radius:var(--r-md);padding:16px;cursor:pointer;
+  transition:all .18s;background:var(--white);text-align:center;user-select:none}
+.co-opt-card:hover{border-color:var(--ai);background:var(--ai-light)}
+.co-opt-card.selected{border-color:var(--ai);background:var(--ai-light);box-shadow:0 0 0 3px rgba(139,92,246,.15)}
+.co-opt-icon{font-size:22px;margin-bottom:8px}
+.co-opt-title{font-size:13px;font-weight:700;color:var(--n800);margin-bottom:4px}
+.co-opt-desc{font-size:11px;color:var(--n500);line-height:1.5}
+
+/* ── TYPE TILES ──────────────────────────────────────── */
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.type-tile{border:2px solid var(--n200);border-radius:var(--r-md);padding:12px 8px;text-align:center;
+  cursor:pointer;font-size:13px;font-weight:600;color:var(--n600);transition:all .15s;background:var(--white);user-select:none;line-height:1.4}
+.type-tile:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.type-tile.selected{border-color:var(--primary);background:var(--primary);color:#fff}
+.artifact-label{display:flex;align-items:center;gap:8px;padding:8px;border:1.5px solid var(--n200);
+  border-radius:var(--r-sm);cursor:pointer;font-size:13px;transition:all .15s}
+.artifact-label:hover{border-color:var(--primary);background:var(--primary-light)}
+
+/* ── QUESTIONS ───────────────────────────────────────── */
+.question-card{background:var(--white);border:1.5px solid var(--n200);border-radius:var(--r-md);
+  padding:14px 16px;margin-bottom:10px;transition:border-color .15s}
+.question-card:focus-within{border-color:var(--primary)}
+.question-card.ai-suggested{border-left:3px solid var(--ai);background:var(--ai-light)}
+.qc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.q-num{width:26px;height:26px;border-radius:50%;background:var(--primary-light);color:var(--primary);
+  font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.q-marks-input{width:70px;padding:5px 8px;border:1.5px solid var(--n200);border-radius:var(--r-sm);
+  font-size:13px;text-align:center}
+.q-marks-input:focus{outline:none;border-color:var(--primary)}
+.q-text-input{width:100%;border:none;background:transparent;font-size:14px;color:var(--n800);outline:none;resize:none;min-height:44px;line-height:1.5}
+.q-sug-actions{display:flex;gap:6px;margin-top:8px}
+
+/* ── RUBRIC ──────────────────────────────────────────── */
+.rubric-row{background:var(--white);border:1.5px solid var(--n200);border-radius:var(--r-md);margin-bottom:8px;overflow:hidden}
+.rubric-row.expanded{border-color:var(--primary)}
+.rr-header{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none;transition:background .15s}
+.rr-header:hover{background:var(--n50)}
+.rr-drag{color:var(--n300);font-size:16px;cursor:grab;flex-shrink:0}
+.rr-name-input{border:none;background:transparent;font-size:14px;font-weight:600;color:var(--n800);
+  outline:none;flex:1;min-width:0}
+.rr-weight-input{width:52px;padding:4px 6px;border:1.5px solid var(--n200);border-radius:4px;
+  font-size:13px;font-weight:700;text-align:center;color:var(--primary)}
+.rr-weight-input:focus{outline:none;border-color:var(--primary)}
+.rr-co-select{padding:4px 8px;border:1.5px solid var(--n200);border-radius:4px;font-size:12px;
+  color:var(--n600);background:var(--white);max-width:100px}
+.rr-co-select:focus{outline:none;border-color:var(--ai)}
+.rr-norm-flags{display:flex;gap:4px;flex-wrap:wrap}
+.norm-flag{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600}
+.nf-weight{background:#FFF7ED;color:#C2410C}
+.nf-vague{background:#FFF1F2;color:#BE123C}
+.nf-overlap{background:#FFFBEB;color:#92400E}
+.rr-toggle{color:var(--n400);font-size:12px;flex-shrink:0;transition:transform .2s}
+.rr-toggle.open{transform:rotate(180deg)}
+.rr-body{display:none;padding:0 14px 14px;border-top:1px solid var(--n200)}
+.rr-body.open{display:block}
+.desc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.desc-col{border-radius:var(--r-sm);padding:10px}
+.desc-l4{background:#F0FDF4;border:1px solid #86EFAC}
+.desc-l3{background:#EFF6FF;border:1px solid #93C5FD}
+.desc-l2{background:#FEFCE8;border:1px solid #FDE047}
+.desc-l1{background:#FFF1F2;border:1px solid #FCA5A5}
+.desc-level-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.desc-l4 .desc-level-label{color:#16A34A}
+.desc-l3 .desc-level-label{color:#2563EB}
+.desc-l2 .desc-level-label{color:#D97706}
+.desc-l1 .desc-level-label{color:#DC2626}
+.desc-range{font-size:10px;color:var(--n500);margin-bottom:6px}
+.desc-textarea{width:100%;border:none;background:transparent;font-size:11px;color:var(--n700);
+  outline:none;resize:none;min-height:72px;line-height:1.5}
+.weight-total-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  background:var(--n50);border:1px solid var(--n200);border-radius:var(--r-sm);margin-bottom:12px}
+.wt-ok{color:var(--success);font-weight:700}
+.wt-err{color:var(--danger);font-weight:700}
+
+/* ── NORMALIZATION PANEL ─────────────────────────────── */
+.norm-panel{background:var(--ai-light);border:1px solid #DDD6FE;border-radius:var(--r-md);padding:16px;margin-top:16px}
+.norm-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #EDE9FF}
+.norm-item:last-child{border:none}
+.norm-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.norm-item-text{flex:1;font-size:12px;color:var(--n700);line-height:1.5}
+.norm-item-text strong{color:var(--n900)}
+
+/* ── CALIBRATION ─────────────────────────────────────── */
+.cal-sample{background:var(--white);border:1.5px solid var(--n200);border-radius:var(--r-md);margin-bottom:20px;overflow:hidden}
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--n50);border-bottom:1px solid var(--n200)}
+.cal-hdr-title{font-size:14px;font-weight:700;color:var(--n800)}
+.cal-body{padding:20px}
+.cal-submission{background:var(--n50);border:1px solid var(--n200);border-radius:var(--r-md);
+  padding:16px;margin-bottom:16px;max-height:240px;overflow-y:auto}
+.cal-sub-section{margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--n200)}
+.cal-sub-section:last-child{border:none;margin:0;padding:0}
+.cal-sub-heading{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--n600);margin-bottom:4px}
+.cal-sub-body{font-size:13px;color:var(--n700);line-height:1.65}
+.score-btns{display:flex;gap:5px}
+.score-btn{width:36px;height:36px;border-radius:7px;border:2px solid var(--n200);background:var(--white);
+  font-size:13px;font-weight:700;color:var(--n600);cursor:pointer;transition:all .12s}
+.score-btn.active{border-color:var(--primary);background:var(--primary);color:#fff}
+.cal-grid-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.cal-grid-tbl th{padding:8px 12px;background:var(--n100);border:1px solid var(--n200);font-weight:600;color:var(--n600);text-align:left}
+.cal-grid-tbl td{padding:9px 12px;border:1px solid var(--n200);vertical-align:middle}
+.delta-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:24px;border-radius:4px;font-size:12px;font-weight:700}
+.dg{background:var(--success-light);color:var(--success)}
+.da{background:var(--warning-light);color:var(--warning)}
+.dr{background:var(--danger-light);color:var(--danger)}
+
+/* ── CHECKLIST ───────────────────────────────────────── */
+.chk-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border:1.5px solid var(--n200);
+  border-radius:var(--r-md);margin-bottom:8px;cursor:pointer;transition:all .15s;user-select:none;background:var(--white)}
+.chk-item:hover{border-color:var(--primary);background:var(--primary-light)}
+.chk-item.checked{background:var(--success-light);border-color:var(--success)}
+.chk-box{width:22px;height:22px;border-radius:5px;border:2px solid var(--n300);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:13px}
+.chk-item.checked .chk-box{background:var(--success);border-color:var(--success);color:#fff}
+.chk-label{font-size:14px;color:var(--n700)}
+.chk-item.checked .chk-label{color:var(--success);font-weight:500}
+
+/* ── PUBLISH ANIMATION ───────────────────────────────── */
+.pub-anim{text-align:center;padding:56px 24px;display:none}
+.pub-anim-icon{font-size:64px;animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.pub-anim h2{font-size:24px;font-weight:800;color:var(--success);margin:12px 0 6px}
+
+/* ── STUDENT PREVIEW CONTENT ─────────────────────────── */
+/* ── STUDENT PREVIEW ─────────────────────────────────── */
+.spv-section{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--n100)}
+.spv-section:last-of-type{border:none;margin-bottom:0}
+.spv-section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.spv-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--n400)}
+.spv-edit-link{font-size:11px;color:var(--primary);font-weight:600;cursor:pointer;border:none;background:none;padding:0;text-decoration:underline;text-underline-offset:2px;opacity:.8}
+.spv-edit-link:hover{opacity:1}
+.spv-type-badge{display:inline-flex;align-items:center;gap:5px;background:var(--primary-light);color:var(--primary);font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;margin-bottom:10px}
+.spv-meta-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--n600);padding:3px 0}
+.spv-item{padding:10px 12px;background:var(--n50);border:1px solid var(--n200);border-radius:var(--r-md);margin-bottom:8px}
+.spv-item-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px}
+.spv-item-name{font-weight:700;font-size:13px;color:var(--n900);flex:1;line-height:1.3}
+.spv-item-marks{font-size:11px;font-weight:700;color:var(--primary);background:var(--primary-light);padding:2px 8px;border-radius:99px;white-space:nowrap;flex-shrink:0}
+.spv-item-desc{font-size:12px;color:var(--n600);line-height:1.6}
+.spv-crit-card{border:1px solid var(--n200);border-radius:var(--r-md);margin-bottom:10px;overflow:hidden}
+.spv-crit-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--n50);border-bottom:1px solid var(--n200)}
+.spv-crit-name{font-weight:700;font-size:13px;color:var(--n900)}
+.spv-crit-meta{font-size:11px;color:var(--n500)}
+.spv-excellence{padding:12px 14px;background:#F0FDF4;border-bottom:1px solid #BBF7D0}
+.spv-exc-label{font-size:10px;font-weight:800;color:var(--success);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.spv-exc-intro{font-size:11px;font-style:italic;color:#4ADE80;margin-bottom:6px}
+.spv-exc-text{font-size:12px;color:#166534;line-height:1.6}
+.spv-no-desc{font-size:11px;color:var(--n400);font-style:italic}
+.spv-other-levels{padding:10px 12px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.spv-mini-lv{padding:7px 9px;border-radius:var(--r-sm)}
+.spv-mini-lv-name{font-size:10px;font-weight:700;margin-bottom:2px}
+.spv-mini-lv-range{font-size:9px;color:var(--n500);margin-bottom:3px}
+.spv-mini-lv-text{font-size:10px;color:var(--n600);line-height:1.4}
+
+/* ── MISC ────────────────────────────────────────────── */
+.phase-footer{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding-top:24px;border-top:1px solid var(--n200);margin-top:24px}
+.divider{border:none;border-top:1px solid var(--n200);margin:20px 0}
+.flex{display:flex}.fac{align-items:center}.fjb{justify-content:space-between}.gap2{gap:8px}.gap3{gap:12px}
+.mt2{margin-top:8px}.mt3{margin-top:12px}.mt4{margin-top:16px}.mb2{margin-bottom:8px}.mb3{margin-bottom:12px}
+.text-sm{font-size:12px}.text-muted{color:var(--n500)}.text-ai{color:var(--ai)}.font-bold{font-weight:700}
+.info-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--n600);margin-bottom:8px}
+.info-row strong{color:var(--n800)}
+.sug-strip{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  background:var(--ai-light);border:1px solid #DDD6FE;border-radius:var(--r-sm);padding:10px 14px;margin-bottom:8px}
+.sug-strip.accepted{background:var(--success-light);border-color:var(--success);opacity:.7}
+.sug-strip.rejected{background:var(--n100);border-color:var(--n200);opacity:.5;text-decoration:line-through}
+.sug-body{flex:1}
+.sug-tag{font-size:10px;font-weight:700;color:var(--ai);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.sug-text{font-size:13px;color:var(--n700)}
+.sug-acts{display:flex;gap:6px;flex-shrink:0}
+
+/* ── TOAST ───────────────────────────────────────────── */
+#toasts{position:fixed;bottom:24px;right:calc(var(--drawer) + 16px);z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;transition:right .3s}
+#toasts.drawer-open{right:calc(var(--drawer) + 16px)}
+.toast{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--r-md);font-size:13px;
+  font-weight:500;box-shadow:var(--sh-lg);pointer-events:auto;animation:toastIn .2s ease;min-width:260px}
+@keyframes toastIn{from{transform:translateY(8px);opacity:0}to{opacity:1;transform:none}}
+.toast-success{background:var(--success);color:#fff}
+.toast-warning{background:var(--warning);color:#fff}
+.toast-info{background:var(--primary);color:#fff}
+
+/* ── PHASE 3 ENTRY ───────────────────────────────────── */
+.p3-entry-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:4px}
+.p3-entry-card{border:2px solid var(--n200);border-radius:var(--r-lg);padding:22px 18px;cursor:pointer;
+  transition:all .18s;background:var(--white);position:relative;user-select:none}
+.p3-entry-card:hover{border-color:var(--primary);background:var(--primary-light)}
+.p3-entry-card.selected{border-color:var(--primary);background:var(--primary-light);box-shadow:0 0 0 3px rgba(91,79,217,.15)}
+.p3-entry-icon{font-size:26px;margin-bottom:10px}
+.p3-entry-title{font-size:14px;font-weight:800;color:var(--n900);margin-bottom:6px}
+.p3-entry-desc{font-size:12px;color:var(--n500);line-height:1.6}
+.p3-entry-tag{position:absolute;top:12px;right:12px;font-size:10px;font-weight:700;
+  background:var(--primary-light);color:var(--primary);padding:2px 8px;border-radius:99px}
+.p3-entry-card.selected .p3-entry-tag{background:var(--primary);color:#fff}
+
+/* ── SPLIT PANEL (Phase 2) ─────────────────────────── */
+#main.split-mode{overflow:hidden;padding:0}
+#p2.phase-panel.visible{display:flex;flex-direction:row;height:100%;max-width:none;margin:0;animation:none}
+.build-pane{flex:1;overflow-y:auto;padding:28px 24px}
+.build-pane-left{flex:1.15;border-right:1px solid var(--n200)}
+.build-pane-right{flex:1;background:var(--n50)}
+.build-pane-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--n400);margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--n200);display:flex;align-items:center;gap:8px}
+.deliv-card{background:var(--white);border:1.5px solid var(--n200);border-radius:var(--r-md);margin-bottom:10px;overflow:hidden;transition:border-color .15s}
+.deliv-card.open{border-color:var(--primary)}
+.deliv-card-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none}
+.deliv-card-hdr:hover{background:var(--n50)}
+.deliv-num{width:24px;height:24px;border-radius:50%;background:var(--primary-light);color:var(--primary);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.deliv-body{padding:12px 14px;border-top:1px solid var(--n100);display:none}
+.deliv-card.open .deliv-body{display:block}
+.deliv-art-wrap{margin-top:10px}
+.deliv-art-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.dart-chip{padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600;border:1.5px solid var(--n200);color:var(--n600);background:var(--white);cursor:pointer;transition:all .12s}
+.dart-chip.sel{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
+.rub-fetch-banner{background:var(--primary-light);border:1px solid var(--primary);border-radius:var(--r-md);padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.rub-criterion{background:var(--white);border:1.5px solid var(--n200);border-radius:var(--r-md);margin-bottom:8px;overflow:hidden;transition:border-color .15s}
+.rub-criterion.confirmed{border-color:var(--success)}
+.rub-criterion.has-flag{border-left:3px solid var(--warning)}
+.rub-criterion.open .rub-crit-body{display:block}
+.rub-crit-hdr{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;user-select:none}
+.rub-crit-hdr:hover{background:var(--n50)}
+.rub-crit-name{font-size:13px;font-weight:700;color:var(--n800);flex:1}
+.rub-crit-body{padding:12px 14px;border-top:1px solid var(--n100);display:none}
+.rub-desc-grid{display:grid;grid-template-columns:90px 1fr;gap:6px;align-items:start;margin-bottom:7px}
+.rub-level-tag{font-size:10px;font-weight:700;padding:4px 7px;border-radius:var(--r-sm);text-align:center;line-height:1.3}
+.rub-nudge{background:var(--ai-light);border:1px dashed var(--ai);border-radius:var(--r-sm);padding:8px 12px;font-size:11px;color:var(--n600);margin-top:8px;line-height:1.6}
+.rub-nudge-label{font-size:9px;font-weight:700;color:var(--ai);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.co-map-pill{display:inline-flex;align-items:center;gap:4px;background:var(--primary-light);color:var(--primary);border:1px solid var(--primary);border-radius:99px;padding:2px 9px;font-size:10px;font-weight:700;cursor:pointer;transition:all .12s;white-space:nowrap}
+.confirm-strip{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--n50);border-top:1px solid var(--n100);margin-top:6px}
+.rub-quality{background:var(--white);border:1.5px solid var(--n200);border-radius:var(--r-md);padding:14px;margin-bottom:12px;margin-top:4px}
+.rub-flag-row{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--n100);font-size:12px}
+.rub-flag-row:last-child{border-bottom:none}
+.past-asgn-card{background:var(--white);border:1.5px solid var(--n200);border-radius:var(--r-md);margin-bottom:12px;overflow:hidden}
+.past-asgn-hdr{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer}
+.past-asgn-hdr:hover{background:var(--n50)}
+.past-asgn-body{padding:14px 16px;border-top:1px solid var(--n100);display:none}
+.past-asgn-card.open .past-asgn-body{display:block}
+.cal-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--n100);font-size:12px}
+.cal-row:last-child{border-bottom:none}
+.cal-inp{width:52px;text-align:center;border:1.5px solid var(--n200);border-radius:var(--r-sm);padding:4px 6px;font-size:13px;font-weight:600}
+.cal-inp:focus{border-color:var(--primary);outline:none}
+.cal-ai-badge{font-size:10px;font-weight:700;background:var(--ai-light);color:var(--ai);padding:2px 7px;border-radius:99px;white-space:nowrap}
+.pub-preview-wrap{background:var(--white);border:1.5px solid var(--n200);border-radius:var(--r-md);padding:20px;margin-bottom:16px;max-height:360px;overflow-y:auto}
+.pub-fix-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:var(--r-md);margin-bottom:8px;border:1.5px solid}
+.pub-fix-item.good{background:#F0FDF4;border-color:#BBF7D0}
+.pub-fix-item.warn{background:#FFFBEB;border-color:#FDE68A}
+.pub-fix-item.bad{background:#FFF1F2;border-color:#FECACA}
+.pub-fix-icon{font-size:15px;flex-shrink:0;margin-top:2px}
+.pub-fix-label{font-size:13px;font-weight:700;color:var(--n800);margin-bottom:2px}
+.pub-fix-desc{font-size:11px;color:var(--n500);line-height:1.5}
+.pub-target-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── PHASE 3 CHIPS ───────────────────────────────────── */
+.p3-chip{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;
+  border:1.5px solid var(--n200);color:var(--n600);background:var(--white);
+  cursor:pointer;transition:all .13s;white-space:nowrap}
+.p3-chip:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.p3-chip.selected{border-color:var(--primary);background:var(--primary);color:#fff}
+
+/* ── PHASE 3 CRITERION CARDS ─────────────────────────── */
+.p3-crit-card{background:var(--white);border:1.5px solid var(--n200);border-radius:var(--r-md);
+  margin-bottom:10px;overflow:hidden;transition:border-color .15s}
+.p3-crit-card.expanded{border-color:var(--primary)}
+.p3-crit-card.has-gap{border-left:3px solid var(--warning)}
+.p3-crit-header{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;
+  user-select:none;transition:background .15s;flex-wrap:wrap}
+.p3-crit-header:hover{background:var(--n50)}
+.p3-crit-name-input{flex:1;min-width:120px;border:none;background:transparent;font-size:14px;
+  font-weight:700;color:var(--n800);outline:none}
+.p3-crit-name-input:focus{background:var(--primary-light);border-radius:4px;padding:2px 6px}
+.p3-type-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;
+  padding:3px 8px;border-radius:99px;white-space:nowrap;flex-shrink:0;border:1px solid rgba(0,0,0,.06)}
+.p3-crit-body{display:none;padding:14px 16px;border-top:1px solid var(--n200)}
+.p3-crit-body.open{display:block}
+
+/* ── NORMALIZATION COMPARE ───────────────────────────── */
+.norm-status-bar{padding:10px 14px;background:var(--warning-light);border:1px solid var(--warning);border-radius:var(--r-md)}
+.norm-status-bar.all-resolved{background:var(--success-light);border-color:var(--success)}
+.norm-change-card{background:var(--white);border:1px solid var(--n200);border-radius:var(--r-md);margin-bottom:12px;overflow:hidden}
+.norm-change-card.decided{border-color:var(--n300)}
+.norm-change-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  background:var(--n50);border-bottom:1px solid var(--n100)}
+.norm-compare-grid{display:grid;grid-template-columns:1fr 1fr 1.2fr}
+.norm-col{padding:12px 14px;border-right:1px solid var(--n100)}
+.norm-col:last-child{border-right:none;border-bottom:none}
+.norm-col-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--n400);margin-bottom:6px}
+.norm-col-text{font-size:12px;line-height:1.65;color:var(--n700)}
+.norm-col-text.orig{color:var(--n600)}
+.norm-col-text.norm-txt{color:var(--primary-dark);font-weight:500}
+.norm-col-text.why-txt{color:var(--n500);font-style:italic}
+.norm-decision-row{display:flex;gap:8px;padding:10px 14px;background:var(--n50);border-top:1px solid var(--n100)}
+
+/* ── AUDIT MODAL ─────────────────────────────────────── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:var(--r-lg);width:580px;max-height:78vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--sh-lg)}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--n200)}
+.modal-hdr h2{font-size:15px;font-weight:700}
+.modal-body{flex:1;overflow-y:auto;padding:18px 22px}
+.audit-row{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--n100);font-size:12px}
+.audit-t{color:var(--n400);font-family:var(--mono);font-size:10px;width:72px;flex-shrink:0;padding-top:1px}
+.audit-ph{background:var(--primary-light);color:var(--primary);padding:1px 5px;border-radius:3px;font-size:10px;font-weight:600;margin-right:4px}
+.audit-msg{color:var(--n700);flex:1}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <header id="hdr">
+    <div class="logo"><div class="logo-mark">✦</div>EducAItors</div>
+    <div class="phase-pill">Pre-Evaluation</div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <button class="hdr-btn" onclick="openAudit()">📋 Audit Log</button>
+    </div>
+  </header>
+
+  <!-- PHASE SIDEBAR -->
+  <nav id="sidebar">
+    <div id="phase-nav"></div>
+    <div id="overall-bar">
+      <div class="prog-track"><div class="prog-fill" id="overall-fill" style="width:0%"></div></div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main id="main">
+    <div id="p1" class="phase-panel"></div>
+    <div id="p2" class="phase-panel"></div>
+    <div id="p3" class="phase-panel"></div>
+    <div id="p4" class="phase-panel"></div>
+  </main>
+</div>
+
+<!-- TOASTS -->
+<div id="toasts"></div>
+
+<!-- AUDIT MODAL -->
+<div class="modal-overlay" id="audit-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2>📋 Audit Log</h2>
+      <button class="btn btn-outline btn-sm" onclick="closeAudit()">Close</button>
+    </div>
+    <div class="modal-body" id="audit-body"><p class="text-muted">No events yet.</p></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+const S = {
+  phase: 1,
+  phases: {1:{done:false},2:{done:false},3:{done:false},4:{done:false}},
+  context: {subject:'',semester:'',credits:'',dept:'',code:'',contextText:'',contextSource:''},
+  assignment: {type:'',title:'',maxMarks:100,grouping:'individual',instructions:'',
+    deliverables:[],globalArtifacts:[],deadline:'',policy:'',format:'',formatChips:[]},
+  rubric: {source:null, criteria:[], coMappings:[], confirmed:false},
+  calibration: {scores:{}, confirmed:false},
+  publish: {publishedAt:null, dept:'', course:'', cohort:'', section:'all', publishDate:''},
+  audit: []
+};
+
+const PHASES = [
+  {n:1, label:'Context',   tip:'Course & assignment context'},
+  {n:2, label:'Build',     tip:'Assignment & rubric'},
+  {n:3, label:'Calibrate', tip:'Grading alignment'},
+  {n:4, label:'Publish',   tip:'Review & release'}
+];
+
+/* ═══════════════════════════════════════════════════
+   AUDIT / TOAST
+═══════════════════════════════════════════════════ */
+function audit(msg, ph) {
+  S.audit.push({ ts: new Date(), msg, ph: ph || S.phase });
+}
+function openAudit() {
+  document.getElementById('audit-modal').classList.add('open');
+  const b = document.getElementById('audit-body');
+  if (!S.audit.length) { b.innerHTML='<p class="text-muted">No events yet.</p>'; return; }
+  b.innerHTML = S.audit.slice().reverse().map(e => {
+    const t = e.ts.toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    return `<div class="audit-row"><span class="audit-t">${t}</span><div class="audit-msg"><span class="audit-ph">P${e.ph}</span>${e.msg}</div></div>`;
+  }).join('');
+}
+function closeAudit() { document.getElementById('audit-modal').classList.remove('open'); }
+document.getElementById('audit-modal').addEventListener('click', e => { if(e.target===e.currentTarget)closeAudit(); });
+
+function toast(msg, type='info', dur=3000) {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), dur);
+}
+
+/* ═══════════════════════════════════════════════════
+   NAV / ROUTING
+═══════════════════════════════════════════════════ */
+function renderNav() {
+  const nav = document.getElementById('phase-nav');
+  nav.innerHTML = PHASES.map((p, i) => {
+    const done   = S.phases[p.n].done;
+    const active = S.phase === p.n;
+    const locked = !done && p.n > 1 && !S.phases[p.n-1].done;
+    let cls = 'phase-step';
+    if (active) cls += ' active';
+    if (done)   cls += ' done';
+    if (locked) cls += ' locked';
+    return `
+      ${i > 0 ? `<div class="phase-connector${S.phases[i].done?' done':''}"></div>` : ''}
+      <div class="${cls}" onclick="goPhase(${p.n})">
+        <div class="phase-dot"><div class="pd-num">${done ? '' : p.n}</div></div>
+        <div class="phase-step-label">
+          <div class="psl-name">${p.label}</div>
+          <div class="psl-tip">${p.tip}</div>
+        </div>
+      </div>`;
+  }).join('');
+  const done = Object.values(S.phases).filter(p=>p.done).length;
+  document.getElementById('overall-fill').style.width = (done/4*100)+'%';
+}
+
+function goPhase(n) {
+  if (n > 1) {
+    for (let i=1; i<n; i++) {
+      if (!S.phases[i].done) { toast(`Complete Phase ${i} first`, 'warning'); return; }
+    }
+  }
+  S.phase = n;
+  renderNav();
+  document.querySelectorAll('.phase-panel').forEach(p => p.classList.remove('visible'));
+  document.getElementById(`p${n}`).classList.add('visible');
+  const main = document.getElementById('main');
+  if (n === 2) { main.classList.add('split-mode'); }
+  else { main.classList.remove('split-mode'); main.scrollTop = 0; }
+  const panel = document.getElementById(`p${n}`);
+  if (!panel.dataset.rendered) { renderPhase(n); panel.dataset.rendered = '1'; }
+}
+
+function completePhase(n) {
+  S.phases[n].done = true;
+  renderNav();
+  audit(`Phase ${n} complete`, n);
+  if (n < 4) {
+    setTimeout(() => {
+      toast(`Phase ${n} complete!`, 'success');
+      const nextPanel = document.getElementById(`p${n+1}`);
+      delete nextPanel.dataset.rendered;
+      goPhase(n+1);
+    }, 350);
+  }
+}
+
+function renderPhase(n) {
+  const fns = {1:renderP1, 2:renderP2, 3:renderP3, 4:renderP4};
+  if (fns[n]) fns[n]();
+}
+
+
+/* ═══════════════════════════════════════════════════
+   PHASE 1 — CONTEXT
+═══════════════════════════════════════════════════ */
+
+// Simulated doc analysis result
+const DOC_ANALYSIS = {
+  summary: 'This document is a course syllabus for <strong>CS601 — Software Engineering</strong> (Semester VI, Computer Science Dept.). It covers software development lifecycle models, architecture design, testing strategies, and project delivery practices over 14 weeks.',
+  topics: ['Software Development Lifecycle', 'Architecture & Design Patterns', 'Unit & Integration Testing', 'Agile & Scrum Methodology', 'Technical Documentation'],
+  flags: [
+    {id:'sem_conflict', label:'Semester ambiguity', msg:'The document references both "Semester IV" and "Semester VI" in different sections. Please confirm which is correct.', type:'warn'},
+    {id:'credit_vague', label:'Credit hours unclear', msg:'"Credits" field appears in two formats (credit-hours and contact-hours). The value 4 has been used — please verify.', type:'warn'}
+  ]
+};
+
+let p1Mode = null;          // 'upload' | 'manual'
+let p1DocAnalysed = false;
+let p1FlagDismissed = {};   // {flagId: true}
+let p1ContextConfirmed = false;
+
+function renderP1() {
+  p1Mode = null; p1DocAnalysed = false; p1FlagDismissed = {}; p1ContextConfirmed = false;
+  document.getElementById('p1').innerHTML = `
+    <div class="phase-hdr">
+      <h1>Set Up Course Context</h1>
+      <p>Upload your course document or type the context manually. This will be used to shape the assignment and rubric.</p>
+    </div>
+
+    <!-- Input method picker -->
+    <div id="p1-picker" class="upload-alts" style="margin-bottom:24px;margin-top:0">
+      <button class="upload-alt-btn" onclick="p1SelectMode('upload')">
+        <span class="upload-alt-icon">📄</span>
+        <div class="upload-alt-text">
+          <strong>Upload a document</strong>
+          <span>Syllabus, course guide, or brief — we'll extract the context</span>
+        </div>
+      </button>
+      <button class="upload-alt-btn" onclick="p1SelectMode('manual')">
+        <span class="upload-alt-icon">✏️</span>
+        <div class="upload-alt-text">
+          <strong>Describe from scratch</strong>
+          <span>Type or paste your course description directly</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Upload path -->
+    <div id="p1-upload-path" style="display:none">
+      <div class="upload-zone" id="p1-dropzone" onclick="document.getElementById('p1-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="event.preventDefault();this.classList.remove('drag');p1HandleFile(event.dataTransfer.files[0])">
+        <input type="file" id="p1-file-input" accept=".pdf,.docx,.png,.jpg" style="display:none" onchange="p1HandleFile(this.files[0])">
+        <span class="uz-icon">📄</span>
+        <div class="uz-title">Drop your syllabus or course document</div>
+        <div class="uz-sub">PDF, DOCX, PNG, or JPG — we'll read it and extract the context</div>
+        <div class="uz-formats">
+          <span class="uz-fmt">PDF</span><span class="uz-fmt">DOCX</span><span class="uz-fmt">PNG</span><span class="uz-fmt">JPG</span>
+        </div>
+      </div>
+      <!-- OCR progress -->
+      <div id="p1-ocr-progress" style="display:none" class="ocr-wrap">
+        <div class="ocr-spinner"></div>
+        <div class="ocr-stage" id="p1-ocr-stage">Reading document…</div>
+        <div class="prog-bar"><div class="prog-fill-bar" id="p1-ocr-bar" style="width:0%"></div></div>
+      </div>
+      <!-- Doc analysis result -->
+      <div id="p1-doc-result" style="display:none"></div>
+    </div>
+
+    <!-- Manual path -->
+    <div id="p1-manual-path" style="display:none">
+      <div class="card mb3">
+        <div class="section-label mb2">Course Context</div>
+        <div class="fg">
+          <label>Describe this course <span class="opt">— what it covers, what students will learn, key topics</span></label>
+          <textarea class="fi" id="p1-manual-text" rows="6" placeholder="e.g. This is a final-year Software Engineering course covering SDLC models, system architecture, testing strategies, and Agile delivery. Students are expected to design, build and document a complete software system..." oninput="p1CheckManualFlags()"></textarea>
+        </div>
+        <div id="p1-manual-flags" style="margin-top:4px"></div>
+      </div>
+    </div>
+
+    <!-- Course details (shown for both paths once mode is selected) -->
+    <div id="p1-course-details" style="display:none">
+      <div class="card mb3">
+        <div class="section-label mb2">Course Details</div>
+        <div class="fi-row mb2">
+          <div class="fg" style="margin:0">
+            <label>Subject / Course Name</label>
+            <input class="fi" id="p1-subject" type="text" placeholder="e.g. Software Engineering" oninput="p1CheckReady()">
+          </div>
+          <div class="fg" style="margin:0">
+            <label>Course Code</label>
+            <input class="fi" id="p1-code" type="text" placeholder="e.g. CS601" oninput="p1CheckReady()">
+          </div>
+        </div>
+        <div class="fi-row-3">
+          <div class="fg" style="margin:0">
+            <label>Department</label>
+            <input class="fi" id="p1-dept" type="text" placeholder="e.g. Computer Science" oninput="p1CheckReady()">
+          </div>
+          <div class="fg" style="margin:0">
+            <label>Semester</label>
+            <input class="fi" id="p1-semester" type="text" placeholder="e.g. VI" oninput="p1CheckReady()">
+          </div>
+          <div class="fg" style="margin:0">
+            <label>Credits</label>
+            <input class="fi" id="p1-credits" type="text" placeholder="e.g. 4" oninput="p1CheckReady()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-footer" id="p1-footer" style="display:none">
+      <span class="text-sm text-muted" id="p1-msg">Fill in the course details above</span>
+      <button class="btn btn-primary" id="p1-confirm-btn" disabled onclick="p1Confirm()">Confirm Context →</button>
+    </div>
+  `;
+}
+
+function p1SelectMode(mode) {
+  p1Mode = mode;
+  // Highlight chosen card
+  document.querySelectorAll('.upload-alt-btn').forEach(b => b.style.borderColor = '');
+  document.getElementById('p1-course-details').style.display = '';
+  document.getElementById('p1-footer').style.display = 'flex';
+  if (mode === 'upload') {
+    document.getElementById('p1-upload-path').style.display = '';
+    document.getElementById('p1-manual-path').style.display = 'none';
+  } else {
+    document.getElementById('p1-upload-path').style.display = 'none';
+    document.getElementById('p1-manual-path').style.display = '';
+  }
+  p1CheckReady();
+}
+
+function p1HandleFile(file) {
+  if (!file) return;
+  const dz = document.getElementById('p1-dropzone');
+  const progress = document.getElementById('p1-ocr-progress');
+  const result = document.getElementById('p1-doc-result');
+  if (dz) dz.style.display = 'none';
+  if (progress) progress.style.display = '';
+
+  const stages = ['Reading document…', 'Extracting text…', 'Analysing content…', 'Detecting flags…', 'Finalising…'];
+  let si = 0;
+  const stageEl = document.getElementById('p1-ocr-stage');
+  const barEl = document.getElementById('p1-ocr-bar');
+  const stageTimer = setInterval(() => {
+    if (si < stages.length) {
+      if (stageEl) stageEl.textContent = stages[si];
+      if (barEl) barEl.style.width = ((si+1)/stages.length*85)+'%';
+      si++;
+    }
+  }, 500);
+
+  setTimeout(() => {
+    clearInterval(stageTimer);
+    if (barEl) barEl.style.width = '100%';
+    if (stageEl) stageEl.textContent = 'Done!';
+    setTimeout(() => {
+      if (progress) progress.style.display = 'none';
+      p1DocAnalysed = true;
+      p1ShowDocResult(result);
+      // Auto-fill course details from extracted data
+      const fillMap = {
+        'p1-subject': 'Software Engineering',
+        'p1-code': 'CS601',
+        'p1-dept': 'Computer Science',
+        'p1-semester': 'VI',
+        'p1-credits': '4'
+      };
+      Object.entries(fillMap).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el && !el.value) { el.value = val; }
+      });
+      p1CheckReady();
+    }, 400);
+  }, 3000);
+}
+
+function p1ShowDocResult(container) {
+  const a = DOC_ANALYSIS;
+  const flagsHtml = a.flags.map(f => `
+    <div class="p1-flag-row ${p1FlagDismissed[f.id]?'dismissed':''}" id="p1-flag-${f.id}" style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--warning-light);border:1px solid var(--warning);border-radius:var(--r-sm);margin-bottom:8px;${p1FlagDismissed[f.id]?'opacity:.5':''}">
+      <span style="font-size:14px;flex-shrink:0;margin-top:1px">⚠</span>
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;color:var(--warning);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">${f.label}</div>
+        <div style="font-size:12px;color:var(--n700);line-height:1.5">${f.msg}</div>
+      </div>
+      ${p1FlagDismissed[f.id]
+        ? '<span style="font-size:11px;color:var(--success);font-weight:700;flex-shrink:0;margin-top:2px">✓ Noted</span>'
+        : `<button onclick="p1DismissFlag('${f.id}')" style="background:none;border:1px solid var(--warning);border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;color:var(--warning);cursor:pointer;flex-shrink:0;margin-top:1px;white-space:nowrap">Got it</button>`
+      }
+    </div>`).join('');
+
+  container.innerHTML = `
+    <div class="card mb3" style="border-color:var(--success);background:var(--success-light)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <span style="font-size:20px">📄</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--n800)">Document analysed successfully</div>
+          <div style="font-size:11px;color:var(--n600);margin-top:1px">Context extracted — review below and confirm</div>
+        </div>
+        <span class="badge b-success" style="margin-left:auto">✓ Ready to use</span>
+      </div>
+      <div style="font-size:13px;color:var(--n700);line-height:1.7;margin-bottom:12px;padding:10px 12px;background:var(--white);border-radius:var(--r-sm);border:1px solid var(--n200)">${a.summary}</div>
+      <div style="font-size:11px;font-weight:700;color:var(--n600);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Key topics detected</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:${a.flags.length?'16px':'0'}">
+        ${a.topics.map(t => `<span style="background:var(--n100);color:var(--n700);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:500">${t}</span>`).join('')}
+      </div>
+      ${a.flags.length ? `<div style="font-size:11px;font-weight:700;color:var(--warning);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">⚠ Flags — please review</div>${flagsHtml}` : ''}
+      <div style="font-size:12px;color:var(--n500);margin-top:8px">Is this the correct context for your assignment? If not, you can edit the course details below or <button onclick="p1Reset()" style="background:none;border:none;color:var(--primary);font-size:12px;font-weight:600;cursor:pointer;padding:0;text-decoration:underline">start over</button>.</div>
+    </div>`;
+  container.style.display = '';
+}
+
+function p1DismissFlag(id) {
+  p1FlagDismissed[id] = true;
+  // Re-render the flag as dismissed
+  const row = document.getElementById(`p1-flag-${id}`);
+  if (row) {
+    row.style.opacity = '.5';
+    const btn = row.querySelector('button');
+    if (btn) btn.outerHTML = '<span style="font-size:11px;color:var(--success);font-weight:700;flex-shrink:0;margin-top:2px">✓ Noted</span>';
+  }
+}
+
+function p1CheckManualFlags() {
+  const text = document.getElementById('p1-manual-text')?.value || '';
+  const flagsEl = document.getElementById('p1-manual-flags');
+  if (!flagsEl) return;
+  const flags = [];
+  if (text.length > 20 && text.length < 80) flags.push('Context seems brief — try to include key topics, learning goals, and course level for better results.');
+  if (/\bTBD\b|\bN\/A\b|\bTBA\b/i.test(text)) flags.push('Contains placeholder text (TBD/N/A) — replace with actual content before confirming.');
+  flagsEl.innerHTML = flags.map(f => `
+    <div style="display:flex;gap:8px;align-items:flex-start;padding:8px 10px;background:var(--warning-light);border:1px solid var(--warning);border-radius:var(--r-sm);margin-bottom:6px;font-size:12px;color:var(--n700)">
+      <span style="color:var(--warning);flex-shrink:0">⚠</span>${f}
+    </div>`).join('');
+  p1CheckReady();
+}
+
+function p1CheckReady() {
+  const subject = document.getElementById('p1-subject')?.value.trim();
+  const btn = document.getElementById('p1-confirm-btn');
+  const msg = document.getElementById('p1-msg');
+  if (!btn) return;
+  const hasContext = p1Mode === 'upload'
+    ? p1DocAnalysed
+    : (document.getElementById('p1-manual-text')?.value.trim().length > 20);
+  const ok = !!(subject && hasContext);
+  btn.disabled = !ok;
+  if (msg) msg.textContent = !subject ? 'Enter a course name to continue' : !hasContext ? (p1Mode==='upload'?'Upload a document first':'Add course context above') : '';
+}
+
+function p1Confirm() {
+  const ctx = {
+    subject:  document.getElementById('p1-subject')?.value.trim() || '',
+    code:     document.getElementById('p1-code')?.value.trim() || '',
+    dept:     document.getElementById('p1-dept')?.value.trim() || '',
+    semester: document.getElementById('p1-semester')?.value.trim() || '',
+    credits:  document.getElementById('p1-credits')?.value.trim() || '',
+    contextText: p1Mode === 'upload'
+      ? DOC_ANALYSIS.summary.replace(/<[^>]+>/g, '')
+      : (document.getElementById('p1-manual-text')?.value.trim() || ''),
+    contextSource: p1Mode
+  };
+  S.context = ctx;
+  audit(`Context confirmed: ${ctx.subject} ${ctx.code} (${ctx.contextSource})`, 1);
+  completePhase(1);
+}
+
+function p1Reset() {
+  p1DocAnalysed = false;
+  document.getElementById('p1-dropzone').style.display = '';
+  document.getElementById('p1-ocr-progress').style.display = 'none';
+  document.getElementById('p1-doc-result').style.display = 'none';
+  document.getElementById('p1-file-input').value = '';
+  p1CheckReady();
+}
+
+/* ═══════════════════════════════════════════════════
+   PHASE 2 — BUILD (SPLIT PANEL)
+═══════════════════════════════════════════════════ */
+let p2LeftConfirmed = false;
+let p2RightConfirmed = false;
+let p2RubricLoaded = false;
+let p2Deliverables = [];
+let p2GlobalArts = [];
+let p2RubCriteria = [];
+let p2CoMappings = {};
+let p2SelectedType = '';
+let p2Grouping = 'individual';
+let p2BriefGenerated = false;
+let p2FormatChips = [];
+
+const ASSIGNMENT_CONFIGS = {
+  'Project': {
+    label:'Deliverables', itemLabel:'Deliverable', icon:'🏗️',
+    hint:'Each deliverable is a component students must produce — e.g. a design document, working code, or test report.',
+    fields:['name','description','marks'],
+    hasScenario:false,
+    artifacts:['Source Code','GitHub Link','PDF Report','UML Diagrams'],
+    suggestions:[
+      {name:'System Architecture Document', description:'Design a layered or microservices architecture. Include component diagrams, data flow, and justify design decisions.', marks:30},
+      {name:'Implementation & Source Code', description:'Working implementation with clean code practices. Include README, setup instructions, and inline documentation.', marks:35},
+      {name:'Testing Report', description:'Comprehensive test plan and results — unit, integration, and system testing with coverage metrics.', marks:20},
+      {name:'Project Presentation & Demo', description:'Live demo of the working system. Slides should cover architecture, challenges, and outcomes.', marks:15}
+    ],
+    starterItems:[{name:'', description:'', marks:40}]
+  },
+  'Report': {
+    label:'Sections', itemLabel:'Section', icon:'📄',
+    hint:'Define each section of the report. Students will structure their submission to match these sections.',
+    fields:['name','wordCount','marks'],
+    hasScenario:false,
+    artifacts:['PDF Report'],
+    suggestions:[
+      {name:'Introduction', wordCount:'300–500 words', marks:10},
+      {name:'Literature Review', wordCount:'800–1200 words', marks:25},
+      {name:'Methodology', wordCount:'600–900 words', marks:25},
+      {name:'Results & Discussion', wordCount:'800–1200 words', marks:25},
+      {name:'Conclusion', wordCount:'300–500 words', marks:10},
+      {name:'References', wordCount:'APA format, 10+ sources', marks:5}
+    ],
+    starterItems:[{name:'', wordCount:'', marks:20}]
+  },
+  'Presentation': {
+    label:'Topics / Segments', itemLabel:'Topic', icon:'🎤',
+    hint:'Break the presentation into speaking segments. Each segment has a time allocation and marks.',
+    fields:['name','duration','marks'],
+    hasScenario:false,
+    artifacts:['Presentation Slides','Demo Video'],
+    suggestions:[
+      {name:'Introduction & Problem Statement', duration:'3–5 min', marks:10},
+      {name:'Background & Literature', duration:'5–7 min', marks:15},
+      {name:'Proposed Solution / Architecture', duration:'8–10 min', marks:30},
+      {name:'Demo & Results', duration:'5–8 min', marks:25},
+      {name:'Q&A', duration:'5–7 min', marks:20}
+    ],
+    starterItems:[{name:'', duration:'', marks:20}]
+  },
+  'Lab Record': {
+    label:'Lab Sections', itemLabel:'Section', icon:'🧪',
+    hint:'Standard lab record template — pre-filled with the conventional sections. Edit descriptions or adjust marks as needed.',
+    fields:['name','description','marks'],
+    hasScenario:false,
+    artifacts:['PDF Report'],
+    suggestions:[],
+    starterItems:[
+      {name:'Aim & Objective', description:'State the aim of the experiment and what the student is expected to achieve or demonstrate.', marks:10},
+      {name:'Apparatus / Tools', description:'List all hardware, software, libraries, and tools used in the experiment.', marks:10},
+      {name:'Procedure', description:'Step-by-step instructions followed during the lab. Should be reproducible by another student.', marks:20},
+      {name:'Observations & Data', description:'Record all measurements, screenshots, terminal outputs, or data collected during the experiment.', marks:30},
+      {name:'Results & Analysis', description:'Interpreted results, graphs, tables, or computed outputs with brief explanation.', marks:20},
+      {name:'Inference / Conclusion', description:'What was learned or concluded. Note any deviations from expected results and why.', marks:10}
+    ]
+  },
+  'Case Study': {
+    label:'Analysis Questions', itemLabel:'Question', icon:'🔍',
+    hint:'Provide the case scenario first — students will read it and respond to your analytical questions below.',
+    fields:['text','marks'],
+    hasScenario:true,
+    artifacts:['PDF Report'],
+    suggestions:[
+      {text:'Identify and analyse the core problem(s) in the case. Use relevant frameworks or models to support your analysis.', marks:25},
+      {text:'Evaluate the stakeholders involved and their competing interests. How should these be balanced in a recommended solution?', marks:20},
+      {text:'Propose and justify a recommended course of action. Consider feasibility, risks, and trade-offs.', marks:30},
+      {text:'Reflect on what could have been done differently at each stage to prevent the situation described.', marks:15},
+      {text:'Compare this case with a real-world example from your domain. What lessons transfer directly?', marks:10}
+    ],
+    starterItems:[{text:'', marks:25}]
+  },
+  'Viva': {
+    label:'Examination Areas', itemLabel:'Area', icon:'🎙️',
+    hint:'Define competency areas examiners will probe. These guide the oral examination — no written submission required.',
+    fields:['name','description','marks'],
+    hasScenario:false,
+    artifacts:[],
+    suggestions:[
+      {name:'Conceptual Understanding', description:'Core theory, definitions, and foundational principles of the subject.', marks:25},
+      {name:'Application & Problem Solving', description:'Ability to apply concepts to new or given scenarios in real time.', marks:30},
+      {name:'Technical Depth', description:'Depth of knowledge on implementation, tools, and technical specifics discussed.', marks:25},
+      {name:'Communication & Clarity', description:'Ability to explain, justify, and defend answers clearly and confidently.', marks:20}
+    ],
+    starterItems:[{name:'', description:'', marks:25}]
+  },
+  'Code Review': {
+    label:'Review Criteria', itemLabel:'Criterion', icon:'💻',
+    hint:'Define what aspects of the codebase students will be evaluated on. Each criterion can target specific files or practices.',
+    fields:['name','scope','marks'],
+    hasScenario:false,
+    artifacts:['Source Code','GitHub Link'],
+    suggestions:[
+      {name:'Code Quality & Readability', scope:'All files', marks:25},
+      {name:'SOLID & Design Principles', scope:'Core modules', marks:25},
+      {name:'Test Coverage & Quality', scope:'Test suite', marks:20},
+      {name:'Error Handling & Edge Cases', scope:'All files', marks:15},
+      {name:'Documentation & Comments', scope:'Public APIs & README', marks:15}
+    ],
+    starterItems:[{name:'', scope:'', marks:25}]
+  },
+  'Portfolio': {
+    label:'Portfolio Entries', itemLabel:'Entry', icon:'📁',
+    hint:'Define each entry students must include — what they submit, reflect on, or demonstrate per entry.',
+    fields:['name','description','marks'],
+    hasScenario:false,
+    artifacts:['PDF Report','GitHub Link','Demo Video'],
+    suggestions:[
+      {name:'Technical Project Entry', description:'A project completed during the semester with reflections on decisions made, challenges faced, and outcomes.', marks:30},
+      {name:'Peer Learning Reflection', description:'Reflection on a concept learned through peer teaching or collaborative activity.', marks:20},
+      {name:'Industry / Research Reading', description:'Summary and critique of a research paper or industry article relevant to the course.', marks:20},
+      {name:'Skills & Tools Log', description:'Evidence of tools or skills developed — screenshots, certifications, or project outputs.', marks:15},
+      {name:'Personal Growth Reflection', description:'End-of-semester reflection on learning journey, strengths identified, and areas for improvement.', marks:15}
+    ],
+    starterItems:[{name:'', description:'', marks:30}]
+  }
+};
+
+// ── CRITERION TYPES ──────────────────────────────────────────
+const CRIT_TYPES = [
+  {id:'content',    label:'Content-based',  icon:'📝', bg:'#EFF6FF', color:'#1D4ED8'},
+  {id:'skill',      label:'Skill-based',    icon:'⚡', bg:'#F0FDF4', color:'#16A34A'},
+  {id:'creative',   label:'Creative',       icon:'🎨', bg:'#FFF7ED', color:'#C2410C'},
+  {id:'process',    label:'Process-based',  icon:'🔄', bg:'#FDF4FF', color:'#7C3AED'},
+  {id:'technical',  label:'Technical',      icon:'⚙',  bg:'#FFF7ED', color:'#92400E'},
+  {id:'compliance', label:'Compliance',     icon:'✅', bg:'#F8FAFC', color:'#334155'},
+  {id:'behavioral', label:'Behavioral',     icon:'🤝', bg:'#FEFCE8', color:'#713F12'},
+  {id:'custom',     label:'Custom',         icon:'✏',  bg:'var(--n100)', color:'var(--n700)'}
+];
+
+// ── LEVEL CONFIGURATIONS ─────────────────────────────────────
+const P3_LEVEL_CONFIGS = {
+  '4-level':{
+    label:'4-Level',
+    levels:['Excellent','Good','Developing','Beginning'],
+    ranges:['85–100','70–84','50–69','< 50'],
+    colors:['#16A34A','#1D4ED8','#D97706','#DC2626'],
+    lights:['#F0FDF4','#EFF6FF','#FEF3C7','#FFF1F2'],
+    borders:['#BBF7D0','#BFDBFE','#FDE68A','#FECACA']
+  }
+};
+
+// ── BLOOM'S TAXONOMY ─────────────────────────────────────────
+const BLOOMS = [
+  {level:'Remember', verbs:['recall','list','define','name','identify']},
+  {level:'Understand', verbs:['explain','classify','summarise','interpret','describe']},
+  {level:'Apply', verbs:['implement','execute','use','demonstrate','solve','apply']},
+  {level:'Analyse', verbs:['differentiate','organise','examine','contrast','compare']},
+  {level:'Evaluate', verbs:['justify','critique','assess','judge','defend','evaluate']},
+  {level:'Create', verbs:['design','construct','develop','formulate','produce','generate']}
+];
+
+// ── RUBRIC PROFILES (per assignment type) ────────────────────
+const RUBRIC_PROFILES = {
+  'Project':{levelType:'4-level', weightMode:'outcome-mapped', criteria:[
+    {name:'Technical Implementation', type:'technical', weight:30, bloomIdx:5, coIdx:0,
+      descriptors:{0:'Implements a fully functional, production-quality system with clean architecture, error handling, and documentation.',1:'Working implementation with minor gaps in error handling or structure.',2:'Partial implementation — core features work but integration or edge cases are incomplete.',3:'Limited implementation — functionality is missing or broken in key areas.'}},
+    {name:'System Design & Architecture', type:'process', weight:25, bloomIdx:4, coIdx:1,
+      descriptors:{0:'Architecture is well-reasoned, scalable, and clearly documented with justified design decisions.',1:'Sound architecture with minor gaps in documentation or design rationale.',2:'Basic architecture present; design decisions not fully justified.',3:'Architecture missing or unclear; design is ad hoc.'}},
+    {name:'Testing & Validation', type:'technical', weight:20, bloomIdx:4, coIdx:2,
+      descriptors:{0:'Comprehensive test suite covering unit, integration, and edge cases with high coverage.',1:'Good test coverage with some gaps in edge case or integration testing.',2:'Basic tests present but coverage is limited.',3:'Minimal or no testing — functionality not validated.'}},
+    {name:'Documentation & Communication', type:'compliance', weight:15, bloomIdx:2, coIdx:4,
+      descriptors:{0:'Clear, complete documentation — README, inline comments, and report are professional quality.',1:'Good documentation with minor omissions.',2:'Partial documentation — key sections missing.',3:'Minimal documentation; difficult to understand the submission.'}},
+    {name:'Process & Iteration', type:'process', weight:10, bloomIdx:2, coIdx:-1,
+      descriptors:{0:'Clear evidence of iterative development, version control use, and reflective process.',1:'Good process evidence with minor gaps.',2:'Some process evidence but limited iteration.',3:'Little evidence of structured process or iteration.'}}
+  ]},
+  'Report':{levelType:'4-level', weightMode:'%', criteria:[
+    {name:'Argument & Analysis', type:'content', weight:35, bloomIdx:4, coIdx:0,
+      descriptors:{0:'Sophisticated, well-structured argument with critical analysis throughout.',1:'Clear argument with good analysis; minor gaps.',2:'Argument present but analysis is surface-level.',3:'Weak or unclear argument; descriptive rather than analytical.'}},
+    {name:'Evidence & References', type:'compliance', weight:25, bloomIdx:2, coIdx:1,
+      descriptors:{0:'Extensive, relevant, correctly formatted references integrated effectively.',1:'Good references with minor formatting issues.',2:'Adequate references but integration or format is inconsistent.',3:'Limited or incorrectly formatted references.'}},
+    {name:'Structure & Clarity', type:'skill', weight:25, bloomIdx:2, coIdx:2,
+      descriptors:{0:'Exceptionally clear structure; professional academic writing throughout.',1:'Good structure and writing with minor weaknesses.',2:'Adequate structure; some unclear sections.',3:'Poor structure; difficult to follow.'}},
+    {name:'Critical Reflection', type:'behavioral', weight:15, bloomIdx:5, coIdx:3,
+      descriptors:{0:'Deep, insightful reflection that goes beyond the obvious.',1:'Good reflection with genuine insight.',2:'Surface-level reflection; limited depth.',3:'Little to no genuine reflection.'}}
+  ]},
+  'Essay':{levelType:'4-level', weightMode:'%', criteria:[
+    {name:'Thesis & Argument', type:'content', weight:40, bloomIdx:4, coIdx:0,
+      descriptors:{0:'Clear, compelling thesis with a consistently developed, nuanced argument.',1:'Good thesis with a well-developed argument.',2:'Thesis present but argument is inconsistent.',3:'Weak or absent thesis; argument not sustained.'}},
+    {name:'Evidence & Support', type:'content', weight:30, bloomIdx:3, coIdx:1,
+      descriptors:{0:'All claims supported by strong, relevant evidence from credible sources.',1:'Good use of evidence with minor gaps.',2:'Some evidence but not always relevant or sufficient.',3:'Little or irrelevant evidence.'}},
+    {name:'Writing Quality', type:'skill', weight:30, bloomIdx:2, coIdx:2,
+      descriptors:{0:'Excellent academic prose — clear, precise, and well-structured throughout.',1:'Good writing with minor grammatical or stylistic issues.',2:'Adequate writing but unclear in places.',3:'Poor writing that impedes understanding.'}}
+  ]},
+  'Lab Record':{levelType:'4-level', weightMode:'%', criteria:[
+    {name:'Observations & Data', type:'technical', weight:35, bloomIdx:2, coIdx:0,
+      descriptors:{0:'Complete, accurate observations with well-organised data tables.',1:'Good observations with minor gaps or errors.',2:'Partial observations; some data missing.',3:'Incomplete or inaccurate observations.'}},
+    {name:'Procedure Adherence', type:'compliance', weight:25, bloomIdx:2, coIdx:1,
+      descriptors:{0:'Procedure followed exactly; all steps documented clearly.',1:'Good adherence with minor deviations noted.',2:'Partial adherence; some steps missing.',3:'Significant deviations; procedure not followed.'}},
+    {name:'Inference & Conclusion', type:'content', weight:25, bloomIdx:4, coIdx:2,
+      descriptors:{0:'Insightful conclusions drawn from data; deviations from expected results explained.',1:'Good conclusions with reasonable explanation.',2:'Basic conclusions; limited explanation.',3:'Conclusions missing or unsupported by data.'}},
+    {name:'Presentation & Diagrams', type:'skill', weight:15, bloomIdx:2, coIdx:3,
+      descriptors:{0:'Neat, well-labelled diagrams; professional presentation throughout.',1:'Good presentation with minor neatness issues.',2:'Adequate presentation; some diagrams missing labels.',3:'Poor presentation; diagrams absent or illegible.'}}
+  ]},
+  'Case Study':{levelType:'4-level', weightMode:'%', criteria:[
+    {name:'Problem Analysis', type:'content', weight:30, bloomIdx:3, coIdx:0,
+      descriptors:{0:'Sophisticated analysis using appropriate frameworks; core problem clearly identified.',1:'Good analysis with relevant frameworks applied.',2:'Basic analysis; frameworks not fully applied.',3:'Superficial analysis; problem not clearly identified.'}},
+    {name:'Stakeholder Evaluation', type:'behavioral', weight:25, bloomIdx:4, coIdx:1,
+      descriptors:{0:'All stakeholders identified and their competing interests critically evaluated.',1:'Good stakeholder analysis with minor gaps.',2:'Some stakeholders identified; analysis limited.',3:'Stakeholder analysis missing or superficial.'}},
+    {name:'Recommended Solution', type:'skill', weight:30, bloomIdx:5, coIdx:2,
+      descriptors:{0:'Well-justified, feasible solution with risks and trade-offs clearly discussed.',1:'Good solution with adequate justification.',2:'Solution proposed but justification is weak.',3:'No clear recommendation or justification.'}},
+    {name:'Real-World Connection', type:'content', weight:15, bloomIdx:3, coIdx:3,
+      descriptors:{0:'Insightful connection to real-world examples with transferable lessons identified.',1:'Good real-world connection made.',2:'Some connection made but surface-level.',3:'Little to no real-world connection.'}}
+  ]},
+  'Viva':{levelType:'4-level', weightMode:'%', criteria:[
+    {name:'Conceptual Understanding', type:'content', weight:30, bloomIdx:3, coIdx:0,
+      descriptors:{0:'Demonstrates deep understanding; explains concepts precisely without prompting.',1:'Good understanding; minor gaps when probed.',2:'Basic understanding; needs prompting to explain.',3:'Limited understanding; unable to explain core concepts.'}},
+    {name:'Application & Problem Solving', type:'skill', weight:30, bloomIdx:2, coIdx:1,
+      descriptors:{0:'Applies concepts fluently to new scenarios; reasoning is clear and confident.',1:'Good application with minor hesitation.',2:'Partial application; struggles with novel scenarios.',3:'Unable to apply concepts beyond recall.'}},
+    {name:'Technical Depth', type:'technical', weight:25, bloomIdx:3, coIdx:2,
+      descriptors:{0:'Demonstrates strong technical depth; justifies implementation choices clearly.',1:'Good technical knowledge with minor gaps.',2:'Adequate technical knowledge but surface-level.',3:'Weak technical knowledge; unable to justify choices.'}},
+    {name:'Communication & Clarity', type:'behavioral', weight:15, bloomIdx:2, coIdx:4,
+      descriptors:{0:'Communicates with confidence, clarity, and precision throughout.',1:'Good communication; minor clarity issues.',2:'Adequate communication; some unclear responses.',3:'Poor communication; responses hard to follow.'}}
+  ]},
+  'Code Review':{levelType:'4-level', weightMode:'%', criteria:[
+    {name:'Code Quality & Readability', type:'technical', weight:30, bloomIdx:4, coIdx:0,
+      descriptors:{0:'Exceptionally clean, readable code with consistent style and meaningful naming.',1:'Good code quality with minor inconsistencies.',2:'Adequate quality but readability is inconsistent.',3:'Poor quality; code is hard to read or understand.'}},
+    {name:'Design Principles', type:'process', weight:25, bloomIdx:5, coIdx:1,
+      descriptors:{0:'SOLID and design principles consistently applied and justified.',1:'Good use of principles with minor violations.',2:'Some principles applied but inconsistently.',3:'Design principles not applied or understood.'}},
+    {name:'Test Coverage', type:'technical', weight:25, bloomIdx:3, coIdx:2,
+      descriptors:{0:'High coverage with meaningful tests for edge cases and integration.',1:'Good coverage with some gaps.',2:'Basic tests present; coverage is limited.',3:'Minimal or no meaningful tests.'}},
+    {name:'Documentation', type:'compliance', weight:20, bloomIdx:2, coIdx:4,
+      descriptors:{0:'Excellent README, inline docs, and API documentation.',1:'Good documentation with minor omissions.',2:'Partial documentation; key parts missing.',3:'Little or no documentation.'}}
+  ]},
+  'Portfolio':{levelType:'4-level', weightMode:'%', criteria:[
+    {name:'Evidence Quality', type:'technical', weight:30, bloomIdx:3, coIdx:0,
+      descriptors:{0:'Strong, diverse evidence clearly linked to learning outcomes.',1:'Good evidence with minor gaps in variety.',2:'Adequate evidence but not always linked to outcomes.',3:'Weak or insufficient evidence.'}},
+    {name:'Depth of Reflection', type:'behavioral', weight:35, bloomIdx:5, coIdx:1,
+      descriptors:{0:'Deep, insightful reflections that demonstrate genuine growth.',1:'Good reflection with real insight.',2:'Surface-level reflection; limited depth.',3:'Minimal or superficial reflection.'}},
+    {name:'Presentation & Organisation', type:'skill', weight:20, bloomIdx:2, coIdx:2,
+      descriptors:{0:'Professionally organised with clear structure and consistent formatting.',1:'Good organisation with minor inconsistencies.',2:'Adequate organisation; structure is unclear in places.',3:'Poor organisation; difficult to navigate.'}},
+    {name:'CO/Learning Connection', type:'content', weight:15, bloomIdx:3, coIdx:3,
+      descriptors:{0:'Every entry clearly connected to course outcomes with explained relevance.',1:'Good CO connections with minor gaps.',2:'Some connections made but not consistently.',3:'Little to no connection to course outcomes.'}}
+  ]}
+};
+
+// ── FORMAT CHIPS (type-aware) ────────────────────────────────
+const FORMAT_CHIPS = {
+  'Project':    ['GitHub repository link required','PDF report, max 20 pages','A4 portrait, 12pt font','IEEE citation format','Executive summary required','Appendix for raw data'],
+  'Lab Record': ['Handwritten + scanned PDF','A4 ruled paper only','Observation table mandatory','Circuit diagrams in pencil','Lab coat worn — photo required','Supervisor countersignature'],
+  'Report':     ['APA 7th edition citations','1.5 line spacing','Times New Roman, 12pt','Cover page with student ID','Table of contents required','Word count declared on title page'],
+  'Essay':      ['MLA 9th edition','Double-spaced throughout','12pt Times New Roman','1-inch margins all sides','Header with last name + page number','No bullet points — prose only'],
+  'Case Study': ['PDF submission only','Max 3000 words','Harvard referencing','Evidence of secondary research','Appendix for supporting data','Executive summary — 1 page max'],
+  'Viva':       ['No submission required','Bring student ID','Presentation slides optional','Max 10 minutes per student','Questions from examiner panel'],
+  'Code Review':['GitHub repository link (public)','README.md required','Test files included','No compiled binaries committed','Commit history preserved','Branch per feature'],
+  'Portfolio':  ['PDF portfolio with TOC','Reflections in first person','Evidence artifacts attached','Max 50 pages including appendix','Consistent formatting throughout']
+};
+
+// ── BRIEF TEMPLATES (AI draft per assignment type) ──────────
+const P2_BRIEF_TEMPLATES = {
+  'Project': (ctx,g,items,marks) => `This ${g==='group'?'group':'individual'} project asks you to design and develop a working software system that addresses a real-world problem relevant to ${ctx.subject||'your course'}. You will apply software engineering principles across the full development lifecycle — from requirements gathering to testing and documentation.
+
+Your submission must demonstrate both technical depth and sound engineering practice. You are expected to justify design decisions, handle edge cases, and produce production-quality code and supporting documentation.
+
+${g==='group'?'Work in teams of 3–4. Each member is responsible for an identified module — contributions must be clearly attributed in the final report.':'This is an individual submission — all work must be your own. Collaboration is permitted for discussion, but code and documentation must be written independently.'}
+
+This assignment contributes ${marks} marks to your final grade and maps directly to the course outcomes for ${ctx.subject||'this course'}.`,
+
+  'Report': (ctx,g,items,marks) => `Write a structured academic report on the topic(s) covered in this assignment. Your report should demonstrate critical thinking, evidence-based reasoning, and clear academic writing aligned with ${ctx.subject||'the subject area'}.
+
+Use appropriate referencing throughout. Your argument must be supported by credible sources and your own analysis — avoid summarising without evaluation.
+
+${g==='group'?'This is a collaborative report — all group members must contribute meaningfully. A contribution statement is required as an appendix.':'This is an individual submission. All arguments, analysis, and conclusions must be your own.'}
+
+This report is worth ${marks} marks.`,
+
+  'Essay': (ctx,g,items,marks) => `Write a well-argued academic essay responding to the prompt(s) below. Your essay should present a clear thesis, develop it logically through body paragraphs, and conclude with a synthesis of your argument — not merely a summary.
+
+Avoid lists and bullet points. Write in continuous, academic prose. Cite all sources using the required format.
+
+This is an individual essay worth ${marks} marks in ${ctx.subject||'this course'}.`,
+
+  'Lab Record': (ctx,g,items,marks) => `Complete each experiment listed below and submit a handwritten lab record as specified. Your record must include aim, apparatus, procedure, observation, result, and inference for each experiment.
+
+All diagrams must be drawn in pencil. Raw readings must appear in observation tables — do not alter data retrospectively. Your supervisor must countersign each completed experiment before submission.
+
+This lab record is worth ${marks} marks and assesses your practical and analytical skills in ${ctx.subject||'the lab component'}.`,
+
+  'Case Study': (ctx,g,items,marks) => `Read the case scenario provided carefully. You are required to analyse the situation from multiple perspectives and respond to each question below with evidence-based reasoning.
+
+Draw on relevant theories, frameworks, and real-world examples from ${ctx.subject||'the domain'}. Your analysis should be critical, not descriptive — explain why, not just what.
+
+${g==='group'?'Submit one report per group. Attach a contribution table showing each member\'s role.':'This is an individual submission — all analysis must reflect your own reasoning.'}
+
+This case study is worth ${marks} marks.`,
+
+  'Viva': (ctx,g,items,marks) => `You will be examined orally by a panel on the topics and competency areas listed below. The examination tests your depth of understanding, ability to reason in real time, and clarity of communication.
+
+You may bring notes, but the examiner may ask follow-up questions beyond any prepared material. Answers must be spontaneous and your own.
+
+Each competency area is weighted — time will be allocated proportionally. Total marks: ${marks}.`,
+
+  'Code Review': (ctx,g,items,marks) => `Submit your codebase for structured review against the criteria below. Your repository must be clean, well-documented, and reflect production-quality engineering practices.
+
+The reviewer will assess code quality, design decisions, test coverage, and documentation — not just whether the code runs. Be prepared to justify architectural choices.
+
+${g==='group'?'All group members must have visible commits. Contribution is assessed from commit history.':'This is an individual submission — your commit history is part of the evidence.'}
+
+This review is worth ${marks} marks.`,
+
+  'Portfolio': (ctx,g,items,marks) => `Compile a personal learning portfolio that documents your growth, projects, and reflections over the semester in ${ctx.subject||'this course'}.
+
+Each entry should combine evidence (artefacts, outputs, or screenshots) with a personal reflection that explains what you learned, what you would do differently, and how it connects to the course outcomes.
+
+This is an individual portfolio worth ${marks} marks. Authenticity of reflection is as important as the quality of the evidence presented.`
+};
+
+function renderP2() {
+  p2LeftConfirmed = false; p2RightConfirmed = false; p2RubricLoaded = false;
+  p2Deliverables = []; p2GlobalArts = []; p2RubCriteria = [];
+  p2CoMappings = {}; p2SelectedType = ''; p2Grouping = 'individual';
+  p2BriefGenerated = false; p2FormatChips = [];
+
+  document.getElementById('p2').innerHTML = `
+    <!-- LEFT: Assignment Structuring -->
+    <div class="build-pane build-pane-left">
+      <div class="build-pane-hdr">📋 Assignment Structuring</div>
+
+      <!-- Assignment Type -->
+      <div class="card mb3">
+        <div class="section-label">Assignment Type</div>
+        <div class="type-grid" id="p2-type-grid">
+          ${Object.keys(ASSIGNMENT_CONFIGS).map(t =>
+            `<div class="type-tile" onclick="p2SetType(this,'${t}')">${ASSIGNMENT_CONFIGS[t].icon} ${t}</div>`).join('')}
+        </div>
+        <div class="fi-row" style="margin-top:8px">
+          <div class="fg"><label>Assignment Title</label><input class="fi" id="p2-title" placeholder="e.g. Software Architecture Design Project" oninput="p2LiveUpdate()"></div>
+          <div class="fg"><label>Total Marks</label><input type="number" class="fi" id="p2-marks" value="100" min="1" oninput="p2LiveUpdate()"></div>
+        </div>
+      </div>
+
+      <!-- Assignment Brief -->
+      <div id="p2-brief-card" class="card mb3">
+        <div class="flex fac fjb mb2">
+          <div>
+            <div class="section-label" style="margin:0">Assignment Brief</div>
+            <div class="text-sm text-muted mt1">What students will read as the assignment description</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="p2-brief-regen" onclick="p2GenerateBrief()" style="display:none;font-size:11px;color:var(--ai)">↺ Regenerate</button>
+        </div>
+        <div id="p2-brief-prompt" style="padding:14px;background:var(--n50);border-radius:var(--r-md);text-align:center;color:var(--n400);font-size:12px">
+          Select an assignment type to generate the brief automatically.
+        </div>
+        <div id="p2-brief-loading" style="display:none;padding:14px;text-align:center;background:var(--n50);border-radius:var(--r-md)">
+          <div class="ocr-spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto 6px"></div>
+          <div class="text-sm text-muted">Drafting brief from context…</div>
+        </div>
+        <div id="p2-brief-wrap" style="display:none">
+          <div style="font-size:10px;color:var(--ai);font-weight:700;margin-bottom:5px">✦ AI DRAFT — review and edit freely</div>
+          <textarea class="fi" id="p2-brief" rows="6" style="font-size:13px;line-height:1.75;font-family:inherit" oninput="p2LiveUpdate()"></textarea>
+        </div>
+      </div>
+
+      <!-- Deliverables + Artifacts -->
+      <div class="card mb3" id="p2-deliv-card" style="display:none">
+        <div class="flex fac fjb mb2">
+          <div>
+            <div class="section-label" style="margin:0" id="p2-deliv-label">Deliverables</div>
+            <div class="text-sm text-muted mt1" id="p2-deliv-hint">Each deliverable has its own artifact requirements</div>
+          </div>
+          <button class="btn btn-outline btn-sm" id="p2-add-deliv" onclick="p2AddDeliverable()">+ Add</button>
+        </div>
+        <div id="p2-deliv-list"></div>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--n100)">
+          <div class="section-label" style="margin-bottom:8px">Global Submission Artifacts</div>
+          <div class="text-sm text-muted mb2">Applies to all deliverables unless overridden above</div>
+          <div class="deliv-art-grid" id="p2-global-arts">
+            ${['PDF Report','Source Code','GitHub Link','Demo Video','Presentation Slides','Test Plan','UML Diagrams','Peer Review Form'].map(a =>
+              `<button class="dart-chip" onclick="p2ToggleGlobalArt(this,'${a}')">${a}</button>`).join('')}
+          </div>
+        </div>
+        <div id="p2-marks-check" class="text-sm mt2" style="margin-top:10px"></div>
+      </div>
+
+      <!-- Deadline + Policy -->
+      <div class="fi-row mb3">
+        <div class="fg"><label>Submission Deadline</label><input type="date" class="fi" id="p2-deadline" oninput="p2LiveUpdate()"></div>
+        <div class="fg"><label>Late Submission Policy</label>
+          <select class="fi" id="p2-policy" onchange="p2LiveUpdate()">
+            <option value="">Select policy…</option>
+            <option value="no-late">No late submissions</option>
+            <option value="10pct-per-day">−10% per day (max 3 days)</option>
+            <option value="50pct-cap">50% mark cap after deadline</option>
+            <option value="grace-24h">24-hour grace period</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Format Requirements (auto) -->
+      <div id="p2-format-card" class="card mb3" style="display:none">
+        <div class="section-label" style="margin-bottom:4px">Format Requirements</div>
+        <div class="text-sm text-muted mb2">Auto-generated from your deliverables and assignment type</div>
+        <div id="p2-format-auto" style="background:var(--n50);border-radius:var(--r-sm);padding:10px 14px;font-size:12px;color:var(--n700);line-height:1.7"></div>
+        <div id="p2-format-override-wrap" style="display:none;margin-top:8px">
+          <textarea class="fi" id="p2-format-override" rows="2" placeholder="Add custom format requirements…" oninput="p2LiveUpdate()" style="font-size:12px"></textarea>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:6px;font-size:11px;color:var(--n500)" onclick="document.getElementById('p2-format-override-wrap').style.display=document.getElementById('p2-format-override-wrap').style.display==='none'?'block':'none'">Adjust ↓</button>
+      </div>
+
+      <!-- Scenario (Case Study only) -->
+      <div id="p2-scenario-wrap" style="display:none" class="card mb3">
+        <div class="section-label">Case Scenario</div>
+        <textarea class="fi" id="p2-scenario" rows="4" placeholder="Describe the scenario students will analyse…" oninput="p2LiveUpdate()" style="font-size:13px;line-height:1.7"></textarea>
+      </div>
+
+      <!-- Confirm left pane -->
+      <div id="p2-left-confirmed-banner" style="display:none;background:var(--success-light);border:1.5px solid var(--success);border-radius:var(--r-md);padding:12px 16px;margin-bottom:12px;font-size:13px;font-weight:700;color:var(--success)">
+        ✓ Assignment confirmed — complete the rubric on the right to continue
+      </div>
+      <div class="phase-footer" id="p2-left-footer" style="position:sticky;bottom:0;background:var(--white);border-top:1px solid var(--n100);padding:12px 0;margin-top:8px">
+        <span class="text-sm text-muted" id="p2-left-msg">Select a type and fill in the details</span>
+        <button class="btn btn-primary" id="p2-confirm-left" disabled onclick="p2ConfirmLeft()">Confirm Assignment →</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Rubric -->
+    <div class="build-pane build-pane-right">
+      <div class="build-pane-hdr">⚖️ Rubric</div>
+
+      <!-- Fetch / Upload -->
+      <div id="p2-rub-fetch" class="rub-fetch-banner">
+        <div class="ocr-spinner" style="width:18px;height:18px;border-width:2px;flex-shrink:0"></div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--primary)">Fetching from institution resource bank…</div>
+          <div style="font-size:11px;color:var(--n500);margin-top:2px">Searching for matching rubric templates</div>
+        </div>
+      </div>
+      <div id="p2-rub-found" style="display:none" class="mb3">
+        <div class="rub-fetch-banner" style="justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--primary)">✦ Template found in resource bank</div>
+            <div style="font-size:11px;color:var(--n600);margin-top:2px" id="p2-rub-found-name">Software Engineering Project Rubric v3</div>
+          </div>
+          <div class="flex gap2">
+            <button class="btn btn-primary btn-sm" onclick="p2UseRubricFromBank()">Use this →</button>
+          </div>
+        </div>
+        <div style="margin-top:10px;padding:10px 14px;background:var(--white);border:1px dashed var(--n300);border-radius:var(--r-md)">
+          <div style="font-size:11px;color:var(--n500);margin-bottom:6px">Or upload your own rubric (PDF/DOCX)</div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="file" accept=".pdf,.docx" onchange="p2HandleRubricUpload(this)" style="display:none" id="p2-rub-upload-input">
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('p2-rub-upload-input').click()">📎 Upload rubric</button>
+            <span class="text-sm text-muted" id="p2-rub-upload-name">No file chosen</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Criteria list -->
+      <div id="p2-rub-criteria" style="display:none"></div>
+
+      <!-- Quality status -->
+      <div id="p2-rub-quality" style="display:none" class="rub-quality mb3">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="section-label" style="margin:0">Rubric Health</div>
+          <span id="p2-rub-health-pct" style="font-size:16px;font-weight:800;color:var(--success)">—</span>
+        </div>
+        <div class="prog-track mb2" style="height:6px"><div class="prog-fill" id="p2-rub-health-bar" style="width:0%"></div></div>
+        <div id="p2-rub-flags"></div>
+      </div>
+
+      <!-- Add criterion -->
+      <div id="p2-add-crit-wrap" style="display:none;margin-bottom:12px">
+        <button class="btn btn-outline btn-sm" onclick="p2AddCriterion()">+ Add Criterion</button>
+      </div>
+
+      <!-- Confirm rubric -->
+      <div id="p2-right-confirmed-banner" style="display:none;background:var(--success-light);border:1.5px solid var(--success);border-radius:var(--r-md);padding:12px 16px;margin-bottom:12px;font-size:13px;font-weight:700;color:var(--success)">
+        ✓ Rubric confirmed
+      </div>
+      <div id="p2-right-footer" style="display:none;position:sticky;bottom:0;background:var(--n50);border-top:1px solid var(--n100);padding:12px 0;margin-top:8px">
+        <button class="btn btn-success" id="p2-confirm-right" onclick="p2ConfirmRight()">✓ Confirm Rubric &amp; Continue</button>
+      </div>
+    </div>
+  `;
+
+  // Start rubric fetch animation
+  setTimeout(() => p2ShowRubricFound(), 2000);
+}
+
+// ── ASSIGNMENT FUNCTIONS ───────────────────────────────────
+function p2SetType(el, t) {
+  document.querySelectorAll('.type-tile').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+  p2SelectedType = t;
+  const cfg = ASSIGNMENT_CONFIGS[t];
+  document.getElementById('p2-deliv-card').style.display = '';
+  document.getElementById('p2-deliv-label').textContent = cfg.label;
+  document.getElementById('p2-deliv-hint').textContent = cfg.hint;
+  document.getElementById('p2-add-deliv').textContent = `+ Add ${cfg.itemLabel}`;
+  document.getElementById('p2-scenario-wrap').style.display = cfg.hasScenario ? '' : 'none';
+  p2Deliverables = (cfg.suggestions || []).slice(0, 3).map((s, i) => ({
+    id: Date.now() + i, name: s.name || `${cfg.itemLabel} ${i+1}`,
+    description: s.description || s.text || '', marks: s.marks || 25, artifacts: [...(cfg.artifacts||[])]
+  }));
+  if (!p2Deliverables.length) p2Deliverables = [{id:Date.now(), name:'', description:'', marks:25, artifacts:[]}];
+  p2RenderDeliverables();
+  p2AutoFormat();
+  document.getElementById('p2-format-card').style.display = '';
+  if (!p2BriefGenerated) setTimeout(() => p2GenerateBrief(), 400);
+  p2TriggerRubricFetch(t);
+  p2CheckLeftReady();
+  p2LiveUpdate();
+}
+
+function p2RenderDeliverables() {
+  const el = document.getElementById('p2-deliv-list');
+  if (!el) return;
+  const ARTS = ['PDF Report','Source Code','GitHub Link','Demo Video','Presentation Slides','Test Plan','UML Diagrams','Peer Review Form'];
+  el.innerHTML = p2Deliverables.map((d, i) => `
+    <div class="deliv-card ${d._open?'open':''}" id="deliv-${d.id}">
+      <div class="deliv-card-hdr" onclick="p2ToggleDeliv('${d.id}')">
+        <div class="deliv-num">${i+1}</div>
+        <input class="fi" style="flex:1;margin:0;border:none;padding:2px 6px;font-weight:600;font-size:13px;background:transparent"
+          value="${(d.name||'').replace(/"/g,'&quot;')}" placeholder="Deliverable name…" onclick="event.stopPropagation()"
+          oninput="p2Deliverables[${i}].name=this.value;p2LiveUpdate()">
+        <input type="number" style="width:60px;border:1px solid var(--n200);border-radius:var(--r-sm);padding:3px 6px;font-size:12px;font-weight:700;text-align:center"
+          value="${d.marks}" min="0" onclick="event.stopPropagation()"
+          oninput="p2Deliverables[${i}].marks=+this.value;p2MarksCheck();p2LiveUpdate()">
+        <span class="text-sm text-muted" style="margin-left:4px">marks</span>
+        ${p2Deliverables.length>1?`<button class="btn btn-ghost btn-sm" style="color:var(--danger);padding:2px 6px" onclick="event.stopPropagation();p2RemoveDeliv(${i})">✕</button>`:''}
+        <span style="color:var(--n400);font-size:11px">${d._open?'▲':'▼'}</span>
+      </div>
+      <div class="deliv-body">
+        <textarea class="fi" placeholder="Description or requirements for this deliverable…" rows="2" style="font-size:12px;margin-bottom:10px"
+          oninput="p2Deliverables[${i}].description=this.value;p2LiveUpdate()">${d.description||''}</textarea>
+        <div class="deliv-art-wrap">
+          <div style="font-size:11px;font-weight:600;color:var(--n500);margin-bottom:6px">Artifacts for this deliverable:</div>
+          <div class="deliv-art-grid">
+            ${ARTS.map(a => `<button class="dart-chip${(d.artifacts||[]).includes(a)?' sel':''}"
+              onclick="p2ToggleDelivArt(${i},'${a}',this)">${a}</button>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+  p2MarksCheck();
+}
+
+function p2ToggleDeliv(id) {
+  const idx = p2Deliverables.findIndex(d => String(d.id) === String(id));
+  if (idx >= 0) p2Deliverables[idx]._open = !p2Deliverables[idx]._open;
+  p2RenderDeliverables();
+}
+function p2AddDeliverable() {
+  p2Deliverables.push({id:Date.now(), name:'', description:'', marks:10, artifacts:[], _open:true});
+  p2RenderDeliverables();
+}
+function p2RemoveDeliv(i) { p2Deliverables.splice(i,1); p2RenderDeliverables(); p2LiveUpdate(); }
+function p2ToggleDelivArt(delivIdx, art, btn) {
+  const d = p2Deliverables[delivIdx];
+  if (!d.artifacts) d.artifacts = [];
+  if (d.artifacts.includes(art)) { d.artifacts = d.artifacts.filter(a=>a!==art); btn.classList.remove('sel'); }
+  else { d.artifacts.push(art); btn.classList.add('sel'); }
+  p2LiveUpdate();
+}
+function p2ToggleGlobalArt(btn, art) {
+  btn.classList.toggle('sel');
+  if (btn.classList.contains('sel')) { if (!p2GlobalArts.includes(art)) p2GlobalArts.push(art); }
+  else { p2GlobalArts = p2GlobalArts.filter(a=>a!==art); }
+  p2LiveUpdate();
+}
+function p2MarksCheck() {
+  const total = parseInt(document.getElementById('p2-marks')?.value||100);
+  const sum = p2Deliverables.reduce((s,d)=>s+(+d.marks||0),0);
+  const el = document.getElementById('p2-marks-check');
+  if (!el) return;
+  const diff = total - sum;
+  el.innerHTML = diff===0 ? `<span style="color:var(--success);font-weight:600">✓ ${sum} marks allocated — matches total</span>`
+    : `<span style="color:var(--warning)">⚠ ${sum} allocated — ${diff>0?diff+' unallocated':Math.abs(diff)+' over total'}</span>`;
+}
+function p2AutoFormat() {
+  const chips = FORMAT_CHIPS[p2SelectedType] || [];
+  const auto = chips.slice(0,3).join(' · ');
+  const el = document.getElementById('p2-format-auto');
+  if (el) el.textContent = auto || 'Format requirements will be auto-generated when deliverables are set.';
+}
+function p2SetGrouping(g) {
+  p2Grouping = g;
+  ['individual','group','either'].forEach(id => {
+    const el = document.getElementById(`grp-${id}`);
+    if (el) el.classList.toggle('selected', id===g);
+  });
+  if (p2BriefGenerated) p2GenerateBrief();
+  p2LiveUpdate();
+}
+function p2GenerateBrief() {
+  if (!p2SelectedType) return;
+  const tmpl = P2_BRIEF_TEMPLATES[p2SelectedType];
+  if (!tmpl) return;
+  const loading = document.getElementById('p2-brief-loading');
+  const wrap = document.getElementById('p2-brief-wrap');
+  const prompt = document.getElementById('p2-brief-prompt');
+  const regenBtn = document.getElementById('p2-brief-regen');
+  if (loading) loading.style.display = '';
+  if (wrap) wrap.style.display = 'none';
+  if (prompt) prompt.style.display = 'none';
+  setTimeout(() => {
+    const ctx = S.context || {};
+    const marks = document.getElementById('p2-marks')?.value || '100';
+    const draft = tmpl(ctx, p2Grouping, p2Deliverables, marks);
+    const ta = document.getElementById('p2-brief');
+    if (ta) ta.value = draft;
+    if (loading) loading.style.display = 'none';
+    if (wrap) wrap.style.display = '';
+    if (regenBtn) regenBtn.style.display = '';
+    p2BriefGenerated = true;
+    p2LiveUpdate();
+    audit(`AI brief generated for ${p2SelectedType}`, 2);
+  }, 1200);
+}
+function p2CheckLeftReady() {
+  const hasType = !!p2SelectedType;
+  const hasTitle = !!(document.getElementById('p2-title')?.value.trim());
+  const hasDelivs = p2Deliverables.some(d=>(d.name||d.description||'').trim());
+  const hasDate = !!(document.getElementById('p2-deadline')?.value);
+  const hasPolicy = !!(document.getElementById('p2-policy')?.value);
+  const ok = hasType && hasTitle && hasDelivs && hasDate && hasPolicy;
+  const btn = document.getElementById('p2-confirm-left');
+  const msg = document.getElementById('p2-left-msg');
+  if (btn) btn.disabled = !ok;
+  if (msg) msg.textContent = !hasType?'Select an assignment type':!hasTitle?'Add a title':!hasDelivs?'Add at least one deliverable':!hasDate?'Set a deadline':!hasPolicy?'Select a late submission policy':'';
+}
+function p2LiveUpdate() {
+  S.assignment.type = p2SelectedType;
+  S.assignment.title = document.getElementById('p2-title')?.value || '';
+  S.assignment.maxMarks = parseInt(document.getElementById('p2-marks')?.value||100);
+  S.assignment.grouping = p2Grouping;
+  S.assignment.instructions = document.getElementById('p2-brief')?.value || '';
+  S.assignment.deliverables = p2Deliverables;
+  S.assignment.globalArtifacts = p2GlobalArts;
+  S.assignment.deadline = document.getElementById('p2-deadline')?.value || '';
+  S.assignment.policy = document.getElementById('p2-policy')?.value || '';
+  S.assignment.format = document.getElementById('p2-format-override')?.value || document.getElementById('p2-format-auto')?.textContent || '';
+  p2CheckLeftReady();
+  p2UpdateRubricHealth();
+}
+function p2ConfirmLeft() {
+  p2LiveUpdate();
+  p2LeftConfirmed = true;
+  document.getElementById('p2-left-confirmed-banner').style.display = '';
+  document.getElementById('p2-left-footer').style.display = 'none';
+  audit('Assignment structure confirmed', 2);
+  p2CheckBothConfirmed();
+}
+
+// ── RUBRIC FUNCTIONS ───────────────────────────────────────
+function p2ShowRubricFound() {
+  const fetchEl = document.getElementById('p2-rub-fetch');
+  const foundEl = document.getElementById('p2-rub-found');
+  if (fetchEl) fetchEl.style.display = 'none';
+  if (foundEl) foundEl.style.display = '';
+  const nm = document.getElementById('p2-rub-found-name');
+  if (nm) nm.textContent = p2SelectedType ? `${p2SelectedType} Rubric Template — CS Dept v3` : 'Software Engineering Project Rubric v3';
+}
+function p2TriggerRubricFetch(t) { if (p2RubricLoaded) p2LoadCriteriaFromProfile(t); }
+function p2UseRubricFromBank() {
+  document.getElementById('p2-rub-found').style.display = 'none';
+  p2LoadCriteriaFromProfile(p2SelectedType);
+}
+function p2HandleRubricUpload(input) {
+  const file = input.files[0]; if (!file) return;
+  document.getElementById('p2-rub-upload-name').textContent = file.name;
+  setTimeout(() => {
+    document.getElementById('p2-rub-found').style.display = 'none';
+    p2LoadCriteriaFromProfile(p2SelectedType || 'Project');
+    toast('Rubric uploaded and parsed', 'success');
+  }, 1500);
+}
+function p2LoadCriteriaFromProfile(type) {
+  const profile = RUBRIC_PROFILES[type] || RUBRIC_PROFILES['Project'];
+  p2RubCriteria = profile.criteria.map((c, i) => ({
+    id: 'rc_' + i, name: c.name, type: c.type, weight: c.weight,
+    descriptors: {...c.descriptors},
+    confirmed: false, open: false,
+    nudge: `Consider using measurable action verbs (Bloom's ${['Apply','Analyse','Evaluate','Create'][i%4]}) — e.g. "The student implements X demonstrating Y."`
+  }));
+  p2RubricLoaded = true;
+  p2RenderCriteria();
+  document.getElementById('p2-rub-criteria').style.display = '';
+  document.getElementById('p2-rub-quality').style.display = '';
+  document.getElementById('p2-add-crit-wrap').style.display = '';
+  document.getElementById('p2-right-footer').style.display = '';
+  p2UpdateRubricHealth();
+  audit(`Rubric loaded: ${type}`, 2);
+}
+function p2BuildCOMappings() { /* CO/PO removed */ }
+function p2ToggleCOMap() {
+  const body = document.getElementById('p2-co-map-body');
+  if (body) body.style.display = body.style.display==='none' ? '' : 'none';
+}
+function p2RenderCOMapBody() { /* CO/PO removed */ }
+function p2RenderCriteria() {
+  const el = document.getElementById('p2-rub-criteria'); if (!el) return;
+  const lvlCfg = P3_LEVEL_CONFIGS['4-level'];
+  const typeMap = {}; CRIT_TYPES.forEach(t=>typeMap[t.id]=t);
+  el.innerHTML = p2RubCriteria.map((c, ci) => {
+    const ct = typeMap[c.type] || typeMap['content'];
+    const confirmedAll = lvlCfg.levels.every((_,li)=>(c.descriptors[li]||'').trim().length>10);
+    const hasFlag = !confirmedAll;
+    return `
+    <div class="rub-criterion ${c.confirmed?'confirmed':''} ${hasFlag?'has-flag':''} ${c.open?'open':''}" id="rub-crit-${c.id}">
+      <div class="rub-crit-hdr" onclick="p2ToggleCrit('${c.id}')">
+        <span style="font-size:11px;padding:2px 7px;border-radius:99px;background:${ct.bg};color:${ct.color};font-weight:700;flex-shrink:0">${ct.icon} ${ct.label}</span>
+        <span class="rub-crit-name">${c.name}</span>
+        <span style="font-size:12px;color:var(--n400);font-weight:600;flex-shrink:0">${c.weight}%</span>
+        ${c.confirmed?'<span style="color:var(--success);font-size:13px">✓</span>':hasFlag?'<span style="color:var(--warning);font-size:13px">⚠</span>':''}
+        <span style="color:var(--n400);font-size:11px">${c.open?'▲':'▼'}</span>
+      </div>
+      <div class="rub-crit-body">
+        <div style="font-size:11px;font-weight:600;color:var(--n500);margin-bottom:8px">Criterion name:</div>
+        <input class="fi" value="${c.name.replace(/"/g,'&quot;')}" style="margin-bottom:12px;font-weight:700"
+          oninput="p2RubCriteria[${ci}].name=this.value" placeholder="Criterion name…">
+        <div style="font-size:11px;font-weight:600;color:var(--n500);margin-bottom:8px">Descriptors:</div>
+        ${lvlCfg.levels.map((lname, li) => `
+          <div class="rub-desc-grid">
+            <div class="rub-level-tag" style="background:${lvlCfg.lights[li]};color:${lvlCfg.colors[li]};border:1px solid ${lvlCfg.borders[li]}">${lname}<br><span style="font-size:9px;opacity:.75">${lvlCfg.ranges[li]}</span></div>
+            <textarea class="fi" rows="2" style="font-size:12px;line-height:1.6;resize:vertical"
+              placeholder="Describe what ${lname} looks like for this criterion…"
+              oninput="p2RubCriteria[${ci}].descriptors[${li}]=this.value;p2UpdateRubricHealth()">${c.descriptors[li]||''}</textarea>
+          </div>`).join('')}
+        <div class="rub-nudge">
+          <div class="rub-nudge-label">✦ AI suggestion</div>
+          ${c.nudge||'Consider adding specific, measurable criteria to distinguish between performance levels.'}
+        </div>
+        <div class="confirm-strip">
+          <button class="btn btn-sm ${c.confirmed?'btn-success':'btn-outline'}" style="font-size:12px;font-weight:700;border-radius:var(--r-sm);padding:6px 14px"
+            onclick="p2ConfirmCrit('${c.id}',${ci})">
+            ${c.confirmed?'✓ Confirmed':'Looks good — confirm ✓'}
+          </button>
+          ${p2RubCriteria.length>1?`<button class="btn btn-ghost btn-sm" style="color:var(--danger);font-size:12px" onclick="p2RemoveCrit('${c.id}')">Remove</button>`:''}
+          <span style="flex:1"></span>
+          <span style="font-size:11px;color:var(--n400)">Weight: <input type="number" style="width:46px;border:1px solid var(--n200);border-radius:4px;padding:2px 4px;font-size:12px;text-align:center" value="${c.weight}" min="0" max="100" oninput="p2RubCriteria[${ci}].weight=+this.value;p2UpdateRubricHealth()">%</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function p2ToggleCrit(id) {
+  const c = p2RubCriteria.find(x=>x.id===id);
+  if (c) { c.open=!c.open; p2RenderCriteria(); }
+}
+function p2ConfirmCrit(id, ci) {
+  const c = p2RubCriteria.find(x=>x.id===id);
+  if (c) { c.confirmed=!c.confirmed; p2RenderCriteria(); p2UpdateRubricHealth(); }
+}
+function p2RemoveCrit(id) {
+  p2RubCriteria = p2RubCriteria.filter(c=>c.id!==id);
+  p2RenderCriteria(); p2UpdateRubricHealth();
+}
+function p2AddCriterion() {
+  const id = 'rc_new_'+Date.now();
+  p2RubCriteria.push({
+    id, name:'New Criterion', type:'content', weight:10,
+    descriptors:{0:'',1:'',2:'',3:''},
+    confirmed:false, open:true,
+    nudge:'Define what excellent, good, developing, and beginning performance looks like for this criterion.'
+  });
+  p2RenderCriteria();
+  setTimeout(()=>document.getElementById(`rub-crit-${id}`)?.scrollIntoView({behavior:'smooth',block:'center'}),100);
+}
+function p2UpdateRubricHealth() {
+  const el = document.getElementById('p2-rub-health-pct');
+  const bar = document.getElementById('p2-rub-health-bar');
+  const flagsEl = document.getElementById('p2-rub-flags');
+  if (!el || !p2RubCriteria.length) return;
+  const flags = []; let score = 100;
+  const lvlCfg = P3_LEVEL_CONFIGS['4-level'];
+  const totalW = p2RubCriteria.reduce((s,c)=>s+(+c.weight||0),0);
+  if (Math.abs(totalW-100)>1) { flags.push({type:'warn',msg:`Weights sum to ${totalW}% — should be 100%`}); score-=15; }
+  let missingDesc=0;
+  p2RubCriteria.forEach(c=>{ lvlCfg.levels.forEach((_,li)=>{ if (!(c.descriptors[li]||'').trim()) missingDesc++; }); });
+  if (missingDesc>0) { flags.push({type:'warn',msg:`${missingDesc} descriptor(s) missing`}); score-=Math.min(40,missingDesc*5); }
+  const unconf = p2RubCriteria.filter(c=>!c.confirmed).length;
+  if (unconf>0) { flags.push({type:'info',msg:`${unconf} criterion/criteria not yet confirmed`}); score-=unconf*5; }
+  const names = p2RubCriteria.map(c=>c.name.toLowerCase());
+  const dups = names.filter((n,i)=>names.indexOf(n)!==i);
+  if (dups.length) { flags.push({type:'bad',msg:`Possible overlap in criterion names`}); score-=10; }
+  score = Math.max(0,Math.min(100,score));
+  const color = score>=80?'var(--success)':score>=50?'var(--warning)':'var(--danger)';
+  el.textContent = `${score}%`; el.style.color = color;
+  if (bar) { bar.style.width=score+'%'; bar.style.background=color; }
+  if (flagsEl) {
+    flagsEl.innerHTML = flags.length ? flags.map(f=>`
+      <div class="rub-flag-row">
+        <span style="font-size:13px">${f.type==='bad'?'✗':f.type==='warn'?'⚠':'ℹ'}</span>
+        <span style="color:var(--n700)">${f.msg}</span>
+      </div>`).join('') : '<div style="font-size:12px;color:var(--success)">✓ No issues found</div>';
+  }
+}
+function p2ConfirmRight() {
+  if (!p2RubricLoaded) { toast('Load a rubric first','warning'); return; }
+  S.rubric.criteria = p2RubCriteria;
+  S.rubric.coMappings = p2CoMappings;
+  S.rubric.confirmed = true;
+  p2RightConfirmed = true;
+  document.getElementById('p2-right-confirmed-banner').style.display = '';
+  document.getElementById('p2-right-footer').style.display = 'none';
+  audit('Rubric confirmed', 2);
+  p2CheckBothConfirmed();
+}
+function p2CheckBothConfirmed() {
+  if (p2LeftConfirmed && p2RightConfirmed) { setTimeout(()=>completePhase(2), 400); }
+}
+
+/* REMOVED OLD renderP2 BELOW — replaced above */
+
+
+/* ═══════════════════════════════════════════════════
+   PHASE 3 — CALIBRATE (Blind Grading)
+═══════════════════════════════════════════════════ */
+
+// Level labels match rubric levels (4=Excellent, 3=Good, 2=Developing, 1=Beginning)
+const CAL_LEVELS = {
+  4: {label:'Excellent', color:'#16A34A', bg:'#F0FDF4', border:'#BBF7D0'},
+  3: {label:'Good',      color:'#1D4ED8', bg:'#EFF6FF', border:'#BFDBFE'},
+  2: {label:'Developing',color:'#D97706', bg:'#FFFBEB', border:'#FDE68A'},
+  1: {label:'Beginning', color:'#DC2626', bg:'#FFF1F2', border:'#FECACA'}
+};
+
+const PAST_ASGN_SAMPLES = [
+  {
+    id:'pa1', label:'Sample A', level:'Strong Student',
+    refId:'CS601–2024–047',
+    sections: [
+      {heading:'System Architecture', text:'The proposed system adopts a microservices architecture comprising five independent services: User Management, Product Catalogue, Order Processing, Payment Gateway, and Notification Service. Each service exposes a RESTful API secured with JWT bearer tokens. An API Gateway (Kong) handles routing, rate-limiting and authentication offloading. Services communicate asynchronously via RabbitMQ for order and notification events, reducing coupling and improving fault tolerance.'},
+      {heading:'Design Principles Applied', text:'SOLID principles are consistently applied. Single Responsibility is enforced by separating domain logic from data-access layers using the Repository pattern. Open/Closed is demonstrated in the Payment module — Stripe, PayPal and UPI are pluggable without modifying core payment logic. Dependency Inversion is achieved through interface abstractions across all service boundaries.'},
+      {heading:'Testing Strategy', text:'Unit tests cover 82% of business logic using Jest. Integration tests validate all inter-service API contracts using Supertest. A Postman collection documents and validates all 47 endpoints. Edge cases including expired tokens, malformed payloads, and service timeouts are covered.'}
+    ],
+    criteria: ['Technical Accuracy','Clarity & Structure','Completeness','Analysis Depth','Referencing'],
+    originalLevels: [4,3,4,4,3],   // hidden until submitted
+    aiLevels:       [3,2,3,3,2],   // hidden until submitted
+    submitted: false
+  },
+  {
+    id:'pa2', label:'Sample B', level:'Mid-range Student',
+    refId:'CS601–2024–031',
+    sections: [
+      {heading:'System Architecture', text:'The system uses a monolithic Node.js application with Express. The frontend is built in React and communicates via REST APIs. A MySQL database stores all application data. Authentication uses session cookies. The system is deployed on a single VM.'},
+      {heading:'Design Principles Applied', text:'MVC pattern is used for code separation. Routes, controllers and models are in separate folders. Some business logic is mixed into the controllers. No formal design patterns are documented.'},
+      {heading:'Testing Strategy', text:'Manual testing was carried out for all main flows. A few unit tests were written for utility functions. No automated integration tests exist. Test cases are listed in a spreadsheet.'}
+    ],
+    criteria: ['Technical Accuracy','Clarity & Structure','Completeness','Analysis Depth','Referencing'],
+    originalLevels: [3,3,2,2,2],
+    aiLevels:       [3,2,2,2,1],
+    submitted: false
+  },
+  {
+    id:'pa3', label:'Sample C', level:'Developing Student',
+    refId:'CS601–2024–009',
+    sections: [
+      {heading:'System Architecture', text:'The project is a website built with HTML, CSS, and JavaScript. It has a login page and a dashboard. The backend is PHP with a MySQL database. Pages are connected through links.'},
+      {heading:'Design Principles Applied', text:'The code is split into separate PHP files for each page. Some functions are reused in a helper.php file.'},
+      {heading:'Testing Strategy', text:'The application was tested by clicking through the pages. Bugs were fixed when found. A peer reviewed the login page.'}
+    ],
+    criteria: ['Technical Accuracy','Clarity & Structure','Completeness','Analysis Depth','Referencing'],
+    originalLevels: [2,1,1,1,1],
+    aiLevels:       [2,2,1,1,1],
+    submitted: false
+  }
+];
+
+let p3InstructorLevels = {}; // {sampleId: [level, level, ...]}
+
+function renderP3() {
+  p3InstructorLevels = {};
+  PAST_ASGN_SAMPLES.forEach(s => {
+    s.submitted = false;
+    p3InstructorLevels[s.id] = s.criteria.map(() => null);
+  });
+
+  document.getElementById('p3').innerHTML = `
+    <div class="phase-hdr">
+      <h1>Calibrate Grading</h1>
+      <p>Grade each sample submission using your rubric levels. AI scores are hidden — submit first, then compare.</p>
+    </div>
+
+    <!-- Blind mode banner -->
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:var(--r-md);margin-bottom:20px">
+      <span style="font-size:18px;flex-shrink:0">🔒</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#92400E">Blind Grading Mode Active</div>
+        <div style="font-size:12px;color:#78350F;margin-top:2px">AI scores are hidden. Grade each sample using the rubric, then submit to reveal the comparison.</div>
+      </div>
+    </div>
+
+    ${PAST_ASGN_SAMPLES.map((s, si) => `
+    <div class="cal-sample" id="cal-card-${s.id}">
+      <div class="cal-hdr" onclick="p3ToggleSample('${s.id}')">
+        <div>
+          <div class="cal-hdr-title">${s.label} — ${s.level}</div>
+          <div style="font-size:11px;color:var(--n500);margin-top:2px">${s.refId}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span id="cal-status-${s.id}" class="badge b-neutral">Pending</span>
+          <span style="color:var(--n400);font-size:11px">▼</span>
+        </div>
+      </div>
+      <div class="cal-body" id="cal-body-${s.id}" style="display:none">
+        <!-- Student work excerpts -->
+        <div class="cal-submission">
+          ${s.sections.map(sec => `
+            <div class="cal-sub-section">
+              <div class="cal-sub-heading">${sec.heading}</div>
+              <div style="font-size:12px;color:var(--n700);line-height:1.7">${sec.text}</div>
+            </div>`).join('')}
+        </div>
+
+        <!-- Scoring table -->
+        <div style="font-size:11px;font-weight:700;color:var(--n500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">YOUR SCORES (1–4)</div>
+        <div id="cal-score-table-${s.id}">
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="border-bottom:2px solid var(--n200)">
+                <th style="text-align:left;padding:8px 10px;font-size:12px;color:var(--n600);font-weight:600;width:40%">Criterion</th>
+                <th style="text-align:left;padding:8px 10px;font-size:12px;color:var(--n600);font-weight:600">Your Score</th>
+                <th style="width:80px;text-align:center;padding:8px 10px;font-size:12px;color:var(--n600);font-weight:600" id="cal-th-ai-${s.id}" style="display:none">AI Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${s.criteria.map((c, ci) => `
+              <tr style="border-bottom:1px solid var(--n100)" id="cal-row-${s.id}-${ci}">
+                <td style="padding:10px;font-size:13px;font-weight:600;color:var(--n700)">${c}</td>
+                <td style="padding:8px 10px">
+                  <div style="display:flex;gap:6px" id="cal-btns-${s.id}-${ci}">
+                    ${[1,2,3,4].map(lv => `
+                    <button onclick="p3SetLevel('${s.id}',${ci},${lv})" id="cal-btn-${s.id}-${ci}-${lv}"
+                      style="width:36px;height:36px;border-radius:var(--r-sm);border:2px solid var(--n200);background:var(--white);font-size:14px;font-weight:700;color:var(--n600);cursor:pointer;transition:all .15s;flex-shrink:0"
+                      title="Level ${lv}: ${CAL_LEVELS[lv].label}">${lv}</button>`).join('')}
+                  </div>
+                </td>
+                <td style="padding:8px 10px;text-align:center" id="cal-ai-cell-${s.id}-${ci}"></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Submit -->
+        <div style="margin-top:16px;display:flex;align-items:center;gap:12px">
+          <button class="btn btn-success btn-sm" id="cal-submit-${s.id}" disabled onclick="p3SubmitSample('${s.id}',${si})">Submit ${s.label} Scores</button>
+          <div id="cal-result-${s.id}" style="display:none;font-size:12px;font-weight:600"></div>
+        </div>
+      </div>
+    </div>`).join('')}
+
+    <div id="p3-summary" style="display:none"></div>
+
+    <div class="phase-footer" id="p3-footer" style="display:none">
+      <span class="text-sm text-muted" id="p3-msg"></span>
+      <button class="btn btn-primary" onclick="p3Confirm()">Confirm Calibration →</button>
+    </div>
+  `;
+
+  // Auto-open first sample
+  setTimeout(() => p3ToggleSample('pa1'), 300);
+}
+
+function p3ToggleSample(id) {
+  const body = document.getElementById(`cal-body-${id}`);
+  if (body) body.style.display = body.style.display === 'none' ? '' : 'none';
+}
+
+function p3SetLevel(sid, ci, level) {
+  p3InstructorLevels[sid][ci] = level;
+  const lv = CAL_LEVELS[level];
+  // Update button styles
+  [1,2,3,4].forEach(l => {
+    const btn = document.getElementById(`cal-btn-${sid}-${ci}-${l}`);
+    if (!btn) return;
+    if (l === level) {
+      btn.style.background = lv.bg;
+      btn.style.borderColor = lv.color;
+      btn.style.color = lv.color;
+    } else {
+      btn.style.background = 'var(--white)';
+      btn.style.borderColor = 'var(--n200)';
+      btn.style.color = 'var(--n600)';
+    }
+  });
+  // Check if all criteria scored for this sample
+  const allFilled = p3InstructorLevels[sid].every(v => v !== null);
+  const submitBtn = document.getElementById(`cal-submit-${sid}`);
+  if (submitBtn) submitBtn.disabled = !allFilled;
+}
+
+function p3SubmitSample(sid, si) {
+  const s = PAST_ASGN_SAMPLES[si];
+  s.submitted = true;
+  const myLevels = p3InstructorLevels[sid];
+  const myAvg = myLevels.reduce((a,b)=>a+b,0) / myLevels.length;
+  const origAvg = s.originalLevels.reduce((a,b)=>a+b,0) / s.originalLevels.length;
+  const diff = Math.abs(myAvg - origAvg);
+
+  // Reveal AI scores and comparison
+  const thAI = document.getElementById(`cal-th-ai-${sid}`);
+  if (thAI) thAI.style.display = '';
+  s.criteria.forEach((c, ci) => {
+    const aiCell = document.getElementById(`cal-ai-cell-${sid}-${ci}`);
+    const aiLv = s.aiLevels[ci];
+    const myLv = myLevels[ci];
+    const delta = Math.abs(myLv - aiLv);
+    if (aiCell) {
+      const lv = CAL_LEVELS[aiLv];
+      aiCell.innerHTML = `
+        <span style="display:inline-flex;align-items:center;gap:4px">
+          <span style="width:28px;height:28px;border-radius:var(--r-sm);border:2px solid ${lv.border};background:${lv.bg};display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${lv.color}">${aiLv}</span>
+          <span style="font-size:10px;font-weight:700;color:${delta===0?'var(--success)':delta===1?'var(--warning)':'var(--danger)'}">${delta===0?'✓':`Δ${delta}`}</span>
+        </span>`;
+    }
+  });
+
+  // Show result
+  const resultEl = document.getElementById(`cal-result-${sid}`);
+  const submitBtn = document.getElementById(`cal-submit-${sid}`);
+  const statusEl = document.getElementById(`cal-status-${sid}`);
+  if (submitBtn) submitBtn.style.display = 'none';
+  if (statusEl) {
+    statusEl.textContent = diff <= 0.5 ? 'Aligned' : diff <= 1 ? 'Close' : 'Review';
+    statusEl.className = `badge ${diff<=0.5?'b-success':diff<=1?'b-warning':'b-neutral'}`;
+  }
+  if (resultEl) {
+    resultEl.style.display = '';
+    resultEl.innerHTML = diff <= 0.5
+      ? `<span style="color:var(--success)">✓ Strong alignment with AI benchmark</span>`
+      : diff <= 1
+        ? `<span style="color:var(--warning)">⚠ Minor differences — review borderline criteria</span>`
+        : `<span style="color:var(--danger)">✗ Notable gap — revisit rubric descriptors</span>`;
+  }
+
+  audit(`Calibration sample graded: ${s.label}`, 3);
+  if (PAST_ASGN_SAMPLES.every(x => x.submitted)) p3ShowSummary();
+}
+
+function p3ShowSummary() {
+  const summaryEl = document.getElementById('p3-summary');
+  const footerEl = document.getElementById('p3-footer');
+  if (!summaryEl) return;
+  let totalDiff = 0, count = 0;
+  PAST_ASGN_SAMPLES.forEach(s => {
+    const myLevels = p3InstructorLevels[s.id];
+    const myAvg = myLevels.reduce((a,b)=>a+b,0)/myLevels.length;
+    const origAvg = s.originalLevels.reduce((a,b)=>a+b,0)/s.originalLevels.length;
+    totalDiff += Math.abs(myAvg - origAvg); count++;
+  });
+  const avgDiff = (totalDiff/count).toFixed(1);
+  const isStrong = +avgDiff <= 0.8;
+  summaryEl.style.display = '';
+  summaryEl.innerHTML = `
+    <div class="card mb3 ${isStrong?'card-success':'card-warning'}">
+      <div class="section-label mb2">Calibration Summary</div>
+      <div style="font-size:28px;font-weight:800;color:${isStrong?'var(--success)':'var(--warning)'};margin-bottom:6px">Δ ${avgDiff} levels avg.</div>
+      <div style="font-size:13px;color:var(--n700)">${isStrong
+        ? '✓ Strong alignment — your grading is consistent with the benchmark.'
+        : `⚠ Average difference of ${avgDiff} levels — consider reviewing rubric level descriptors for clearer boundaries.`}
+      </div>
+    </div>`;
+  if (footerEl) {
+    footerEl.style.display = 'flex';
+    document.getElementById('p3-msg').textContent = isStrong ? 'Calibration looks good' : 'Review any gaps before publishing';
+  }
+}
+
+function p3Confirm() {
+  S.calibration.confirmed = true;
+  S.calibration.scores = p3InstructorLevels;
+  audit('Calibration confirmed', 3);
+  completePhase(3);
+}
+
+/* ═══════════════════════════════════════════════════
+   PHASE 4 — PUBLISH
+═══════════════════════════════════════════════════ */
+function renderP4() {
+  document.getElementById('p4').innerHTML = `
+    <div class="phase-hdr">
+      <h1>Ready to Publish</h1>
+      <p>Review the student-facing assignment, confirm everything is in order, and publish.</p>
+    </div>
+
+    <!-- Student Preview (embedded) -->
+    <div class="card mb3">
+      <div class="section-label mb2">Student-Facing Preview</div>
+      <div class="pub-preview-wrap" id="p4-preview">
+        ${p4BuildPreviewHTML()}
+      </div>
+    </div>
+
+    <!-- What needs attention -->
+    <div class="card mb3">
+      <div class="section-label mb2">What\'s the Status</div>
+      <div id="p4-fix-list">
+        ${p4BuildFixList()}
+      </div>
+    </div>
+
+    <!-- Instructor confirmation -->
+    <div class="card mb3" id="p4-confirm-card">
+      <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer">
+        <input type="checkbox" id="p4-confirm-check" onchange="p4CheckReady()" style="width:18px;height:18px;accent-color:var(--primary);flex-shrink:0;margin-top:2px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--n800)">I have reviewed the assignment and rubric and confirm this is ready for students.</div>
+          <div style="font-size:12px;color:var(--n500);margin-top:3px">By confirming, you take responsibility for the accuracy of the pre-evaluation materials.</div>
+        </div>
+      </label>
+    </div>
+
+    <!-- Publish settings -->
+    <div class="card mb3" id="p4-settings">
+      <div class="section-label mb3">Publish To</div>
+      <div class="pub-target-grid mb3">
+        <div class="fg"><label>Department</label><input class="fi" id="pub-dept" value="${S.context.dept||'Computer Science'}" oninput="p4SaveSettings()"></div>
+        <div class="fg"><label>Course</label><input class="fi" id="pub-course" value="${S.context.subject||''}" oninput="p4SaveSettings()"></div>
+        <div class="fg"><label>Cohort / Batch</label><input class="fi" id="pub-cohort" placeholder="e.g. 2022–26 Batch" oninput="p4SaveSettings()"></div>
+        <div class="fg"><label>Section</label>
+          <select class="fi" id="pub-section" onchange="p4SaveSettings()">
+            <option value="all">All enrolled students</option>
+            <option value="a">Section A only</option>
+            <option value="b">Section B only</option>
+            <option value="custom">Custom group</option>
+          </select>
+        </div>
+      </div>
+      <div class="fi-row">
+        <div class="fg"><label>Publish Date &amp; Time</label><input type="datetime-local" class="fi" id="pub-date" oninput="p4SaveSettings()"></div>
+        <div class="fg"><label>Visible Until <span class="opt">(optional)</span></label><input type="datetime-local" class="fi" id="pub-until" oninput="p4SaveSettings()"></div>
+      </div>
+    </div>
+
+    <div class="phase-footer" id="p4-footer">
+      <span class="text-sm text-muted" id="p4-msg">Confirm readiness above to publish</span>
+      <button class="btn btn-success" id="p4-pub-btn" disabled onclick="doPublish()">🚀 Publish Pre-Evaluation</button>
+    </div>
+
+    <div id="p4-pub-anim" style="display:none;text-align:center;padding:60px 20px">
+      <div style="font-size:56px;margin-bottom:16px">🎉</div>
+      <h2 style="font-size:24px;font-weight:800;margin-bottom:8px">Pre-Evaluation Published!</h2>
+      <p id="p4-pub-detail" style="color:var(--n500);font-size:14px;margin-bottom:12px"></p>
+      <span class="badge b-success" style="font-size:13px;padding:7px 18px" id="p4-pub-ts"></span>
+    </div>
+  `;
+}
+
+function p4BuildPreviewHTML() {
+  const asgn = S.assignment;
+  const ctx = S.context;
+  if (!asgn.title) return '<div style="color:var(--n400);font-size:13px;text-align:center;padding:20px">Complete the Build phase to see the preview here.</div>';
+  const cfg = ASSIGNMENT_CONFIGS[asgn.type] || null;
+  const deadline = asgn.deadline ? new Date(asgn.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) : 'TBA';
+  const policyMap = {'no-late':'No late submissions','10pct-per-day':'−10%/day up to 3 days','50pct-cap':'50% cap after deadline','grace-24h':'24h grace period'};
+  let html = `
+    <div style="font-size:9px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">${cfg?.icon||'📝'} ${asgn.type||'Assignment'}</div>
+    <div style="font-size:17px;font-weight:800;color:var(--n900);margin-bottom:4px">${asgn.title}</div>
+    <div style="font-size:11px;color:var(--n500);margin-bottom:12px">${[ctx.subject,ctx.code,ctx.semester?'Semester '+ctx.semester:''].filter(Boolean).join(' · ')}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:var(--n50);border:1px solid var(--n200);border-radius:var(--r-sm);padding:8px 10px">
+        <div style="font-size:9px;color:var(--n400);font-weight:700;text-transform:uppercase;margin-bottom:2px">Marks</div>
+        <div style="font-size:18px;font-weight:800">${asgn.maxMarks}</div>
+      </div>
+      <div style="background:var(--n50);border:1px solid var(--n200);border-radius:var(--r-sm);padding:8px 10px">
+        <div style="font-size:9px;color:var(--n400);font-weight:700;text-transform:uppercase;margin-bottom:2px">Deadline</div>
+        <div style="font-size:11px;font-weight:700">${deadline}</div>
+      </div>
+    </div>
+    ${asgn.policy?`<div style="font-size:12px;color:var(--n600);margin-bottom:8px">📌 ${policyMap[asgn.policy]||asgn.policy}</div>`:''}
+    ${asgn.instructions?`<div style="background:#F5F0FF;border-left:3px solid var(--primary);padding:10px 14px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin-bottom:12px">
+      <div style="font-size:9px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Assignment Brief</div>
+      <div style="font-size:12px;color:var(--n700);line-height:1.7;white-space:pre-line">${asgn.instructions.substring(0,300)}${asgn.instructions.length>300?'…':''}</div>
+    </div>`:''}
+    ${(asgn.deliverables||[]).filter(d=>d.name||d.description).length?`
+    <div style="font-size:10px;font-weight:700;color:var(--n500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Deliverables</div>
+    ${(asgn.deliverables||[]).filter(d=>d.name||d.description).map((d,i)=>`
+      <div style="border:1px solid var(--n200);border-radius:var(--r-sm);padding:8px 12px;margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:12px;font-weight:700">${d.name||'Deliverable '+(i+1)}</div>
+          <span style="font-size:11px;color:var(--n500)">${d.marks} marks</span>
+        </div>
+        ${d.description?`<div style="font-size:11px;color:var(--n600);margin-top:4px">${d.description}</div>`:''}
+        ${(d.artifacts||[]).length?`<div style="font-size:10px;color:var(--primary);margin-top:4px">${d.artifacts.join(' · ')}</div>`:''}
+      </div>`).join('')}`:''}
+    ${S.rubric.criteria.length?`
+    <div style="font-size:10px;font-weight:700;color:var(--n500);text-transform:uppercase;letter-spacing:.06em;margin-top:12px;margin-bottom:8px">Rubric — ${S.rubric.criteria.length} criteria</div>
+    ${S.rubric.criteria.map(c=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--n100);font-size:12px"><span style="font-weight:600">${c.name}</span><span style="color:var(--n500)">${c.weight}%</span></div>`).join('')}`:''}`;
+  return html;
+}
+
+function p4BuildFixList() {
+  const asgn = S.assignment;
+  const rub = S.rubric;
+  const items = [
+    { label:'Assignment title', desc: asgn.title ? `"${asgn.title}"` : 'No title set', status: asgn.title?'good':'bad', fix: !asgn.title?2:null },
+    { label:'Assignment type', desc: asgn.type||'No type selected', status: asgn.type?'good':'bad', fix: !asgn.type?2:null },
+    { label:'Deliverables', desc: (asgn.deliverables||[]).filter(d=>d.name||d.description).length+' deliverable(s) defined', status: (asgn.deliverables||[]).filter(d=>d.name||d.description).length>0?'good':'bad', fix: !(asgn.deliverables||[]).length?2:null },
+    { label:'Submission deadline', desc: asgn.deadline?new Date(asgn.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'Not set', status: asgn.deadline?'good':'bad', fix: !asgn.deadline?2:null },
+    { label:'Late submission policy', desc: asgn.policy||'Not selected', status: asgn.policy?'good':'warn', fix: !asgn.policy?2:null },
+    { label:'Rubric', desc: rub.confirmed?`${rub.criteria.length} criteria confirmed`:rub.criteria.length?`${rub.criteria.length} criteria — not yet confirmed`:'No rubric loaded', status: rub.confirmed?'good':rub.criteria.length?'warn':'bad', fix: !rub.confirmed?2:null },
+    { label:'Context', desc: S.context.subject?`${S.context.subject} confirmed`:'Not confirmed', status: S.context.subject?'good':'warn', fix: !S.context.subject?1:null },
+    { label:'Calibration', desc: S.calibration.confirmed?'Grading calibrated ✓':'Not yet completed', status: S.calibration.confirmed?'good':'warn', fix: !S.calibration.confirmed?3:null },
+    { label:'Format requirements', desc: asgn.format?asgn.format.substring(0,60):'Not set (optional)', status: asgn.format?'good':'warn', fix: null }
+  ];
+  const iconMap = {good:'✓', warn:'⚠', bad:'✗'};
+  return items.map(item => `
+    <div class="pub-fix-item ${item.status}">
+      <div class="pub-fix-icon">${iconMap[item.status]}</div>
+      <div style="flex:1">
+        <div class="pub-fix-label">${item.label}</div>
+        <div class="pub-fix-desc">${item.desc}</div>
+        ${item.fix?`<div style="font-size:11px;font-weight:700;color:var(--primary);margin-top:4px;cursor:pointer;text-decoration:underline" onclick="goPhase(${item.fix})">→ Go to Phase ${item.fix} to fix</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function p4SaveSettings() {
+  S.publish.dept = document.getElementById('pub-dept')?.value||'';
+  S.publish.course = document.getElementById('pub-course')?.value||'';
+  S.publish.cohort = document.getElementById('pub-cohort')?.value||'';
+  S.publish.section = document.getElementById('pub-section')?.value||'all';
+  S.publish.publishDate = document.getElementById('pub-date')?.value||'';
+}
+
+function p4CheckReady() {
+  const checked = document.getElementById('p4-confirm-check')?.checked;
+  const btn = document.getElementById('p4-pub-btn');
+  const msg = document.getElementById('p4-msg');
+  if (btn) btn.disabled = !checked;
+  if (msg) { msg.textContent = checked?'✓ Ready — click publish when ready':'Confirm readiness above to publish'; msg.style.color = checked?'var(--success)':''; }
+}
+
+function doPublish() {
+  p4SaveSettings();
+  S.publish.publishedAt = new Date();
+  S.phases[4].done = true;
+  renderNav();
+  document.getElementById('p4-footer').style.display = 'none';
+  document.getElementById('p4-settings').style.display = 'none';
+  document.getElementById('p4-confirm-card').style.display = 'none';
+  document.getElementById('p4-pub-anim').style.display = '';
+  const detail = [S.publish.dept, S.publish.course, S.publish.cohort, S.publish.section!=='all'?'Section '+S.publish.section.toUpperCase():'All students'].filter(Boolean).join(' · ');
+  document.getElementById('p4-pub-detail').textContent = `Published to: ${detail}`;
+  document.getElementById('p4-pub-ts').textContent = `Published at ${S.publish.publishedAt.toLocaleTimeString()}`;
+  audit(`Pre-Evaluation PUBLISHED — ${detail}`, 4);
+  toast('Pre-Evaluation published!', 'success', 5000);
+}
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+function init() {
+  renderNav();
+  goPhase(1);
+  audit('EducAItors session started',1);
+}
+init();
+</script>
+</body>
+</html>

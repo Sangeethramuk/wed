@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Double-blind Review — Dr. Meera Iyer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --green:#1D9E75;--green-bg:#E1F5EE;--green-dk:#085041;
+  --amber:#EF9F27;--amber-bg:#FAEEDA;--amber-dk:#633806;
+  --red:#E24B4A;--red-bg:#FCEBEB;--red-dk:#501313;
+  --purple:#7F77DD;--purple-bg:#EEEDFE;--purple-dk:#26215C;
+  --gray-bg:#F1EFE8;
+  --text:#1a1916;--text-2:#5F5E5A;--text-3:#888780;
+  --border:rgba(0,0,0,0.09);--surface:#ffffff;--bg:#f7f5f0;
+  --sans:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --r:10px;--r-btn:7px;
+}
+html,body{height:100%;font-family:var(--sans);color:var(--text);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;background:var(--bg);overflow:hidden;}
+
+/* ── TOPBAR ── */
+.topbar{position:fixed;top:0;left:0;right:0;height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:200;}
+.tb-left{display:flex;flex-direction:column;gap:1px;}
+.tb-name{font-size:13px;font-weight:500;letter-spacing:-0.01em;}
+.tb-sub{font-size:11px;font-family:var(--mono);color:var(--text-3);}
+.tb-right{display:flex;flex-direction:column;align-items:flex-end;gap:1px;}
+.tb-student{font-size:13px;font-weight:500;}
+.tb-meta{font-size:11px;font-family:var(--mono);color:var(--text-3);}
+
+/* ── SCREEN CONTAINER ── */
+.screen-wrap{position:fixed;top:52px;left:0;right:0;bottom:0;overflow:hidden;}
+.screen{position:absolute;top:0;left:0;width:100%;height:100%;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);will-change:transform;}
+.screen.hidden-right{transform:translateX(100%);}
+.screen.hidden-left{transform:translateX(-100%);}
+.screen.active{transform:translateX(0);}
+
+/* ── SCREEN 1 — INTRO ── */
+#s1{background:var(--bg);overflow-y:auto;}
+.s1-body{max-width:560px;margin:0 auto;padding:48px 24px 80px;}
+.section-label{font-size:11px;font-family:var(--mono);letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px;}
+.screen-title{font-size:22px;font-weight:300;letter-spacing:-0.03em;line-height:1.25;color:var(--text);margin-bottom:24px;white-space:pre-line;}
+.intro-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:20px;}
+.intro-card p{font-size:14px;color:var(--text-2);line-height:1.65;margin-bottom:12px;}
+.intro-card p:last-child{margin-bottom:0;}
+.student-pills{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+.s-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-family:var(--mono);color:var(--text-2);background:var(--gray-bg);padding:5px 12px;border-radius:99px;}
+.s-pill-dot{width:6px;height:6px;border-radius:50%;background:var(--purple);flex-shrink:0;}
+.cta-btn{width:100%;padding:13px;background:var(--text);color:#fff;border:none;border-radius:var(--r-btn);font-size:14px;font-family:var(--sans);font-weight:500;cursor:pointer;letter-spacing:-0.01em;transition:opacity 0.15s;}
+.cta-btn:hover{opacity:0.82;}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{height:44px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:0;flex-shrink:0;}
+.prog-step{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.prog-dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--text-3);background:transparent;transition:all 0.3s;}
+.prog-dot.active{background:var(--text);border-color:var(--text);}
+.prog-dot.done{background:var(--green);border-color:var(--green);}
+.prog-label{font-size:10px;font-family:var(--mono);color:var(--text-3);}
+.prog-line{width:60px;height:1px;background:var(--border);margin-bottom:14px;}
+
+/* ── SCREEN 2 — GRADING ── */
+#s2{display:flex;flex-direction:column;background:var(--bg);}
+.s2-top{flex-shrink:0;}
+.s2-cols{display:flex;flex:1;min-height:0;}
+
+/* LEFT PANEL */
+.left-panel{width:55%;height:100%;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--surface);}
+.left-header{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);z-index:10;flex-shrink:0;}
+.panel-label{font-size:10px;font-family:var(--mono);letter-spacing:0.07em;text-transform:uppercase;color:var(--text-3);}
+.mode-toggle{display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.mode-btn{font-size:10px;font-family:var(--mono);padding:4px 10px;border:none;background:transparent;cursor:pointer;color:var(--text-3);transition:all 0.15s;white-space:nowrap;}
+.mode-btn.active{background:var(--text);color:#fff;}
+.left-body{flex:1;overflow-y:auto;padding:20px 20px 40px;position:relative;}
+.left-body.area-mode{cursor:crosshair;}
+.left-body.select-mode{outline:2px solid var(--purple);outline-offset:-2px;animation:selectPulse 1.2s ease-in-out infinite;}
+@keyframes selectPulse{0%,100%{outline-color:var(--purple);}50%{outline-color:rgba(127,119,221,0.2);}}
+
+/* submission content */
+.q-label{font-size:11px;font-family:var(--mono);color:var(--text-3);margin-bottom:12px;}
+.sub-para{font-size:14px;color:var(--text-2);line-height:1.7;margin-bottom:16px;position:relative;}
+.sub-para:last-child{margin-bottom:0;}
+
+/* highlights */
+.hl{background:rgba(239,199,39,0.22);border-radius:2px;cursor:pointer;position:relative;}
+.hl:hover{background:rgba(239,199,39,0.38);}
+.hl.pulse-flash{animation:hlPulse 350ms ease-in-out 3;}
+@keyframes hlPulse{0%,100%{background:rgba(239,199,39,0.22);}50%{background:rgba(239,199,39,0.65);}}
+.ev-tag{display:inline-flex;align-items:center;font-size:9px;font-family:var(--mono);font-weight:500;padding:1px 5px;border-radius:3px;background:var(--purple-bg);color:var(--purple-dk);margin-left:3px;vertical-align:middle;cursor:default;transition:transform 0.2s;}
+.ev-tag.jump{animation:tagPop 300ms ease-in-out;}
+@keyframes tagPop{0%,100%{transform:scale(1);}50%{transform:scale(1.25);}}
+
+/* area selection rect */
+#areaRect{position:absolute;border:2px dashed var(--amber);border-radius:3px;pointer-events:none;display:none;background:rgba(239,159,39,0.08);}
+
+/* submission swap fade */
+.left-body.fading{opacity:0;transition:opacity 0.2s;}
+.left-body.faded-in{opacity:1;transition:opacity 0.2s;}
+
+/* RIGHT PANEL */
+.right-panel{width:45%;height:100%;display:flex;flex-direction:column;background:var(--bg);position:relative;}
+.right-header{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.right-body{flex:1;overflow-y:auto;padding:12px 14px 80px;}
+
+/* criterion card */
+.crit-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;}
+.crit-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.crit-label{font-size:11px;font-family:var(--mono);color:var(--text-3);}
+.add-ev-btn{font-size:10px;font-family:var(--mono);padding:3px 8px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;color:var(--text-3);transition:all 0.15s;white-space:nowrap;}
+.add-ev-btn:hover{border-color:var(--purple);color:var(--purple-dk);}
+.add-ev-btn.active{border-color:var(--purple);color:var(--purple-dk);background:var(--purple-bg);}
+
+/* score row */
+.score-section{margin-bottom:10px;}
+.section-micro{font-size:10px;font-family:var(--mono);letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px;}
+.level-btns{display:flex;gap:4px;align-items:center;flex-wrap:wrap;}
+.level-btn{font-size:10px;font-family:var(--mono);padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;color:var(--text-3);transition:all 0.15s;white-space:nowrap;}
+.level-btn:hover{border-color:var(--text-3);color:var(--text);}
+.level-btn.suggested{background:var(--purple-bg);border-color:rgba(127,119,221,0.35);color:var(--purple-dk);}
+.level-btn.confirmed{background:var(--text);border-color:var(--text);color:#fff;}
+.confirmed-tag{font-size:9px;font-family:var(--mono);color:var(--green-dk);margin-left:6px;}
+
+/* evidence section */
+.ev-section{margin-bottom:10px;}
+.ev-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.ev-count{font-size:10px;font-family:var(--mono);padding:2px 7px;background:var(--gray-bg);border-radius:99px;color:var(--text-3);}
+.ev-list{display:flex;flex-direction:column;gap:5px;}
+.ev-item{display:flex;align-items:flex-start;gap:7px;padding:7px 8px;background:var(--bg);border-radius:6px;border:1px solid var(--border);position:relative;transition:background 0.15s;}
+.ev-item:hover{background:#eeecea;}
+.ev-item.flash{animation:evFlash 400ms ease-out;}
+@keyframes evFlash{0%{background:var(--amber-bg);}100%{background:var(--bg);}}
+.ev-item.removing{animation:evFade 200ms ease-out forwards;}
+@keyframes evFade{to{opacity:0;transform:translateY(-4px);}}
+.ev-tag-sm{font-size:9px;font-family:var(--mono);font-weight:500;padding:2px 5px;border-radius:3px;background:var(--purple-bg);color:var(--purple-dk);flex-shrink:0;margin-top:1px;}
+.ev-content{flex:1;min-width:0;}
+.ev-text{font-size:11px;color:var(--text-2);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;}
+.ev-meta{display:flex;gap:6px;align-items:center;}
+.ev-score-chip{font-size:9px;font-family:var(--mono);padding:1px 5px;background:var(--green-bg);border-radius:3px;color:var(--green-dk);}
+.ev-source{font-size:9px;font-family:var(--mono);color:var(--text-3);}
+.ev-jump{font-size:12px;cursor:pointer;color:var(--text-3);transition:color 0.15s;padding:2px 4px;flex-shrink:0;margin-top:-1px;}
+.ev-jump:hover{color:var(--purple);}
+.ev-delete{position:absolute;top:4px;right:4px;font-size:11px;cursor:pointer;color:var(--text-3);opacity:0;transition:opacity 0.15s;background:var(--surface);border:none;border-radius:3px;padding:1px 4px;line-height:1;}
+.ev-item:hover .ev-delete{opacity:1;}
+.ev-empty{font-size:11px;font-family:var(--mono);color:var(--text-3);font-style:italic;text-align:center;padding:10px;border:1px dashed var(--border);border-radius:6px;}
+
+/* reasoning */
+.reasoning-ta{width:100%;font-size:12px;font-family:var(--sans);color:var(--text-2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;resize:vertical;min-height:58px;background:var(--surface);outline:none;transition:border-color 0.15s;line-height:1.55;}
+.reasoning-ta:focus{border-color:var(--amber);}
+
+/* separator */
+.crit-sep{height:1px;background:var(--border);margin:10px 0;}
+
+/* submit footer */
+.submit-footer{position:absolute;bottom:0;left:0;right:0;padding:12px 14px;background:var(--surface);border-top:1px solid var(--border);}
+.submit-btn{width:100%;padding:11px;background:var(--text);color:#fff;border:none;border-radius:var(--r-btn);font-size:14px;font-family:var(--sans);font-weight:500;cursor:pointer;letter-spacing:-0.01em;transition:opacity 0.15s;}
+.submit-btn:hover{opacity:0.82;}
+
+/* ── POPOVER ── */
+.popover{position:fixed;width:310px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.06);z-index:500;display:none;flex-direction:column;}
+.popover.visible{display:flex;}
+.pop-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px;}
+.pop-title{font-size:13px;font-weight:500;letter-spacing:-0.01em;}
+.pop-close{font-size:16px;cursor:pointer;color:var(--text-3);background:none;border:none;padding:0 2px;line-height:1;transition:color 0.15s;}
+.pop-close:hover{color:var(--text);}
+.pop-preview{margin:0 14px 10px;padding:7px 10px;background:var(--gray-bg);border-radius:6px;font-size:11px;font-family:var(--mono);color:var(--text-2);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.pop-sep{height:1px;background:var(--border);margin:0 0 10px;}
+.pop-section-label{font-size:10px;font-family:var(--mono);letter-spacing:0.07em;text-transform:uppercase;color:var(--text-3);padding:0 14px;margin-bottom:8px;}
+.pop-criteria{padding:0 14px;display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;}
+.pop-crit-row{border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:border-color 0.15s;}
+.pop-crit-row.checked{border-color:rgba(127,119,221,0.4);}
+.pop-crit-check{display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer;background:transparent;border:none;width:100%;text-align:left;}
+.pop-crit-check input[type=checkbox]{accent-color:var(--purple);width:13px;height:13px;flex-shrink:0;cursor:pointer;}
+.pop-crit-name{font-size:12px;color:var(--text);flex:1;}
+.pop-crit-expand{padding:0 10px;max-height:0;overflow:hidden;transition:max-height 0.2s ease-out,padding 0.2s;}
+.pop-crit-expand.open{max-height:120px;padding-bottom:10px;}
+.pop-score-row{display:flex;gap:4px;margin-bottom:7px;}
+.pop-level-btn{font-size:10px;font-family:var(--mono);padding:3px 8px;border:1px solid var(--border);border-radius:4px;background:transparent;cursor:pointer;color:var(--text-3);transition:all 0.12s;}
+.pop-level-btn:hover{border-color:var(--text-3);color:var(--text);}
+.pop-level-btn.sel{background:var(--text);border-color:var(--text);color:#fff;}
+.pop-reason-input{width:100%;font-size:11px;font-family:var(--sans);color:var(--text-2);border:1px solid var(--border);border-radius:5px;padding:5px 8px;outline:none;transition:border-color 0.15s;background:var(--surface);}
+.pop-reason-input:focus{border-color:var(--amber);}
+.pop-footer{padding:12px 14px;}
+.pop-add-btn{width:100%;padding:9px;background:var(--text);color:#fff;border:none;border-radius:6px;font-size:13px;font-family:var(--sans);font-weight:500;cursor:pointer;transition:opacity 0.15s;}
+.pop-add-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.pop-add-btn:not(:disabled):hover{opacity:0.82;}
+
+/* ── SCREEN 3 — DELTA ── */
+#s3{background:var(--bg);overflow-y:auto;}
+.s3-body{max-width:640px;margin:0 auto;padding:36px 24px 80px;}
+.delta-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;overflow:hidden;}
+.delta-block-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);}
+.delta-student{font-size:14px;font-weight:500;}
+.delta-badge{font-size:10px;font-family:var(--mono);padding:3px 9px;border-radius:99px;font-weight:400;}
+.badge-green{background:var(--green-bg);color:var(--green-dk);}
+.badge-amber{background:var(--amber-bg);color:var(--amber-dk);}
+.delta-body{padding:14px 16px;}
+.delta-agree-line{font-size:13px;color:var(--green-dk);margin-bottom:10px;font-family:var(--mono);}
+.delta-body-text{font-size:14px;color:var(--text-2);line-height:1.6;}
+
+/* disagreement card */
+.disagree-card{border:1px solid var(--border);border-radius:8px;padding:13px 14px;margin-bottom:10px;background:var(--bg);}
+.disagree-card:last-child{margin-bottom:0;}
+.dc-tag{font-size:10px;font-family:var(--mono);color:var(--amber-dk);margin-bottom:8px;display:block;}
+.dc-compare{display:flex;gap:20px;margin-bottom:9px;}
+.dc-col{font-size:11px;font-family:var(--mono);color:var(--text-3);}
+.dc-col strong{color:var(--text-2);font-weight:500;}
+.dc-explain{font-size:13px;color:var(--text-2);line-height:1.55;margin-bottom:11px;}
+.dc-actions{display:flex;align-items:center;gap:12px;}
+.dc-update-btn{font-size:11px;font-family:var(--mono);padding:5px 12px;border:1px solid var(--amber);border-radius:5px;background:transparent;cursor:pointer;color:var(--amber-dk);transition:all 0.15s;}
+.dc-update-btn:hover{background:var(--amber-bg);}
+.dc-keep-link{font-size:11px;font-family:var(--mono);color:var(--text-3);cursor:pointer;text-decoration:underline;text-decoration-style:dotted;}
+.dc-keep-link:hover{color:var(--text-2);}
+
+/* override form */
+.override-form{max-height:0;overflow:hidden;transition:max-height 0.22s ease-out;}
+.override-form.open{max-height:400px;}
+.override-inner{padding-top:12px;border-top:1px solid var(--border);margin-top:12px;}
+.ov-label{font-size:10px;font-family:var(--mono);letter-spacing:0.07em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;display:block;}
+.ov-levels{display:flex;gap:4px;margin-bottom:12px;}
+.ov-level-btn{font-size:10px;font-family:var(--mono);padding:4px 10px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;color:var(--text-3);transition:all 0.12s;}
+.ov-level-btn:hover{border-color:var(--text-3);color:var(--text);}
+.ov-level-btn.sel{background:var(--text);border-color:var(--text);color:#fff;}
+.ov-radios{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.ov-radio{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text-2);cursor:pointer;}
+.ov-radio input{accent-color:var(--amber);cursor:pointer;}
+.ov-ta{width:100%;font-size:12px;font-family:var(--sans);color:var(--text-2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;resize:vertical;min-height:70px;outline:none;transition:border-color 0.15s;line-height:1.55;background:var(--surface);margin-bottom:10px;}
+.ov-ta:focus{border-color:var(--amber);}
+.ov-save-btn{font-size:12px;font-family:var(--sans);font-weight:500;padding:7px 16px;background:var(--text);color:#fff;border:none;border-radius:6px;cursor:pointer;transition:opacity 0.15s;}
+.ov-save-btn:hover{opacity:0.82;}
+.ov-saved{font-size:11px;font-family:var(--mono);color:var(--green-dk);}
+
+/* bottom CTA for s3 */
+.s3-cta{margin-top:24px;}
+
+/* ── SCREEN 4 — CONFIRMED ── */
+#s4{background:var(--bg);overflow-y:auto;}
+.s4-body{max-width:560px;margin:0 auto;padding:48px 24px 80px;}
+.confirm-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px;}
+.confirm-row{display:flex;align-items:flex-start;gap:14px;padding:18px 20px;}
+.confirm-row+.confirm-row{border-top:1px solid var(--border);}
+.confirm-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;}
+.icon-green{background:var(--green-bg);}
+.icon-amber{background:var(--amber-bg);}
+.confirm-content{}
+.confirm-title{font-size:14px;font-weight:500;margin-bottom:3px;}
+.confirm-sub{font-size:13px;color:var(--text-3);line-height:1.5;}
+.confirm-meta{font-size:11px;font-family:var(--mono);color:var(--text-3);text-align:center;margin-bottom:24px;}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-left">
+    <div class="tb-name">Dr. Meera Iyer</div>
+    <div class="tb-sub">Software Engineering · Batch 3B</div>
+  </div>
+  <div class="tb-right" id="tbRight">
+    <div class="tb-meta" style="font-size:11px;font-family:var(--mono);color:var(--text-3)">Double-blind review</div>
+  </div>
+</div>
+
+<!-- SCREEN WRAP -->
+<div class="screen-wrap">
+
+  <!-- ── SCREEN 1 ── -->
+  <div class="screen active" id="s1">
+    <div class="s1-body">
+      <div class="section-label">Independent review</div>
+      <div class="screen-title">Before you see&#10;any AI scores</div>
+      <div class="intro-card">
+        <p>For the next 2 submissions, the AI score is hidden. Grade them based only on what you read.</p>
+        <p>After you submit both grades, we will show you where you and the AI agreed — and where you did not.</p>
+        <p>This is standard academic practice. It keeps the grading honest.</p>
+      </div>
+      <div class="student-pills">
+        <span class="s-pill"><span class="s-pill-dot"></span>Priya Sharma</span>
+        <span class="s-pill"><span class="s-pill-dot"></span>Karan Nair</span>
+      </div>
+      <button class="cta-btn" onclick="goTo(1)">Begin →</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 2 ── -->
+  <div class="screen hidden-right" id="s2">
+    <!-- Progress bar -->
+    <div class="s2-top">
+      <div class="progress-bar">
+        <div class="prog-step">
+          <div class="prog-dot active" id="dot1"></div>
+          <div class="prog-label">Priya Sharma</div>
+        </div>
+        <div class="prog-line"></div>
+        <div class="prog-step">
+          <div class="prog-dot" id="dot2"></div>
+          <div class="prog-label">Karan Nair</div>
+        </div>
+      </div>
+    </div>
+    <!-- Two columns -->
+    <div class="s2-cols">
+      <!-- LEFT PANEL -->
+      <div class="left-panel">
+        <div class="left-header">
+          <span class="panel-label">Submission</span>
+          <div class="mode-toggle">
+            <button class="mode-btn active" id="btnText" onclick="setMode('text')">T&nbsp;&nbsp;Text</button>
+            <button class="mode-btn" id="btnArea" onclick="setMode('area')">⬚&nbsp;&nbsp;Area</button>
+          </div>
+        </div>
+        <div class="left-body" id="leftBody">
+          <div id="areaRect"></div>
+          <div id="submissionContent">
+            <!-- Priya's submission (default) -->
+            <div class="q-label">Q1. Explain MVC architecture</div>
+            <div class="sub-para" id="para1">MVC stands for Model-View-Controller. It is a software design pattern that <span class="hl" id="hl1" onclick="jumpFromHL_byId('hl1')">separates an application into three components<span class="ev-tag" id="tag1">E1</span></span>.</div>
+            <div class="sub-para" id="para2">The Model handles data and business logic. It manages the database and responds to requests for information.</div>
+            <div class="sub-para" id="para3">The View is responsible for displaying data to the user. It receives data from the Model through the Controller.</div>
+            <div class="sub-para" id="para4">The Controller acts as an intermediary. When a user interacts with the View, the Controller processes the input and updates the Model accordingly.</div>
+            <div class="sub-para" id="para5"><span class="hl" id="hl2" onclick="jumpFromHL_byId('hl2')">In a banking application, the Model would handle account balances and transaction records<span class="ev-tag" id="tag2">E2</span></span>. The View would display the account summary page. The Controller would handle the transfer request and update both the balance and the transaction history.</div>
+          </div>
+        </div>
+      </div>
+      <!-- RIGHT PANEL -->
+      <div class="right-panel">
+        <div class="right-header">
+          <span class="panel-label">Your grade</span>
+        </div>
+        <div class="right-body" id="rightBody">
+
+          <!-- C1 -->
+          <div class="crit-card" id="card-c1">
+            <div class="crit-header">
+              <span class="crit-label">C1 — Conceptual accuracy</span>
+              <button class="add-ev-btn" id="addbtn-c1" onclick="startSelectMode('c1')">+ Add evidence</button>
+            </div>
+            <div class="score-section">
+              <div class="section-micro">Score</div>
+              <div class="level-btns" id="levels-c1">
+                <button class="level-btn" onclick="confirmLevel('c1',4,this)">4 — Excellent</button>
+                <button class="level-btn suggested" onclick="confirmLevel('c1',3,this)">3 — Adequate</button>
+                <button class="level-btn" onclick="confirmLevel('c1',2,this)">2 — Basic</button>
+                <button class="level-btn" onclick="confirmLevel('c1',1,this)">1 — Missing</button>
+                <span class="confirmed-tag" id="conf-c1" style="display:none">✓ confirmed</span>
+              </div>
+            </div>
+            <div class="crit-sep"></div>
+            <div class="ev-section">
+              <div class="ev-section-header">
+                <span class="section-micro">Evidence</span>
+                <span class="ev-count" id="evcount-c1">1 item</span>
+              </div>
+              <div class="ev-list" id="evlist-c1">
+                <div class="ev-item" id="evitem-c1-1">
+                  <span class="ev-tag-sm">E1</span>
+                  <div class="ev-content">
+                    <div class="ev-text">separates an application into three components</div>
+                    <div class="ev-meta">
+                      <span class="ev-score-chip">L3 — Adequate</span>
+                      <span class="ev-source">AI extracted</span>
+                    </div>
+                  </div>
+                  <span class="ev-jump" onclick="jumpTo(1)" title="Go to source">↗</span>
+                  <button class="ev-delete" onclick="deleteEvidence('c1',1)" title="Remove">×</button>
+                </div>
+              </div>
+            </div>
+            <div class="crit-sep"></div>
+            <div>
+              <div class="section-micro" style="margin-bottom:5px;">Reasoning</div>
+              <textarea class="reasoning-ta" id="reason-c1" placeholder="Add reasoning for C1...">AI extracted the definition correctly. Student demonstrates clear understanding of component separation.</textarea>
+            </div>
+          </div>
+
+          <!-- C2 -->
+          <div class="crit-card" id="card-c2">
+            <div class="crit-header">
+              <span class="crit-label">C2 — Real-world application</span>
+              <button class="add-ev-btn" id="addbtn-c2" onclick="startSelectMode('c2')">+ Add evidence</button>
+            </div>
+            <div class="score-section">
+              <div class="section-micro">Score</div>
+              <div class="level-btns" id="levels-c2">
+                <button class="level-btn" onclick="confirmLevel('c2',4,this)">4 — Excellent</button>
+                <button class="level-btn suggested" onclick="confirmLevel('c2',3,this)">3 — Adequate</button>
+                <button class="level-btn" onclick="confirmLevel('c2',2,this)">2 — Basic</button>
+                <button class="level-btn" onclick="confirmLevel('c2',1,this)">1 — Missing</button>
+                <span class="confirmed-tag" id="conf-c2" style="display:none">✓ confirmed</span>
+              </div>
+            </div>
+            <div class="crit-sep"></div>
+            <div class="ev-section">
+              <div class="ev-section-header">
+                <span class="section-micro">Evidence</span>
+                <span class="ev-count" id="evcount-c2">1 item</span>
+              </div>
+              <div class="ev-list" id="evlist-c2">
+                <div class="ev-item" id="evitem-c2-2">
+                  <span class="ev-tag-sm">E2</span>
+                  <div class="ev-content">
+                    <div class="ev-text">In a banking application, the Model would handle account balances...</div>
+                    <div class="ev-meta">
+                      <span class="ev-score-chip">L3 — Adequate</span>
+                      <span class="ev-source">AI extracted</span>
+                    </div>
+                  </div>
+                  <span class="ev-jump" onclick="jumpTo(2)" title="Go to source">↗</span>
+                  <button class="ev-delete" onclick="deleteEvidence('c2',2)" title="Remove">×</button>
+                </div>
+              </div>
+            </div>
+            <div class="crit-sep"></div>
+            <div>
+              <div class="section-micro" style="margin-bottom:5px;">Reasoning</div>
+              <textarea class="reasoning-ta" id="reason-c2" placeholder="Add reasoning for C2..."></textarea>
+            </div>
+          </div>
+
+          <!-- C3 -->
+          <div class="crit-card" id="card-c3">
+            <div class="crit-header">
+              <span class="crit-label">C3 — Reasoning clarity</span>
+              <button class="add-ev-btn" id="addbtn-c3" onclick="startSelectMode('c3')">+ Add evidence</button>
+            </div>
+            <div class="score-section">
+              <div class="section-micro">Score</div>
+              <div class="level-btns" id="levels-c3">
+                <button class="level-btn" onclick="confirmLevel('c3',4,this)">4 — Excellent</button>
+                <button class="level-btn" onclick="confirmLevel('c3',3,this)">3 — Adequate</button>
+                <button class="level-btn" onclick="confirmLevel('c3',2,this)">2 — Basic</button>
+                <button class="level-btn suggested" onclick="confirmLevel('c3',1,this)">1 — Missing</button>
+                <span class="confirmed-tag" id="conf-c3" style="display:none">✓ confirmed</span>
+              </div>
+            </div>
+            <div class="crit-sep"></div>
+            <div class="ev-section">
+              <div class="ev-section-header">
+                <span class="section-micro">Evidence</span>
+                <span class="ev-count" id="evcount-c3">0 items</span>
+              </div>
+              <div class="ev-list" id="evlist-c3">
+                <div class="ev-empty" id="empty-c3">No evidence mapped</div>
+              </div>
+            </div>
+            <div class="crit-sep"></div>
+            <div>
+              <div class="section-micro" style="margin-bottom:5px;">Reasoning</div>
+              <textarea class="reasoning-ta" id="reason-c3" placeholder="Add reasoning for C3..."></textarea>
+            </div>
+          </div>
+
+          <!-- C4 -->
+          <div class="crit-card" id="card-c4">
+            <div class="crit-header">
+              <span class="crit-label">C4 — Code structure</span>
+              <button class="add-ev-btn" id="addbtn-c4" onclick="startSelectMode('c4')">+ Add evidence</button>
+            </div>
+            <div class="score-section">
+              <div class="section-micro">Score</div>
+              <div class="level-btns" id="levels-c4">
+                <button class="level-btn" onclick="confirmLevel('c4',4,this)">4 — Excellent</button>
+                <button class="level-btn" onclick="confirmLevel('c4',3,this)">3 — Adequate</button>
+                <button class="level-btn suggested" onclick="confirmLevel('c4',2,this)">2 — Basic</button>
+                <button class="level-btn" onclick="confirmLevel('c4',1,this)">1 — Missing</button>
+                <span class="confirmed-tag" id="conf-c4" style="display:none">✓ confirmed</span>
+              </div>
+            </div>
+            <div class="crit-sep"></div>
+            <div class="ev-section">
+              <div class="ev-section-header">
+                <span class="section-micro">Evidence</span>
+                <span class="ev-count" id="evcount-c4">0 items</span>
+              </div>
+              <div class="ev-list" id="evlist-c4">
+                <div class="ev-empty" id="empty-c4">No evidence mapped</div>
+              </div>
+            </div>
+            <div class="crit-sep"></div>
+            <div>
+              <div class="section-micro" style="margin-bottom:5px;">Reasoning</div>
+              <textarea class="reasoning-ta" id="reason-c4" placeholder="Add reasoning for C4..."></textarea>
+            </div>
+          </div>
+
+        </div><!-- /right-body -->
+        <div class="submit-footer">
+          <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">Submit grades →</button>
+        </div>
+      </div><!-- /right-panel -->
+    </div>
+  </div>
+
+  <!-- ── SCREEN 3 — DELTA ── -->
+  <div class="screen hidden-right" id="s3">
+    <div class="s3-body">
+      <div class="section-label">What we found</div>
+      <div class="screen-title">Here is where you&#10;and the AI agreed</div>
+
+      <!-- Block A: Karan — agreement -->
+      <div class="delta-block" style="border-left:3px solid var(--green);">
+        <div class="delta-block-header">
+          <span class="delta-student">Karan Nair</span>
+          <span class="delta-badge badge-green">✓ Close agreement</span>
+        </div>
+        <div class="delta-body">
+          <p class="delta-body-text">C1, C2, C3, C4 — you both graded within one level on all criteria. The AI has your measure on Karan's work.</p>
+        </div>
+      </div>
+
+      <!-- Block B: Priya — disagreement -->
+      <div class="delta-block" style="border-left:3px solid var(--amber);">
+        <div class="delta-block-header">
+          <span class="delta-student">Priya Sharma</span>
+          <span class="delta-badge badge-amber">2 differences</span>
+        </div>
+        <div class="delta-body">
+          <div class="delta-agree-line">✓ C2, C4 — agreement</div>
+
+          <!-- Disagreement C1 -->
+          <div class="disagree-card">
+            <span class="dc-tag">C1 — Conceptual accuracy</span>
+            <div class="dc-compare">
+              <div class="dc-col">You said &nbsp;<strong>Level 3</strong></div>
+              <div class="dc-col">AI said &nbsp;&nbsp;<strong>Level 1</strong></div>
+            </div>
+            <p class="dc-explain">The AI read only the first sentence — the definition of MVC. It missed the banking application example on lines 6–9. Your Level 3 reflects that paragraph.</p>
+            <div class="dc-actions" id="actions-c1">
+              <button class="dc-update-btn" onclick="openOverride('c1')">Update score</button>
+              <span class="dc-keep-link" onclick="keepAI('c1')">Keep AI score</span>
+            </div>
+            <div class="override-form" id="ovform-c1">
+              <div class="override-inner">
+                <span class="ov-label">New score for C1</span>
+                <div class="ov-levels" id="ovlevels-c1">
+                  <button class="ov-level-btn" onclick="ovSelectLevel('c1',4,this)">4 — Excellent</button>
+                  <button class="ov-level-btn sel" onclick="ovSelectLevel('c1',3,this)">3 — Adequate</button>
+                  <button class="ov-level-btn" onclick="ovSelectLevel('c1',2,this)">2 — Basic</button>
+                  <button class="ov-level-btn" onclick="ovSelectLevel('c1',1,this)">1 — Missing</button>
+                </div>
+                <span class="ov-label">Reason</span>
+                <div class="ov-radios">
+                  <label class="ov-radio"><input type="radio" name="ovreason-c1" value="AI missed evidence" checked> AI missed evidence</label>
+                  <label class="ov-radio"><input type="radio" name="ovreason-c1" value="OCR error"> OCR error</label>
+                  <label class="ov-radio"><input type="radio" name="ovreason-c1" value="My interpretation differs"> My interpretation differs</label>
+                  <label class="ov-radio"><input type="radio" name="ovreason-c1" value="Benefit of doubt"> Benefit of doubt</label>
+                </div>
+                <textarea class="ov-ta" id="ovnote-c1" placeholder="Note — helps the AI improve (optional)">AI extracted only the definition on Line 1. The banking application paragraph on Lines 6–9 demonstrates clear conceptual understanding.</textarea>
+                <button class="ov-save-btn" onclick="saveOverride('c1')">Save override</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Disagreement C3 -->
+          <div class="disagree-card">
+            <span class="dc-tag">C3 — Reasoning clarity</span>
+            <div class="dc-compare">
+              <div class="dc-col">You said &nbsp;<strong>Level 3</strong></div>
+              <div class="dc-col">AI said &nbsp;&nbsp;<strong>Level 1</strong></div>
+            </div>
+            <p class="dc-explain">Same issue — the reasoning section appears after the definition. The AI stopped extracting at the first paragraph.</p>
+            <div class="dc-actions" id="actions-c3">
+              <button class="dc-update-btn" onclick="openOverride('c3')">Update score</button>
+              <span class="dc-keep-link" onclick="keepAI('c3')">Keep AI score</span>
+            </div>
+            <div class="override-form" id="ovform-c3">
+              <div class="override-inner">
+                <span class="ov-label">New score for C3</span>
+                <div class="ov-levels" id="ovlevels-c3">
+                  <button class="ov-level-btn" onclick="ovSelectLevel('c3',4,this)">4 — Excellent</button>
+                  <button class="ov-level-btn sel" onclick="ovSelectLevel('c3',3,this)">3 — Adequate</button>
+                  <button class="ov-level-btn" onclick="ovSelectLevel('c3',2,this)">2 — Basic</button>
+                  <button class="ov-level-btn" onclick="ovSelectLevel('c3',1,this)">1 — Missing</button>
+                </div>
+                <span class="ov-label">Reason</span>
+                <div class="ov-radios">
+                  <label class="ov-radio"><input type="radio" name="ovreason-c3" value="AI missed evidence" checked> AI missed evidence</label>
+                  <label class="ov-radio"><input type="radio" name="ovreason-c3" value="OCR error"> OCR error</label>
+                  <label class="ov-radio"><input type="radio" name="ovreason-c3" value="My interpretation differs"> My interpretation differs</label>
+                  <label class="ov-radio"><input type="radio" name="ovreason-c3" value="Benefit of doubt"> Benefit of doubt</label>
+                </div>
+                <textarea class="ov-ta" id="ovnote-c3" placeholder="Note — helps the AI improve (optional)">Reasoning section follows definition paragraph. AI extraction stopped too early — multi-paragraph answer.</textarea>
+                <button class="ov-save-btn" onclick="saveOverride('c3')">Save override</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="s3-cta">
+        <button class="cta-btn" onclick="goTo(3)">Save and continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 4 — CONFIRMED ── -->
+  <div class="screen hidden-right" id="s4">
+    <div class="s4-body">
+      <div class="section-label">Independent reviews complete</div>
+      <div class="screen-title">AI scores are now&#10;visible</div>
+
+      <div class="confirm-card">
+        <div class="confirm-row">
+          <div class="confirm-icon icon-green">✓</div>
+          <div class="confirm-content">
+            <div class="confirm-title">Karan Nair — close agreement</div>
+            <div class="confirm-sub">No action needed. The AI has your measure.</div>
+          </div>
+        </div>
+        <div class="confirm-row">
+          <div class="confirm-icon icon-amber">✎</div>
+          <div class="confirm-content">
+            <div class="confirm-title">Priya Sharma — you caught something</div>
+            <div class="confirm-sub">The AI will extract multi-paragraph answers more accurately going forward. Your correction has been noted.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="confirm-meta">Overrides logged · Calibration updated · AI scores now visible</div>
+      <button class="cta-btn">Open grading desk →</button>
+    </div>
+  </div>
+
+</div><!-- /screen-wrap -->
+
+<!-- POPOVER -->
+<div class="popover" id="popover">
+  <div class="pop-header">
+    <span class="pop-title">Map to rubric</span>
+    <button class="pop-close" onclick="closePopover()">×</button>
+  </div>
+  <div class="pop-preview" id="popPreview">Selected text preview</div>
+  <div class="pop-sep"></div>
+  <div class="pop-section-label">Select criteria</div>
+  <div class="pop-criteria">
+    <div class="pop-crit-row" id="pcrow-c1">
+      <label class="pop-crit-check">
+        <input type="checkbox" id="pc-c1" onchange="togglePopCrit('c1')">
+        <span class="pop-crit-name">C1 — Conceptual accuracy</span>
+      </label>
+      <div class="pop-crit-expand" id="pcexp-c1">
+        <div class="pop-score-row" id="pcscore-c1">
+          <button class="pop-level-btn" onclick="popSelectLevel('c1',4,this)">4</button>
+          <button class="pop-level-btn" onclick="popSelectLevel('c1',3,this)">3</button>
+          <button class="pop-level-btn" onclick="popSelectLevel('c1',2,this)">2</button>
+          <button class="pop-level-btn" onclick="popSelectLevel('c1',1,this)">1</button>
+        </div>
+        <input class="pop-reason-input" id="pcreason-c1" placeholder="Reasoning for C1... (optional)">
+      </div>
+    </div>
+    <div class="pop-crit-row" id="pcrow-c2">
+      <label class="pop-crit-check">
+        <input type="checkbox" id="pc-c2" onchange="togglePopCrit('c2')">
+        <span class="pop-crit-name">C2 — Real-world application</span>
+      </label>
+      <div class="pop-crit-expand" id="pcexp-c2">
+        <div class="pop-score-row" id="pcscore-c2">
+          <button class="pop-level-btn" onclick="popSelectLevel('c2',4,this)">4</button>
+          <button class="pop-level-btn" onclick="popSelectLevel('c2',3,this)">3</button>
+          <button class="pop-level-btn" onclick="popSelectLevel('c2',2,this)">2</button>
+          <button class="pop-level-btn" onclick="popSelectLevel('c2',1,this)">1</button>
+        </div>
+        <input class="pop-reason-input" id="pcreason-c2" placeholder="Reasoning for C2... (optional)">
+      </div>
+    </div>
+    <div class="pop-crit-row" id="pcrow-c3">
+      <label class="pop-crit-check">
+        <input type="checkbox" id="pc-c3" onchange="togglePopCrit('c3')">
+        <span class="pop-crit-name">C3 — Reasoning clarity</span>
+      </label>
+      <div class="pop-crit-expand" id="pcexp-c3">
+        <div class="pop-score-row" id="pcscore-c3">
+          <button class="pop-level-btn" onclick="popSelectLevel('c3',4,this)">4</button>
+          <button class="pop-level-btn" onclick="popSelectLevel('c3',3,this)">3</button>
+          <button class="pop-level-btn" onclick="popSelectLevel('c3',2,this)">2</button>
+          <button class="pop-level-btn" onclick="popSelectLevel('c3',1,this)">1</button>
+        </div>
+        <input class="pop-reason-input" id="pcreason-c3" placeholder="Reasoning for C3... (optional)">
+      </div>
+    </div>
+    <div class="pop-crit-row" id="pcrow-c4">
+      <label class="pop-crit-check">
+        <input type="checkbox" id="pc-c4" onchange="togglePopCrit('c4')">
+        <span class="pop-crit-name">C4 — Code structure</span>
+      </label>
+      <div class="pop-crit-expand" id="pcexp-c4">
+        <div class="pop-score-row" id="pcscore-c4">
+          <button class="pop-level-btn" onclick="popSelectLevel('c4',4,this)">4</button>
+          <button class="pop-level-btn" onclick="popSelectLevel('c4',3,this)">3</button>
+          <button class="pop-level-btn" onclick="popSelectLevel('c4',2,this)">2</button>
+          <button class="pop-level-btn" onclick="popSelectLevel('c4',1,this)">1</button>
+        </div>
+        <input class="pop-reason-input" id="pcreason-c4" placeholder="Reasoning for C4... (optional)">
+      </div>
+    </div>
+  </div>
+  <div class="pop-footer">
+    <button class="pop-add-btn" id="popAddBtn" onclick="addEvidence()" disabled>Add evidence</button>
+  </div>
+</div>
+
+<script>
+// ── SCREEN NAVIGATION ──
+const screens = ['s1','s2','s3','s4'];
+let currentScreen = 0;
+
+function goTo(idx) {
+  const from = screens[currentScreen];
+  const to = screens[idx];
+  document.getElementById(from).classList.remove('active');
+  document.getElementById(from).classList.add('hidden-left');
+  document.getElementById(to).classList.remove('hidden-right','hidden-left');
+  document.getElementById(to).classList.add('active');
+  currentScreen = idx;
+  updateTopbar(idx);
+}
+
+function updateTopbar(idx) {
+  const tbRight = document.getElementById('tbRight');
+  if (idx === 0) {
+    tbRight.innerHTML = '<div class="tb-meta">Double-blind review</div>';
+  } else if (idx === 1) {
+    const name = gradeStep === 0 ? 'Priya Sharma' : 'Karan Nair';
+    const roll = gradeStep === 0 ? '21BCE0312' : '21BCE0447';
+    const n = gradeStep + 1;
+    tbRight.innerHTML = `<div class="tb-student">${name}</div><div class="tb-meta">${roll} · Review ${n} of 2</div>`;
+  } else if (idx === 2) {
+    tbRight.innerHTML = '<div class="tb-meta">Delta review</div>';
+  } else {
+    tbRight.innerHTML = '<div class="tb-meta">Complete</div>';
+  }
+}
+
+// ── SCREEN 2 STATE ──
+let gradeStep = 0; // 0 = Priya, 1 = Karan
+
+const karanContent = `
+  <div class="q-label">Q1. Explain MVC architecture</div>
+  <div class="sub-para">MVC is a design pattern used in software development. It stands for Model, View, Controller.</div>
+  <div class="sub-para">The Model is the data layer. The View is what users see. The Controller connects the two and handles user actions.</div>
+  <div class="sub-para">I used MVC in my last project where the Controller called the Model to fetch data and passed it to the View to render.</div>
+`;
+
+function handleSubmit() {
+  closePopover();
+  cancelSelectMode();
+  if (gradeStep === 0) {
+    // Priya submitted — swap to Karan
+    gradeStep = 1;
+    // Animate dots
+    const dot1 = document.getElementById('dot1');
+    const dot2 = document.getElementById('dot2');
+    dot1.classList.remove('active');
+    dot1.classList.add('done');
+    dot2.classList.add('active');
+    // Cross-fade content swap
+    const lb = document.getElementById('leftBody');
+    lb.style.opacity = '0';
+    lb.style.transition = 'opacity 0.2s';
+    setTimeout(() => {
+      // Swap submission content
+      document.getElementById('submissionContent').innerHTML = karanContent;
+      // Reset right panel
+      resetRightPanel();
+      lb.style.opacity = '1';
+      // Update topbar
+      updateTopbar(1);
+    }, 200);
+  } else {
+    // Karan submitted — go to screen 3
+    goTo(2);
+  }
+}
+
+function resetRightPanel() {
+  const crits = ['c1','c2','c3','c4'];
+  crits.forEach(c => {
+    // Reset level buttons to blank (no suggested, no confirmed)
+    const btns = document.getElementById('levels-'+c).querySelectorAll('.level-btn');
+    btns.forEach(b => b.classList.remove('suggested','confirmed'));
+    // Hide confirmed tag
+    const ct = document.getElementById('conf-'+c);
+    if (ct) ct.style.display = 'none';
+    // Clear evidence list
+    const list = document.getElementById('evlist-'+c);
+    list.innerHTML = `<div class="ev-empty" id="empty-${c}">No evidence mapped</div>`;
+    updateEvCount(c);
+    // Clear reasoning
+    const ta = document.getElementById('reason-'+c);
+    if (ta) ta.value = '';
+    // Reset add btn
+    const ab = document.getElementById('addbtn-'+c);
+    if (ab) { ab.textContent = '+ Add evidence'; ab.classList.remove('active'); }
+  });
+  // Reset evidence store for new student (keep pre-loaded AI ones gone since it's Karan now)
+  evidenceStore = [];
+  nextEvId = 1;
+  nextHlId = 1;
+}
+
+// ── SCREEN 3 OVERRIDE ──
+function openOverride(crit) {
+  const form = document.getElementById('ovform-'+crit);
+  form.classList.add('open');
+}
+
+function ovSelectLevel(crit, level, btn) {
+  document.getElementById('ovlevels-'+crit).querySelectorAll('.ov-level-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+function saveOverride(crit) {
+  const reason = document.querySelector(`input[name="ovreason-${crit}"]:checked`);
+  const reasonVal = reason ? reason.value : 'AI missed evidence';
+  // Collapse form
+  document.getElementById('ovform-'+crit).classList.remove('open');
+  // Replace action row with saved state
+  const actRow = document.getElementById('actions-'+crit);
+  actRow.innerHTML = `<span class="ov-saved">✓ Updated to Level 3 — ${reasonVal}</span>`;
+}
+
+function keepAI(crit) {
+  const actRow = document.getElementById('actions-'+crit);
+  actRow.innerHTML = `<span style="font-size:11px;font-family:var(--mono);color:var(--text-3)">AI score kept</span>`;
+}
+
+// ── STATE (Screen 2) ──
+const criteria = ['c1','c2','c3','c4'];
+const levelNames = {4:'Excellent',3:'Adequate',2:'Basic',1:'Missing'};
+
+let evidenceStore = [
+  {id:1, text:'separates an application into three components', crits:[{crit:'c1',level:3,reason:''}], hlId:'hl1'},
+  {id:2, text:'In a banking application, the Model would handle account balances and transaction records', crits:[{crit:'c2',level:3,reason:''}], hlId:'hl2'},
+];
+let nextEvId = 3;
+let nextHlId = 3;
+
+let popMode = null;
+let popSelectedText = '';
+let popAreaRect = null;
+let popSelectedCrits = {};
+let activeCritBtn = null;
+
+// ── MODE TOGGLE ──
+let currentMode = 'text';
+function setMode(m) {
+  currentMode = m;
+  document.getElementById('btnText').classList.toggle('active', m==='text');
+  document.getElementById('btnArea').classList.toggle('active', m==='area');
+  const lb = document.getElementById('leftBody');
+  lb.classList.toggle('area-mode', m==='area');
+}
+
+// ── LEVEL BUTTONS ──
+function confirmLevel(crit, level, btn) {
+  const container = document.getElementById('levels-'+crit);
+  container.querySelectorAll('.level-btn').forEach(b=>b.classList.remove('suggested','confirmed'));
+  btn.classList.add('confirmed');
+  const conf = document.getElementById('conf-'+crit);
+  if (conf) conf.style.display = 'inline';
+}
+
+// ── SELECT MODE ──
+function startSelectMode(crit) {
+  const lb = document.getElementById('leftBody');
+  if (activeCritBtn) cancelSelectMode();
+  activeCritBtn = crit;
+  lb.classList.add('select-mode');
+  const btn = document.getElementById('addbtn-'+crit);
+  btn.textContent = '← select text';
+  btn.classList.add('active');
+}
+function cancelSelectMode() {
+  if (!activeCritBtn) return;
+  const lb = document.getElementById('leftBody');
+  lb.classList.remove('select-mode');
+  const btn = document.getElementById('addbtn-'+activeCritBtn);
+  if (btn) { btn.textContent = '+ Add evidence'; btn.classList.remove('active'); }
+  activeCritBtn = null;
+}
+
+// ── TEXT SELECTION ──
+document.getElementById('leftBody').addEventListener('mouseup', function(e) {
+  if (currentMode !== 'text') return;
+  if (e.target.closest('#popover')) return;
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed || !sel.toString().trim()) return;
+  const text = sel.toString().trim();
+  openPopover(text, e, 'text', activeCritBtn);
+  if (activeCritBtn) cancelSelectMode();
+});
+
+// ── AREA SELECTION ──
+let areaStart = null;
+const areaRectEl = document.getElementById('areaRect');
+document.getElementById('leftBody').addEventListener('mousedown', function(e) {
+  if (currentMode !== 'area') return;
+  if (e.target.closest('#popover')) return;
+  const lb = document.getElementById('leftBody');
+  const rect = lb.getBoundingClientRect();
+  areaStart = {x: e.clientX - rect.left + lb.scrollLeft, y: e.clientY - rect.top + lb.scrollTop};
+  areaRectEl.style.display = 'block';
+  areaRectEl.style.left = areaStart.x+'px';
+  areaRectEl.style.top = areaStart.y+'px';
+  areaRectEl.style.width = '0px';
+  areaRectEl.style.height = '0px';
+});
+document.addEventListener('mousemove', function(e) {
+  if (currentMode !== 'area' || !areaStart) return;
+  const lb = document.getElementById('leftBody');
+  const rect = lb.getBoundingClientRect();
+  const x = e.clientX - rect.left + lb.scrollLeft;
+  const y = e.clientY - rect.top + lb.scrollTop;
+  const w = x - areaStart.x;
+  const h = y - areaStart.y;
+  areaRectEl.style.left   = (w<0?x:areaStart.x)+'px';
+  areaRectEl.style.top    = (h<0?y:areaStart.y)+'px';
+  areaRectEl.style.width  = Math.abs(w)+'px';
+  areaRectEl.style.height = Math.abs(h)+'px';
+});
+document.addEventListener('mouseup', function(e) {
+  if (currentMode !== 'area' || !areaStart) return;
+  const lb = document.getElementById('leftBody');
+  const rect = lb.getBoundingClientRect();
+  const x = e.clientX - rect.left + lb.scrollLeft;
+  const y = e.clientY - rect.top + lb.scrollTop;
+  const w = Math.abs(x - areaStart.x);
+  const h = Math.abs(y - areaStart.y);
+  areaStart = null;
+  if (w < 10 || h < 10) { areaRectEl.style.display='none'; return; }
+  popAreaRect = {left:parseFloat(areaRectEl.style.left), top:parseFloat(areaRectEl.style.top), width:w, height:h};
+  openPopover('Selected region', e, 'area', activeCritBtn);
+  if (activeCritBtn) cancelSelectMode();
+});
+
+// ── POPOVER ──
+function openPopover(text, e, mode, preCrit) {
+  popSelectedText = text;
+  popMode = mode;
+  popSelectedCrits = {};
+  criteria.forEach(c => {
+    const cb = document.getElementById('pc-'+c);
+    cb.checked = false;
+    document.getElementById('pcexp-'+c).classList.remove('open');
+    document.getElementById('pcrow-'+c).classList.remove('checked');
+    document.getElementById('pcscore-'+c).querySelectorAll('.pop-level-btn').forEach(b=>b.classList.remove('sel'));
+    document.getElementById('pcreason-'+c).value = '';
+  });
+  if (preCrit) {
+    const cb = document.getElementById('pc-'+preCrit);
+    cb.checked = true;
+    togglePopCrit(preCrit);
+  }
+  document.getElementById('popPreview').textContent = text;
+  document.getElementById('popAddBtn').disabled = !preCrit;
+  const pop = document.getElementById('popover');
+  pop.classList.add('visible');
+  const lp = document.getElementById('leftBody').getBoundingClientRect();
+  const pw = 310, ph = 420;
+  let left = e.clientX + 12;
+  let top  = e.clientY - 20;
+  if (left + pw > lp.right - 4) left = e.clientX - pw - 12;
+  if (left < lp.left + 4) left = lp.left + 4;
+  if (top + ph > window.innerHeight - 12) top = window.innerHeight - ph - 12;
+  if (top < 60) top = 60;
+  pop.style.left = left+'px';
+  pop.style.top  = top+'px';
+}
+
+function closePopover() {
+  document.getElementById('popover').classList.remove('visible');
+  if (currentMode === 'area') areaRectEl.style.display = 'none';
+  window.getSelection && window.getSelection().removeAllRanges();
+}
+
+function togglePopCrit(crit) {
+  const cb = document.getElementById('pc-'+crit);
+  const exp = document.getElementById('pcexp-'+crit);
+  const row = document.getElementById('pcrow-'+crit);
+  exp.classList.toggle('open', cb.checked);
+  row.classList.toggle('checked', cb.checked);
+  if (cb.checked) {
+    if (!popSelectedCrits[crit]) popSelectedCrits[crit] = {level:null, reason:''};
+  } else {
+    delete popSelectedCrits[crit];
+  }
+  updateAddBtn();
+}
+
+function popSelectLevel(crit, level, btn) {
+  document.getElementById('pcscore-'+crit).querySelectorAll('.pop-level-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  if (!popSelectedCrits[crit]) popSelectedCrits[crit] = {level:null, reason:''};
+  popSelectedCrits[crit].level = level;
+}
+
+function updateAddBtn() {
+  const anyChecked = criteria.some(c => document.getElementById('pc-'+c).checked);
+  document.getElementById('popAddBtn').disabled = !anyChecked;
+}
+
+function addEvidence() {
+  const checkedCrits = criteria.filter(c => document.getElementById('pc-'+c).checked);
+  if (checkedCrits.length === 0) return;
+
+  checkedCrits.forEach(c => {
+    const level = popSelectedCrits[c]?.level;
+    const reason = document.getElementById('pcreason-'+c).value.trim();
+    popSelectedCrits[c] = {level, reason};
+  });
+
+  let hlId = null;
+  if (popMode === 'text') {
+    hlId = 'hl'+nextHlId++;
+    wrapSelectionInHighlight(hlId, nextEvId);
+  } else {
+    areaRectEl.style.border = '2px solid var(--amber)';
+    areaRectEl.style.background = 'rgba(239,159,39,0.1)';
+    hlId = 'area-'+nextHlId++;
+  }
+
+  const evId = nextEvId++;
+  const evText = popMode === 'text' ? popSelectedText : 'Selected region';
+
+  evidenceStore.push({
+    id: evId,
+    text: evText,
+    crits: checkedCrits.map(c=>({crit:c, level:popSelectedCrits[c]?.level, reason:popSelectedCrits[c]?.reason||''})),
+    hlId
+  });
+
+  checkedCrits.forEach(c => {
+    const level = popSelectedCrits[c]?.level;
+    addEvItemToPanel(c, evId, evText, level, 'Instructor');
+    if (level) {
+      const btns = document.getElementById('levels-'+c).querySelectorAll('.level-btn');
+      btns.forEach(b=>b.classList.remove('suggested','confirmed'));
+      const targets = [4,3,2,1];
+      const idx = targets.indexOf(level);
+      if (idx >= 0) btns[idx].classList.add('confirmed');
+      const conf = document.getElementById('conf-'+c);
+      if (conf) conf.style.display = 'inline';
+    }
+    const reason = popSelectedCrits[c]?.reason;
+    if (reason) {
+      const ta = document.getElementById('reason-'+c);
+      if (ta && !ta.value.trim()) ta.value = reason;
+    }
+  });
+
+  closePopover();
+  areaRectEl.style.display = 'none';
+
+  const firstCrit = checkedCrits[0];
+  const card = document.getElementById('card-'+firstCrit);
+  if (card) setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'nearest'}), 100);
+}
+
+function wrapSelectionInHighlight(hlId, evId) {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) return;
+  try {
+    const range = sel.getRangeAt(0);
+    const span = document.createElement('span');
+    span.className = 'hl';
+    span.id = hlId;
+    span.onclick = () => jumpFromHL_byId(hlId);
+    const tag = document.createElement('span');
+    tag.className = 'ev-tag';
+    tag.id = 'tag'+evId;
+    tag.textContent = 'E'+evId;
+    range.surroundContents(span);
+    span.appendChild(tag);
+    sel.removeAllRanges();
+  } catch(e) {
+    sel.removeAllRanges();
+  }
+}
+
+// ── EVIDENCE PANEL ──
+function addEvItemToPanel(crit, evId, text, level, source) {
+  const list = document.getElementById('evlist-'+crit);
+  const empty = document.getElementById('empty-'+crit);
+  if (empty) empty.remove();
+  const div = document.createElement('div');
+  div.className = 'ev-item flash';
+  div.id = 'evitem-'+crit+'-'+evId;
+  const levelStr = level ? 'L'+level+' — '+levelNames[level] : 'Unscored';
+  div.innerHTML = `
+    <span class="ev-tag-sm">E${evId}</span>
+    <div class="ev-content">
+      <div class="ev-text">${escHtml(text)}</div>
+      <div class="ev-meta">
+        <span class="ev-score-chip">${levelStr}</span>
+        <span class="ev-source">${source}</span>
+      </div>
+    </div>
+    <span class="ev-jump" onclick="jumpTo(${evId})" title="Go to source">↗</span>
+    <button class="ev-delete" onclick="deleteEvidence('${crit}',${evId})" title="Remove">×</button>
+  `;
+  list.appendChild(div);
+  updateEvCount(crit);
+}
+
+function deleteEvidence(crit, evId) {
+  const item = document.getElementById('evitem-'+crit+'-'+evId);
+  if (!item) return;
+  item.classList.add('removing');
+  setTimeout(() => {
+    item.remove();
+    const ev = evidenceStore.find(e=>e.id===evId);
+    if (ev) {
+      ev.crits = ev.crits.filter(c=>c.crit!==crit);
+      if (ev.crits.length === 0) {
+        const hlEl = document.getElementById(ev.hlId);
+        if (hlEl) {
+          const parent = hlEl.parentNode;
+          while(hlEl.firstChild) {
+            if (hlEl.firstChild.classList && hlEl.firstChild.classList.contains('ev-tag')) { hlEl.firstChild.remove(); continue; }
+            parent.insertBefore(hlEl.firstChild, hlEl);
+          }
+          hlEl.remove();
+        }
+      }
+    }
+    const list = document.getElementById('evlist-'+crit);
+    if (list && list.querySelectorAll('.ev-item').length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'ev-empty';
+      empty.id = 'empty-'+crit;
+      empty.textContent = 'No evidence mapped';
+      list.appendChild(empty);
+    }
+    updateEvCount(crit);
+  }, 200);
+}
+
+function updateEvCount(crit) {
+  const list = document.getElementById('evlist-'+crit);
+  const n = list ? list.querySelectorAll('.ev-item').length : 0;
+  const badge = document.getElementById('evcount-'+crit);
+  if (badge) badge.textContent = n === 1 ? '1 item' : n+' items';
+}
+
+// ── JUMP BEHAVIOUR ──
+function jumpTo(evId) {
+  const ev = evidenceStore.find(e=>e.id===evId);
+  if (!ev) return;
+  const hlEl = document.getElementById(ev.hlId);
+  if (!hlEl) return;
+  hlEl.scrollIntoView({behavior:'smooth', block:'center'});
+  setTimeout(() => {
+    hlEl.classList.add('pulse-flash');
+    const tag = document.getElementById('tag'+evId);
+    if (tag) { tag.classList.add('jump'); setTimeout(()=>tag.classList.remove('jump'), 350); }
+    setTimeout(()=>hlEl.classList.remove('pulse-flash'), 1100);
+  }, 300);
+}
+
+function jumpFromHL_byId(hlId) {
+  const ev = evidenceStore.find(e=>e.hlId===hlId);
+  if (!ev) return;
+  ev.crits.forEach(c => {
+    const item = document.getElementById('evitem-'+c.crit+'-'+ev.id);
+    if (item) {
+      item.scrollIntoView({behavior:'smooth',block:'nearest'});
+      item.classList.add('flash');
+      setTimeout(()=>item.classList.remove('flash'),500);
+    }
+  });
+}
+
+// ── ESCAPE ──
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closePopover();
+    cancelSelectMode();
+  }
+});
+
+// ── S2 LAYOUT FIX: make columns fill remaining height ──
+function fixS2Layout() {
+  const s2 = document.getElementById('s2');
+  const top = s2.querySelector('.s2-top');
+  const cols = s2.querySelector('.s2-cols');
+  if (top && cols) {
+    cols.style.height = (s2.offsetHeight - top.offsetHeight) + 'px';
+  }
+}
+window.addEventListener('resize', fixS2Layout);
+fixS2Layout();
+
+// ── UTILITY ──
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

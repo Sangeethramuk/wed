@@ -1,0 +1,85 @@
+"use client"
+
+import { usePreEvalStore } from "@/lib/store/pre-evaluation-store"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Badge } from "@/components/ui/badge"
+import { History, ShieldCheck, User, Zap } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+export function AuditSidebar() {
+  const { auditLog } = usePreEvalStore()
+
+  const getIcon = (type: string) => {
+    switch (type) {
+      case "system": return <ShieldCheck className="h-4 w-4 text-emerald-600/40" />
+      case "user": return <User className="h-4 w-4 text-primary/40" />
+      case "ai": return <Zap className="h-4 w-4 text-amber-500/40 fill-current" />
+      case "auditor": return <History className="h-4 w-4 text-slate-400" />
+      default: return null
+    }
+  }
+
+  return (
+    <Sheet>
+      <SheetTrigger className="inline-flex items-center justify-center rounded-lg border border-border/20 bg-background/30 backdrop-blur-sm px-3 h-8 text-[9px] font-black uppercase tracking-widest hover:bg-muted/50 gap-2 transition-all active:scale-95 shadow-none">
+        <History className="h-3 w-3 opacity-40" />
+        Trail
+      </SheetTrigger>
+      <SheetContent className="w-full sm:max-w-md border-l border-border/10 p-0 overflow-hidden flex flex-col bg-background shadow-none">
+        <SheetHeader className="p-8 border-b border-border/5 bg-muted/[0.01] space-y-4">
+          <div className="h-12 w-12 rounded-xl bg-primary/[0.02] flex items-center justify-center text-primary border border-primary/5">
+            <History className="h-6 w-6" />
+          </div>
+          <div className="space-y-1">
+            <SheetTitle className="text-2xl font-black tracking-tight secondary-text">
+              Audit
+            </SheetTitle>
+            <p className="text-[10px] font-semibold text-muted-foreground/40 leading-relaxed uppercase tracking-widest">
+              Faculty activity calibration log.
+            </p>
+          </div>
+        </SheetHeader>
+        
+        <ScrollArea className="flex-1 px-8 py-8">
+          <div className="space-y-8 relative ml-4 border-l border-dashed border-border/10 pl-8">
+            {auditLog.map((event) => (
+              <div key={event.id} className="relative group/item">
+                <div className="absolute -left-[49px] top-0 h-8 w-8 rounded-lg bg-background border border-border/20 flex items-center justify-center transition-all duration-300">
+                  {getIcon(event.type)}
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-[11px] font-black uppercase tracking-tight text-foreground/60">{event.action}</h4>
+                    <span className="text-[8px] text-muted-foreground/30 font-black tracking-widest uppercase bg-muted/20 px-1.5 py-0.5 rounded border border-border/10">{event.timestamp}</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground/50 font-medium leading-relaxed pr-4">{event.details}</p>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className={`text-[7px] uppercase tracking-widest py-0 px-2 font-black border border-border/20 bg-transparent opacity-30 rounded-full h-4`}>
+                      {event.type}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+
+        <div className="p-8 border-t border-border/5 bg-muted/[0.01]">
+           <div className="p-4 rounded-xl border border-dashed border-primary/10 bg-primary/[0.01] flex items-start gap-4">
+              <ShieldCheck className="h-8 w-8 text-primary opacity-5" />
+              <div className="space-y-0.5">
+                <p className="text-[8px] font-black text-primary/30 uppercase tracking-widest">
+                  Secure Log
+                </p>
+                <p className="text-[9px] font-bold text-muted-foreground/30 leading-relaxed">
+                  Record #ESU-{Date.now().toString(36).toUpperCase()} locked.
+                </p>
+              </div>
+           </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  )
+}
