@@ -4,7 +4,6 @@ import Link from "next/link"
 import {
   Home,
   PlusCircle,
-  GraduationCap,
   ClipboardCheck,
   BarChart3,
 } from "lucide-react"
@@ -56,12 +55,11 @@ export function AppSidebar() {
               size="lg"
               render={<Link href="/dashboard" />}
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0">
-                <GraduationCap className="size-5" />
+              <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-red-100 text-red-800 shrink-0">
+                <span className="text-[10px] font-bold">IIMB</span>
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-semibold text-lg tracking-tight">EducAItors</span>
-                <span className="text-[10px] text-muted-foreground uppercase font-medium tracking-widest">Professor Edition</span>
+                <span className="font-semibold text-base tracking-tight">IIM Bangalore</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -89,7 +87,13 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border" />
+      <SidebarFooter className="border-t border-sidebar-border p-4">
+        <div className="flex w-full items-center justify-center">
+          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+            Powered by <span className="font-semibold normal-case text-foreground">EducAItors</span>
+          </span>
+        </div>
+      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>
