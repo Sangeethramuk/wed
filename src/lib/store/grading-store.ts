@@ -311,6 +311,11 @@ interface GradingState {
   // Calibration state keyed by assignment ID
   calibration: Record<string, CalibrationData>;
 
+  // Spot check
+  spotCheckActive: boolean;
+  triggerSpotCheck: () => void;
+  dismissSpotCheck: () => void;
+
   // Actions
   selectAssignment: (id: string) => void;
   setPhase: (phase: GradingPhase) => void;
@@ -335,6 +340,7 @@ export const useGradingStore = create<GradingState>()(
       currentAssignmentId: null,
       activeStudentId: null,
       phase: 'selection',
+      spotCheckActive: false,
       calibration: {},
 
       assignments: {
@@ -419,6 +425,8 @@ export const useGradingStore = create<GradingState>()(
         }
       },
 
+      triggerSpotCheck: () => set({ spotCheckActive: true }),
+      dismissSpotCheck: () => set({ spotCheckActive: false }),
       selectAssignment: (id) => set({ currentAssignmentId: id, phase: 'blind' }),
       setPhase: (phase) => set({ phase }),
       setActiveStudent: (id) => set({ activeStudentId: id }),

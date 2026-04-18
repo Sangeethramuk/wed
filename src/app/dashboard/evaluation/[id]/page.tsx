@@ -37,7 +37,6 @@ import {
   ArrowUpRight,
   ArrowUp,
   ArrowDown,
-  Activity,
   Link as LinkIcon,
   Edit2,
   Upload,
@@ -353,7 +352,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     setDismissedPoints(prev => [...prev, id])
   }
 
-  const [isSpotCheckActive, setIsSpotCheckActive] = useState(false)
+  // isSpotCheckActive + dismissSpotCheck come from grading store (triggered by header button)
   const [activeRubricCriterionIdx, setActiveRubricCriterionIdx] = useState(0)
   const [rubricAccordionOpen, setRubricAccordionOpen] = useState<Record<string, boolean>>({})
   const [rubricReviewStripOpen, setRubricReviewStripOpen] = useState<Record<number, boolean>>({})
@@ -361,20 +360,14 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   const handleConfirmNext = () => {
     const currentSub = submissions.find(s => s.id === selectedSubmission)
     // Trigger spot check only for "Clear" papers and if not already active
-    if (currentSub?.reason === "Clear" && !isSpotCheckActive && Math.random() > 0.5) {
-        setIsSpotCheckActive(true)
-        return
-    }
-
     setGradedSubmissions(prev => [...prev, selectedSubmission])
-    
+
     // Find next ungraded submission
     const currentIndex = submissions.findIndex(s => s.id === selectedSubmission)
     const nextSub = submissions.slice(currentIndex + 1).find(s => s.status !== "graded") || submissions[0]
-    
+
     setSelectedSubmission(nextSub.id)
     setIsFixed(false)
-    setIsSpotCheckActive(false)
     setDismissedPoints([])
     setCurrentPage(1)
     setOverrideDrafts({})
@@ -1144,49 +1137,6 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
           </motion.div>
         )}
 
-        {isSpotCheckActive && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-xl z-[70]"
-          >
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-lg p-6"
-            >
-              <Card className="shadow-2xl border-primary/20 bg-card overflow-hidden rounded-3xl">
-                <div className="bg-primary/10 border-b border-primary/10 p-6 flex items-center gap-4">
-                  <div className="p-3 bg-primary text-primary-foreground rounded-2xl">
-                    <Activity className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold tracking-tight">Spot Check Protocol</h3>
-                    <p className="text-[10px] uppercase font-black tracking-widest text-primary/60">Integrity Verification Required</p>
-                  </div>
-                </div>
-                <CardContent className="p-10 space-y-8">
-                  <p className="text-sm text-muted-foreground leading-relaxed italic font-medium">
-                    "To maintain Protocol P1 compliance, you must manually verify a randomly selected AI judgment for this submission."
-                  </p>
-                  <div className="p-6 rounded-2xl bg-muted/30 border border-border space-y-4">
-                    <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[9px] uppercase font-black bg-background">Verification Task</Badge>
-                        <span className="text-xs font-bold">Review Criterion: Rubric Alignment</span>
-                    </div>
-                    <p className="text-xs font-serif italic italic font-medium opacity-80">"Does the API documentation accurately reflect the required controller contracts?"</p>
-                  </div>
-                  <div className="flex gap-3 pt-4">
-                    <Button variant="outline" className="flex-1 rounded-2xl h-14 text-[11px] font-black uppercase tracking-widest" onClick={() => setIsSpotCheckActive(false)}>Reject Auto-Grade</Button>
-                    <Button className="flex-1 rounded-2xl h-14 bg-primary text-primary-foreground text-[11px] font-black uppercase tracking-widest shadow-xl shadow-primary/20" onClick={() => handleConfirmNext()}>Verify Judgment</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </motion.div>
-        )}
       </AnimatePresence>
 
       {/* FLOATING EVIDENCE MAPPING MENU */}
