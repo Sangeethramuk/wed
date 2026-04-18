@@ -70,7 +70,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-2">
               {mainNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
@@ -87,10 +87,21 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4">
-        <div className="flex w-full items-center justify-center">
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-            Powered by <span className="font-semibold normal-case text-foreground">EducAItors</span>
+      <SidebarFooter className="border-t border-sidebar-border p-4 group-data-[collapsible=icon]:p-2">
+        {/* Expanded View */}
+        <div className="flex w-full flex-col items-center justify-center gap-1 group-data-[collapsible=icon]:hidden">
+          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider text-center">
+            Powered by
+          </span>
+          <span className="font-semibold normal-case text-muted-foreground text-xs">
+            Educ<span className="text-blue-500">AI</span>tors
+          </span>
+        </div>
+
+        {/* Collapsed View */}
+        <div className="hidden w-full items-center justify-center group-data-[collapsible=icon]:flex">
+          <span className="font-bold text-muted-foreground">
+            E<span className="text-blue-500">AI</span>
           </span>
         </div>
       </SidebarFooter>
