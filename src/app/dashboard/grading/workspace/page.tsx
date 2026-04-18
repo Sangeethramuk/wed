@@ -43,6 +43,13 @@ export default function WorkspacePage() {
   const [showPatternAlert, setShowPatternAlert] = useState(false);
   const [isIntegrityRevealActive, setIsIntegrityRevealActive] = useState(false);
   const [isFinalized, setIsFinalized] = useState(false);
+  const [activeCriterionIdx, setActiveCriterionIdx] = useState(0);
+  const [feedbacks, setFeedbacks] = useState<Record<string, string>>({});
+  const [overrideReasons, setOverrideReasons] = useState<Record<string, string>>({});
+  const [reasonNotes, setReasonNotes] = useState<Record<string, string>>({});
+  const [reviewStripOpen, setReviewStripOpen] = useState<Record<string, boolean>>({});
+  const [accordionOpen, setAccordionOpen] = useState<Record<string, boolean>>({});
+  const toggleAccordion = (key: string) => setAccordionOpen(prev => ({ ...prev, [key]: !prev[key] }));
 
   const assignment = currentAssignmentId ? assignments[currentAssignmentId] : null;
   const activeStudent = assignment?.students.find(s => s.id === (activeStudentId || assignment.students[0]?.id));
@@ -285,135 +292,296 @@ export default function WorkspacePage() {
           </ScrollArea>
         </div>
 
-        {/* Right Pane: Rubric */}
-        <aside className="w-[450px] bg-white flex flex-col shrink-0 border-l border-slate-200 shadow-xl">
-           <div className="p-6 bg-slate-50/50 border-b border-slate-200">
-              <div className="flex items-center justify-between mb-4">
-                 <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 font-mono">Evaluation Matrix</h3>
-                 {activeStudent.status === 'manipulated' && (
-                    <Badge className="bg-red-50 text-red-600 border border-red-100 text-[10px] font-black tracking-widest px-2 uppercase hover:bg-red-50">MANIPULATED 🚨</Badge>
-                 )}
-              </div>
-              <div className="flex flex-col gap-2">
-                 <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-slate-900">{activeStudent.name}</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">ROLL: {activeStudent.roll}</span>
-                 </div>
-                 <div className="flex items-center gap-2">
-                    <div className="h-1.5 flex-1 bg-slate-100 rounded-full overflow-hidden">
-                       <motion.div 
-                          className="h-full bg-slate-900" 
-                          initial={{ width: 0 }} 
-                          animate={{ width: `${(Object.keys(professorGrades).length / Object.keys(activeStudent.criteria).length) * 100}%` }} 
-                        />
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-400 font-mono">{Object.keys(professorGrades).length}/3</span>
-                 </div>
-              </div>
-           </div>
+        {/* Right Pane: Rubric Evaluation (AI-assisted stepper) */}
+        <aside className="w-[450px] bg-background flex flex-col shrink-0 border-l border-border">
+          {(() => {
+            const criteriaList = Object.values(activeStudent.criteria);
+            const activeCriterion = criteriaList[activeCriterionIdx];
+            const isLastCriterion = activeCriterionIdx === criteriaList.length - 1;
+            const scoredCount = criteriaList.filter(c => !!professorGrades[c.id]).length;
+            const remaining = criteriaList.length - scoredCount;
+            const professorLevel = activeCriterion ? professorGrades[activeCriterion.id] : undefined;
+            const isOverridden = activeCriterion && professorLevel !== undefined && professorLevel !== activeCriterion.level;
+            const isRevealed = phase === 'delta' || phase === 'desk';
 
-           <ScrollArea className="flex-1">
-              <div className="p-6 space-y-10">
-                 {Object.values(activeStudent.criteria).map((criterion, idx) => {
-                    const isRevealed = phase === 'delta' || phase === 'desk';
-                    const professorLevel = professorGrades[criterion.id];
-                    const delta = isRevealed ? professorLevel - criterion.level : null;
-
-                    return (
-                       <div key={criterion.id} className="relative group">
-                          <div className="flex justify-between items-start mb-4">
-                             <div className="flex flex-col">
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] font-mono mb-1">C0{idx+1}</span>
-                                <h4 className="text-[13px] font-bold text-slate-900 tracking-tight leading-tight">{criterion.name}</h4>
-                             </div>
-                             {isRevealed && (
-                                <Badge className={`text-[10px] font-black uppercase tracking-widest h-6 rounded-md shadow-sm border-none ${
-                                  delta === 0 ? 'bg-green-500' : 'bg-amber-500'
-                                }`}>
-                                   Δ {delta! > 0 ? `+${delta}` : delta}
-                                </Badge>
-                             )}
-                          </div>
-
-                          <div className="flex gap-1.5">
-                             {[1, 2, 3, 4, 5].map(lvl => (
-                                <button
-                                   key={lvl}
-                                   onClick={() => handleGradeSelection(criterion.id, lvl)}
-                                   disabled={isRevealed}
-                                   className={`flex-1 h-11 rounded-xl border-2 font-bold text-xs transition-all relative ${
-                                     professorLevel === lvl 
-                                       ? 'bg-slate-900 border-slate-900 text-white shadow-lg scale-[1.05] z-10' 
-                                       : 'bg-white border-slate-100 text-slate-200 hover:border-slate-300 hover:text-slate-400'
-                                   } ${isRevealed && criterion.level === lvl && professorLevel !== lvl ? 'border-amber-500 ring-4 ring-amber-500/10' : ''}`}
-                                >
-                                   {lvl}
-                                   {isRevealed && criterion.level === lvl && professorLevel !== lvl && (
-                                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-[7px] px-1.5 py-0.5 rounded-full uppercase font-black tracking-widest shadow-lg">AI BASeline</div>
-                                   )}
-                                </button>
-                             ))}
-                          </div>
-
-                          {isRevealed && (
-                             <motion.div 
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl relative overflow-hidden"
-                             >
-                                <div className="absolute top-0 right-0 p-2 opacity-[0.05]"><Zap className="w-10 h-10" /></div>
-                                <h5 className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                   <Target className="w-3 h-3 text-slate-400" /> Evidence Reasoning
-                                </h5>
-                                <p className="text-[11px] text-slate-500 leading-relaxed font-serif italic text-justify">
-                                   "{criterion.reasoning}"
-                                </p>
-                             </motion.div>
-                          )}
-                       </div>
-                    );
-                 })}
-              </div>
-           </ScrollArea>
-
-           <footer className="p-6 bg-white border-t border-slate-200 space-y-4">
-              {phase === 'blind' ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                     <div className="flex items-center gap-3">
-                        <Lock className={`w-4 h-4 ${isGateUnlocked ? 'text-green-500' : 'text-slate-300'}`} />
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Protocol Gate</span>
-                     </div>
-                     {!isGateUnlocked && (
-                       <Badge className="bg-slate-200 text-slate-500 text-[9px] font-bold uppercase tracking-tighter">Locked</Badge>
-                     )}
+            return (
+              <>
+                {/* Sticky nav */}
+                <nav className="bg-background border-b border-border px-4 pt-3 pb-0 shrink-0">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[13px] font-semibold text-foreground">Rubric evaluation</span>
+                    <span className="text-[11px] font-mono text-muted-foreground/60 bg-muted/40 border border-border/60 rounded-full px-2 py-0.5">
+                      {scoredCount} of {criteriaList.length} completed
+                    </span>
                   </div>
-                  <Button 
-                    disabled={!isGateUnlocked}
-                    onClick={handleReveal}
-                    className={`w-full h-14 rounded-2xl font-bold uppercase tracking-[0.2em] text-[10px] transition-all ${
-                      isGateUnlocked ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-2xl shadow-slate-200' : 'bg-slate-100 text-slate-300'
-                    }`}
-                  >
-                    Compare with AI Baseline
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                   <div className="flex gap-2">
-                      <Button onClick={handleFinalize} className="flex-1 h-14 bg-white text-slate-900 border-2 border-slate-100 font-bold text-[10px] uppercase tracking-[0.15em] rounded-2xl hover:bg-slate-50 hover:border-slate-200 transition-all">
-                         Accept Match
-                      </Button>
-                      <Button 
-                        onClick={() => setShowFixModal(true)}
-                        className="flex-1 h-14 bg-amber-500 text-white font-bold text-[10px] uppercase tracking-[0.15em] rounded-2xl hover:bg-amber-600 shadow-xl shadow-amber-100 transition-all"
-                      >
-                         Override & Fix
-                      </Button>
-                   </div>
-                </div>
-              )}
-           </footer>
+                  <div className="h-[3px] bg-muted/30 rounded-full mb-3 overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full transition-all duration-500"
+                      style={{ width: `${(scoredCount / Math.max(criteriaList.length, 1)) * 100}%` }}
+                    />
+                  </div>
+                  {/* Stepper */}
+                  <div className="flex">
+                    {criteriaList.map((c, i) => {
+                      const isDone = !!professorGrades[c.id];
+                      const isActive = i === activeCriterionIdx;
+                      return (
+                        <button
+                          key={c.id}
+                          onClick={() => setActiveCriterionIdx(i)}
+                          className={`flex-1 flex flex-col items-center gap-1 px-1 pt-1.5 pb-2.5 border-b-2 transition-all cursor-pointer bg-transparent font-sans ${
+                            isActive ? 'border-primary' : 'border-transparent hover:bg-muted/20'
+                          }`}
+                        >
+                          <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center text-[10px] font-semibold transition-all ${
+                            isDone
+                              ? 'bg-primary border-primary text-primary-foreground'
+                              : isActive
+                              ? 'border-[1.5px] border-primary bg-primary/10 text-primary'
+                              : 'border border-border/60 bg-background text-muted-foreground/50'
+                          }`}>
+                            {isDone ? '✓' : i + 1}
+                          </div>
+                          <span className={`text-[10px] font-medium text-center leading-tight max-w-[70px] ${
+                            isDone ? 'text-muted-foreground' : isActive ? 'text-primary' : 'text-muted-foreground/50'
+                          }`}>{c.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </nav>
+
+                {/* Scrollable body */}
+                <ScrollArea className="flex-1">
+                  <div className="p-3 space-y-2.5">
+                    {activeCriterion && (
+                      <>
+                        {/* Review needed strip (shown when confidence < 0.8) */}
+                        {activeCriterion.confidence < 0.8 && (
+                          <div style={{ background: '#FFFAED', border: '1px solid #F0C97A', borderRadius: 6 }}>
+                            <button
+                              onClick={() => setReviewStripOpen(s => ({ ...s, [activeCriterion.id]: !s[activeCriterion.id] }))}
+                              className="w-full flex items-center justify-between gap-2 px-3.5 py-2 bg-transparent border-none cursor-pointer font-sans text-left"
+                            >
+                              <div className="flex items-center gap-2">
+                                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0, color: '#8A5A00' }}><circle cx="6.5" cy="6.5" r="6" stroke="currentColor" strokeWidth="1.2"/><path d="M6.5 4v3.5M6.5 9v.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+                                <span className="text-[12px] font-semibold" style={{ color: '#8A5A00' }}>Review needed</span>
+                                <span className="text-[12px]" style={{ color: '#8A5A00', opacity: 0.75 }}>— citations missing for key claims</span>
+                              </div>
+                              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0, color: '#8A5A00', transform: reviewStripOpen[activeCriterion.id] ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}><path d="M2.5 4.5l4 4 4-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            </button>
+                            {reviewStripOpen[activeCriterion.id] && (
+                              <ul className="text-[12px] leading-[1.7] px-9 pb-2.5 m-0" style={{ color: '#8A5A00' }}>
+                                {activeCriterion.evidence.map((ev, i) => (
+                                  <li key={i}>{ev}</li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Main criterion card */}
+                        <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
+                          <div className="p-3.5 space-y-3.5">
+                            <div>
+                              <h4 className="text-[15px] font-semibold text-foreground leading-snug">{activeCriterion.name}</h4>
+                              <p className="text-[12px] text-muted-foreground leading-relaxed mt-1">{activeCriterion.reasoning}</p>
+                            </div>
+
+                            {/* Score */}
+                            <div>
+                              <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-2">Score</span>
+                              <div className="flex items-center gap-2.5">
+                                <div className="flex items-baseline gap-0.5">
+                                  <span className="text-[32px] font-semibold leading-none tracking-tight text-foreground">{activeCriterion.level}</span>
+                                  <span className="text-[15px] text-muted-foreground/60 font-normal">/5</span>
+                                </div>
+                                <div className="w-px h-7 bg-border" />
+                                <div className="flex items-center gap-1.5 ml-1">
+                                  <span className="text-[11px] text-muted-foreground/60">Adjust:</span>
+                                  <div className="flex gap-1">
+                                    {[1, 2, 3, 4, 5].map(v => (
+                                      <button
+                                        key={v}
+                                        onClick={() => handleGradeSelection(activeCriterion.id, v)}
+                                        className={`w-[30px] h-[30px] rounded-md border text-[13px] font-medium cursor-pointer transition-all font-sans ${
+                                          professorLevel === v
+                                            ? 'bg-foreground border-foreground text-background shadow-sm'
+                                            : 'bg-background border-border/70 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5'
+                                        }`}
+                                      >
+                                        {v}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Override accordion (shown when adjusted from AI) */}
+                            {isOverridden && (
+                              <div style={{ background: '#FFFAED', border: '1px solid #F0C97A', borderRadius: 6, padding: '12px' }}>
+                                <div className="flex items-center gap-1.5 text-[12px] font-semibold mb-2" style={{ color: '#8A5A00' }}>
+                                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v6M7 9.5v1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.2"/></svg>
+                                  Score overridden — please provide a reason
+                                </div>
+                                <select
+                                  value={overrideReasons[activeCriterion.id] ?? ''}
+                                  onChange={e => setOverrideReasons(r => ({ ...r, [activeCriterion.id]: e.target.value }))}
+                                  className="w-full text-[12px] px-2.5 py-1.5 border border-border/70 rounded-md bg-background text-foreground mb-2 font-sans focus:outline-none focus:border-primary cursor-pointer"
+                                >
+                                  <option value="" disabled>Select a reason…</option>
+                                  <option>AI missed contextual nuance</option>
+                                  <option>Incorrect evidence interpretation</option>
+                                  <option>Rubric misapplication</option>
+                                  <option>Formatting / citation issue</option>
+                                  <option>Other</option>
+                                </select>
+                                <textarea
+                                  value={reasonNotes[activeCriterion.id] ?? ''}
+                                  onChange={e => setReasonNotes(n => ({ ...n, [activeCriterion.id]: e.target.value }))}
+                                  rows={2}
+                                  placeholder="Optional: add a brief note explaining your override…"
+                                  className="w-full text-[12px] px-2.5 py-1.5 border border-border/70 rounded-md bg-background text-foreground font-sans resize-none focus:outline-none focus:border-primary min-h-[56px]"
+                                />
+                              </div>
+                            )}
+
+                            {/* Feedback */}
+                            <div>
+                              <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-1.5">Feedback</span>
+                              <textarea
+                                value={feedbacks[activeCriterion.id] ?? ''}
+                                onChange={e => setFeedbacks(f => ({ ...f, [activeCriterion.id]: e.target.value }))}
+                                rows={4}
+                                placeholder="Write feedback for this criterion…"
+                                className="w-full text-[13px] leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[90px] transition-colors"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Evidence accordion */}
+                        <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
+                          <button
+                            onClick={() => toggleAccordion(`ev-${activeCriterion.id}`)}
+                            className="w-full flex items-center justify-between px-3.5 py-2.5 text-[13px] font-medium text-foreground hover:bg-muted/20 transition-colors text-left gap-2 bg-transparent border-none cursor-pointer font-sans"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 rounded-[5px] bg-primary/10 flex items-center justify-center shrink-0 text-primary">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h5M2 9h6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                              </div>
+                              Evidence ({activeCriterion.evidence.length} linked)
+                            </div>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={`text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen[`ev-${activeCriterion.id}`] ? 'rotate-180' : ''}`}><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          </button>
+                          {accordionOpen[`ev-${activeCriterion.id}`] && (
+                            <div className="border-t border-border p-3.5 space-y-2">
+                              {activeCriterion.evidence.map((ev, i) => (
+                                <div key={i} className="flex items-start gap-2 p-2.5 bg-muted/30 border border-border rounded-md hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
+                                  <div className="w-[18px] h-[18px] rounded-full bg-primary/10 border border-primary/30 text-primary text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[12px] leading-[1.55] text-muted-foreground italic">"{ev}"</p>
+                                    <div className="flex gap-2 mt-1.5">
+                                      <button className="text-[11px] text-muted-foreground/60 hover:text-foreground bg-transparent border-none cursor-pointer font-sans p-0 transition-colors">Edit</button>
+                                      <button className="text-[11px] text-muted-foreground/60 hover:text-red-500 bg-transparent border-none cursor-pointer font-sans p-0 transition-colors">Remove</button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                              <button className="w-full flex items-center gap-1.5 text-[12px] text-primary font-medium border border-dashed border-primary/30 rounded-md px-3 py-1.5 hover:bg-primary/5 transition-all bg-transparent cursor-pointer font-sans mt-1">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                                Add evidence — select text in left panel
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* AI Reasoning accordion */}
+                        <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
+                          <button
+                            onClick={() => toggleAccordion(`ai-${activeCriterion.id}`)}
+                            className="w-full flex items-center justify-between px-3.5 py-2.5 text-[13px] font-medium text-foreground hover:bg-muted/20 transition-colors text-left gap-2 bg-transparent border-none cursor-pointer font-sans"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 rounded-[5px] flex items-center justify-center shrink-0" style={{ background: '#FEF3DC' }}>
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5C3.5 1.5 1.5 3.5 1.5 6S3.5 10.5 6 10.5 10.5 8.5 10.5 6 8.5 1.5 6 1.5z" stroke="#8A5A00" strokeWidth="1.1"/><path d="M4 6c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2" stroke="#8A5A00" strokeWidth="1.1"/><circle cx="6" cy="6" r=".8" fill="#8A5A00"/></svg>
+                              </div>
+                              AI reasoning
+                            </div>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={`text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen[`ai-${activeCriterion.id}`] ? 'rotate-180' : ''}`}><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          </button>
+                          {accordionOpen[`ai-${activeCriterion.id}`] && (
+                            <div className="border-t border-border p-3.5 space-y-2.5">
+                              <p className="text-[12px] text-muted-foreground leading-[1.65]">{activeCriterion.reasoning}</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {activeCriterion.evidence.slice(0, 2).map((ev, i) => (
+                                  <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium" style={{ background: '#E8F5EE', color: '#2D7D52' }}>
+                                    <svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="3.5" fill="currentColor"/></svg>
+                                    {ev.length > 30 ? ev.slice(0, 30) + '…' : ev}
+                                  </span>
+                                ))}
+                                {isRevealed && (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border border-border/60 bg-muted/30 text-muted-foreground">
+                                    ~ Acceptable depth for level
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </ScrollArea>
+
+                {/* Footer */}
+                <footer className="px-4 py-3 border-t border-border bg-background shrink-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <button
+                      onClick={() => setActiveCriterionIdx(i => Math.max(0, i - 1))}
+                      disabled={activeCriterionIdx === 0}
+                      className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium text-muted-foreground rounded-md hover:bg-muted/30 transition-colors disabled:opacity-30 bg-transparent border-none cursor-pointer font-sans"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8 3L4 7l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      Previous
+                    </button>
+
+                    <div className="flex items-center gap-1.5">
+                      <button className="px-3 py-1.5 text-[13px] font-medium text-foreground bg-muted/40 border border-border/60 rounded-md hover:bg-muted/60 transition-colors cursor-pointer font-sans">
+                        Save
+                      </button>
+
+                      {!isLastCriterion ? (
+                        <button
+                          onClick={() => setActiveCriterionIdx(i => i + 1)}
+                          className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors cursor-pointer font-sans"
+                        >
+                          Next criterion
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        </button>
+                      ) : (
+                        <button
+                          disabled={!isGateUnlocked}
+                          onClick={phase === 'blind' ? handleReveal : handleFinalize}
+                          className={`flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors font-sans ${
+                            isGateUnlocked
+                              ? 'text-primary-foreground bg-primary hover:bg-primary/90 cursor-pointer'
+                              : 'opacity-40 text-primary-foreground bg-primary cursor-not-allowed'
+                          }`}
+                        >
+                          {phase === 'blind' ? 'Proceed to feedback' : 'Finalize session'}
+                          {remaining > 0 && (
+                            <span className="text-[11px] opacity-60 ml-1">· {remaining} remaining</span>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </footer>
+              </>
+            );
+          })()}
         </aside>
       </main>
 

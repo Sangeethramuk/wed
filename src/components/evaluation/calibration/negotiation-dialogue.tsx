@@ -1,626 +1,681 @@
 "use client"
 
 import { useGradingStore, CalibrationScore } from "@/lib/store/grading-store"
-import { useState, useMemo } from "react"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Progress } from "@/components/ui/progress"
+import { AnimatePresence, motion } from "framer-motion"
 import {
-  CheckCircle2, AlertCircle, ArrowRight, BookOpen, Sparkles,
-  Trash2, RotateCcw, TrendingUp, ChevronDown, FileText,
-  Zap, Shield, PenLine,
+  ChevronDown, ChevronLeft, ChevronRight,
+  CheckCircle2, Loader2, ArrowLeft, User, Sparkles,
 } from "lucide-react"
 
-// ── Mock manuscript content (same as blind grading) ──────────────────────────
-const MOCK_MANUSCRIPT: Record<string, string> = {
-  c1: "The system architecture follows a strict MVC separation of concerns. The presentation layer delegates all business processing to the service tier, which in turn communicates with the repository layer through well-defined interfaces. Dependency injection is applied at the controller level.",
-  c2: "The authentication controller validates incoming JWT tokens by delegating to the TokenValidationService. Upon successful validation, the UserContext is populated and propagated through the request lifecycle via a thread-local pattern. Edge cases handled include: expired tokens, malformed payloads, and missing Authorization headers.",
-  c3: "API endpoints are documented using OpenAPI 3.0 annotations. Each endpoint specifies request/response schemas, authentication requirements, and error codes. Versioning follows the URI path convention (/api/v1, /api/v2). Deprecated endpoints include sunset headers per RFC 8594.",
-  c4: "Unit tests cover 87% of business logic branches using JUnit 5 and Mockito. Integration tests use an embedded H2 database. Load tests were conducted using Locust, simulating 500 concurrent users. P95 response time remained under 200ms across all critical endpoints.",
+const MOCK_SECTIONS: { id: string; label: string; content: string }[] = [
+  { id: "c1", label: "Architecture & Design", content: "The system architecture follows a strict MVC separation of concerns. The presentation layer delegates all business processing to the service tier, which in turn communicates with the repository layer through well-defined interfaces. Dependency injection is applied at the controller level, ensuring testability across all layers." },
+  { id: "c2", label: "Code Quality", content: "The authentication controller validates incoming JWT tokens by delegating to the TokenValidationService. Upon successful validation, the UserContext is populated and propagated through the request lifecycle via a thread-local pattern. Edge cases handled include: expired tokens, malformed payloads, and missing Authorization headers." },
+  { id: "c3", label: "Documentation", content: "API endpoints are documented using OpenAPI 3.0 annotations. Each endpoint specifies request/response schemas, authentication requirements, and error codes. Versioning follows the URI path convention (/api/v1, /api/v2). Deprecated endpoints include sunset headers per RFC 8594." },
+  { id: "c4", label: "Testing", content: "Unit tests cover 87% of business logic branches using JUnit 5 and Mockito. Integration tests use an embedded H2 database. Load tests were conducted using Locust, simulating 500 concurrent users. P95 response time remained under 200ms across all critical endpoints." },
+]
+
+const COMPLETION_STEPS = [
+  "Syncing resolved scores",
+  "Recalculating rubric weights",
+  "Updating AI grading model",
+  "Finalising calibration profile",
+]
+
+function scoreKey(s: CalibrationScore) {
+  return `${s.paperId}-${s.criterionId}`
 }
 
-// ── AI pre-draft evidence generator ──────────────────────────────────────────
-function generateAIDraft(criterionName: string, instructorLevel: number, aiLevel: number, excerpt: string): string {
-  const higher = instructorLevel > aiLevel
-  if (higher) {
-    return `The student's submission demonstrates ${criterionName.toLowerCase()} beyond what the AI baseline captured. Specifically, the passage "${excerpt.slice(0, 80)}..." shows depth of understanding that aligns with Level ${instructorLevel} criteria. The AI's assessment at Level ${aiLevel} underweights the practical application demonstrated.`
-  }
-  return `On review, the submission for ${criterionName.toLowerCase()} lacks the specificity required for Level ${instructorLevel}. The passage "${excerpt.slice(0, 80)}..." addresses the concept but does not meet the completeness expected at that level. Level ${aiLevel} more accurately reflects the evidence presented.`
+function deltaColors(delta: number) {
+  if (delta >= 3) return { badge: "bg-red-50 text-red-700 border border-red-200", num: "bg-red-50 text-red-700 border-red-200", text: "text-red-700" }
+  if (delta >= 2) return { badge: "bg-amber-50 text-amber-700 border border-amber-200", num: "bg-amber-50 text-amber-700 border-amber-200", text: "text-amber-700" }
+  return { badge: "bg-green-50 text-green-700 border border-green-200", num: "bg-green-50 text-green-700 border-green-200", text: "text-green-700" }
 }
 
-// ── Score list item ───────────────────────────────────────────────────────────
-function ScoreListItem({
-  score, paperLabel, criterionName, aiSuggestion, isSelected, isResolved, onSelect,
-}: {
-  score: CalibrationScore
-  paperLabel: string
-  criterionName: string
-  aiSuggestion: "accept" | "confirm" | "review"
-  isSelected: boolean
-  isResolved: boolean
-  onSelect: () => void
-}) {
-  return (
-    <button
-      onClick={onSelect}
-      className={`w-full text-left p-3 rounded-xl border transition-all ${
-        isSelected
-          ? "border-primary/30 bg-primary/5 shadow-sm"
-          : isResolved
-          ? "border-green-200/30 bg-green-50/20 dark:bg-green-950/5 opacity-50"
-          : "border-border/40 hover:border-border/70 hover:bg-muted/20"
-      }`}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 truncate">{paperLabel}</p>
-          <p className="text-xs font-bold text-foreground truncate mt-0.5">{criterionName}</p>
-        </div>
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className="text-[9px] font-black text-foreground tabular-nums">
-            {score.instructorLevel}<span className="text-muted-foreground/30 mx-0.5">vs</span>{score.aiLevel}
-          </span>
-          <div className="flex items-center gap-1">
-            {isResolved ? (
-              <Badge variant="outline" className="text-[7px] font-black px-1.5 py-0 h-4 border-green-200/40 text-green-600 bg-green-500/5">✓ done</Badge>
-            ) : (
-              <>
-                <Badge variant="outline" className={`text-[7px] font-black px-1.5 py-0 h-4 ${
-                  score.delta >= 2 ? "border-red-200/40 text-red-600 bg-red-500/5" : "border-amber-200/40 text-amber-600 bg-amber-500/5"
-                }`}>Δ{score.delta}</Badge>
-                <Badge variant="outline" className={`text-[7px] font-black px-1.5 py-0 h-4 ${
-                  aiSuggestion === "accept" ? "border-green-200/40 text-green-600 bg-green-500/5" :
-                  aiSuggestion === "confirm" ? "border-blue-200/40 text-blue-600 bg-blue-500/5" :
-                  "border-amber-200/40 text-amber-600 bg-amber-500/5"
-                }`}>
-                  {aiSuggestion === "accept" ? "AI right" : aiSuggestion === "confirm" ? "You right" : "Review"}
-                </Badge>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    </button>
-  )
-}
-
-// ── Main component ────────────────────────────────────────────────────────────
 export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) {
-  const { calibration, addEvidenceExchange, resolveScore, computeDelta, completeCalibration } = useGradingStore()
+  const {
+    calibration,
+    setCalibrationPhase,
+    resolveScore,
+    addEvidenceExchange,
+    completeCalibration,
+    setInstructorLevel,
+  } = useGradingStore()
   const cal = calibration[assignmentId]
 
-  const [selectedKey, setSelectedKey] = useState<string | null>(null)
-  const [activeAction, setActiveAction] = useState<"evidence" | "dispute" | "revise" | null>(null)
-  const [instructorNote, setInstructorNote] = useState("")
-  const [useAIDraft, setUseAIDraft] = useState(true)
-  const [revisedLevel, setRevisedLevel] = useState(0)
-  const [batchDone, setBatchDone] = useState<"low_risk" | "high_conf" | null>(null)
+  // ── UI state ─────────────────────────────────────────────────────────────
+  const [activeIdx, setActiveIdx] = useState(0)
+  const [activePaperIdx, setActivePaperIdx] = useState(0)
+  const [aiOpen, setAiOpen] = useState<Record<string, boolean>>({})
+  const [compareOn, setCompareOn] = useState<Record<string, boolean>>({})
+  const [feedbacks, setFeedbacks] = useState<Record<string, string>>({})
+  const [adjustMode, setAdjustMode] = useState<Record<string, boolean>>({})
+  const [adjustLevel, setAdjustLevel] = useState<Record<string, number>>({})
+  const [showModal, setShowModal] = useState(false)
+  const [completedSteps, setCompletedSteps] = useState<number[]>([])
+  const [activeStep, setActiveStep] = useState<number | null>(null)
+  const [allDone, setAllDone] = useState(false)
+
+  const cardRefs = useRef<Record<number, HTMLDivElement | null>>({})
+  const modalFired = useRef(false)
+  const timerRefs = useRef<ReturnType<typeof setTimeout>[]>([])
 
   if (!cal) return null
+  const { papers, criteria, scores } = cal
 
-  const { papers, criteria, scores, aggregateDelta, deltaThreshold } = cal
+  // ── Derived ───────────────────────────────────────────────────────────────
+  const discrepancies: CalibrationScore[] = [...scores]
+    .filter(s => s.instructorLevel > 0 && s.delta >= 1)
+    .sort((a, b) => b.delta - a.delta)
 
-  const divergentScores  = scores.filter(s => s.delta >= 1 && s.status !== "accepted" && s.status !== "resolved")
-  const resolvedCount    = scores.filter(s => s.status === "accepted" || s.status === "resolved").length
-  const totalDivergent   = scores.filter(s => s.delta >= 1).length
+  const resolvedCount = discrepancies.filter(
+    s => s.status === "accepted" || s.status === "resolved"
+  ).length
+  const totalCount = discrepancies.length
+  const progressPct = totalCount > 0 ? (resolvedCount / totalCount) * 100 : 0
+  const activeCriterionId = discrepancies[activeIdx]?.criterionId ?? null
 
-  // ── AI batch groups ───────────────────────────────────────────────────────
-  const lowRiskItems  = divergentScores.filter(s => s.delta === 1)            // AI and instructor are close — accept AI
-  const highConfItems = divergentScores.filter(s => s.delta >= 2 && s.instructorLevel > s.aiLevel) // you scored higher confidently
-  const reviewItems   = divergentScores.filter(s => s.delta >= 2 && s.instructorLevel <= s.aiLevel) // AI scored higher — needs review
-
-  const aiSuggestionFor = (s: CalibrationScore): "accept" | "confirm" | "review" =>
-    s.delta === 1 ? "accept" : s.instructorLevel > s.aiLevel ? "confirm" : "review"
-
-  const selectedScore     = selectedKey ? scores.find(s => `${s.paperId}-${s.criterionId}` === selectedKey) ?? null : null
-  const selectedPaper     = selectedScore ? papers.find(p => p.paperId === selectedScore.paperId) : null
-  const selectedCriterion = selectedScore ? criteria.find(c => c.id === selectedScore.criterionId) : null
-  const manuscriptExcerpt = selectedScore ? (MOCK_MANUSCRIPT[selectedScore.criterionId] ?? "Submission content for this criterion is not available.") : ""
-
-  const aiDraft = useMemo(() =>
-    selectedScore && selectedCriterion
-      ? generateAIDraft(selectedCriterion.name, selectedScore.instructorLevel, selectedScore.aiLevel, manuscriptExcerpt)
-      : "",
-  [selectedScore, selectedCriterion, manuscriptExcerpt])
-
-  // ── Batch handlers ────────────────────────────────────────────────────────
-  const handleBulkAcceptLowRisk = () => {
-    lowRiskItems.forEach(s => {
-      addEvidenceExchange(assignmentId, s.paperId, s.criterionId, { type: "accept_ai" })
-      resolveScore(assignmentId, s.paperId, s.criterionId, "accepted")
-    })
-    setBatchDone("low_risk")
-    setSelectedKey(null)
-  }
-
-  const handleBulkConfirmHighConf = () => {
-    highConfItems.forEach(s => {
-      addEvidenceExchange(assignmentId, s.paperId, s.criterionId, {
-        type: "add_instructor",
-        note: "Instructor maintained higher score — evidence confirms greater depth of understanding.",
+  // ── Modal trigger ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (modalFired.current) return
+    if (resolvedCount > 0 && resolvedCount >= totalCount) {
+      modalFired.current = true
+      setShowModal(true)
+      timerRefs.current.forEach(clearTimeout)
+      timerRefs.current = []
+      const perStep = 900
+      COMPLETION_STEPS.forEach((_, i) => {
+        timerRefs.current.push(
+          setTimeout(() => setActiveStep(i), 400 + i * perStep),
+          setTimeout(() => {
+            setCompletedSteps(prev => [...prev, i])
+            setActiveStep(i + 1 < COMPLETION_STEPS.length ? i + 1 : null)
+          }, 400 + i * perStep + 650)
+        )
       })
-      resolveScore(assignmentId, s.paperId, s.criterionId, "resolved")
-    })
-    setBatchDone("high_conf")
-    setSelectedKey(null)
+      timerRefs.current.push(
+        setTimeout(() => setAllDone(true), 400 + COMPLETION_STEPS.length * perStep)
+      )
+    }
+  }, [resolvedCount, totalCount])
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+  const navigateTo = (idx: number) => {
+    setActiveIdx(idx)
+    setTimeout(() => {
+      cardRefs.current[idx]?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 60)
   }
 
-  // ── Single item handlers ──────────────────────────────────────────────────
-  const handleAcceptAI = () => {
-    if (!selectedScore) return
-    addEvidenceExchange(assignmentId, selectedScore.paperId, selectedScore.criterionId, { type: "accept_ai" })
-    resolveScore(assignmentId, selectedScore.paperId, selectedScore.criterionId, "accepted")
-    advanceToNext()
+  // ── Resolve ───────────────────────────────────────────────────────────────
+  const handleResolve = (
+    discIdx: number,
+    type: "accept" | "keep" | "adjust",
+    newLevel?: number
+  ) => {
+    const disc = discrepancies[discIdx]
+    if (!disc) return
+    const key = scoreKey(disc)
+
+    if (type === "accept") {
+      addEvidenceExchange(assignmentId, disc.paperId, disc.criterionId, { type: "accept_ai" })
+      resolveScore(assignmentId, disc.paperId, disc.criterionId, "accepted")
+    } else if (type === "keep") {
+      addEvidenceExchange(assignmentId, disc.paperId, disc.criterionId, {
+        type: "add_instructor",
+        note: feedbacks[key] || "Instructor maintained their assessment.",
+      })
+      resolveScore(assignmentId, disc.paperId, disc.criterionId, "resolved")
+    } else if (type === "adjust" && newLevel) {
+      setInstructorLevel(assignmentId, disc.paperId, disc.criterionId, newLevel)
+      addEvidenceExchange(assignmentId, disc.paperId, disc.criterionId, {
+        type: "revise_self",
+        note: `Revised from ${disc.instructorLevel} to ${newLevel}.`,
+      })
+      resolveScore(
+        assignmentId, disc.paperId, disc.criterionId,
+        newLevel === disc.aiLevel ? "accepted" : "resolved"
+      )
+    }
+
+    setAdjustMode(prev => ({ ...prev, [key]: false }))
+    setAdjustLevel(prev => ({ ...prev, [key]: 0 }))
+
+    // Auto-advance to next unresolved
+    const nextIdx = discrepancies.findIndex(
+      (d, i) => i > discIdx && d.status !== "accepted" && d.status !== "resolved"
+    )
+    if (nextIdx !== -1) {
+      setTimeout(() => navigateTo(nextIdx), 500)
+    }
   }
 
-  const handleSubmitEvidence = () => {
-    if (!selectedScore) return
-    addEvidenceExchange(assignmentId, selectedScore.paperId, selectedScore.criterionId, {
-      type: "add_instructor",
-      note: useAIDraft ? aiDraft : (instructorNote || aiDraft),
-    })
-    resolveScore(assignmentId, selectedScore.paperId, selectedScore.criterionId, "resolved")
-    setInstructorNote("")
-    setUseAIDraft(true)
-    advanceToNext()
-  }
-
-  const handleDispute = () => {
-    if (!selectedScore) return
-    addEvidenceExchange(assignmentId, selectedScore.paperId, selectedScore.criterionId, { type: "remove_ai_evidence" })
-    resolveScore(assignmentId, selectedScore.paperId, selectedScore.criterionId, "resolved")
-    advanceToNext()
-  }
-
-  const handleRevise = () => {
-    if (!selectedScore || revisedLevel === 0) return
-    addEvidenceExchange(assignmentId, selectedScore.paperId, selectedScore.criterionId, {
-      type: "revise_self",
-      note: `Instructor revised score from ${selectedScore.instructorLevel} to ${revisedLevel}.`,
-    })
-    const newDelta = Math.abs(revisedLevel - selectedScore.aiLevel)
-    resolveScore(assignmentId, selectedScore.paperId, selectedScore.criterionId, newDelta === 0 ? "accepted" : "resolved")
-    setRevisedLevel(0)
-    advanceToNext()
-  }
-
-  const advanceToNext = () => {
-    // Auto-select next unresolved item
-    const currentIdx = divergentScores.findIndex(s => `${s.paperId}-${s.criterionId}` === selectedKey)
-    const next = divergentScores.slice(currentIdx + 1).find(s => s.status !== "accepted" && s.status !== "resolved")
-    setSelectedKey(next ? `${next.paperId}-${next.criterionId}` : null)
-    setActiveAction(null)
-    setInstructorNote("")
-    setUseAIDraft(true)
-    setRevisedLevel(0)
-  }
-
-  const isNowCalibrated = aggregateDelta <= deltaThreshold
-
-  const handleFinish = () => completeCalibration(assignmentId)
-  const handleAcceptPatternShift = () => {
-    divergentScores.forEach(s => resolveScore(assignmentId, s.paperId, s.criterionId, "resolved"))
-    computeDelta(assignmentId)
-    completeCalibration(assignmentId)
-  }
-
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <TooltipProvider delay={100}>
-      <div className="max-w-6xl mx-auto px-4 space-y-5 animate-in fade-in duration-500 pb-12">
+    <div className="h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
 
-        {/* ── Header ── */}
-        <div className="flex items-start justify-between pt-4">
-          <div className="space-y-1">
-            <Badge variant="secondary" className="rounded-full px-3 py-0.5 text-[9px] font-black tracking-[0.2em] uppercase bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200/40">
-              Alignment Review
-            </Badge>
-            <h2 className="text-xl font-bold tracking-tight">Evidence Negotiation</h2>
-            <p className="text-sm text-muted-foreground">Resolve each divergent score by exchanging evidence with the AI before proceeding.</p>
+      {/* ── Slim review bar ── */}
+      <div className="shrink-0 bg-foreground text-background px-5 flex items-center gap-3" style={{ height: 42 }}>
+        <button
+          onClick={() => setCalibrationPhase(assignmentId, "delta_review")}
+          className="flex items-center gap-1.5 text-[11px] font-medium text-background/75 hover:text-background transition-colors shrink-0"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Exit review
+        </button>
+        <span className="text-[12px] font-medium text-background/90">Reviewing differences</span>
+        <span className="text-[12px] font-mono bg-white/15 rounded-full px-2.5 py-[2px] shrink-0">
+          {activeIdx + 1} of {totalCount}
+        </span>
+        <div className="flex-1 h-[3px] bg-white/20 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-white rounded-full transition-[width] duration-500"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
+        <span className="text-[12px] font-mono text-background/75 shrink-0">
+          {resolvedCount} resolved
+        </span>
+      </div>
+
+      {/* ── Main body ── */}
+      <div className="flex-1 flex overflow-hidden">
+
+        {/* ── Left: manuscript ── */}
+        <div className="w-[60%] border-r border-border/40 bg-white flex flex-col overflow-hidden">
+
+          {/* Paper selector header */}
+          <div className="shrink-0 px-5 py-2.5 border-b border-border/30 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="text-[11px] font-semibold font-mono bg-muted/50 border border-border/50 rounded px-2 py-0.5 text-muted-foreground">
+                {papers[activePaperIdx]?.anonymizedLabel ?? "Paper 1"}
+              </span>
+              <span className="text-[12px] text-muted-foreground/70">
+                {papers.length} papers
+              </span>
+            </div>
+            <div className="flex gap-1.5">
+              {papers.map((p, i) => (
+                <button
+                  key={p.paperId}
+                  onClick={() => setActivePaperIdx(i)}
+                  className={`w-7 h-7 rounded-lg border text-[11px] font-semibold font-mono transition-colors ${
+                    activePaperIdx === i
+                      ? "bg-foreground text-background border-foreground"
+                      : "bg-muted/20 border-border/50 text-muted-foreground hover:border-border"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="text-right shrink-0">
-            <p className={`text-3xl font-black tracking-tighter tabular-nums ${isNowCalibrated ? "text-green-600" : "text-amber-600"}`}>
-              {aggregateDelta.toFixed(1)}<span className="text-sm font-bold opacity-50">%</span>
-            </p>
-            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Current Delta</p>
-            <Progress value={100 - Math.min(aggregateDelta, 100)} className="mt-2 h-1 w-32 bg-amber-100/50" />
-            <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/30 mt-1">
-              Threshold: {deltaThreshold}%
-            </p>
+
+          {/* Essay content — native scroll for reliable height */}
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="px-12 py-9 pb-16">
+              <h1 className="text-[21px] font-bold tracking-tight leading-snug mb-1.5">
+                Student Submission
+              </h1>
+              <p className="text-[11px] font-mono text-muted-foreground/60 mb-7 pb-5 border-b border-border/30">
+                {papers[activePaperIdx]?.anonymizedLabel} · Submitted for review
+              </p>
+              {MOCK_SECTIONS.map(sec => {
+                const isActive = sec.id === activeCriterionId
+                return (
+                  <div key={sec.id} className="mb-7">
+                    <h2 className={`text-[14px] font-semibold mb-2 ${isActive ? "text-foreground" : "text-foreground/70"}`}>
+                      {sec.label}
+                    </h2>
+                    <p
+                      className={`text-[13.5px] leading-[1.85] rounded px-1.5 py-0.5 transition-colors ${
+                        isActive
+                          ? "text-foreground bg-amber-50/70 border-b-2 border-amber-400/60"
+                          : "text-muted-foreground/75"
+                      }`}
+                    >
+                      {sec.content}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
 
-        {/* ── AI Batch Action Strip ── */}
-        {(lowRiskItems.length > 0 || highConfItems.length > 0) && (
-          <Card className="border-primary/10 bg-primary/5 overflow-hidden">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 rounded-lg bg-primary/10">
-                  <Sparkles className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">AI Batch Analysis</p>
-                  <p className="text-[9px] text-muted-foreground/60">Reviewed all {totalDivergent} divergences — most can be resolved in bulk</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {lowRiskItems.length > 0 && (
-                  <div className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
-                    batchDone === "low_risk" ? "border-green-200/40 bg-green-50/30 opacity-60" : "border-green-200/40 bg-green-50/30 hover:bg-green-50/50"
-                  }`}>
-                    <div className="space-y-0.5">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-green-700 dark:text-green-400 flex items-center gap-1.5">
-                        <Shield className="h-3 w-3" />
-                        {lowRiskItems.length} Low-Risk (Δ1)
-                      </p>
-                      <p className="text-[9px] text-muted-foreground/60">Minor variance — AI and you are within 1 point</p>
-                    </div>
-                    {batchDone === "low_risk" ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={handleBulkAcceptLowRisk}
-                        className="shrink-0 h-8 px-4 rounded-full text-[9px] font-black uppercase tracking-widest bg-green-600 hover:bg-green-700 text-white shadow-sm"
-                      >
-                        Accept All
-                      </Button>
-                    )}
-                  </div>
-                )}
-                {highConfItems.length > 0 && (
-                  <div className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
-                    batchDone === "high_conf" ? "border-blue-200/40 bg-blue-50/30 opacity-60" : "border-blue-200/40 bg-blue-50/30 hover:bg-blue-50/50"
-                  }`}>
-                    <div className="space-y-0.5">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-blue-700 dark:text-blue-400 flex items-center gap-1.5">
-                        <Zap className="h-3 w-3" />
-                        {highConfItems.length} Your Call (Δ2+, you scored higher)
-                      </p>
-                      <p className="text-[9px] text-muted-foreground/60">You consistently graded higher — confirm your assessment</p>
-                    </div>
-                    {batchDone === "high_conf" ? (
-                      <CheckCircle2 className="h-5 w-5 text-blue-500 shrink-0" />
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={handleBulkConfirmHighConf}
-                        className="shrink-0 h-8 px-4 rounded-full text-[9px] font-black uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-                      >
-                        Confirm All
-                      </Button>
-                    )}
-                  </div>
-                )}
-                {reviewItems.length > 0 && (
-                  <div className="flex items-center gap-3 p-3 rounded-xl border border-amber-200/40 bg-amber-50/20">
-                    <AlertCircle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                    <p className="text-[9px] text-muted-foreground/70">
-                      <span className="font-black text-amber-700">{reviewItems.length} need individual review</span> — AI scored higher on these, review below
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* ── Right: discrepancy cards — native scroll ── */}
+        <div className="flex-1 min-h-0 overflow-y-auto bg-muted/20">
+            <div className="px-3.5 py-4 pb-20 flex flex-col gap-3">
+              {discrepancies.map((disc, idx) => {
+                const key = scoreKey(disc)
+                const isActive = idx === activeIdx
+                const isResolved = disc.status === "accepted" || disc.status === "resolved"
+                const criterion = criteria.find(c => c.id === disc.criterionId)
+                const paper = papers.find(p => p.paperId === disc.paperId)
+                const dc = deltaColors(disc.delta)
+                const isAiOpen = aiOpen[key] ?? false
+                const isCompare = compareOn[key] ?? false
+                const isAdj = adjustMode[key] ?? false
+                const adjLvl = adjustLevel[key] ?? 0
+                const fb = feedbacks[key] ?? ""
 
-        <div className="grid grid-cols-5 gap-5">
-
-          {/* ── Left: Score list ── */}
-          <div className="col-span-2 space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">Divergent Scores</p>
-              <span className="text-[9px] font-black text-muted-foreground/40">{resolvedCount}/{totalDivergent} resolved</span>
-            </div>
-            <ScrollArea className="h-[calc(100vh-28rem)]">
-              <div className="space-y-1.5 pr-1">
-                {scores.filter(s => s.delta >= 1).map(score => {
-                  const paper     = papers.find(p => p.paperId === score.paperId)
-                  const criterion = criteria.find(c => c.id === score.criterionId)
-                  const key       = `${score.paperId}-${score.criterionId}`
-                  const isResolved = score.status === "accepted" || score.status === "resolved"
-                  return (
-                    <ScoreListItem
-                      key={key}
-                      score={score}
-                      paperLabel={paper?.anonymizedLabel ?? score.paperId}
-                      criterionName={criterion?.name ?? score.criterionId}
-                      aiSuggestion={aiSuggestionFor(score)}
-                      isSelected={selectedKey === key}
-                      isResolved={isResolved}
-                      onSelect={() => {
-                        setSelectedKey(key)
-                        setActiveAction(null)
-                        setInstructorNote("")
-                        setUseAIDraft(true)
-                        setRevisedLevel(0)
-                      }}
-                    />
-                  )
-                })}
-                {divergentScores.length === 0 && (
-                  <div className="flex flex-col items-center py-10 gap-2 text-center">
-                    <CheckCircle2 className="h-6 w-6 text-green-500" />
-                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/40">All scores resolved</p>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
-
-          {/* ── Right: Detail + action panel ── */}
-          <div className="col-span-3 space-y-4">
-            {!selectedScore ? (
-              <Card className="h-full min-h-[400px] flex flex-col items-center justify-center gap-3 border-border/30 bg-muted/5">
-                <div className="p-4 rounded-2xl bg-muted/20">
-                  <FileText className="h-8 w-8 text-muted-foreground/20" />
-                </div>
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/30">Select a score to review</p>
-                <p className="text-[9px] text-muted-foreground/20 uppercase tracking-widest">or use AI batch actions above</p>
-              </Card>
-            ) : (
-              <div className="space-y-3">
-
-                {/* Score overview */}
-                <Card className="p-5 border-border/40">
-                  <div className="flex items-center justify-between gap-6">
-                    <div className="space-y-0.5 flex-1 min-w-0">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 truncate">
-                        {selectedPaper?.anonymizedLabel} · {selectedCriterion?.name}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-5 shrink-0">
-                      <div className="text-center">
-                        <p className="text-2xl font-black text-foreground tabular-nums">{selectedScore.instructorLevel}</p>
-                        <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40">Your Score</p>
+                return (
+                  <div
+                    key={key}
+                    ref={el => { cardRefs.current[idx] = el }}
+                    className={`bg-white border rounded-xl overflow-hidden shadow-sm transition-opacity ${
+                      isResolved ? "opacity-65" : "opacity-100"
+                    } ${isActive ? "border-border/60" : "border-border/40"}`}
+                  >
+                    {/* Card header — always visible */}
+                    <div
+                      onClick={() => navigateTo(idx)}
+                      className={`flex items-center gap-2.5 px-3.5 py-3 cursor-pointer transition-colors border-b ${
+                        isResolved
+                          ? "bg-green-50 border-transparent"
+                          : isActive
+                          ? "bg-white border-border/30"
+                          : "hover:bg-muted/20 border-transparent"
+                      }`}
+                    >
+                      {/* Number badge */}
+                      <div className={`w-[26px] h-[26px] rounded-full border text-[11px] font-bold font-mono flex items-center justify-center shrink-0 ${dc.num}`}>
+                        {idx + 1}
                       </div>
-                      <span className="text-muted-foreground/20 text-lg">vs</span>
-                      <div className="text-center">
-                        <p className="text-2xl font-black text-muted-foreground/50 tabular-nums">{selectedScore.aiLevel}</p>
-                        <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40">AI Score</p>
-                      </div>
-                      <div className="text-center">
-                        <p className={`text-2xl font-black tabular-nums ${selectedScore.delta >= 2 ? "text-red-600" : "text-amber-600"}`}>
-                          Δ{selectedScore.delta}
+
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-semibold text-foreground truncate leading-tight">
+                          {criterion?.name}
                         </p>
-                        <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40">Delta</p>
+                        <p className="text-[11px] font-mono text-muted-foreground/70 leading-tight">
+                          {paper?.anonymizedLabel}
+                        </p>
                       </div>
-                    </div>
-                  </div>
-                </Card>
 
-                {/* Manuscript excerpt for this criterion */}
-                <Card className="p-4 border-amber-200/30 bg-amber-50/20 dark:bg-amber-950/10 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="h-3.5 w-3.5 text-amber-600/60" />
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-700/70 dark:text-amber-400/70">
-                      Student's Submission — {selectedCriterion?.name}
-                    </p>
-                  </div>
-                  <p className="text-xs text-muted-foreground/80 leading-relaxed font-serif italic border-l-2 border-amber-400/30 pl-3">
-                    "{manuscriptExcerpt}"
-                  </p>
-                </Card>
+                      <span className={`text-[12px] font-bold font-mono px-2.5 py-[3px] rounded-full shrink-0 ${dc.badge}`}>
+                        +{disc.delta} gap
+                      </span>
 
-                {/* AI reasoning */}
-                <Card className="p-4 border-border/40 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-3.5 w-3.5 text-primary/60" />
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">AI Reasoning</p>
-                  </div>
-                  <p className="text-xs italic text-muted-foreground leading-relaxed border-l-2 border-primary/20 pl-3">
-                    "{selectedScore.aiReasoning}"
-                  </p>
-                  <div className="space-y-1 pt-1">
-                    {selectedScore.aiEvidence.map((ev, i) => (
-                      <div key={i} className="flex items-start gap-2 text-xs text-muted-foreground/60">
-                        <span className="text-primary/40 font-black shrink-0 mt-0.5">·</span>
-                        <span className="leading-relaxed">{ev}</span>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-
-                {/* ── Action panel ── */}
-                {activeAction === null && (
-                  <div className="space-y-2">
-                    {/* Primary: AI suggestion */}
-                    <button
-                      onClick={handleAcceptAI}
-                      className="w-full p-4 rounded-xl border-2 border-green-200/50 bg-green-50/40 dark:bg-green-950/10 hover:border-green-400/40 hover:bg-green-50/60 text-left transition-all hover:-translate-y-0.5 hover:shadow-md group"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <CheckCircle2 className="h-4 w-4 text-green-600" />
-                          <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-foreground">Accept AI Score</p>
-                            <p className="text-[9px] text-muted-foreground/60 mt-0.5">Defer to baseline · your score adjusts to {selectedScore.aiLevel}</p>
-                          </div>
-                        </div>
-                        {selectedScore.delta === 1 && (
-                          <Badge variant="outline" className="text-[8px] font-black text-green-600 border-green-200/40 bg-green-500/5">
-                            AI recommended
-                          </Badge>
-                        )}
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => setActiveAction("evidence")}
-                      className="w-full p-4 rounded-xl border-2 border-blue-200/50 bg-blue-50/40 dark:bg-blue-950/10 hover:border-blue-400/40 text-left transition-all hover:-translate-y-0.5 hover:shadow-md"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <PenLine className="h-4 w-4 text-blue-600" />
-                          <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-foreground">Add My Evidence</p>
-                            <p className="text-[9px] text-muted-foreground/60 mt-0.5">AI drafts it for you · edit and confirm to keep your score at {selectedScore.instructorLevel}</p>
-                          </div>
-                        </div>
-                        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/30" />
-                      </div>
-                    </button>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={handleDispute}
-                        className="p-3 rounded-xl border-2 border-amber-200/50 bg-amber-50/40 dark:bg-amber-950/10 hover:border-amber-400/40 text-left transition-all hover:shadow-sm"
-                      >
-                        <Trash2 className="h-3.5 w-3.5 text-amber-600 mb-1.5" />
-                        <p className="text-[9px] font-black uppercase tracking-widest text-foreground">Dispute AI</p>
-                        <p className="text-[8px] text-muted-foreground/50 mt-0.5 leading-relaxed">Flag AI evidence as insufficient · AI score drops by 1</p>
-                      </button>
-                      <button
-                        onClick={() => setActiveAction("revise")}
-                        className="p-3 rounded-xl border-2 border-purple-200/50 bg-purple-50/40 dark:bg-purple-950/10 hover:border-purple-400/40 text-left transition-all hover:shadow-sm"
-                      >
-                        <RotateCcw className="h-3.5 w-3.5 text-purple-600 mb-1.5" />
-                        <p className="text-[9px] font-black uppercase tracking-widest text-foreground">Revise My Score</p>
-                        <p className="text-[8px] text-muted-foreground/50 mt-0.5 leading-relaxed">Your initial score was inaccurate · re-evaluate</p>
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Add evidence — expanded panel with AI draft */}
-                {activeAction === "evidence" && (
-                  <Card className="border-blue-200/40 bg-blue-50/20 dark:bg-blue-950/10 space-y-3 p-5">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-blue-700 dark:text-blue-400">Your Supporting Evidence</p>
-                      <button onClick={() => { setActiveAction(null); setUseAIDraft(true) }} className="text-[9px] text-muted-foreground/40 hover:text-foreground transition-colors">✕ cancel</button>
-                    </div>
-
-                    {/* AI Draft toggle */}
-                    <div className={`rounded-xl border-2 p-3 space-y-2 transition-all ${useAIDraft ? "border-primary/20 bg-primary/5" : "border-border/30"}`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Sparkles className="h-3 w-3 text-primary" />
-                          <p className="text-[9px] font-black uppercase tracking-widest text-primary">AI Draft</p>
-                        </div>
-                        <button
-                          onClick={() => setUseAIDraft(u => !u)}
-                          className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border transition-all ${
-                            useAIDraft
-                              ? "border-primary/30 text-primary bg-primary/10"
-                              : "border-border text-muted-foreground/40 hover:border-primary/30"
-                          }`}
-                        >
-                          {useAIDraft ? "Using draft" : "Use draft"}
-                        </button>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground/70 leading-relaxed italic">{aiDraft}</p>
-                    </div>
-
-                    {/* Custom note */}
-                    <div className="space-y-1.5">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">
-                        {useAIDraft ? "Or write your own (overrides draft)" : "Your note"}
-                      </p>
-                      <Textarea
-                        value={instructorNote}
-                        onChange={e => { setInstructorNote(e.target.value); if (e.target.value) setUseAIDraft(false) }}
-                        placeholder="Type your evidence here to override the AI draft..."
-                        className="text-xs resize-none h-16 bg-background border-border/40 focus-visible:ring-primary/30"
+                      <ChevronDown
+                        className={`h-4 w-4 text-muted-foreground/50 shrink-0 transition-transform ${isActive ? "rotate-180" : ""}`}
                       />
                     </div>
 
-                    <Button
-                      onClick={handleSubmitEvidence}
-                      className="w-full rounded-full h-10 text-[9px] font-black uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white shadow-sm group"
-                    >
-                      Submit Evidence — Keep My Score at {selectedScore.instructorLevel}
-                      <ArrowRight className="ml-2 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-                    </Button>
-                  </Card>
-                )}
+                    {/* Card body — only when active */}
+                    {isActive && (
+                      <div className="p-3.5 flex flex-col gap-3">
 
-                {/* Revise score panel */}
-                {activeAction === "revise" && (
-                  <Card className="border-purple-200/40 bg-purple-50/20 dark:bg-purple-950/10 space-y-3 p-5">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-purple-700 dark:text-purple-400">Select Your Revised Score</p>
-                      <button onClick={() => { setActiveAction(null); setRevisedLevel(0) }} className="text-[9px] text-muted-foreground/40 hover:text-foreground transition-colors">✕ cancel</button>
-                    </div>
-                    <div className="flex gap-2">
-                      {[1, 2, 3, 4, 5].map(l => (
-                        <button
-                          key={l}
-                          onClick={() => setRevisedLevel(l)}
-                          className={`flex-1 aspect-square rounded-lg text-sm font-black border transition-all ${
-                            revisedLevel === l
-                              ? "bg-purple-600 border-purple-600 text-white scale-[1.08] shadow-md"
-                              : "bg-background border-border/50 text-muted-foreground/60 hover:border-purple-300"
-                          }`}
-                        >
-                          {l}
-                        </button>
-                      ))}
-                    </div>
-                    {revisedLevel > 0 && (
-                      <>
-                        <p className="text-[9px] font-black text-purple-600/70 uppercase tracking-widest text-center">
-                          {selectedCriterion?.levelLabels[revisedLevel - 1]} · New delta: Δ{Math.abs(revisedLevel - selectedScore.aiLevel)}
-                        </p>
-                        <Button
-                          onClick={handleRevise}
-                          className="w-full rounded-full h-10 text-[9px] font-black uppercase tracking-widest bg-purple-600 hover:bg-purple-700 text-white shadow-sm group"
-                        >
-                          Confirm Revision to {revisedLevel}
-                          <ArrowRight className="ml-2 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-                        </Button>
-                      </>
+                        {/* ── Score row ── */}
+                        <div>
+                          <div className="flex items-stretch gap-2.5">
+                            {/* Your score */}
+                            <div className="flex-1 bg-muted/30 border border-border/50 rounded-lg px-3 py-2.5">
+                              <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/70 mb-1">
+                                Your score
+                              </p>
+                              <div className="flex items-baseline gap-0.5">
+                                <span className="text-[24px] font-bold font-mono leading-none">
+                                  {disc.instructorLevel}
+                                </span>
+                                <span className="text-[14px] font-normal text-muted-foreground/55">/5</span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center text-[11px] font-semibold text-muted-foreground/60 px-1 shrink-0">
+                              vs
+                            </div>
+
+                            {/* AI score */}
+                            <div className="flex-1 bg-muted/10 border border-border/40 rounded-lg px-3 py-2.5">
+                              <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/70 mb-1">
+                                AI score
+                              </p>
+                              <div className="flex items-baseline gap-0.5">
+                                <span className="text-[24px] font-bold font-mono leading-none text-amber-600">
+                                  {disc.aiLevel}
+                                </span>
+                                <span className="text-[14px] font-normal text-muted-foreground/55">/5</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Action buttons */}
+                          <div className="flex gap-1.5 flex-wrap mt-2.5">
+                            {isResolved ? (
+                              <span className="px-3 py-1.5 text-[12px] font-medium rounded-lg bg-green-50 border border-green-200 text-green-700">
+                                ✓ Resolved — {disc.status === "accepted" ? "Accepted AI" : "Kept yours"}
+                              </span>
+                            ) : !isAdj ? (
+                              <>
+                                <button
+                                  onClick={() => handleResolve(idx, "accept")}
+                                  className="px-3 py-1.5 text-[12px] font-medium rounded-lg bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 transition-colors"
+                                >
+                                  Accept AI
+                                </button>
+                                <button
+                                  onClick={() => handleResolve(idx, "keep")}
+                                  className="px-3 py-1.5 text-[12px] font-medium rounded-lg bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 transition-colors"
+                                >
+                                  Keep Mine
+                                </button>
+                                <button
+                                  onClick={() => setAdjustMode(prev => ({ ...prev, [key]: true }))}
+                                  className="px-3 py-1.5 text-[12px] font-medium rounded-lg bg-white border border-border/60 text-muted-foreground hover:bg-muted/20 transition-colors"
+                                >
+                                  Adjust score
+                                </button>
+                              </>
+                            ) : null}
+                          </div>
+
+                          {/* Inline score adjuster */}
+                          {isAdj && !isResolved && (
+                            <div className="mt-2.5 space-y-2">
+                              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/70">
+                                Select adjusted score
+                              </p>
+                              <div className="flex gap-1.5">
+                                {[1, 2, 3, 4, 5].map(l => (
+                                  <button
+                                    key={l}
+                                    onClick={() => setAdjustLevel(prev => ({ ...prev, [key]: l }))}
+                                    className={`flex-1 h-9 rounded-lg text-[13px] font-bold border transition-colors ${
+                                      adjLvl === l
+                                        ? "bg-foreground text-background border-foreground"
+                                        : "border-border/50 text-muted-foreground hover:border-foreground/30"
+                                    }`}
+                                  >
+                                    {l}
+                                  </button>
+                                ))}
+                              </div>
+                              <div className="flex gap-2 items-center">
+                                <button
+                                  onClick={() => {
+                                    setAdjustMode(prev => ({ ...prev, [key]: false }))
+                                    setAdjustLevel(prev => ({ ...prev, [key]: 0 }))
+                                  }}
+                                  className="text-[11px] text-muted-foreground/65 hover:text-foreground px-2 py-1 transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={() => adjLvl > 0 && handleResolve(idx, "adjust", adjLvl)}
+                                  disabled={adjLvl === 0}
+                                  className="flex-1 py-1.5 text-[12px] font-semibold bg-foreground text-background rounded-lg disabled:opacity-40 hover:bg-foreground/90 transition-colors"
+                                >
+                                  Confirm adjustment
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Compare toggle */}
+                        <div className="flex justify-end">
+                          <button
+                            onClick={() => setCompareOn(prev => ({ ...prev, [key]: !isCompare }))}
+                            className={`flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium border rounded-md transition-colors ${
+                              isCompare
+                                ? "bg-blue-50 border-blue-200 text-blue-700"
+                                : "bg-white border-border/50 text-muted-foreground hover:bg-muted/10"
+                            }`}
+                          >
+                            Compare Views
+                          </button>
+                        </div>
+
+                        {/* ── Evaluation panels ── */}
+                        {!isCompare ? (
+                          <>
+                            {/* Your evaluation */}
+                            <div className="bg-blue-50/50 border border-blue-200/70 rounded-lg p-3">
+                              <p className="text-[10px] font-bold uppercase tracking-[0.06em] text-blue-700 mb-2 flex items-center gap-1.5">
+                                <User className="h-3 w-3" />
+                                Your evaluation
+                              </p>
+                              {/* Evidence chips from evidenceExchanges */}
+                              {disc.evidenceExchanges.filter(e => e.type === "add_instructor" && e.note).map((e, i) => (
+                                <div key={e.id} className="flex items-start gap-2 bg-white border border-border/40 rounded-md px-2.5 py-1.5 mb-2">
+                                  <div className="w-4 h-4 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[9px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                                    {i + 1}
+                                  </div>
+                                  <p className="text-[11.5px] leading-relaxed text-muted-foreground italic">
+                                    {e.note}
+                                  </p>
+                                </div>
+                              ))}
+                              {disc.evidenceExchanges.filter(e => e.type === "add_instructor").length === 0 && (
+                                <p className="text-[11px] text-muted-foreground/60 mb-2">No evidence linked</p>
+                              )}
+                              <Textarea
+                                value={fb}
+                                onChange={e => setFeedbacks(prev => ({ ...prev, [key]: e.target.value }))}
+                                placeholder="Your reasoning for this score…"
+                                className="text-xs resize-none h-[72px] bg-white border-border/40 focus-visible:ring-blue-200/50 mt-1"
+                                disabled={isResolved}
+                              />
+                            </div>
+
+                            {/* AI perspective accordion */}
+                            <div className="border border-border/40 rounded-lg overflow-hidden">
+                              <button
+                                onClick={() => setAiOpen(prev => ({ ...prev, [key]: !isAiOpen }))}
+                                className={`w-full flex items-center justify-between px-3 py-2.5 text-[12px] font-medium transition-colors ${
+                                  isAiOpen
+                                    ? "bg-amber-50 border-b border-amber-200"
+                                    : "bg-muted/10 hover:bg-muted/20"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Sparkles className="h-3.5 w-3.5 text-muted-foreground/70" />
+                                  <span className="text-foreground/80">View AI Perspective</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                                    disc.delta >= 3 ? "bg-red-50 text-red-700 border-red-200"
+                                    : disc.delta >= 2 ? "bg-amber-50 text-amber-700 border-amber-200"
+                                    : "bg-green-50 text-green-700 border-green-200"
+                                  }`}>
+                                    {disc.delta >= 3 ? "Low confidence" : disc.delta >= 2 ? "Med confidence" : "High confidence"}
+                                  </span>
+                                  <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground/60 transition-transform ${isAiOpen ? "rotate-180" : ""}`} />
+                                </div>
+                              </button>
+                              {isAiOpen && (
+                                <div className="p-3 space-y-2.5 bg-white">
+                                  {/* AI evidence chips */}
+                                  {disc.aiEvidence.length > 0 ? disc.aiEvidence.map((ev, i) => (
+                                    <div key={i} className="flex items-start gap-2 bg-muted/20 border border-border/40 rounded-md px-2.5 py-1.5">
+                                      <div className="w-4 h-4 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[9px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                                        {i + 1}
+                                      </div>
+                                      <p className="text-[11.5px] leading-relaxed text-muted-foreground italic">{ev}</p>
+                                    </div>
+                                  )) : (
+                                    <p className="text-[11px] text-muted-foreground/65">No AI evidence provided</p>
+                                  )}
+                                  {/* AI reasoning */}
+                                  <p className="text-[12px] leading-relaxed text-muted-foreground">
+                                    {disc.aiReasoning}
+                                  </p>
+                                  {/* Signal tags */}
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {disc.instructorLevel < disc.aiLevel ? (
+                                      <>
+                                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-medium">✓ Strong AI evidence</span>
+                                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-red-50 text-red-700 font-medium">✗ You scored below AI</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-medium">✓ You scored higher</span>
+                                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-red-50 text-red-700 font-medium">✗ AI may have underweighted</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          /* Compare split */
+                          <div className="flex gap-2.5">
+                            <div className="flex-1 space-y-1.5">
+                              <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 px-2 py-0.5 rounded inline-block">
+                                Your evaluation
+                              </span>
+                              <Textarea
+                                value={fb}
+                                onChange={e => setFeedbacks(prev => ({ ...prev, [key]: e.target.value }))}
+                                placeholder="Your reasoning…"
+                                className="text-[12px] resize-none h-[96px] bg-white border-border/40 focus-visible:ring-blue-200/50"
+                                disabled={isResolved}
+                              />
+                            </div>
+                            <div className="w-px bg-border/40 shrink-0" />
+                            <div className="flex-1 space-y-1.5">
+                              <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 px-2 py-0.5 rounded inline-block">
+                                AI evaluation
+                              </span>
+                              {disc.aiEvidence.map((ev, i) => (
+                                <div key={i} className="flex items-start gap-1.5 mb-1.5">
+                                  <div className="w-4 h-4 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[9px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                                    {i + 1}
+                                  </div>
+                                  <p className="text-[11.5px] leading-relaxed text-muted-foreground italic">{ev}</p>
+                                </div>
+                              ))}
+                              <p className="text-[12px] leading-relaxed text-muted-foreground">{disc.aiReasoning}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ── Card footer nav ── */}
+                        <div className="flex items-center justify-between pt-2 mt-1 border-t border-border/20">
+                          <div className="flex items-center gap-2.5">
+                            <button
+                              onClick={() => idx > 0 && navigateTo(idx - 1)}
+                              disabled={idx === 0}
+                              className="flex items-center gap-1 px-2.5 py-1 text-[12px] font-medium border border-border/50 rounded-md bg-white text-muted-foreground hover:bg-muted/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                            >
+                              <ChevronLeft className="h-3.5 w-3.5" /> Previous
+                            </button>
+                            <span className="text-[11px] font-mono text-muted-foreground/65">
+                              {idx + 1} of {totalCount}
+                            </span>
+                            <button
+                              onClick={() => idx < totalCount - 1 && navigateTo(idx + 1)}
+                              disabled={idx >= totalCount - 1}
+                              className="flex items-center gap-1 px-2.5 py-1 text-[12px] font-medium border border-border/50 rounded-md bg-white text-muted-foreground hover:bg-muted/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                            >
+                              Next <ChevronRight className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                          <span className="text-[11px] font-mono text-muted-foreground/65">
+                            {resolvedCount}/{totalCount} resolved
+                          </span>
+                        </div>
+                      </div>
                     )}
-                  </Card>
-                )}
-              </div>
-            )}
-
-            {/* ── Recompute & proceed ── */}
-            {divergentScores.length === 0 && (
-              <div className="space-y-3 pt-2">
-                <Separator />
-                <Button
-                  onClick={() => computeDelta(assignmentId)}
-                  variant="outline"
-                  className="w-full rounded-full h-10 text-[9px] font-black uppercase tracking-widest"
-                >
-                  Recompute Delta
-                </Button>
-                {isNowCalibrated ? (
-                  <Button
-                    onClick={handleFinish}
-                    className="w-full rounded-full h-12 text-[10px] font-black uppercase tracking-widest bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/20 group"
-                  >
-                    <TrendingUp className="mr-2 h-4 w-4" />
-                    Calibrated — Proceed to Grading
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-[9px] text-center font-black uppercase tracking-widest text-muted-foreground/40">
-                      Delta still {aggregateDelta.toFixed(1)}% — above {deltaThreshold}% threshold
-                    </p>
-                    <Button
-                      onClick={handleAcceptPatternShift}
-                      variant="outline"
-                      className="w-full rounded-full h-12 text-[10px] font-black uppercase tracking-widest border-amber-300 text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/20 group"
-                    >
-                      <AlertCircle className="mr-2 h-4 w-4" />
-                      Accept Pattern Shift — AI Recalibrates to My Style
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Button>
                   </div>
-                )}
-              </div>
-            )}
-          </div>
+                )
+              })}
+            </div>
         </div>
       </div>
-    </TooltipProvider>
+
+      {/* ── Completion modal ── */}
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: "rgba(20,18,16,.55)", backdropFilter: "blur(6px)" }}
+          >
+            <motion.div
+              initial={{ scale: 0.97, y: 16 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.97, y: 16 }}
+              transition={{ type: "spring", stiffness: 280, damping: 26 }}
+              className="bg-white border border-border/40 rounded-[20px] shadow-2xl px-10 py-9 w-[400px] flex flex-col items-center gap-5"
+            >
+              {/* Icon */}
+              <div className="relative w-14 h-14 flex items-center justify-center">
+                <AnimatePresence mode="wait">
+                  {allDone ? (
+                    <motion.div
+                      key="check"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    >
+                      <CheckCircle2 className="h-10 w-10 text-green-500" />
+                    </motion.div>
+                  ) : (
+                    <motion.div key="spin" initial={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                      <Loader2 className="h-10 w-10 text-foreground/25 animate-spin" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Title */}
+              <div className="text-center">
+                <h3 className="text-[18px] font-bold tracking-tight">Updating Calibration</h3>
+                <p className="text-[13px] text-muted-foreground mt-1 min-h-[20px] transition-all">
+                  {allDone
+                    ? "Calibration complete — ready to grade"
+                    : "Applying your resolved scores across all papers…"}
+                </p>
+              </div>
+
+              {/* Steps */}
+              <div className="w-full flex flex-col gap-2">
+                {COMPLETION_STEPS.map((step, i) => {
+                  const done = completedSteps.includes(i)
+                  const active = activeStep === i && !done
+                  return (
+                    <div
+                      key={step}
+                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[9px] border text-[13px] transition-all duration-300 ${
+                        done
+                          ? "bg-green-50 border-green-200 text-foreground/70"
+                          : active
+                          ? "bg-blue-50 border-blue-200 text-foreground/70"
+                          : "bg-muted/20 border-border/40 text-muted-foreground/65"
+                      }`}
+                    >
+                      <div
+                        className={`w-2 h-2 rounded-full shrink-0 transition-colors duration-300 ${
+                          done ? "bg-green-500"
+                          : active ? "bg-blue-500 animate-pulse"
+                          : "bg-border"
+                        }`}
+                      />
+                      <span className="flex-1">{step}</span>
+                      {done && <span className="text-[12px] font-semibold text-green-600 ml-auto">✓</span>}
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* CTA */}
+              <Button
+                onClick={() => completeCalibration(assignmentId)}
+                disabled={!allDone}
+                className="w-full h-[46px] rounded-[10px] bg-foreground text-background hover:bg-foreground/90 font-semibold text-[14px] disabled:opacity-35 gap-2 transition-all"
+              >
+                Proceed to Grade
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }

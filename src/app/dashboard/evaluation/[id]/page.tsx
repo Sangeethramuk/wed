@@ -218,8 +218,8 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
       criterionLabel: rubricPoints.find(p => p.id === id)?.label || '',
       details: { newScore: aiScore }
     })
-    const nextPoint = rubricPoints.find(p => p.id > id)
-    if (nextPoint) setExpandedRubricId(nextPoint.id)
+    const nextIndex = rubricPoints.findIndex(p => p.id === id) + 1
+    if (nextIndex < rubricPoints.length) setActiveRubricCriterionIdx(nextIndex)
   }
 
   const handleOverrideScore = (id: number, newScore: number) => {
@@ -354,6 +354,9 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   }
 
   const [isSpotCheckActive, setIsSpotCheckActive] = useState(false)
+  const [activeRubricCriterionIdx, setActiveRubricCriterionIdx] = useState(0)
+  const [rubricAccordionOpen, setRubricAccordionOpen] = useState<Record<string, boolean>>({})
+  const [rubricReviewStripOpen, setRubricReviewStripOpen] = useState<Record<number, boolean>>({})
 
   const handleConfirmNext = () => {
     const currentSub = submissions.find(s => s.id === selectedSubmission)
@@ -785,507 +788,326 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
         {/* Right Panel: Rubric Suite */}
         <ResizablePanel defaultSize={35} minSize={25}>
-          <div className="h-full flex flex-col border-l border-border bg-background overflow-hidden">
-            <div className="p-6 border-b border-border bg-white shrink-0">
-               <div className="flex items-center justify-between">
-                 <div>
-                    <h2 className="text-sm font-black tracking-tight text-foreground">Grading Panel</h2>
-                 </div>
-               </div>
-            </div>
-            
-            <ScrollArea className="flex-1 min-h-0 bg-[#FAFAFA]">
-              <div className="p-6 space-y-8">
-                {/* Rubric Annotations Section */}
-                <div className="space-y-6">
-                      {rubricPoints.map((point) => {
-                          const state = criterionState[point.id] || { score: null, isOverridden: false, feedback: "", confirmed: false }
-                          const currentScore = state.score != null ? state.score : (point?.aiScore ?? 0)
-                          const isExpanded = expandedRubricId === point.id
-                          const c = CRITERION_COLORS[point.id] ?? CRITERION_COLORS[1]
+          {(() => {
+            const point = rubricPoints[activeRubricCriterionIdx]
+            const state = criterionState[point.id] || { score: null, isOverridden: false, feedback: '', confirmed: false }
+            const draft = overrideDrafts[point.id]
+            const confirmedCount = rubricPoints.filter(p => criterionState[p.id]?.confirmed).length
+            const isLastCriterion = activeRubricCriterionIdx === rubricPoints.length - 1
+            const allConfirmed = confirmedCount === rubricPoints.length
+            const isOverride = activeOverrideId === point.id && !!draft
+            const isIncrease = draft?.direction === 'increase'
+            const overrideReasons = isIncrease ? INCREASE_REASONS : DECREASE_REASONS
+            const isOverrideValid = !!draft && draft.reasoning.length >= 20 && (draft.reasonCategory !== 'found_more_evidence' || draft.linkedEvidence.length > 0)
+            const pointEvidence = mappedEvidence.filter(e => e.criterionId === point.id)
 
-                          return (
-                        <div key={point.id} className="relative bg-white rounded-xl border border-border overflow-hidden shadow-sm">
-                           {/* Accordion Header */}
-                           <button
-                             onClick={() => setExpandedRubricId(isExpanded ? -1 : point.id)}
-                             className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors text-left"
-                           >
-                             <div className="flex items-center gap-3 min-w-0">
-                               <div className={`h-2 w-2 rounded-full shrink-0 ${c.dot}`} />
-                               <span className="text-sm font-bold text-foreground truncate">C{point.id} — {point.label}</span>
-                               {state.confirmed && (
-                                 <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-500" />
-                               )}
-                             </div>
-                              <div className="flex items-center gap-2 shrink-0 ml-2">
-                                {!isExpanded && (
-                                  <div className="flex flex-col items-end">
-                                     <span className={`text-[10px] font-black ${c.label}`}>{(currentScore ?? 0).toFixed(1)} pts</span>
-                                    {state.isOverridden && (
-                                      <span className="text-[8px] text-muted-foreground/40">was {point.aiScore} pts (AI)</span>
-                                    )}
+            return (
+              <div className="h-full flex flex-col border-l border-border bg-background overflow-hidden">
+                {/* Sticky header */}
+                <div className="p-4 border-b border-border bg-background shrink-0 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-sm font-black tracking-tight text-foreground">Rubric evaluation</h2>
+                    <Badge variant="outline" className="rounded-full text-[10px] font-black px-2 h-5 bg-background">
+                      {confirmedCount} of {rubricPoints.length} scored
+                    </Badge>
+                  </div>
+                  <Progress value={(confirmedCount / rubricPoints.length) * 100} className="h-1" />
+                  <div className="flex gap-1">
+                    {rubricPoints.map((p, idx) => {
+                      const done = !!criterionState[p.id]?.confirmed
+                      const active = idx === activeRubricCriterionIdx
+                      return (
+                        <button key={p.id} onClick={() => setActiveRubricCriterionIdx(idx)} className="flex-1 flex flex-col items-center gap-1">
+                          <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
+                            done ? 'bg-foreground border-foreground' :
+                            active ? 'border-purple-500 bg-white' :
+                            'border-border bg-white'
+                          }`}>
+                            {active && !done && <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />}
+                          </div>
+                          <span className={`text-[8px] font-bold transition-colors ${active ? 'text-foreground' : 'text-muted-foreground/50'}`}>C{p.id}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <ScrollArea className="flex-1 min-h-0">
+                  <div className="p-4 space-y-3">
+                    {point.status === 'REVIEW_NEEDED' && (
+                      <div className="rounded-lg bg-amber-50 border border-amber-200 overflow-hidden">
+                        <button
+                          className="w-full flex items-center justify-between p-3"
+                          onClick={() => setRubricReviewStripOpen(prev => ({ ...prev, [point.id]: !prev[point.id] }))}
+                        >
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-700">Review needed</span>
+                          </div>
+                          <ChevronDown className={`h-3.5 w-3.5 text-amber-500 transition-transform ${rubricReviewStripOpen[point.id] ? 'rotate-180' : ''}`} />
+                        </button>
+                        {rubricReviewStripOpen[point.id] && (
+                          <div className="px-3 pb-3">
+                            <p className="text-[10px] text-amber-700 leading-relaxed">{point.note}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden">
+                      <div className="p-4 space-y-4">
+                        <div>
+                          <h3 className="text-sm font-bold text-foreground leading-tight">{point.label}</h3>
+                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-3">{point.reasoning}</p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Score</span>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-2xl font-black text-foreground tabular-nums">{(state.score ?? point.aiScore).toFixed(1)}</span>
+                              <span className="text-sm text-muted-foreground">/{point.maxPoints}</span>
+                            </div>
+                            <span className="text-[9px] text-muted-foreground ml-auto">Adjust:</span>
+                          </div>
+                          <div className="flex gap-1.5">
+                            {point.levels.map(lvl => {
+                              const isDraftSelected = isOverride && draft.proposedScore === lvl.points
+                              const isCurrentConfirmed = state.confirmed && state.score === lvl.points
+                              const isAiDefault = lvl.points === point.aiScore && !state.confirmed && !isOverride
+                              return (
+                                <button
+                                  key={lvl.val}
+                                  onClick={() => handleScoreLevelClick(point.id, lvl.points, point.aiScore)}
+                                  className={`flex-1 py-2 border rounded-md text-[10px] font-bold transition-all ${
+                                    isDraftSelected
+                                      ? 'bg-amber-500 text-white border-amber-500'
+                                      : isCurrentConfirmed || isAiDefault
+                                      ? 'bg-foreground text-background border-foreground'
+                                      : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground'
+                                  }`}
+                                >
+                                  {lvl.points}pts
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+
+                        {isOverride && (
+                          <div className="border border-amber-200 rounded-lg bg-amber-50/50 p-3 space-y-3">
+                            <div className={`flex items-center gap-2 ${isIncrease ? 'text-green-700' : 'text-red-700'}`}>
+                              {isIncrease ? <ArrowUp className="h-3.5 w-3.5 shrink-0" /> : <ArrowDown className="h-3.5 w-3.5 shrink-0" />}
+                              <span className="text-[10px] font-black">
+                                Proposing {draft.proposedScore}pts ({isIncrease ? '↑' : '↓'}{Math.abs(draft.proposedScore - draft.aiScore).toFixed(1)} from AI&apos;s {draft.aiScore}pts)
+                              </span>
+                            </div>
+                            <select
+                              value={draft.reasonCategory}
+                              onChange={e => {
+                                handleUpdateDraft(point.id, { reasonCategory: e.target.value })
+                                if (e.target.value === 'found_more_evidence') {
+                                  setTextSelectionMode({ active: true, criterionId: point.id })
+                                } else {
+                                  setTextSelectionMode({ active: false, criterionId: null })
+                                }
+                              }}
+                              className="w-full text-[11px] rounded border border-amber-200 bg-white p-2 text-foreground focus:outline-none focus:ring-1 focus:ring-amber-300"
+                            >
+                              <option value="">Select a reason&hellip;</option>
+                              {overrideReasons.map(r => (
+                                <option key={r.value} value={r.value}>{r.label}</option>
+                              ))}
+                            </select>
+                            {draft.reasonCategory === 'found_more_evidence' && (
+                              <div className="p-2.5 rounded-lg bg-blue-50 border border-blue-200">
+                                <p className="text-[10px] text-blue-700/80 leading-relaxed mb-2">Highlight text in the manuscript to link as evidence.</p>
+                                {draft.linkedEvidence.length > 0 && (
+                                  <div className="space-y-1.5 mb-2">
+                                    {draft.linkedEvidence.map((ev, i) => (
+                                      <div key={ev.id} className="flex items-start gap-2 p-2 rounded bg-white border border-blue-100 group/ev">
+                                        <span className="text-[9px] font-mono font-bold text-blue-600 shrink-0">E{i + 1}</span>
+                                        <p className="text-[10px] font-serif italic text-foreground/70 flex-1 leading-relaxed">&quot;{ev.text.length > 60 ? ev.text.substring(0, 60) + '...' : ev.text}&quot;</p>
+                                        <button onClick={() => handleRemoveOverrideEvidence(point.id, ev.id)} className="opacity-0 group-hover/ev:opacity-100 transition-opacity shrink-0">
+                                          <X className="h-3 w-3 text-red-400 hover:text-red-600" />
+                                        </button>
+                                      </div>
+                                    ))}
                                   </div>
                                 )}
-                                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                                {draft.linkedEvidence.length === 0 && (
+                                  <p className="text-[9px] text-blue-500/60 italic">No evidence linked yet</p>
+                                )}
                               </div>
-                           </button>
-
-                           <AnimatePresence initial={false}>
-                           {isExpanded && (
-                           <motion.div
-                             key="content"
-                             initial={{ height: 0 }}
-                             animate={{ height: "auto" }}
-                             exit={{ height: 0 }}
-                             transition={{ duration: 0.2, ease: "easeInOut" }}
-                             className="overflow-hidden"
-                           >
-                           <div className="border-t border-border/50">
-                           <div className="p-6 pb-4">
-                              <div className="flex items-center gap-3 mb-6">
-                                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">SCORE</span>
-                                   <Badge className="bg-green-50 text-green-700 border-green-200 border rounded-sm uppercase text-[9px] tracking-widest font-black shadow-none">{point.status}</Badge>
-                               </div>
-
-                               <div className="space-y-2 mb-6">
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Criterion Score: <span className="text-foreground">{(currentScore ?? 0).toFixed(1)}</span> / {point.maxPoints}</span>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        {point.levels.map(lvl => {
-                                          const isActive = activeOverrideId === point.id && overrideDrafts[point.id]?.proposedScore === lvl.points
-                                          const isAiScore = lvl.points === point.aiScore
-                                          return (
-                                             <button 
-                                               key={lvl.val}
-                                               onClick={(e) => {
-                                                 e.stopPropagation()
-                                                 handleScoreLevelClick(point.id, lvl.points, point.aiScore)
-                                               }}
-                                              className={`flex-1 py-2 px-2 border rounded-md text-[10px] font-bold transition-all text-center leading-tight ${
-                                                  isActive
-                                                  ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-sm ring-1 ring-amber-500/30'
-                                                  : isAiScore && activeOverrideId !== point.id
-                                                  ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                                                  : isAiScore && activeOverrideId === point.id
-                                                  ? 'border-primary/40 bg-primary/10 text-primary'
-                                                  : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground'
-                                              }`}
-                                            >
-                                                <div className="mb-1">{lvl.points} pts</div>
-                                                <div className="text-[9px] opacity-80 font-medium leading-tight">{lvl.name}</div>
-                                            </button>
-                                        )})}
-                                    </div>
-                                </div>
-
-                               <div className="space-y-4 mb-6">
-                                  <div className="flex items-center justify-between border-b pb-2 border-border/50">
-                                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Evidence</span>
-                                      <Badge variant="outline" className="rounded-full text-[10px] font-medium h-5 px-2 bg-muted/30">
-                                          {mappedEvidence.filter(e => e.criterionId === point.id).length + 1} item{mappedEvidence.filter(e => e.criterionId === point.id).length !== 0 ? 's' : ''}
-                                      </Badge>
-                                  </div>
-                                  
-                                   {/* AI Default Evidence Block */}
-                                   {(() => { const c = CRITERION_COLORS[point.id] ?? CRITERION_COLORS[1]; return (
-                                   <div className={`p-4 rounded-lg ${c.cardBg} border ${c.cardBorder} relative group/ev`}>
-                                       <div className={`absolute left-0 top-0 bottom-0 w-1 ${c.bar} rounded-l-lg`} />
-                                       <div className="flex gap-3">
-                                           <div className={`h-6 w-6 rounded bg-white border ${c.cardBorder} shadow-sm flex items-center justify-center text-[10px] font-mono ${c.label} shrink-0`}>E1</div>
-                                           <div className="space-y-1.5 flex-1">
-                                               <p className="text-sm font-serif italic text-foreground/80 leading-relaxed">"{manuscript.pages.flatMap(p => p.elements).filter(e => e.type === 'paragraph' && e.highlight && e.highlight.criterionId === point.id).map(e => e.type === 'paragraph' ? e.text : '')[0]?.substring(0, 80) || 'No AI evidence extracted'}..."</p>
-                                               <div className="flex items-center gap-2">
-                                                   <span className={`text-[9px] font-bold ${c.label} uppercase tracking-widest`}>L{point.aiScore} - {point.aiScoreLabel}</span>
-                                                   <span className="text-[9px] font-bold text-muted-foreground/40 italic uppercase tracking-widest">AI extracted</span>
-                                               </div>
-                                           </div>
-                                       </div>
-                                   </div>
-                                   ); })()}
-
-                                  {/* User Mapped Evidence Fragments */}
-                                  {mappedEvidence.filter(e => e.criterionId === point.id).map((ev, i) => {
-                                     const c = CRITERION_COLORS[point.id] ?? CRITERION_COLORS[1]
-                                     return (
-                                     <div key={ev.id} className={`p-4 rounded-lg ${c.cardBg} border ${c.cardBorder} border-dashed relative group/ev`}>
-                                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${c.bar} rounded-l-lg opacity-60`} />
-                                        <div className="flex gap-3">
-                                            <div className={`h-6 w-6 rounded bg-white border ${c.cardBorder} shadow-sm flex items-center justify-center text-[10px] font-mono ${c.label} shrink-0`}>U{i+1}</div>
-                                            <div className="space-y-1.5 flex-1">
-                                                <p className="text-sm font-serif italic text-foreground/80 leading-relaxed">"{ev.text}"</p>
-                                                <div className="flex items-center justify-between">
-                                                    <span className={`inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest ${c.label} opacity-70`}>
-                                                        <svg className="h-2.5 w-2.5" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5"/><path d="M6 4v2.5l1.5 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                                                        Mapped by you
-                                                    </span>
-                                                    <button onClick={() => setMappedEvidence(prev => prev.filter(e => e.id !== ev.id))} className="text-[9px] font-black uppercase text-red-500 opacity-0 group-hover/ev:opacity-100 transition-opacity hover:underline">Remove</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                     </div>
-                                  )})}
-                                  <div className="flex justify-end pt-1">
-                                      <button className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors">+ Add evidence</button>
-                                  </div>
+                            )}
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Explain your override</span>
+                                <span className={`text-[9px] font-mono ${draft.reasoning.length >= 20 ? 'text-green-600' : 'text-amber-500'}`}>{draft.reasoning.length}/20</span>
                               </div>
-
-                              <div className="space-y-3 mb-6">
-                                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block border-b pb-2 border-border/50">Reasoning</span>
-                                  <div className="p-4 rounded-lg bg-white border border-border/50 text-xs italic font-medium text-muted-foreground leading-relaxed relative group/reasoning hover:border-primary/20 transition-colors">
-                                      {point.reasoning}
-                                      <Edit2 className="absolute right-3 bottom-3 h-3 w-3 text-muted-foreground/30 opacity-0 group-hover/reasoning:opacity-100 transition-opacity cursor-pointer hover:text-primary" />
-                                  </div>
-                              </div>
-
-                               <div className="flex items-center gap-3 pt-2">
-                                    <Button
-                                        size="sm"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handleScoreConfirm(point.id, point.aiScore)
-                                          handleCancelOverride(point.id)
-                                        }}
-                                       className={`h-9 px-4 rounded-md text-[10px] font-black uppercase tracking-widest shadow-sm transition-all flex items-center ${
-                                           state.confirmed && !state.isOverridden
-                                           ? 'bg-foreground text-background pointer-events-none'
-                                           : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                                       }`}
-                                   >
-                                       {state.confirmed && !state.isOverridden ? <><CheckCircle2 className="mr-2 h-3.5 w-3.5" /> Confirmed AI score</> : '✓ Confirm AI score'}
-                                   </Button>
-                                   {activeOverrideId === point.id && (
-                                     <Button
-                                       variant="ghost"
-                                       size="sm"
-                                       onClick={() => handleCancelOverride(point.id)}
-                                       className="h-9 px-3 rounded-md text-[10px] font-black uppercase tracking-widest border text-muted-foreground hover:bg-accent border-transparent hover:border-border"
-                                     >
-                                       Cancel
-                                     </Button>
-                                   )}
-                               </div>
-
-                               <AnimatePresence>
-                                 {activeOverrideId === point.id && overrideDrafts[point.id] && (() => {
-                                   const draft = overrideDrafts[point.id]
-                                   const delta = Math.abs(draft.proposedScore - draft.aiScore)
-                                   const isIncrease = draft.direction === 'increase'
-                                   const aiEvidence = manuscript.pages.flatMap(p => p.elements).filter(e => e.type === 'paragraph' && e.highlight && e.highlight.criterionId === point.id).map(e => e.type === 'paragraph' ? e.text : '')[0] || ''
-                                   const reasons = isIncrease ? INCREASE_REASONS : DECREASE_REASONS
-                                   const isValid = draft.reasoning.length >= 20 && (draft.reasonCategory !== 'found_more_evidence' || draft.linkedEvidence.length > 0)
-                                   return (
-                                     <motion.div
-                                        key={`override-panel-${point.id}`}
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: "auto", opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.2 }}
-                                        className="overflow-hidden"
-                                      >
-                                       <div className="mt-4 pt-4 border-t border-amber-100 space-y-4">
-                                         {/* Delta Banner */}
-                                         <div className={`flex items-center gap-2 p-3 rounded-lg ${isIncrease ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-                                           {isIncrease ? <ArrowUp className="h-4 w-4 text-green-600" /> : <ArrowDown className="h-4 w-4 text-red-600" />}
-                                           <span className={`text-[11px] font-black ${isIncrease ? 'text-green-700' : 'text-red-700'}`}>
-                                             Proposing {draft.proposedScore}pts ({isIncrease ? '↑' : '↓'}{delta.toFixed(1)} from AI's {draft.aiScore}pts)
-                                           </span>
-                                         </div>
-
-                                         {/* AI Evidence Context */}
-                                         <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                                           <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground block mb-2">AI's Assessment &amp; Evidence</span>
-                                           <p className="text-xs font-serif italic text-foreground/70 leading-relaxed">
-                                             "{aiEvidence.substring(0, 150)}{aiEvidence.length > 150 ? '...' : ''}"
-                                           </p>
-                                           <div className="flex items-center gap-2 mt-2">
-                                             <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest">AI scored: {draft.aiScore}pts</span>
-                                             <span className="text-[9px] text-muted-foreground/30">—</span>
-                                             <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest">{point.aiScoreLabel}</span>
-                                           </div>
-                                         </div>
-
-                                         {/* Direction-specific guidance */}
-                                         <div className={`p-3 rounded-lg ${isIncrease ? 'bg-amber-50 border border-amber-200' : 'bg-amber-50 border border-amber-200'}`}>
-                                           <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 block mb-1">
-                                             {isIncrease ? 'Why higher?' : 'Why lower?'}
-                                           </span>
-                                           <p className="text-[10px] text-amber-800/70 leading-relaxed">
-                                             {isIncrease
-                                               ? 'Based on current evidence, the AI assigned this score. To justify a higher score, add more evidence or explain what the AI missed.'
-                                               : 'The AI found evidence supporting this score. Tell us what\'s wrong — is the evidence misinterpreted, incorrect, or are there quality issues?'}
-                                           </p>
-                                         </div>
-
-                                         {/* Reason Selector */}
-                                         <div className="space-y-2">
-                                           <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Select a reason</span>
-                                           <div className="flex flex-col gap-1.5">
-                                             {reasons.map(reason => (
-                                               <button
-                                                 key={reason.value}
-                                                 onClick={() => {
-                                                   handleUpdateDraft(point.id, { reasonCategory: reason.value })
-                                                   if (reason.value === 'found_more_evidence') {
-                                                     setTextSelectionMode({ active: true, criterionId: point.id })
-                                                   } else {
-                                                     setTextSelectionMode({ active: false, criterionId: null })
-                                                   }
-                                                 }}
-                                                 className={`w-full text-left p-2.5 rounded-lg text-[11px] font-medium transition-all flex items-center gap-2 ${
-                                                   draft.reasonCategory === reason.value
-                                                   ? 'bg-amber-50 border border-amber-300 text-amber-800'
-                                                   : 'bg-white border border-border/50 text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                                                 }`}
-                                               >
-                                                 <div className={`h-3 w-3 rounded-full border-2 shrink-0 flex items-center justify-center ${
-                                                   draft.reasonCategory === reason.value
-                                                   ? 'border-amber-500'
-                                                   : 'border-border'
-                                                 }`}>
-                                                   {draft.reasonCategory === reason.value && <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />}
-                                                 </div>
-                                                 {reason.label}
-                                               </button>
-                                             ))}
-                                           </div>
-                                         </div>
-
-                                         {/* Conditional: Text Selection Mode */}
-                                         {draft.reasonCategory === 'found_more_evidence' && (
-                                           <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                                             <div className="flex items-center gap-2 mb-2">
-                                               <LinkIcon className="h-3.5 w-3.5 text-blue-600" />
-                                               <span className="text-[10px] font-black uppercase tracking-widest text-blue-700">Select text from manuscript</span>
-                                             </div>
-                                             <p className="text-[10px] text-blue-700/70 leading-relaxed mb-3">
-                                               Highlight text in the manuscript on the left to link it as supporting evidence for this higher score.
-                                             </p>
-                                             {draft.linkedEvidence.length > 0 && (
-                                               <div className="space-y-1.5">
-                                                 {draft.linkedEvidence.map((ev, i) => (
-                                                   <div key={ev.id} className="flex items-start gap-2 p-2 rounded bg-white border border-blue-100 group/ev">
-                                                     <span className="text-[9px] font-mono font-bold text-blue-600 shrink-0">E{i + 2}</span>
-                                                     <p className="text-[10px] font-serif italic text-foreground/70 leading-relaxed flex-1">"{ev.text.length > 80 ? ev.text.substring(0, 80) + '...' : ev.text}"</p>
-                                                     <button
-                                                       onClick={() => handleRemoveOverrideEvidence(point.id, ev.id)}
-                                                       className="shrink-0 opacity-0 group-hover/ev:opacity-100 transition-opacity"
-                                                     >
-                                                       <X className="h-3 w-3 text-red-400 hover:text-red-600" />
-                                                     </button>
-                                                   </div>
-                                                 ))}
-                                               </div>
-                                             )}
-                                             {draft.linkedEvidence.length === 0 && (
-                                               <p className="text-[9px] text-blue-600/50 italic">No evidence linked yet — select text from the manuscript</p>
-                                             )}
-                                           </div>
-                                         )}
-
-                                         {/* Conditional: OCR File Upload */}
-                                         {draft.reasonCategory === 'ocr_issue' && (
-                                           <div className="p-3 rounded-lg bg-orange-50 border border-orange-200">
-                                             <div className="flex items-center gap-2 mb-2">
-                                               <Upload className="h-3.5 w-3.5 text-orange-600" />
-                                               <span className="text-[10px] font-black uppercase tracking-widest text-orange-700">Upload correction</span>
-                                             </div>
-                                             <p className="text-[10px] text-orange-700/70 leading-relaxed mb-3">
-                                               Upload a clearer scan or corrected text to replace the OCR extraction.
-                                             </p>
-                                             <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-orange-200 rounded-lg cursor-pointer hover:bg-orange-50/50 transition-colors">
-                                               <Upload className="h-5 w-5 text-orange-400 mb-1" />
-                                               <span className="text-[9px] font-black uppercase tracking-widest text-orange-500">Click to browse or drag file</span>
-                                               <span className="text-[8px] text-orange-400/60 mt-0.5">PDF, PNG, JPG, or TXT</span>
-                                               <input
-                                                 type="file"
-                                                 className="hidden"
-                                                 accept=".pdf,.png,.jpg,.jpeg,.txt"
-                                                 onChange={(e) => {
-                                                   const file = e.target.files?.[0]
-                                                   if (file) {
-                                                     handleUpdateDraft(point.id, {
-                                                       ocrFile: { name: file.name, size: `${(file.size / 1024).toFixed(1)}KB` }
-                                                     })
-                                                   }
-                                                 }}
-                                               />
-                                             </label>
-                                             {draft.ocrFile && (
-                                               <div className="flex items-center gap-2 mt-2 p-2 bg-white rounded border border-orange-100">
-                                                 <Upload className="h-3 w-3 text-orange-500" />
-                                                 <span className="text-[10px] font-medium text-orange-700">{draft.ocrFile.name}</span>
-                                                 <span className="text-[9px] text-orange-400">({draft.ocrFile.size})</span>
-                                                 <button onClick={() => handleUpdateDraft(point.id, { ocrFile: undefined })} className="ml-auto">
-                                                   <X className="h-3 w-3 text-red-400 hover:text-red-600" />
-                                                 </button>
-                                               </div>
-                                             )}
-                                           </div>
-                                         )}
-
-                                         {/* Reasoning Textarea */}
-                                         <div className="space-y-2">
-                                           <div className="flex items-center justify-between">
-                                             <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Explain your assessment</span>
-                                             <span className={`text-[9px] font-mono ${draft.reasoning.length >= 20 ? 'text-green-600' : 'text-amber-500'}`}>
-                                               {draft.reasoning.length}/20 min chars
-                                             </span>
-                                           </div>
-                                           <textarea
-                                             value={draft.reasoning}
-                                             onChange={e => handleUpdateDraft(point.id, { reasoning: e.target.value })}
-                                             placeholder={isIncrease
-                                               ? "Describe what the AI missed or underestimated in this criterion..."
-                                               : "Explain what's wrong with the evidence or AI's interpretation..."}
-                                             className="w-full h-24 rounded-lg border border-amber-200 bg-amber-50/20 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300/30 resize-none text-foreground/80 placeholder:text-xs placeholder:text-muted-foreground/40"
-                                           />
-                                         </div>
-
-                                         {/* Validation warning */}
-                                         {!isValid && draft.reasonCategory && (
-                                           <div className="flex items-center gap-2 p-2 rounded bg-amber-50 border border-amber-200">
-                                             <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                                             <span className="text-[10px] text-amber-700">
-                                               {draft.reasoning.length < 20
-                                                 ? 'Please provide at least 20 characters of reasoning.'
-                                                 : draft.reasonCategory === 'found_more_evidence' && draft.linkedEvidence.length === 0
-                                                 ? 'Please select at least one evidence from the manuscript.'
-                                                 : ''}
-                                             </span>
-                                           </div>
-                                         )}
-
-                                         {/* Actions */}
-                                         <div className="flex items-center gap-3 pt-1">
-                                           <Button
-                                             variant="ghost"
-                                             size="sm"
-                                             onClick={() => handleCancelOverride(point.id)}
-                                             className="h-9 px-4 rounded-md text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-muted"
-                                           >
-                                             Cancel
-                                           </Button>
-                                           <Button
-                                             size="sm"
-                                             onClick={() => handleConfirmOverride(point.id)}
-                                             disabled={!isValid}
-                                             className="h-9 px-4 rounded-md text-[10px] font-black uppercase tracking-widest bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:pointer-events-none"
-                                           >
-                                             Confirm Override
-                                           </Button>
-                                         </div>
-                                       </div>
-                                     </motion.div>
-                                   )
-                                 })()}
-                               </AnimatePresence>
-                           </div>
-                           
-                           {/* Feedback Area */}
-                           <div className="bg-muted/10 p-6 border-t border-border/60">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block mb-3">Feedback for this criterion</span>
-                              <textarea 
-                                  value={state.feedback}
-                                  onChange={(e) => handleFeedbackChange(point.id, e.target.value)}
-                                  placeholder="Add specific feedback for student on this criterion..."
-                                  className="w-full h-24 rounded-lg border border-border bg-white p-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none font-serif italic text-foreground/80 mb-4 placeholder:font-sans placeholder:not-italic placeholder:text-xs"
+                              <textarea
+                                value={draft.reasoning}
+                                onChange={e => handleUpdateDraft(point.id, { reasoning: e.target.value })}
+                                placeholder={isIncrease ? 'Describe what the AI missed...' : "Explain what's wrong with the AI's interpretation..."}
+                                className="w-full h-20 rounded-lg border border-amber-200 bg-white p-2.5 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-amber-300 text-foreground/80 placeholder:text-xs placeholder:text-muted-foreground/40"
                               />
-                              <div className="flex items-center gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleToggleRecording(point.id)}
-                                    className={`h-7 text-[9px] font-black uppercase tracking-widest rounded-md transition-all ${recordingId === point.id ? 'bg-red-50 text-red-600 border-red-200' : 'text-foreground bg-white hover:bg-muted'}`}
-                                  >
-                                    {recordingId === point.id ? (
-                                      <span className="flex items-center gap-1.5">
-                                        <span className="flex gap-0.5 items-end h-3">
-                                          {[1,2,3,4,3,2,1].map((h, i) => (
-                                            <span key={i} className="w-0.5 bg-red-500 rounded-full animate-pulse" style={{ height: `${h * 3}px`, animationDelay: `${i * 80}ms` }} />
-                                          ))}
-                                        </span>
-                                        Stop
-                                      </span>
-                                    ) : (
-                                      <><div className="h-1.5 w-1.5 rounded-full bg-red-500 mr-2" /> Record</>
-                                    )}
-                                  </Button>
+                            </div>
+                            {!isOverrideValid && draft.reasonCategory && (
+                              <div className="flex items-center gap-2 p-2 rounded bg-amber-50 border border-amber-200">
+                                <AlertCircle className="h-3 w-3 text-amber-500 shrink-0" />
+                                <span className="text-[10px] text-amber-700">
+                                  {draft.reasoning.length < 20
+                                    ? 'At least 20 characters required.'
+                                    : draft.reasonCategory === 'found_more_evidence' && draft.linkedEvidence.length === 0
+                                    ? 'Link at least one evidence from the manuscript.'
+                                    : ''}
+                                </span>
                               </div>
-                           </div>
-                           <div className="bg-white border-t border-border/60 p-4">
-                                <label className="flex items-center gap-3 cursor-pointer group/label w-fit">
-                                    <div className={`h-4 w-4 rounded border flex items-center justify-center transition-colors ${dismissedPoints.includes(point.id) ? 'bg-primary border-primary' : 'border-border bg-white group-hover/label:border-primary/50'}`}>
-                                        {dismissedPoints.includes(point.id) && <CheckCircle2 className="h-3 w-3 text-white" />}
-                                    </div>
-                                    <span className="text-[10px] uppercase tracking-widest font-black text-muted-foreground/70 group-hover/label:text-foreground transition-colors select-none" onClick={() => {
-                                        if (dismissedPoints.includes(point.id)) {
-                                            setDismissedPoints(prev => prev.filter(id => id !== point.id))
-                                        } else {
-                                            setDismissedPoints(prev => [...prev, point.id])
-                                        }
-                                    }}>Mark as reviewed</span>
-                                </label>
-                           </div>
-                           </div>
-                           </motion.div>
-                           )}
-                           </AnimatePresence>
-                        </div>
-                      )})}
-                </div>
-              </div>
-            </ScrollArea>
+                            )}
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="sm" onClick={() => handleCancelOverride(point.id)}
+                                className="h-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-muted">
+                                Cancel
+                              </Button>
+                              <Button size="sm" onClick={() => handleConfirmOverride(point.id)} disabled={!isOverrideValid}
+                                className="h-8 flex-1 text-[10px] font-black uppercase tracking-widest bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:pointer-events-none">
+                                Confirm Override
+                              </Button>
+                            </div>
+                          </div>
+                        )}
 
-            <div className="p-4 border-t border-border bg-background shadow-[0_-12px_40px_rgba(0,0,0,0.03)] shrink-0 z-10 w-full relative">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Final Evaluation Score</p>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-black tracking-tighter text-foreground">{Math.round((currentTotalScore / totalMaxPoints) * 100)}</span>
-                      <span className="text-sm font-bold text-muted-foreground/50">/ 100</span>
+                        <div className="space-y-1.5">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Feedback</span>
+                          <textarea
+                            value={state.feedback || ''}
+                            onChange={e => handleFeedbackChange(point.id, e.target.value)}
+                            placeholder="Add specific feedback for this criterion..."
+                            className="w-full h-20 rounded-lg border border-border bg-muted/5 p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground/80 placeholder:text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden">
+                      <button
+                        onClick={() => setRubricAccordionOpen(prev => ({ ...prev, [`evidence-${point.id}`]: !prev[`evidence-${point.id}`] }))}
+                        className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+                      >
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                          Evidence ({pointEvidence.length} linked)
+                        </span>
+                        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${rubricAccordionOpen[`evidence-${point.id}`] ? 'rotate-180' : ''}`} />
+                      </button>
+                      {rubricAccordionOpen[`evidence-${point.id}`] && (
+                        <div className="px-4 pb-4 space-y-2">
+                          {pointEvidence.length === 0 ? (
+                            <div className="border-2 border-dashed border-purple-200 rounded-lg p-4 text-center">
+                              <p className="text-[10px] text-purple-400 leading-relaxed">No evidence linked yet &mdash; select text in the left panel to add evidence</p>
+                            </div>
+                          ) : (
+                            pointEvidence.map((ev, i) => (
+                              <div key={ev.id} className="flex items-start gap-2 p-2.5 rounded-lg bg-muted/20 border border-border group/ev">
+                                <span className="text-[9px] font-mono font-bold text-primary shrink-0">E{i+1}</span>
+                                <p className="text-[11px] font-serif italic text-foreground/70 flex-1 leading-relaxed">&quot;{ev.text.length > 80 ? ev.text.substring(0, 80) + '...' : ev.text}&quot;</p>
+                                <button onClick={() => setMappedEvidence(prev => prev.filter(e => e.id !== ev.id))} className="opacity-0 group-hover/ev:opacity-100 transition-opacity shrink-0">
+                                  <X className="h-3 w-3 text-red-400 hover:text-red-600" />
+                                </button>
+                              </div>
+                            ))
+                          )}
+                          <button className="w-full border-2 border-dashed border-border rounded-lg p-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:border-primary/30 hover:text-foreground transition-colors">
+                            + Add evidence
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden">
+                      <button
+                        onClick={() => setRubricAccordionOpen(prev => ({ ...prev, [`reasoning-${point.id}`]: !prev[`reasoning-${point.id}`] }))}
+                        className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+                      >
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">AI reasoning</span>
+                        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${rubricAccordionOpen[`reasoning-${point.id}`] ? 'rotate-180' : ''}`} />
+                      </button>
+                      {rubricAccordionOpen[`reasoning-${point.id}`] && (
+                        <div className="px-4 pb-4 space-y-2">
+                          <p className="text-xs font-serif italic text-muted-foreground leading-relaxed">{point.reasoning}</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            <Badge className="text-[9px] bg-green-50 text-green-700 border-green-200 border shadow-none">{point.aiScoreLabel}</Badge>
+                            {point.status === 'REVIEW_NEEDED' && (
+                              <Badge className="text-[9px] bg-amber-50 text-amber-700 border-amber-200 border shadow-none">Review needed</Badge>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Raw Score</p>
-                    <span className="text-sm font-bold text-muted-foreground">{currentTotalScore.toFixed(1)} / {totalMaxPoints}</span>
+                </ScrollArea>
+
+                <div className="p-4 border-t border-border bg-background shrink-0 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Total</p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xl font-black tracking-tighter text-foreground tabular-nums">{Math.round((currentTotalScore / totalMaxPoints) * 100)}</span>
+                        <span className="text-xs text-muted-foreground font-bold">/ 100</span>
+                        <span className="text-[10px] text-muted-foreground/50 ml-1">({currentTotalScore.toFixed(1)}/{totalMaxPoints}pts)</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={activeRubricCriterionIdx === 0}
+                      onClick={() => setActiveRubricCriterionIdx(i => i - 1)}
+                      className="h-9 text-[10px] font-black uppercase tracking-widest text-muted-foreground disabled:opacity-30"
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleScoreConfirm(point.id, state.score ?? point.aiScore)}
+                      className="h-9 text-[10px] font-black uppercase tracking-widest border-border"
+                    >
+                      Save
+                    </Button>
+                    {isLastCriterion ? (
+                      <Button
+                        size="sm"
+                        disabled={!allConfirmed}
+                        onClick={() => {
+                          if (!gradedSubmissions.includes(selectedSubmission)) {
+                            setGradedSubmissions(prev => [...new Set([...prev, selectedSubmission])])
+                          }
+                          const nextUngraded = submissions.find(s => !gradedSubmissions.includes(s.id) && s.id !== selectedSubmission)
+                          if (nextUngraded) {
+                            setSelectedSubmission(nextUngraded.id)
+                            setIsFixed(false)
+                            setCurrentPage(1)
+                          }
+                        }}
+                        className="h-9 flex-1 text-[10px] font-black uppercase tracking-widest bg-foreground text-background hover:bg-foreground/90 disabled:opacity-40 disabled:pointer-events-none"
+                      >
+                        {allConfirmed ? 'Submit Grade →' : `· ${rubricPoints.length - confirmedCount} remaining`}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={() => setActiveRubricCriterionIdx(i => i + 1)}
+                        className="h-9 flex-1 text-[10px] font-black uppercase tracking-widest bg-foreground text-background hover:bg-foreground/90"
+                      >
+                        Next criterion
+                      </Button>
+                    )}
                   </div>
                 </div>
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      const nextUngraded = submissions.find(s => !gradedSubmissions.includes(s.id) && s.id !== selectedSubmission)
-                      if (nextUngraded) {
-                        setSelectedSubmission(nextUngraded.id)
-                        setIsFixed(false)
-                        setCurrentPage(1)
-                      }
-                    }}
-                    className="flex-1 rounded-md h-12 border-border text-muted-foreground font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:bg-muted hover:text-foreground"
-                  >
-                    Review Later
-                  </Button>
-                  <Button 
-                    onClick={() => {
-                      if (!gradedSubmissions.includes(selectedSubmission)) {
-                        setGradedSubmissions(prev => [...new Set([...prev, selectedSubmission])])
-                      }
-                      const nextUngraded = submissions.find(s => !gradedSubmissions.includes(s.id) && s.id !== selectedSubmission)
-                      if (nextUngraded) {
-                        setSelectedSubmission(nextUngraded.id)
-                        setIsFixed(false)
-                        setCurrentPage(1)
-                      }
-                    }}
-                    className="flex-1 rounded-md h-12 bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:bg-primary/90"
-                  >
-                    {gradedSubmissions.includes(selectedSubmission) ? 'Already Completed ✓' : 'Submit Grade →'}
-                  </Button>
-                </div>
-            </div>
-          </div>
+              </div>
+            )
+          })()}
         </ResizablePanel>
       </ResizablePanelGroup>
       

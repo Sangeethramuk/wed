@@ -4,7 +4,6 @@ import Link from "next/link"
 import {
   Home,
   PlusCircle,
-  GraduationCap,
   ClipboardCheck,
   BarChart3,
 } from "lucide-react"
@@ -56,12 +55,11 @@ export function AppSidebar() {
               size="lg"
               render={<Link href="/dashboard" />}
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0">
-                <GraduationCap className="size-5" />
+              <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-red-100 text-red-800 shrink-0">
+                <span className="text-[10px] font-bold">IIMB</span>
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-semibold text-lg tracking-tight">EducAItors</span>
-                <span className="text-[10px] text-muted-foreground uppercase font-medium tracking-widest">Professor Edition</span>
+                <span className="font-semibold text-base tracking-tight">IIM Bangalore</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -72,7 +70,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-2">
               {mainNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
@@ -89,7 +87,24 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border" />
+      <SidebarFooter className="border-t border-sidebar-border p-4 group-data-[collapsible=icon]:p-2">
+        {/* Expanded View */}
+        <div className="flex w-full flex-col items-center justify-center gap-1 group-data-[collapsible=icon]:hidden">
+          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider text-center">
+            Powered by
+          </span>
+          <span className="font-semibold normal-case text-muted-foreground text-xs">
+            Educ<span className="text-blue-500">AI</span>tors
+          </span>
+        </div>
+
+        {/* Collapsed View */}
+        <div className="hidden w-full items-center justify-center group-data-[collapsible=icon]:flex">
+          <span className="font-bold text-muted-foreground">
+            E<span className="text-blue-500">AI</span>
+          </span>
+        </div>
+      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>

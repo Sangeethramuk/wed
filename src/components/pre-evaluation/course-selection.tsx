@@ -6,10 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Clock, ArrowRight, ChevronDown, Sparkles, Plus } from "lucide-react"
 import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from "@/components/ui/tooltip"
 
 const STEP_LABELS: Record<number, string> = {
@@ -19,7 +16,7 @@ const STEP_LABELS: Record<number, string> = {
   5: "Preview & publish",
 }
 
-const MOCK_COURSES = [
+export const MOCK_COURSES = [
   {
     id: "cs201",
     name: "Software Engineering",
@@ -71,28 +68,18 @@ export function CourseSelection() {
         <div className="space-y-6">
           <div className="flex items-center gap-2 flex-wrap">
             <button className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border/30 bg-card/20 hover:bg-card/50 transition-all text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 hover:text-foreground/80">
-              Emerald State University
-              <ChevronDown className="h-3 w-3 opacity-40 group-hover:opacity-80" />
-            </button>
-            <button className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border/30 bg-card/20 hover:bg-card/50 transition-all text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 hover:text-foreground/80">
               Computer Science
               <ChevronDown className="h-3 w-3 opacity-40 group-hover:opacity-80" />
             </button>
-            <Tooltip>
-              <TooltipTrigger className="inline-flex items-center">
-                <Badge variant="outline" className="text-[8px] font-black tracking-widest border-emerald-500/20 text-emerald-600/60 bg-emerald-500/[0.02] py-0 px-2 rounded-full cursor-help h-5">NAAC A++</Badge>
-              </TooltipTrigger>
-              <TooltipContent className="bg-slate-900 border-none rounded-lg p-2"><p className="text-[8px] font-bold text-white">Institutional Rating: 3.8/4.0</p></TooltipContent>
-            </Tooltip>
           </div>
 
           <div className="space-y-3">
             <h1 className="text-4xl font-black tracking-tighter secondary-text">Set up your assignment</h1>
-            <p className="text-base text-muted-foreground font-medium opacity-70">Select a course to begin setup</p>
+            <p className="text-base text-muted-foreground font-medium opacity-70">Select a course to begin</p>
             <div className="flex items-center gap-2 pt-1">
               <Sparkles className="h-3.5 w-3.5 text-primary opacity-50" />
               <p className="text-[11px] text-muted-foreground opacity-60 font-medium">
-                We&apos;ll guide you through setting up the assignment step by step.
+                We&apos;ll help you structure, evaluate, and validate your assignment as you go.
               </p>
             </div>
           </div>
@@ -176,7 +163,7 @@ export function CourseSelection() {
                   </div>
                   <CardTitle className="mt-6 text-xl font-black tracking-tight">{course.name}</CardTitle>
                   <CardDescription className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-widest opacity-80 mt-1">
-                    {course.dept} <span className="opacity-40">•</span> {course.semester}
+                    {course.semester}
                   </CardDescription>
                 </CardHeader>
 
