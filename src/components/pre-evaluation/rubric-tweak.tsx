@@ -203,7 +203,7 @@ export function RubricTweak() {
             className="h-14 px-12 text-lg font-black tracking-tight rounded-xl shadow-none active:scale-95 transition-all bg-primary hover:bg-primary/90"
             onClick={nextStep}
           >
-            See student view →
+            Calibration check →
           </Button>
         </div>
       </div>
