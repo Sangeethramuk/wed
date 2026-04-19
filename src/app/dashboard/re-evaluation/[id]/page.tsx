@@ -585,11 +585,13 @@ export default function ReEvalWorkspacePage() {
       </div>
 
       {/* Case Briefing Modal */}
-      <BriefingModal
-        studentId={studentId}
-        onClose={() => setBriefingOpen(false)}
-        onStart={null}
-      />
+      {briefingOpen && (
+        <BriefingModal
+          studentId={studentId}
+          onClose={() => setBriefingOpen(false)}
+          onStart={null}
+        />
+      )}
 
       <style jsx global>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

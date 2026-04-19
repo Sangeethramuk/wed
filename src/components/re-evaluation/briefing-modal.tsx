@@ -323,8 +323,8 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                 onClick={onClose}
                 className="group flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground border border-border/30 bg-card/50 hover:bg-card hover:border-border transition-all"
               >
-                <ChevronLeftIcon className="size-3 group-hover:-translate-x-0.5 transition-transform" />
-                Back to list
+                {onStart ? <ChevronLeftIcon className="size-3 group-hover:-translate-x-0.5 transition-transform" /> : <XIcon className="size-3 group-hover:scale-110 transition-transform" />}
+                {onStart ? 'Back to list' : 'Close Briefing'}
               </button>
               {!scrolled && onStart && (
                 <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground/30 animate-pulse">
