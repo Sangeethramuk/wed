@@ -370,7 +370,6 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     setTimeout(() => {
       const fb = generateCriterionFeedback(pointLabel, Math.round(score / 2), [], '')
       confirmFeedback(criterionKey, {
-        criterionId: criterionKey,
         tier: fb.tier,
         tierLabel: fb.tierLabel,
         feedbackText: fb.feedbackText,
