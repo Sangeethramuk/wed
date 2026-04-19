@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { STUDENTS, AI_REVALS } from '@/lib/data/re-evaluation-data'
 import { useReEvalStore } from '@/lib/store/re-evaluation-store'
@@ -47,7 +47,6 @@ export default function ReEvalWorkspacePage() {
 
   const rpScrollRef = useRef<HTMLDivElement>(null)
 
-  // Reset when student changes
   useEffect(() => {
     setWsState('active')
     setSubmittedVariant(null)
@@ -62,7 +61,7 @@ export default function ReEvalWorkspacePage() {
 
   if (!st || !aiReval) {
     return (
-      <div className="-m-4 flex items-center justify-center" style={{ height: 'calc(100vh - 3.5rem)' }}>
+      <div className="flex items-center justify-center min-h-[400px]">
         <p className="text-muted-foreground">Student not found.</p>
       </div>
     )
@@ -82,10 +81,7 @@ export default function ReEvalWorkspacePage() {
     if (d === 'uphold') { setPickedScore(null); setAcctReason(null) }
   }
 
-  const handlePickScore = (s: number) => {
-    setPickedScore(s)
-  }
-
+  const handlePickScore = (s: number) => setPickedScore(s)
   const handlePickAcct = (key: string) => setAcctReason(key)
 
   const handleSubmit = () => {
@@ -93,11 +89,9 @@ export default function ReEvalWorkspacePage() {
     if (rpScrollRef.current) rpScrollRef.current.scrollTop = 0
 
     if (decision === 'uphold') {
-      // Uphold: show lightweight confirm state
       setWsState('compare')
       setComparing(false)
     } else {
-      // Adjust: run AI re-eval
       setWsState('compare')
       setComparing(true)
       setTimeout(() => setComparing(false), 2200)
@@ -118,703 +112,612 @@ export default function ReEvalWorkspacePage() {
     }
   }
 
-  const handleBack = () => router.push('/dashboard/re-evaluation')
+  const handleBack = () => router.push('/dashboard/re-evaluation/triage')
 
   const instScore = pickedScore ?? st.origScore
   const aiScore = aiReval.score
   const agree = Math.abs(instScore - aiScore) <= 1
 
   return (
-    <div
-      className="-m-4 flex flex-col bg-background"
-      style={{ height: 'calc(100vh - 3.5rem)' }}
-    >
-      {/* Topbar */}
-      <div
-        className="flex items-center px-5 gap-0 flex-shrink-0"
-        style={{ background: '#fff', borderBottom: '1px solid #E2E8F0', height: 52, boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}
-      >
+    <div className="flex flex-col h-screen -m-6 bg-slate-50/50">
+      {/* Institutional Topbar */}
+      <div className="h-16 px-6 flex items-center bg-white/80 backdrop-blur-md border-b border-border/10 sticky top-0 z-50">
         <button
           onClick={handleBack}
-          className="flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-lg transition-colors hover:bg-slate-50 flex-shrink-0"
-          style={{ border: '1.5px solid #CBD5E1', background: '#fff', color: '#475569', cursor: 'pointer', fontFamily: 'inherit' }}
+          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors group"
         >
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <ChevronLeftIcon className="size-3.5 group-hover:-translate-x-0.5 transition-transform" />
           Re-evaluation Requests
         </button>
-        <span className="mx-2 text-[#CBD5E1]">·</span>
-        <span className="text-[14px] font-bold whitespace-nowrap" style={{ color: '#1E293B' }}>{st.name}</span>
-        <span className="mx-2 text-[#CBD5E1]">·</span>
-        <span className="text-[12px] whitespace-nowrap" style={{ color: '#94A3B8' }}>{st.rollId} · {st.assign}</span>
-        <span
-          className="ml-2 text-[11px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0"
-          style={{ background: '#EDE9FB', color: '#6B5FC4', border: '1px solid #C4BDF0' }}
-        >
-          {st.crit}
-        </span>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="mx-6 w-px h-6 bg-border/10" />
+        <div className="flex flex-col">
+          <h1 className="text-xl font-black tracking-tighter secondary-text flex items-center gap-3">
+            {st.name}
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 px-2 py-0.5 bg-muted/30 rounded-md">
+              {st.rollId}
+            </span>
+          </h1>
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/40 mt-0.5">
+            <span>{st.assign}</span>
+            <span className="text-muted-foreground/20">·</span>
+            <span className="text-primary/60">{st.crit}</span>
+          </div>
+        </div>
+        <div className="ml-auto flex items-center gap-3">
           <button
             onClick={() => setBriefingOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all hover:border-purple-400 hover:text-purple-600"
-            style={{ border: '1.5px solid #CBD5E1', background: '#fff', color: '#475569', cursor: 'pointer', fontFamily: 'inherit' }}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/[0.03] border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/[0.08] transition-all"
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            Case Briefing
+            <BriefcaseIcon className="size-3.5" />
+            AI Case Briefing
           </button>
         </div>
       </div>
 
-      {/* Content area */}
+      {/* Workspace Area */}
       <div className="flex flex-1 overflow-hidden">
-
-        {/* Left panel: submission viewer */}
-        <div className="flex flex-col overflow-hidden" style={{ width: '58%', borderRight: '1px solid #E2E8F0' }}>
-          {/* Left header */}
-          <div
-            className="flex items-center gap-2.5 px-4 py-2.5 flex-shrink-0"
-            style={{ background: '#fff', borderBottom: '1px solid #E2E8F0' }}
-          >
-            <span className="text-[11px] font-bold uppercase tracking-[0.07em]" style={{ color: '#94A3B8' }}>Original Submission</span>
-            <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid #CBD5E1', background: '#F1F5F9' }}>
-              {(['scan', 'ocr'] as const).map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setView(v)}
-                  className="px-3 py-1.5 text-[11px] font-medium transition-all"
-                  style={{
-                    background: view === v ? '#fff' : 'transparent',
-                    color: view === v ? '#6B5FC4' : '#94A3B8',
-                    fontWeight: view === v ? 600 : 400,
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                    boxShadow: view === v ? '0 1px 3px rgba(0,0,0,.07)' : 'none',
-                  }}
-                >
-                  {v === 'scan' ? 'Original scan' : 'Extracted text'}
-                </button>
-              ))}
+        {/* Left Panel: Submission Viewer */}
+        <div className="w-[58%] flex flex-col border-r border-border/5 bg-white overflow-hidden">
+          <div className="h-14 px-6 flex items-center justify-between border-b border-border/5 bg-slate-50/30 flex-shrink-0">
+            <div className="flex items-center gap-4">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Submission Viewer</span>
+              <div className="flex bg-muted/40 p-1 rounded-xl border border-border/5">
+                {(['scan', 'ocr'] as const).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setView(v)}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                      view === v ? 'bg-white text-primary shadow-sm' : 'text-muted-foreground/60 hover:text-muted-foreground'
+                    }`}
+                  >
+                    {v === 'scan' ? 'Original Scan' : 'Extracted Text'}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 ml-auto">
-              {['‹', '›'].map((ch, i) => (
-                <div key={i} className="w-6 h-6 rounded flex items-center justify-center cursor-pointer hover:bg-slate-100 text-[13px]" style={{ border: '1px solid #E2E8F0', background: '#fff', color: '#475569' }}>{ch}</div>
-              ))}
-              <span className="text-[12px]" style={{ color: '#94A3B8' }}>Page 2 of 3</span>
+            <div className="flex items-center gap-3">
+               <div className="flex items-center gap-1">
+                 <button className="size-7 flex items-center justify-center rounded-lg border border-border/10 hover:bg-white transition-colors text-muted-foreground">
+                   <ChevronLeftIcon className="size-3.5" />
+                 </button>
+                 <button className="size-7 flex items-center justify-center rounded-lg border border-border/10 hover:bg-white transition-colors text-muted-foreground">
+                   <ChevronLeftIcon className="size-3.5 rotate-180" />
+                 </button>
+               </div>
+               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Page 2 of 3</span>
             </div>
           </div>
 
-          {/* Paper content */}
-          <div className="flex-1 overflow-y-auto p-5" style={{ background: '#F1F5F9' }}>
+          <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50" style={{ scrollbarWidth: 'thin' }}>
             {view === 'scan' ? (
-              <div className="rounded-lg p-7" style={{ background: '#fff', border: '1px solid #E2E8F0', fontFamily: 'Georgia, serif', fontSize: 13, lineHeight: 1.9, color: '#2C2C2C', boxShadow: '0 4px 16px rgba(0,0,0,.09)' }}>
-                <div className="font-bold mb-1" style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#1E293B' }}>{st.rollId} · {st.name} · {st.assign}</div>
-                <div className="mb-3.5 pb-2.5 text-[11px]" style={{ fontFamily: 'Inter, sans-serif', color: '#94A3B8', borderBottom: '1px solid #E2E8F0' }}>Submitted 1 April 2026 · Page 2 of 3 · Graded 3 April 2026</div>
-                <div className="text-[10px] font-bold uppercase tracking-[0.08em] mb-2" style={{ fontFamily: 'Inter, sans-serif', color: '#94A3B8' }}>Algorithm Design — continued from page 1</div>
-                {[
-                  [10, 'The primary sort uses merge sort with O(n log n) complexity.'],
-                  [11, 'Before entering the main sort routine, the input array is'],
-                  [12, 'validated. This covers three separate conditions that'],
-                  [13, 'represent common real-world failure modes in production'],
-                  [14, 'systems handling unsorted data streams.'],
-                ].map(([n, t]) => (
-                  <div key={n} className="relative pl-7 mb-0.5">
-                    <span className="absolute left-0 top-0.5 text-[10px] w-5 text-right" style={{ color: '#CBD5E1', fontFamily: 'monospace' }}>{n}</span>
-                    {t}
+              <div className="max-w-2xl mx-auto rounded-2xl bg-white border border-border/10 shadow-2xl shadow-slate-200/50 p-10 font-serif text-[14px] leading-[1.8] text-slate-800 relative">
+                <div className="flex items-center justify-between mb-8 pb-4 border-b border-border/5">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 font-sans">
+                    {st.rollId} · {st.name} · {st.assign}
                   </div>
-                ))}
-                {/* Highlighted section */}
-                <div className="my-2 -mx-7 px-7 py-2 relative" style={{ background: '#FEF3C7', borderLeft: '3px solid #F59E0B' }}>
-                  <div className="absolute -top-2 left-7 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.05em]" style={{ background: '#F59E0B', fontFamily: 'Inter, sans-serif' }}>
-                    Student cited · {st.evidence}
+                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/20 font-sans">
+                    Submitted 1 April 2026
                   </div>
+                </div>
+                
+                <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/30 mb-6 font-sans">
+                  Algorithm Design — Continued from page 1
+                </div>
+
+                <div className="space-y-1">
                   {[
-                    [15, <><strong>Case 1 — Empty array:</strong> If input length is zero,</>],
-                    [16, 'the function returns −1 immediately before any sort.'],
-                    [17, <><strong>Case 2 — Single element:</strong> Array of length 1</>],
-                    [18, 'is already sorted; returned as-is.'],
-                    [19, <><strong>Case 3 — Negative values:</strong> Absolute value</>],
-                    [20, 'comparison used before sort to maintain ordering.'],
+                    [10, 'The primary sort uses merge sort with O(n log n) complexity.'],
+                    [11, 'Before entering the main sort routine, the input array is'],
+                    [12, 'validated. This covers three separate conditions that'],
+                    [13, 'represent common real-world failure modes in production'],
+                    [14, 'systems handling unsorted data streams.'],
                   ].map(([n, t]) => (
-                    <div key={n as number} className="relative pl-7 mb-0.5">
-                      <span className="absolute left-0 top-0.5 text-[10px] w-5 text-right" style={{ color: '#CBD5E1', fontFamily: 'monospace' }}>{n}</span>
-                      {t}
+                    <div key={n as number} className="flex gap-6 group">
+                      <span className="w-6 text-right text-[10px] font-mono text-muted-foreground/20 group-hover:text-muted-foreground/40 transition-colors pt-1">{n}</span>
+                      <p className="flex-1">{t}</p>
+                    </div>
+                  ))}
+
+                  {/* Highlighted Student Evidence */}
+                  <div className="relative my-4 -mx-10 px-10 py-6 bg-amber-500/[0.04] border-l-4 border-amber-500">
+                    <div className="absolute -top-3 left-10 px-3 py-1 rounded-full bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest font-sans shadow-lg shadow-amber-500/20">
+                      Student Cited · {st.evidence}
+                    </div>
+                    <div className="space-y-1">
+                      {[
+                        [15, <><strong>Case 1 — Empty array:</strong> If input length is zero,</>],
+                        [16, 'the function returns −1 immediately before any sort.'],
+                        [17, <><strong>Case 2 — Single element:</strong> Array of length 1</>],
+                        [18, 'is already sorted; returned as-is.'],
+                        [19, <><strong>Case 3 — Negative values:</strong> Absolute value</>],
+                        [20, 'comparison used before sort to maintain ordering.'],
+                      ].map(([n, t]) => (
+                        <div key={n as number} className="flex gap-6">
+                          <span className="w-6 text-right text-[10px] font-mono text-amber-500/30 pt-1">{n}</span>
+                          <p className="flex-1">{t}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {[
+                    [21, 'All three guards execute in O(1) before the sort begins.'],
+                    [22, 'This ensures no unnecessary computation on trivially'],
+                    [23, 'solvable inputs. Follows defensive programming principles'],
+                    [24, 'from Week 4 lecture notes.'],
+                    [25, 'Full implementation is in the code block on page 3.'],
+                  ].map(([n, t]) => (
+                    <div key={n as number} className="flex gap-6 group">
+                      <span className="w-6 text-right text-[10px] font-mono text-muted-foreground/20 group-hover:text-muted-foreground/40 transition-colors pt-1">{n}</span>
+                      <p className="flex-1">{t}</p>
                     </div>
                   ))}
                 </div>
-                {[
-                  [21, 'All three guards execute in O(1) before the sort begins.'],
-                  [22, 'This ensures no unnecessary computation on trivially'],
-                  [23, 'solvable inputs. Follows defensive programming principles'],
-                  [24, 'from Week 4 lecture notes.'],
-                  [25, 'Full implementation is in the code block on page 3.'],
-                ].map(([n, t]) => (
-                  <div key={n} className="relative pl-7 mb-0.5">
-                    <span className="absolute left-0 top-0.5 text-[10px] w-5 text-right" style={{ color: '#CBD5E1', fontFamily: 'monospace' }}>{n}</span>
-                    {t}
-                  </div>
-                ))}
               </div>
             ) : (
-              <div className="rounded-lg p-5" style={{ background: '#fff', border: '1px solid #E2E8F0', fontFamily: 'JetBrains Mono, monospace', fontSize: 12, lineHeight: 1.9, color: '#475569' }}>
-                <div className="rounded-lg px-3 py-2 mb-3.5 text-[11px]" style={{ background: '#FFF7ED', border: '1px solid #FED7AA', color: '#92400E', fontFamily: 'Inter, sans-serif' }}>
-                  ⚠ This is what the system read. Red sections were misread.
+              <div className="max-w-2xl mx-auto rounded-2xl bg-slate-900 border border-slate-800 p-8 font-mono text-[13px] leading-relaxed text-slate-400">
+                <div className="flex items-center gap-3 mb-6 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 font-sans">
+                  <InfoIcon className="size-4" />
+                  <span className="text-[11px] font-bold">This is the extracted machine text. Red sections indicate lower confidence.</span>
                 </div>
-                <div>15 &nbsp;<strong style={{ color: '#1E293B' }}>Case 1 — Empty array: returns −1 before sort.</strong></div>
-                <div>17 &nbsp;<strong style={{ color: '#1E293B' }}>Case 2 — Single element: returned as-is.</strong></div>
-                <div>19 &nbsp;All <span style={{ background: '#FEF2F2', color: '#EF4444', padding: '0 3px', textDecoration: 'line-through' }}>three guards</span><span style={{ color: '#EF4444' }}> [thr33 gu?rds]</span> in O(1).</div>
+                <div className="space-y-1">
+                  <div>15 &nbsp;<strong className="text-white">Case 1 — Empty array: returns −1 before sort.</strong></div>
+                  <div>17 &nbsp;<strong className="text-white">Case 2 — Single element: returned as-is.</strong></div>
+                  <div className="flex items-center gap-2">
+                    <span>19 &nbsp;All</span>
+                    <span className="bg-red-500/20 text-red-400 px-1 rounded line-through decoration-red-400/50">three guards</span>
+                    <span className="text-red-400 opacity-80">[thr33 gu?rds]</span>
+                    <span>in O(1).</span>
+                  </div>
+                </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Right panel: decision area */}
-        <div className="flex flex-col overflow-hidden" style={{ width: '42%', background: '#F8FAFC' }}>
-          {/* Context strip */}
-          <div
-            className="flex items-stretch flex-shrink-0"
-            style={{ background: '#fff', borderBottom: '1.5px solid #CBD5E1', padding: '11px 16px', boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}
-          >
-            <ContextBlock label="Original score">
-              <div className="text-[18px] font-extrabold tracking-tight" style={{ color: '#6B5FC4' }}>{st.origScore} / {st.maxScore}</div>
-              <div className="text-[10px] mt-0.5" style={{ color: '#94A3B8' }}>{st.crit}</div>
-            </ContextBlock>
-            <ContextBlock label="Evidence used at grading">
-              <div className="text-[11px] leading-snug font-medium" style={{ color: '#1E293B' }}>{st.gradingEvidence}</div>
-            </ContextBlock>
-            <ContextBlock label="Confidence · Prior action" noBorder>
-              <div className="flex items-center gap-1 text-[12px] font-semibold" style={{ color: '#1E293B' }}>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: st.confColor }} />
-                {st.confLabel} · {st.confScore}
+        {/* Right Panel: Decision Area */}
+        <div className="w-[42%] flex flex-col bg-slate-50/30 overflow-hidden">
+          {/* Intelligence Header: KPI Strip */}
+          <div className="grid grid-cols-3 gap-px bg-border/5 border-b border-border/10 bg-white shadow-sm flex-shrink-0">
+            <KPIBlock label="Original Score" color={st.accentColor}>
+              <div className="text-xl font-black tracking-tighter" style={{ color: st.accentColor }}>{st.origScore}<span className="text-muted-foreground/30 font-bold ml-1">/ {st.maxScore}</span></div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mt-0.5">{st.critShort} · {st.crit.split(' · ')[1]}</div>
+            </KPIBlock>
+            <KPIBlock label="Evidence Used" className="col-span-1">
+              <div className="text-[11px] font-bold text-slate-600 leading-tight">"{st.gradingEvidence.slice(0, 60)}..."</div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1">At Grading</div>
+            </KPIBlock>
+            <KPIBlock label="Confidence" noBorder>
+              <div className="flex items-center gap-1.5">
+                <div className="size-2 rounded-full" style={{ background: st.confColor }} />
+                <span className="text-[13px] font-black tracking-tighter text-slate-800">{st.confScore}</span>
               </div>
-              <div className="text-[10px] mt-0.5 leading-snug" style={{ color: '#94A3B8' }}>
-                {st.hasOverride ? 'You overrode the original evaluation on this submission' : 'No prior override on this submission'}
-              </div>
-            </ContextBlock>
+              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1">{st.hasOverride ? 'Prior Override' : 'System Default'}</div>
+            </KPIBlock>
           </div>
 
-          {/* Scrollable right content */}
-          <div ref={rpScrollRef} className="flex-1 overflow-y-auto px-3.5 pb-4" style={{ scrollbarWidth: 'thin' }}>
-
-            {/* STATE: active */}
+          <div ref={rpScrollRef} className="flex-1 overflow-y-auto px-6 py-6 space-y-6" style={{ scrollbarWidth: 'thin' }}>
             {wsState === 'active' && (
-              <div>
-                {/* Student request zone */}
-                <Zone label="What the student is asking" className="mt-3.5">
-                  <div className="grid grid-cols-2 rounded-lg overflow-hidden mb-2.5" style={{ border: '1px solid #E2E8F0', background: '#fff' }}>
-                    <DataCell label="Criterion">
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#EDE9FB', color: '#6B5FC4', border: '1px solid #C4BDF0' }}>
-                        {st.critShort} · {st.origScore} / {st.maxScore}
-                      </span>
-                    </DataCell>
-                    <DataCell label="Evidence location" noBorder>
-                      <span className="text-[11px] font-medium px-1.5 py-0.5 rounded" style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', fontFamily: 'monospace' }}>
-                        📄 {st.evidence}
-                      </span>
-                    </DataCell>
-                  </div>
-                  <div className="relative rounded-lg p-3 mb-2.5 text-[12px] leading-relaxed" style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#475569' }}>
-                    <span className="absolute -top-2 left-3 text-[9px] font-bold uppercase tracking-[0.06em] text-white px-1.5 py-0.5 rounded-full" style={{ background: '#3B82F6' }}>Student says</span>
-                    {st.sv}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-full w-fit" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#475569' }}>
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: st.vcolor }} />
-                    {st.verdict}
-                  </div>
-                </Zone>
-
-                {/* Decision zone */}
-                <div className="rounded-xl mb-2.5 overflow-hidden" style={{ background: '#fff', border: '1.5px solid #CBD5E1', boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}>
-                  <div className="px-3.5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid #E2E8F0' }}>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-0.5 h-3 rounded" style={{ background: '#6B5FC4' }} />
-                      <span className="text-[11px] font-bold uppercase tracking-[0.08em]" style={{ color: '#94A3B8' }}>Your decision</span>
+              <>
+                {/* Section: Student Dispute */}
+                <section className="space-y-3">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">Intelligence Layer</div>
+                  <div className="rounded-2xl bg-white border border-border/10 shadow-sm overflow-hidden">
+                    <div className="px-5 py-4 border-b border-border/5 bg-slate-50/30">
+                      <div className="flex items-center justify-between">
+                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Disputed Reasoning</span>
+                         <span className="px-2 py-0.5 rounded bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest">
+                           {st.evidence}
+                         </span>
+                      </div>
                     </div>
-                    <span className="text-[11px]" style={{ color: '#94A3B8' }}>
-                      {decision === 'uphold' ? `Your written reason explains the grade to ${st.first} directly` : decision === 'adjust' ? 'Select a score and confirm why it is changing' : 'Choose one option below'}
-                    </span>
+                    <div className="p-5 space-y-4">
+                      <div className="relative rounded-xl p-4 bg-primary/[0.03] border border-primary/10">
+                        <div className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-primary text-white text-[8px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">
+                          Student Perspective
+                        </div>
+                        <p className="text-[13px] font-medium leading-relaxed italic text-slate-700">
+                          "{st.sv}"
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px] font-bold text-emerald-600 px-3 py-2 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+                        <div className="size-1.5 rounded-full bg-emerald-500" />
+                        {st.verdict}
+                      </div>
+                    </div>
                   </div>
-                  <div className="p-2 space-y-1.5">
-                    {/* Option A: Uphold */}
+                </section>
+
+                {/* Section: Your Decision */}
+                <section className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">Action Hub</div>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/20">Decision Workspace</span>
+                  </div>
+
+                  <div className="rounded-2xl bg-white border border-border/10 shadow-sm p-2 space-y-2">
                     <DecisionOption
                       active={decision === 'uphold'}
                       variant="uphold"
                       label="Grade upheld after review"
-                      desc="Original score stands"
+                      desc="Original score correctly reflects work"
                       onClick={() => handlePickDecision('uphold')}
                     >
-                      <p className="text-[12px] leading-relaxed" style={{ color: '#065F46' }}>
+                      <p className="text-[12px] leading-relaxed text-slate-600">
                         The original grade correctly reflects the work. Your written reason below will be sent to the student explaining why the grade stands.
                       </p>
                     </DecisionOption>
 
-                    {/* Option B: Adjust */}
                     <DecisionOption
                       active={decision === 'adjust'}
                       variant="adjust"
                       label="Score adjusted"
-                      desc="Requires HOD approval"
+                      desc="Requires HOD review & approval"
                       onClick={() => handlePickDecision('adjust')}
                     >
-                      {/* Score change row */}
-                      <div className="flex items-center gap-2.5 mb-3 p-2.5 rounded-lg" style={{ background: 'rgba(107,95,196,.08)' }}>
-                        <div className="flex flex-col items-center">
-                          <div className="text-[9px] font-semibold uppercase tracking-[0.06em] mb-0.5" style={{ color: '#94A3B8' }}>Current score</div>
-                          <div className="text-[26px] font-extrabold leading-tight" style={{ color: '#475569' }}>{st.origScore}</div>
-                          <div className="text-[11px]" style={{ color: '#94A3B8' }}>/ {st.maxScore}</div>
+                      <div className="space-y-5 py-2">
+                        {/* Score Picker UI */}
+                        <div className="flex items-center gap-6 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                           <div className="flex flex-col items-center">
+                              <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mb-1">Current</span>
+                              <div className="text-3xl font-black tracking-tighter text-slate-400">{st.origScore}</div>
+                           </div>
+                           <ArrowRightIcon className="size-4 text-muted-foreground/20" />
+                           <div className="flex flex-col items-center flex-1">
+                              <span className="text-[8px] font-black uppercase tracking-widest text-primary/60 mb-1">Proposed New Score</span>
+                              <div className="flex gap-1 flex-wrap justify-center mt-2">
+                                {Array.from({ length: st.maxScore + 1 }, (_, i) => i).map((s) => {
+                                  const isOrig = s === st.origScore
+                                  const isPicked = s === pickedScore
+                                  return (
+                                    <button
+                                      key={s}
+                                      onClick={isOrig ? undefined : () => handlePickScore(s)}
+                                      disabled={isOrig}
+                                      className={`size-8 rounded-lg text-[11px] font-black transition-all ${
+                                        isPicked 
+                                          ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                                          : isOrig 
+                                            ? 'bg-muted/30 text-muted-foreground/30 cursor-not-allowed border border-dashed border-border/10' 
+                                            : 'bg-white border border-border/10 text-slate-600 hover:border-primary/40 hover:text-primary'
+                                      }`}
+                                    >
+                                      {s}
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                           </div>
                         </div>
-                        <div className="text-[18px]" style={{ color: '#CBD5E1' }}>→</div>
-                        <div className="flex flex-col items-center">
-                          <div className="text-[9px] font-semibold uppercase tracking-[0.06em] mb-0.5" style={{ color: '#6B5FC4' }}>Proposed score</div>
-                          {pickedScore ? (
-                            <>
-                              <div className="text-[26px] font-extrabold leading-tight" style={{ color: '#6B5FC4' }}>{pickedScore}</div>
-                              <div className="text-[11px]" style={{ color: '#C4BDF0' }}>/ {st.maxScore}</div>
-                            </>
-                          ) : (
-                            <div className="text-[13px] italic" style={{ color: '#CBD5E1' }}>Select below</div>
-                          )}
-                        </div>
-                      </div>
 
-                      {/* Score buttons */}
-                      <div className="mb-3">
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1.5" style={{ color: '#94A3B8' }}>Select a new score</div>
-                        <div className="flex gap-1.5 flex-wrap">
-                          {Array.from({ length: st.maxScore }, (_, i) => i + 1).map((s) => {
-                            const isOrig = s === st.origScore
-                            const isPicked = s === pickedScore
-                            return (
-                              <button
-                                key={s}
-                                onClick={isOrig ? undefined : () => handlePickScore(s)}
-                                disabled={isOrig}
-                                className="w-8 h-8 rounded-lg text-[13px] font-semibold flex items-center justify-center transition-all"
-                                style={{
-                                  border: isPicked ? 'none' : isOrig ? '1.5px dashed #CBD5E1' : '1.5px solid #CBD5E1',
-                                  background: isPicked ? '#6B5FC4' : isOrig ? '#F1F5F9' : '#fff',
-                                  color: isPicked ? '#fff' : isOrig ? '#94A3B8' : '#475569',
-                                  cursor: isOrig ? 'not-allowed' : 'pointer',
-                                  boxShadow: isPicked ? '0 2px 8px rgba(107,95,196,.4)' : 'none',
-                                  fontFamily: 'inherit',
-                                }}
-                              >
-                                {s}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Accountability reasons */}
-                      {pickedScore !== null && (
-                        <div style={{ borderTop: '1px solid #C4BDF0', paddingTop: 12 }}>
-                          <div className="text-[11px] font-bold mb-2" style={{ color: '#6B5FC4' }}>
-                            ✦ Why is this score changing? <span className="font-normal opacity-80 text-[10px]">(required)</span>
-                          </div>
-                          <div className="space-y-1.5">
-                            {ACCT_REASONS.map((r) => {
-                              const picked = acctReason === r.key
-                              return (
-                                <div
-                                  key={r.key}
-                                  onClick={() => handlePickAcct(r.key)}
-                                  className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all text-[12px]"
-                                  style={{
-                                    border: picked ? '1.5px solid #6B5FC4' : '1.5px solid #E2E8F0',
-                                    background: picked ? '#6B5FC4' : '#fff',
-                                    color: picked ? '#fff' : '#475569',
-                                  }}
-                                >
-                                  <div
-                                    className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0"
-                                    style={{ border: `2px solid ${picked ? 'rgba(255,255,255,.7)' : '#CBD5E1'}`, background: picked ? 'rgba(255,255,255,.3)' : '#fff' }}
+                        {/* Rationale Logic */}
+                        {pickedScore !== null && (
+                          <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="text-[10px] font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
+                              <ZapIcon className="size-3" />
+                              Why is this score changing?
+                            </div>
+                            <div className="grid grid-cols-1 gap-2">
+                              {ACCT_REASONS.map((r) => {
+                                const selected = acctReason === r.key
+                                return (
+                                  <button
+                                    key={r.key}
+                                    onClick={() => handlePickAcct(r.key)}
+                                    className={`flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all ${
+                                      selected 
+                                        ? 'bg-primary/5 border-primary/40 text-primary' 
+                                        : 'bg-white border-border/10 text-slate-600 hover:border-border/30'
+                                    }`}
                                   >
-                                    {picked && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                                  </div>
-                                  {r.label}
-                                </div>
-                              )
-                            })}
+                                    <span className="text-[11px] font-bold">{r.label}</span>
+                                    <div className={`size-3.5 rounded-full border-2 flex items-center justify-center ${selected ? 'border-primary' : 'border-border/10'}`}>
+                                      {selected && <div className="size-1.5 rounded-full bg-primary" />}
+                                    </div>
+                                  </button>
+                                )
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </DecisionOption>
                   </div>
-                </div>
+                </section>
 
-                {/* Reason zone */}
-                <div className="rounded-xl p-3.5 mb-2.5" style={{ background: '#fff', border: '2px solid #C4BDF0', boxShadow: '0 0 0 4px #EDE9FB' }}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-1.5 text-[12px] font-bold" style={{ color: '#1E293B' }}>
-                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 12.5V14h1.5l8.87-8.87-1.5-1.5L2 12.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /><path d="M12.87 2.13a1 1 0 010 1.41l-1 1-1.41-1.41 1-1a1 1 0 011.41 0z" stroke="currentColor" strokeWidth="1.4" /></svg>
-                      Your written reason
-                      <span className="text-white text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: '#EF4444', letterSpacing: '.05em' }}>REQUIRED</span>
+                {/* Section: Rationale */}
+                <section className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">Official Record</div>
+                  </div>
+                  <div className="rounded-2xl bg-white border-2 border-primary/20 shadow-sm p-5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-slate-800">
+                        <EditIcon className="size-3.5" />
+                        Decision Rationale
+                        <span className="px-1.5 py-0.5 rounded bg-red-500 text-white text-[8px] font-black tracking-[0.1em]">REQUIRED</span>
+                      </div>
+                      <span className="text-[10px] font-black tracking-widest text-muted-foreground/30">{reasonLen} / 500</span>
                     </div>
-                    <span className="text-[11px]" style={{ color: '#94A3B8' }}>{reasonText.length} / 500</span>
-                  </div>
-                  <div className="text-[11px] mb-2 leading-snug" style={{ color: '#94A3B8' }}>
-                    {decision === 'adjust'
-                      ? 'This reason will be reviewed by HOD before the student is notified. Write it as a formal explanation.'
-                      : `This will be shared with ${st.first} and kept on record.`}
-                  </div>
-                  <textarea
-                    value={reasonText}
-                    onChange={(e) => setReasonText(e.target.value)}
-                    maxLength={500}
-                    rows={4}
-                    placeholder={`e.g. I reviewed ${st.evidence}. Your edge case analysis is clearly demonstrated…`}
-                    className="w-full rounded-lg px-3 py-2.5 text-[12px] leading-relaxed resize-y outline-none transition-all"
-                    style={{
-                      border: '1.5px solid #CBD5E1',
-                      fontFamily: 'Inter, sans-serif',
-                      color: '#1E293B',
-                      background: '#fff',
-                    }}
-                    onFocus={(e) => { e.target.style.borderColor = '#6B5FC4'; e.target.style.boxShadow = '0 0 0 3px rgba(107,95,196,.12)' }}
-                    onBlur={(e) => { e.target.style.borderColor = '#CBD5E1'; e.target.style.boxShadow = 'none' }}
-                  />
-                  <div className="h-1 rounded-full my-2 overflow-hidden" style={{ background: '#E2E8F0' }}>
-                    <div
-                      className="h-full rounded-full transition-all duration-300"
-                      style={{
-                        width: `${reasonPct}%`,
-                        background: reasonLen === 0 ? '#CBD5E1' : reasonLen < REASON_MIN ? '#F59E0B' : '#10B981',
-                      }}
+                    <textarea
+                      value={reasonText}
+                      onChange={(e) => setReasonText(e.target.value)}
+                      placeholder={`e.g. I reviewed Page 2 - Lines 15-20. Your edge case analysis is clearly demonstrated…`}
+                      className="w-full h-32 bg-slate-50/50 border border-border/10 rounded-xl p-4 text-[13px] font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all resize-none"
                     />
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full transition-all duration-500 ${reasonLen >= REASON_MIN ? 'bg-emerald-500' : 'bg-primary'}`}
+                          style={{ width: `${reasonPct}%` }}
+                        />
+                      </div>
+                      <span className={`text-[9px] font-black uppercase tracking-widest whitespace-nowrap ${reasonLen >= REASON_MIN ? 'text-emerald-600' : 'text-muted-foreground/40'}`}>
+                        {reasonLen < REASON_MIN ? `${REASON_MIN - reasonLen} more needed` : 'Ready to submit'}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-[11px]" style={{ color: reasonLen < REASON_MIN ? '#94A3B8' : '#065F46' }}>
-                    {reasonLen === 0
-                      ? 'Select a decision above to begin.'
-                      : reasonLen < REASON_MIN
-                      ? `${REASON_MIN - reasonLen} more character${REASON_MIN - reasonLen === 1 ? '' : 's'} needed.`
-                      : 'Reason complete — ready to submit.'}
-                  </div>
-                </div>
-
-                <div style={{ height: 80 }} />
-              </div>
+                </section>
+                <div className="h-20" />
+              </>
             )}
 
-            {/* STATE: compare */}
             {wsState === 'compare' && (
-              <div className="mt-3.5">
-                <div className="rounded-xl p-3.5 mb-2.5" style={{ background: '#fff', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    {comparing && (
-                      <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ border: '2px solid #E2E8F0', borderTopColor: '#6B5FC4', animation: 'spin .7s linear infinite' }} />
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="rounded-2xl p-6 bg-white border border-border/10 shadow-sm space-y-4">
+                  <div className="flex items-center gap-3">
+                    {comparing ? (
+                      <div className="size-5 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                    ) : (
+                      <div className="size-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                        <CheckIcon className="size-3 text-white" />
+                      </div>
                     )}
-                    <div className="text-[14px] font-bold" style={{ color: '#1E293B' }}>
-                      {decision === 'uphold'
-                        ? 'Grade upheld — confirming routing'
-                        : comparing
-                        ? 'Running independent AI re-evaluation…'
-                        : agree ? 'Assessment complete — both agree' : 'Assessment complete — assessments diverge'}
-                    </div>
+                    <h3 className="text-lg font-black tracking-tighter">
+                      {comparing ? 'Synthesizing Parallel Review...' : 'AI Re-evaluation Completed'}
+                    </h3>
                   </div>
-                  <div className="text-[12px]" style={{ color: '#94A3B8' }}>
-                    {decision === 'uphold'
-                      ? `No score change. Your written reason will be sent to ${st.first} directly. HOD will receive a copy for records.`
-                      : comparing
-                      ? 'Reviewing the cited evidence independently before routing to HOD.'
-                      : agree
-                      ? 'Both reach the same conclusion. HOD will receive this for acknowledgement.'
-                      : `The two assessments differ by ${Math.abs(instScore - aiScore)} point${Math.abs(instScore - aiScore) === 1 ? '' : 's'}. HOD will review both.`}
-                  </div>
+                  <p className="text-[13px] text-slate-500 leading-relaxed">
+                    {comparing 
+                      ? "System is independently assessing the cited evidence based on updated rubric context to provide a neutral comparison point for the HOD."
+                      : agree 
+                        ? "Both assessments are aligned. Your decision is backed by the system's re-evaluation logic."
+                        : "The two assessments show a divergence. This case will be flagged for active HOD arbitration."}
+                  </p>
                 </div>
 
                 {!comparing && decision === 'adjust' && (
-                  <>
-                    {/* Comparison cards */}
-                    <div className="grid grid-cols-2 gap-2 mb-2.5">
-                      {[
-                        { label: 'Your decision', score: instScore, reason: REASON_LABELS[acctReason ?? ''] ?? acctReason ?? '', agree },
-                        { label: 'AI re-evaluation', score: aiScore, reason: aiReval.reason, agree },
-                      ].map((c, i) => (
-                        <div
-                          key={i}
-                          className="rounded-xl p-3"
-                          style={{
-                            background: agree ? '#ECFDF5' : '#FEF2F2',
-                            border: `1.5px solid ${agree ? '#A7F3D0' : '#FECACA'}`,
-                          }}
-                        >
-                          <div className="text-[10px] font-bold uppercase tracking-[0.07em] mb-1.5" style={{ color: agree ? '#065F46' : '#B91C1C' }}>{c.label}</div>
-                          <div className="text-[22px] font-extrabold tracking-tight mb-1" style={{ color: agree ? '#065F46' : '#B91C1C' }}>{c.score} / {st.maxScore}</div>
-                          <div className="text-[11px] leading-snug" style={{ color: agree ? '#065F46' : '#B91C1C', opacity: 0.85 }}>{c.reason}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Verdict banner */}
-                    <div
-                      className="rounded-xl p-3 flex items-start gap-2.5 mb-2.5"
-                      style={{ background: agree ? '#ECFDF5' : '#FEF2F2', border: `1.5px solid ${agree ? '#A7F3D0' : '#FECACA'}` }}
-                    >
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: agree ? '#10B981' : '#EF4444' }}>
-                        {agree
-                          ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L19 7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                          : <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16v.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" /></svg>
-                        }
-                      </div>
-                      <div>
-                        <div className="text-[13px] font-bold mb-0.5" style={{ color: agree ? '#065F46' : '#B91C1C' }}>
-                          {agree ? `Both agree — ${instScore}/${st.maxScore}` : `Assessments diverge — ${instScore} vs ${aiScore}/${st.maxScore}`}
-                        </div>
-                        <div className="text-[12px] leading-snug" style={{ color: agree ? '#065F46' : '#B91C1C', opacity: 0.85 }}>
-                          {agree ? 'HOD will receive this for standard acknowledgement.' : `A ${Math.abs(instScore - aiScore)}-point difference. HOD must actively review both before deciding.`}
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* HOD routing */}
-                {!comparing && (
-                  <div className="rounded-xl p-3 mb-2.5" style={{ background: '#fff', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}>
-                    <div className="flex items-center gap-1.5 mb-2 text-[12px] font-bold" style={{ color: '#1E293B' }}>
-                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" /></svg>
-                      What happens next
-                    </div>
-                    {[
-                      { n: 1, label: 'Submitted to', val: 'Dr. R. Kumar · Head of Department · CS301' },
-                      {
-                        n: 2, label: 'HOD receives',
-                        val: decision === 'uphold'
-                          ? 'A copy of your decision and written reason, for records only. No action required from HOD.'
-                          : agree ? 'Both agreeing scores, your reason, and full audit trail.' : 'Both diverging scores, your reason, and full audit trail. HOD must actively review.',
-                      },
-                      {
-                        n: 3, label: 'Student',
-                        val: decision === 'uphold'
-                          ? `${st.first} will be notified directly now with your written reason.`
-                          : agree ? 'Not notified until HOD approves.' : 'Not notified until HOD makes a final decision.',
-                      },
-                      { n: 4, label: 'You', val: 'Can move to the next case now.' },
-                    ].map((row) => (
-                      <div key={row.n} className="flex items-start gap-2 py-1.5 text-[12px]" style={{ borderBottom: row.n < 4 ? '1px solid #E2E8F0' : 'none', color: '#475569' }}>
-                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0" style={{ background: '#EDE9FB', color: '#6B5FC4' }}>{row.n}</div>
-                        <div><span className="font-semibold" style={{ color: '#1E293B', minWidth: 80, display: 'inline-block' }}>{row.label}</span> {row.val}</div>
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-2 gap-4">
+                    <CompareCard label="Your Decision" score={instScore} reason={REASON_LABELS[acctReason ?? ''] ?? 'Rationale provided'} />
+                    <CompareCard label="AI System" score={aiScore} reason={aiReval.reason} variant="primary" />
                   </div>
                 )}
 
-                <div style={{ height: 80 }} />
+                {!comparing && (
+                  <div className="rounded-2xl border border-border/10 bg-white overflow-hidden shadow-sm">
+                    <div className="px-5 py-4 bg-slate-50/50 border-b border-border/5">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Next Actions & Routing</span>
+                    </div>
+                    <div className="p-5 space-y-4">
+                       {[
+                         { n: 1, label: 'Submitted to', val: 'Dr. R. Kumar · Head of Department' },
+                         { n: 2, label: 'Routing Logic', val: agree ? 'Auto-approval queue (High confidence)' : 'Manual Arbitration (Divergence detected)' },
+                         { n: 3, label: 'Student Update', val: 'Notified only after HOD final signature' },
+                       ].map(item => (
+                         <div key={item.n} className="flex gap-4 group">
+                           <div className="size-6 rounded-lg bg-muted flex items-center justify-center text-[10px] font-black text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">{item.n}</div>
+                           <div className="flex-1 -mt-0.5">
+                             <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 mb-0.5">{item.label}</div>
+                             <div className="text-[12px] font-bold text-slate-700">{item.val}</div>
+                           </div>
+                         </div>
+                       ))}
+                    </div>
+                  </div>
+                )}
+                <div className="h-20" />
               </div>
             )}
 
-            {/* STATE: submitted */}
             {wsState === 'submitted' && (
-              <div className="mt-3.5">
-                {submittedVariant === 'agree' && (
-                  <SubmittedCard isCheckIcon title="Submitted to HOD for approval" color="#065F46" bg="#ECFDF5" border="#A7F3D0" iconBg="#10B981">
-                    <p className="text-[12px] leading-relaxed mb-2" style={{ color: '#065F46', opacity: 0.85 }}>Both assessments agree. <strong>{st.first}</strong> will be notified once HOD approves.</p>
-                    <TLRow dot="#10B981">Your decision: <strong>{st.origScore} → {pickedScore}/{st.maxScore}</strong></TLRow>
-                    <TLRow dot="#10B981">AI re-evaluation: <strong>{aiScore}/{st.maxScore}</strong> · agrees</TLRow>
-                    <TLRow dot="#10B981">Submitted to Dr. R. Kumar · HOD</TLRow>
-                    <TLRow dot="#CBD5E1" light>Awaiting HOD approval</TLRow>
-                    <button onClick={handleBack} className="w-full py-3 rounded-lg text-[13px] font-bold text-white transition-colors mt-2" style={{ background: '#10B981', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-                      Review next case →
-                    </button>
-                  </SubmittedCard>
-                )}
-                {submittedVariant === 'disagree' && (
-                  <SubmittedCard isCheckIcon={false} title="Submitted — assessments diverge" color="#92400E" bg="#FFFBEB" border="#FDE68A" iconBg="#F59E0B">
-                    <p className="text-[12px] leading-relaxed mb-2" style={{ color: '#92400E', opacity: 0.9 }}>HOD will review both. <strong>{st.first}</strong> not notified until HOD decides.</p>
-                    <TLRow dot="#F59E0B">Your score: <strong>{pickedScore}/{st.maxScore}</strong></TLRow>
-                    <TLRow dot="#F59E0B">AI re-evaluation: <strong>{aiScore}/{st.maxScore}</strong> · diverges</TLRow>
-                    <TLRow dot="#F59E0B">HOD must review both and decide</TLRow>
-                    <button onClick={handleBack} className="w-full py-3 rounded-lg text-[13px] font-bold text-white transition-colors mt-2" style={{ background: '#F59E0B', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-                      Review next case →
-                    </button>
-                  </SubmittedCard>
-                )}
-                {submittedVariant === 'uphold' && (
-                  <SubmittedCard isCheckIcon title="Decision confirmed — grade upheld" color="#065F46" bg="#ECFDF5" border="#A7F3D0" iconBg="#10B981">
-                    <p className="text-[12px] leading-relaxed mb-2" style={{ color: '#065F46', opacity: 0.85 }}><strong>{st.first}</strong> is being notified now. HOD has received a copy for records.</p>
-                    <TLRow dot="#10B981">Grade upheld · original score stands</TLRow>
-                    <TLRow dot="#10B981">HOD notified for records — no action required</TLRow>
-                    <TLRow dot="#10B981">Student notification: sending now</TLRow>
-                    <button onClick={handleBack} className="w-full py-3 rounded-lg text-[13px] font-bold text-white transition-colors mt-2" style={{ background: '#10B981', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-                      Review next case →
-                    </button>
-                  </SubmittedCard>
-                )}
-              </div>
+               <div className="flex flex-col items-center justify-center py-12 space-y-8 animate-in zoom-in-95 duration-500">
+                  <div className="size-20 rounded-full bg-emerald-500 flex items-center justify-center shadow-2xl shadow-emerald-500/20">
+                    <CheckIcon className="size-10 text-white" />
+                  </div>
+                  <div className="text-center space-y-2">
+                    <h2 className="text-3xl font-black tracking-tighter">Review Submitted</h2>
+                    <p className="text-[13px] text-muted-foreground font-medium">Successfully routed to HOD dashboard for final approval.</p>
+                  </div>
+                  <div className="w-full max-w-sm p-6 rounded-2xl bg-white border border-border/10 shadow-sm space-y-4">
+                     <div className="flex items-center justify-between text-[11px] font-bold">
+                       <span className="text-muted-foreground/40">Student</span>
+                       <span className="text-slate-800">{st.name}</span>
+                     </div>
+                     <div className="flex items-center justify-between text-[11px] font-bold">
+                       <span className="text-muted-foreground/40">Decision</span>
+                       <span className="text-emerald-600">{decision === 'uphold' ? 'Grade Upheld' : `Adjusted to ${pickedScore}/10`}</span>
+                     </div>
+                     <div className="flex items-center justify-between text-[11px] font-bold">
+                       <span className="text-muted-foreground/40">Routing</span>
+                       <span className="text-primary">Standard HOD Approval</span>
+                     </div>
+                  </div>
+                  <button 
+                    onClick={handleBack}
+                    className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-slate-900 text-white text-[12px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-900/10"
+                  >
+                    Return to Triage Desk
+                    <ArrowRightIcon className="size-4" />
+                  </button>
+               </div>
             )}
           </div>
 
-          {/* Bottom bar */}
+          {/* Sticky Actions Bar */}
           {wsState !== 'submitted' && (
-            <div
-              className="flex items-center justify-between gap-3 px-4 py-3 flex-shrink-0"
-              style={{ background: '#fff', borderTop: '1.5px solid #CBD5E1', boxShadow: '0 -2px 8px rgba(0,0,0,.05)' }}
-            >
-              <button
-                onClick={handleBack}
-                className="px-4 py-2 rounded-lg text-[13px] font-medium transition-colors hover:bg-slate-50"
-                style={{ border: '1.5px solid #CBD5E1', background: '#fff', color: '#475569', cursor: 'pointer', fontFamily: 'inherit' }}
-              >
-                Save as draft
-              </button>
-              <div className="flex flex-col items-end gap-1">
-                {wsState === 'active' ? (
-                  <>
-                    <button
-                      onClick={handleSubmit}
-                      disabled={!isSubmitEnabled}
-                      className="px-5 py-2.5 rounded-lg text-[13px] font-bold text-white transition-all"
-                      style={{
-                        border: 'none',
-                        background: isSubmitEnabled ? '#6B5FC4' : '#E2E8F0',
-                        color: isSubmitEnabled ? '#fff' : '#94A3B8',
-                        cursor: isSubmitEnabled ? 'pointer' : 'not-allowed',
-                        boxShadow: isSubmitEnabled ? '0 2px 8px rgba(107,95,196,.35)' : 'none',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      Submit decision →
-                    </button>
-                    <span className="text-[10px]" style={{ color: '#94A3B8' }}>
-                      {!decision ? 'Select a decision above to continue' : decision === 'adjust' && !pickedScore ? 'Select a proposed new score' : decision === 'adjust' && !acctReason ? 'Select why the score is changing' : reasonLen < REASON_MIN ? `${REASON_MIN - reasonLen} more character${REASON_MIN - reasonLen === 1 ? '' : 's'} needed` : decision === 'adjust' ? 'HOD will review before student is notified' : 'Student will be notified directly'}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={comparing ? undefined : handleConfirmCompare}
-                      disabled={comparing}
-                      className="px-5 py-2.5 rounded-lg text-[13px] font-bold text-white transition-all"
-                      style={{
-                        border: 'none',
-                        background: comparing ? '#E2E8F0' : '#6B5FC4',
-                        color: comparing ? '#94A3B8' : '#fff',
-                        cursor: comparing ? 'not-allowed' : 'pointer',
-                        boxShadow: comparing ? 'none' : '0 2px 8px rgba(107,95,196,.35)',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      Confirm submission →
-                    </button>
-                    <span className="text-[10px]" style={{ color: '#94A3B8' }}>
-                      {comparing ? 'Waiting for AI re-evaluation…' : agree || decision === 'uphold' ? 'HOD can approve with one action' : 'HOD must review both assessments'}
-                    </span>
-                  </>
-                )}
-              </div>
+            <div className="h-20 px-8 flex items-center justify-between bg-white/60 backdrop-blur-md border-t border-border/10 flex-shrink-0 relative z-10">
+               <button
+                 onClick={handleBack}
+                 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all"
+               >
+                 <XIcon className="size-3.5" />
+                 Cancel Review
+               </button>
+               <div className="flex items-center gap-4">
+                  <button className="px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 border border-border/30 bg-card/50 hover:bg-white hover:border-border transition-all">
+                    Save as Draft
+                  </button>
+                  <button
+                    onClick={wsState === 'active' ? handleSubmit : handleConfirmCompare}
+                    disabled={(wsState === 'active' && !isSubmitEnabled) || (wsState === 'compare' && comparing)}
+                    className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                      (wsState === 'active' && isSubmitEnabled) || (wsState === 'compare' && !comparing)
+                        ? 'bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95'
+                        : 'bg-muted/50 text-muted-foreground/40 cursor-not-allowed opacity-50'
+                    }`}
+                  >
+                    {wsState === 'active' ? 'Finalize Decision' : 'Confirm & Route'}
+                  </button>
+               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Briefing modal (workspace mode — no start button) */}
-      {briefingOpen && (
-        <BriefingModal
-          studentId={studentId}
-          onClose={() => setBriefingOpen(false)}
-          onStart={null}
-        />
-      )}
+      {/* Case Briefing Modal */}
+      <BriefingModal
+        studentId={studentId}
+        onClose={() => setBriefingOpen(false)}
+        onStart={null}
+      />
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      <style jsx global>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   )
 }
 
-// Sub-components
+// Visual Sub-components
 
-function ContextBlock({ label, children, noBorder }: { label: string; children: React.ReactNode; noBorder?: boolean }) {
+function KPIBlock({ label, children, color, noBorder, className }: { label: string; children: React.ReactNode; color?: string; noBorder?: boolean; className?: string }) {
   return (
-    <div className="flex flex-col gap-0.5 flex-1 px-3" style={{ borderRight: noBorder ? 'none' : '1px solid #E2E8F0' }}>
-      <div className="text-[9px] font-bold uppercase tracking-[0.07em]" style={{ color: '#94A3B8' }}>{label}</div>
+    <div className={`flex flex-col gap-1 p-4 bg-white relative ${noBorder ? '' : 'border-r border-border/5'} ${className}`}>
+      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/30">{label}</span>
       {children}
     </div>
   )
 }
 
-function Zone({ label, children, className = '' }: { label: string; children: React.ReactNode; className?: string }) {
+function DecisionOption({ active, variant, label, desc, onClick, children }: { active: boolean; variant: 'uphold' | 'adjust'; label: string; desc: string; onClick: () => void; children: React.ReactNode }) {
+  const isUphold = variant === 'uphold'
   return (
-    <div className={`rounded-xl p-3.5 mb-2.5 ${className}`} style={{ background: '#fff', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}>
-      <div className="flex items-center gap-1.5 mb-2.5">
-        <div className="w-0.5 h-3 rounded" style={{ background: '#6B5FC4' }} />
-        <span className="text-[10px] font-bold uppercase tracking-[0.08em]" style={{ color: '#94A3B8' }}>{label}</span>
-      </div>
-      {children}
-    </div>
-  )
-}
-
-function DataCell({ label, children, noBorder }: { label: string; children: React.ReactNode; noBorder?: boolean }) {
-  return (
-    <div className="p-2" style={{ borderRight: noBorder ? 'none' : '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1" style={{ color: '#94A3B8' }}>{label}</div>
-      <div className="flex items-center gap-1 flex-wrap">{children}</div>
-    </div>
-  )
-}
-
-function DecisionOption({
-  active, variant, label, desc, onClick, children,
-}: {
-  active: boolean; variant: 'uphold' | 'adjust'; label: string; desc: string; onClick: () => void; children: React.ReactNode
-}) {
-  const COLORS = {
-    uphold: { bg: '#10B981', activeBg: '#ECFDF5', activeBorder: '#10B981', activeHead: '#10B981' },
-    adjust: { bg: '#6B5FC4', activeBg: '#EDE9FB', activeBorder: '#6B5FC4', activeHead: '#6B5FC4' },
-  }
-  const c = COLORS[variant]
-  return (
-    <div
+    <div 
       onClick={onClick}
-      className="rounded-lg overflow-hidden cursor-pointer transition-all"
-      style={{ border: `2px solid ${active ? c.activeBorder : '#E2E8F0'}`, background: active ? c.activeBg : '#F8FAFC' }}
+      className={`rounded-xl border-2 transition-all cursor-pointer overflow-hidden ${
+        active 
+          ? isUphold ? 'border-emerald-500 bg-emerald-500/5' : 'border-primary bg-primary/5 shadow-lg shadow-primary/5' 
+          : 'border-border/10 bg-slate-50/50 hover:border-border/30 hover:bg-white'
+      }`}
     >
-      <div
-        className="flex items-center gap-2.5 px-3 py-2.5 transition-colors"
-        style={{ background: active ? c.activeHead : '#F1F5F9' }}
-      >
-        <div
-          className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
-          style={{ border: `2px solid ${active ? 'rgba(255,255,255,.7)' : '#CBD5E1'}`, background: active ? 'rgba(255,255,255,.3)' : '#fff' }}
-        >
-          {active && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-        </div>
-        <div className="text-[13px] font-semibold flex-1" style={{ color: active ? '#fff' : '#1E293B' }}>{label}</div>
-        <div className="text-[11px]" style={{ color: active ? 'rgba(255,255,255,.8)' : '#94A3B8' }}>{desc}</div>
+      <div className={`px-5 py-4 flex items-center justify-between ${active ? isUphold ? 'bg-emerald-500 text-white' : 'bg-primary text-white' : ''}`}>
+         <div className="flex items-center gap-3">
+            <div className={`size-4 rounded-full border-2 flex items-center justify-center ${active ? 'border-white' : 'border-border/10'}`}>
+               {active && <div className="size-2 rounded-full bg-white" />}
+            </div>
+            <div className="flex flex-col">
+               <span className="text-[12px] font-black uppercase tracking-widest">{label}</span>
+               <span className={`text-[10px] font-medium opacity-70 ${active ? '' : 'text-muted-foreground'}`}>{desc}</span>
+            </div>
+         </div>
+         {active && <CheckIcon className="size-4" />}
       </div>
       {active && (
-        <div className="px-3.5 py-3" style={{ background: '#fff' }}>{children}</div>
+        <div className="p-5 bg-white animate-in slide-in-from-top-2 duration-300">
+          {children}
+        </div>
       )}
     </div>
   )
 }
 
-function SubmittedCard({
-  isCheckIcon, title, color, bg, border, iconBg, children,
-}: {
-  isCheckIcon: boolean; title: string; color: string; bg: string; border: string; iconBg: string; children: React.ReactNode
-}) {
+function CompareCard({ label, score, reason, variant }: { label: string; score: number; reason: string; variant?: 'primary' }) {
+  const isPrimary = variant === 'primary'
   return (
-    <div className="rounded-xl p-5 text-center" style={{ background: bg, border: `1.5px solid ${border}` }}>
-      <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3.5" style={{ background: iconBg }}>
-        {isCheckIcon
-          ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L19 7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          : <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16v.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" /></svg>
-        }
-      </div>
-      <div className="text-[16px] font-bold mb-3" style={{ color }}>{title}</div>
-      <div className="rounded-lg px-3 py-2 mb-3 text-left" style={{ background: 'rgba(255,255,255,.65)' }}>
-        {children}
-      </div>
+    <div className={`rounded-2xl p-5 border ${isPrimary ? 'bg-primary/5 border-primary/20' : 'bg-slate-50 border-border/10'}`}>
+       <span className={`text-[9px] font-black uppercase tracking-widest ${isPrimary ? 'text-primary' : 'text-muted-foreground/40'}`}>{label}</span>
+       <div className={`text-2xl font-black tracking-tighter my-1 ${isPrimary ? 'text-primary' : 'text-slate-800'}`}>{score}<span className="text-muted-foreground/30 font-bold ml-1 text-base">/ 10</span></div>
+       <p className="text-[11px] font-medium text-slate-500 leading-snug line-clamp-2">{reason}</p>
     </div>
   )
 }
 
-function TLRow({ dot, children, light }: { dot: string; children: React.ReactNode; light?: boolean }) {
+// Icons
+function ChevronLeftIcon({ className }: { className?: string }) {
   return (
-    <div className="flex items-start gap-2 py-1.5 text-[12px]" style={{ borderBottom: '1px solid rgba(0,0,0,.06)' }}>
-      <div className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1" style={{ background: dot }} />
-      <div style={{ color: light ? '#94A3B8' : 'inherit' }}>{children}</div>
-    </div>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M15 18l-6-6 6-6" />
+    </svg>
+  )
+}
+
+function BriefcaseIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+    </svg>
+  )
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="6"></line>
+    </svg>
+  )
+}
+
+function ArrowRightIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M5 12h14M12 5l7 7-7 7" />
+    </svg>
+  )
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+  )
+}
+
+function InfoIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="16" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+    </svg>
+  )
+}
+
+function ZapIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+    </svg>
+  )
+}
+
+function EditIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+    </svg>
   )
 }
