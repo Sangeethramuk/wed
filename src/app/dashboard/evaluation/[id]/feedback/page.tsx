@@ -411,7 +411,7 @@ export default function FeedbackPage() {
                             </div>
                             <h4 className="text-[14px] font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
                             <div className="space-y-3">
-                               {step.steps.map((s, j) => (
+                               {step.steps.map((s: string, j: number) => (
                                  <div key={j} className="flex gap-3 group/step">
                                     <div className="text-[10px] font-black text-red-200 mt-0.5">{j+1}.</div>
                                     <p 
@@ -449,7 +449,7 @@ export default function FeedbackPage() {
                             </div>
                             <h4 className="text-[14px] font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
                             <div className="space-y-3">
-                               {step.steps.map((s, j) => (
+                               {step.steps.map((s: string, j: number) => (
                                  <div key={j} className="flex gap-3 group/step">
                                     <div className="text-[10px] font-black text-amber-200 mt-0.5">{j+1}.</div>
                                     <p 
@@ -481,7 +481,7 @@ export default function FeedbackPage() {
                             </div>
                             <h4 className="text-[14px] font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
                             <div className="space-y-3">
-                               {step.steps.map((s, j) => (
+                               {step.steps.map((s: string, j: number) => (
                                  <div key={j} className="flex gap-3 group/step">
                                     <div className="w-1 h-1 rounded-full bg-green-200 mt-2" />
                                     <p 
