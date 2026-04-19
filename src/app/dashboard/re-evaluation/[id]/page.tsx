@@ -119,34 +119,39 @@ export default function ReEvalWorkspacePage() {
   const agree = Math.abs(instScore - aiScore) <= 1
 
   return (
-    <div className="flex flex-col h-screen -m-6 bg-slate-50/50">
+    <div className="flex flex-col h-[calc(100vh-2rem)] bg-slate-50/50 rounded-2xl border border-border/10 overflow-hidden shadow-sm">
       {/* Institutional Topbar */}
-      <div className="h-16 px-6 flex items-center bg-white/80 backdrop-blur-md border-b border-border/10 sticky top-0 z-50">
-        <button
-          onClick={handleBack}
-          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors group"
-        >
-          <ChevronLeftIcon className="size-3.5 group-hover:-translate-x-0.5 transition-transform" />
-          Re-evaluation Requests
-        </button>
-        <div className="mx-6 w-px h-6 bg-border/10" />
-        <div className="flex flex-col">
-          <h1 className="text-xl font-black tracking-tighter secondary-text flex items-center gap-3">
-            {st.name}
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 px-2 py-0.5 bg-muted/30 rounded-md">
-              {st.rollId}
-            </span>
-          </h1>
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/40 mt-0.5">
+      <div className="h-16 px-6 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-border/10 flex-shrink-0 z-50">
+        <div className="flex items-center gap-6">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-all group"
+          >
+            <ChevronLeftIcon className="size-3 group-hover:-translate-x-0.5 transition-transform" />
+            Re-evaluation Requests
+          </button>
+          
+          <div className="w-px h-6 bg-border/10" />
+          
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg font-black tracking-tighter text-slate-800 flex items-center gap-2">
+              {st.name}
+              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-2 py-0.5 bg-muted/50 rounded-md">
+                {st.rollId}
+              </span>
+            </h1>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground/40 pr-4 border-r border-border/10">
             <span>{st.assign}</span>
             <span className="text-muted-foreground/20">·</span>
             <span className="text-primary/60">{st.crit}</span>
           </div>
-        </div>
-        <div className="ml-auto flex items-center gap-3">
           <button
             onClick={() => setBriefingOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/[0.03] border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/[0.08] transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/[0.03] border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/[0.08] transition-all shadow-sm"
           >
             <BriefcaseIcon className="size-3.5" />
             AI Case Briefing
@@ -155,9 +160,9 @@ export default function ReEvalWorkspacePage() {
       </div>
 
       {/* Workspace Area */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Left Panel: Submission Viewer */}
-        <div className="w-[58%] flex flex-col border-r border-border/5 bg-white overflow-hidden">
+        <div className="flex-1 flex flex-col bg-white overflow-hidden relative">
           <div className="h-14 px-6 flex items-center justify-between border-b border-border/5 bg-slate-50/30 flex-shrink-0">
             <div className="flex items-center gap-4">
               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Submission Viewer</span>
@@ -276,23 +281,23 @@ export default function ReEvalWorkspacePage() {
         </div>
 
         {/* Right Panel: Decision Area */}
-        <div className="w-[42%] flex flex-col bg-slate-50/30 overflow-hidden">
+        <div className="w-[480px] flex-shrink-0 flex flex-col bg-slate-50/30 overflow-hidden border-l border-border/10 relative z-10 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
           {/* Intelligence Header: KPI Strip */}
-          <div className="grid grid-cols-3 gap-px bg-border/5 border-b border-border/10 bg-white shadow-sm flex-shrink-0">
-            <KPIBlock label="Original Score" color={st.accentColor}>
-              <div className="text-xl font-black tracking-tighter" style={{ color: st.accentColor }}>{st.origScore}<span className="text-muted-foreground/30 font-bold ml-1">/ {st.maxScore}</span></div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mt-0.5">{st.critShort} · {st.crit.split(' · ')[1]}</div>
+          <div className="flex border-b border-border/10 bg-white shadow-sm flex-shrink-0 relative z-20">
+            <KPIBlock label="Original Score" className="flex-[0.9] border-r border-border/5">
+              <div className="text-lg font-black tracking-tighter" style={{ color: st.accentColor }}>{st.origScore}<span className="text-muted-foreground/30 font-bold ml-1">/ {st.maxScore}</span></div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">{st.critShort}</div>
             </KPIBlock>
-            <KPIBlock label="Evidence Used" className="col-span-1">
-              <div className="text-[11px] font-bold text-slate-600 leading-tight">"{st.gradingEvidence.slice(0, 60)}..."</div>
-              <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1">At Grading</div>
+            <KPIBlock label="Evidence Used" className="flex-[1.4] border-r border-border/5">
+              <div className="text-[10px] font-bold text-slate-600 leading-tight line-clamp-2">"{st.gradingEvidence}"</div>
+              <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1">At Grading</div>
             </KPIBlock>
-            <KPIBlock label="Confidence" noBorder>
+            <KPIBlock label="Confidence" className="flex-[0.9]">
               <div className="flex items-center gap-1.5">
                 <div className="size-2 rounded-full" style={{ background: st.confColor }} />
                 <span className="text-[13px] font-black tracking-tighter text-slate-800">{st.confScore}</span>
               </div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1">{st.hasOverride ? 'Prior Override' : 'System Default'}</div>
+              <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1 whitespace-nowrap">{st.hasOverride ? 'Prior Override' : 'System Default'}</div>
             </KPIBlock>
           </div>
 
@@ -602,9 +607,9 @@ export default function ReEvalWorkspacePage() {
 
 // Visual Sub-components
 
-function KPIBlock({ label, children, color, noBorder, className }: { label: string; children: React.ReactNode; color?: string; noBorder?: boolean; className?: string }) {
+function KPIBlock({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={`flex flex-col gap-1 p-4 bg-white relative ${noBorder ? '' : 'border-r border-border/5'} ${className}`}>
+    <div className={`flex flex-col gap-1 p-4 bg-white ${className || ''}`}>
       <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/30">{label}</span>
       {children}
     </div>
