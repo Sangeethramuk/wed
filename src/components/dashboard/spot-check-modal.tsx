@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useGradingStore } from "@/lib/store/grading-store"
-import { X, ChevronRight, ChevronLeft, Check } from "lucide-react"
+import { X, ChevronRight, ChevronLeft, Check, AlertTriangle, CheckSquare, Info, FileText, CheckCircle2 } from "lucide-react"
 
 const PURPLE = '#5B50D6'
 const PURPLE_BG = '#EEEDFB'
@@ -164,7 +164,7 @@ export function SpotCheckModal() {
                     </svg>
                   </div>
                   <div>
-                    <div className="text-[15px] font-semibold tracking-tight">Spot Check</div>
+                    <div className="text-[15px] font-semibold tracking-tight">Mandatory Spot Check</div>
                     <div className="text-[12px] text-muted-foreground">
                       {scStep === -1 ? 'Accuracy verification · 5 questions' : scStep === 5 ? 'All done' : `Question ${scStep + 1} of 5`}
                     </div>
@@ -221,26 +221,70 @@ export function SpotCheckModal() {
 
               {/* INTRO */}
               {scStep === -1 && (
-                <div>
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: PURPLE_BG, border: `1px solid ${PURPLE_BORDER}` }}>
-                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                      <circle cx="11" cy="11" r="9" stroke={PURPLE} strokeWidth="1.5" />
-                      <path d="M11 7.5v5.5M11 14.5v.5" stroke={PURPLE} strokeWidth="1.6" strokeLinecap="round" />
-                    </svg>
+                <div className="space-y-5">
+                  {/* Alert Box */}
+                  <div className="p-4 rounded-lg bg-[#FFF9EB] border border-[#FBEAC3] flex gap-3">
+                    <AlertTriangle className="w-5 h-5 text-[#B47818] flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="text-[13px] font-semibold text-[#8A5A00] mb-1">Why this appeared</div>
+                      <p className="text-[12px] text-[#8A5A00] leading-relaxed">
+                        The system noticed that grading pace in this batch was significantly faster in the second half — a common sign of fatigue. This check runs automatically to protect accuracy before grades are locked.
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-[18px] font-semibold tracking-tight mb-1.5">Quick accuracy check</div>
-                  <p className="text-[13px] text-muted-foreground leading-[1.75] mb-3">
-                    You've completed this grading session. Before finalizing, take a brief 2-minute review to confirm everything looks right.
-                  </p>
-                  <p className="text-[13px] text-muted-foreground leading-[1.75] mb-4">
-                    We've selected a few submissions for a quick double-check — one at a time — to help ensure accuracy across your batch.
-                  </p>
-                  <div className="flex gap-2.5 p-3 rounded-lg text-[12px] leading-relaxed" style={{ background: '#FEF3DC', border: '1px solid #F0C97A', color: '#8A5A00' }}>
-                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" className="flex-shrink-0 mt-0.5">
-                      <path d="M7.5 2v7M7.5 10.5v.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                      <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" strokeWidth="1.2" />
-                    </svg>
-                    <span>You can update any score during this review. If you make a change, it will be recorded to help improve future grading support.</span>
+
+                  <div>
+                    <div className="text-[11px] font-bold text-muted-foreground/60 tracking-wider uppercase mb-2">WHAT IS A MANDATORY SPOT CHECK?</div>
+                    <p className="text-[14px] text-foreground leading-relaxed">
+                      Think of it as your session's <span className="font-bold">final quality gate</span> — a 2-minute safety net that catches accidental "speed-grading" before any grade reaches a student.
+                    </p>
+                  </div>
+
+                  {/* Feature Cards */}
+                  <div className="space-y-2.5">
+                    <div className="flex gap-4 p-4 rounded-xl border border-border bg-muted/20">
+                      <div className="w-10 h-10 rounded-lg bg-[#EEEDFB] border border-[#C4C0F0] flex items-center justify-center flex-shrink-0">
+                        <CheckSquare className="w-5 h-5 text-[#5B50D6]" />
+                      </div>
+                      <div>
+                        <div className="text-[14px] font-semibold mb-0.5">5 questions, ~2 minutes</div>
+                        <p className="text-[12px] text-muted-foreground leading-relaxed">
+                          The system picks 5 items you already graded and shows them one at a time for a quick re-confirm.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4 p-4 rounded-xl border border-border bg-muted/20">
+                      <div className="w-10 h-10 rounded-lg bg-[#E8F5EE] border border-[#86C9A4] flex items-center justify-center flex-shrink-0">
+                        <Info className="w-5 h-5 text-[#2D7D52]" />
+                      </div>
+                      <div>
+                        <div className="text-[14px] font-semibold mb-0.5">Fix mistakes in real time</div>
+                        <p className="text-[12px] text-muted-foreground leading-relaxed">
+                          Spot an error? Change the score right here — it's logged as a correction and helps the AI learn.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4 p-4 rounded-xl border border-border bg-muted/20">
+                      <div className="w-10 h-10 rounded-lg bg-[#E3F2FD] border border-[#90CAF9] flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-[#1976D2]" />
+                      </div>
+                      <div>
+                        <div className="text-[14px] font-semibold mb-0.5">Creates an audit trail</div>
+                        <p className="text-[12px] text-muted-foreground leading-relaxed">
+                          A Spot Check Record is saved as proof that a human expert — not just AI — verified the final grades.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Clarification Footer Card */}
+                  <div className="flex gap-3 p-4 rounded-xl border border-border bg-[#F5F5F5]">
+                    <CheckCircle2 className="w-4 h-4 text-muted-foreground/60 flex-shrink-0 mt-0.5" />
+                    <p className="text-[12px] text-muted-foreground leading-relaxed">
+                      This isn't a sign of distrust — it's a standard professional check-in. Every session with engagement flags goes through this before grades are locked.
+                    </p>
                   </div>
                 </div>
               )}
