@@ -1,10 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   BarChart3,
   Users,
@@ -18,7 +20,15 @@ import {
   Zap,
   RefreshCw,
   ChevronRight,
-  Lock
+  Lock,
+  Clock,
+  Settings2,
+  Calendar,
+  Sparkles,
+  Command,
+  ArrowRight,
+  ArrowUpRight,
+  Activity
 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -30,222 +40,295 @@ export default function ResultInsights() {
   const [activeInterventions, setActiveInterventions] = useState<string[]>([])
 
   const distributionData = [
-    { range: "90-100", count: 12, label: "Outstanding" },
-    { range: "80-89", count: 18, label: "Commendable" },
-    { range: "70-79", count: 8, label: "Satisfactory" },
-    { range: "60-69", count: 5, label: "Marginal" },
-    { range: "<60", count: 2, label: "Unsatisfactory" },
+    { range: "90-100", count: 12, label: "Outstanding", color: "bg-primary" },
+    { range: "80-89", count: 18, label: "Commendable", color: "bg-primary/80" },
+    { range: "70-79", count: 8, label: "Satisfactory", color: "bg-primary/60" },
+    { range: "60-69", count: 5, label: "Marginal", color: "bg-primary/40" },
+    { range: "<60", count: 2, label: "Unsatisfactory", color: "bg-primary/20" },
   ]
 
   const maxCount = Math.max(...distributionData.map(d => d.count))
 
-  const totalStudents = 45
-  const averageScore = 84.2
+  const rosterData = [
+    { name: "Rohan Verma", c1: "7", c2: "8", c3: "6", total: "21", grade: "B", status: 'Published' },
+    { name: "Arjun Mehta", c1: "9", c2: "9", c3: "8", total: "26", grade: "A+", status: 'Ready' },
+    { name: "Priya Patel", c1: "7", c2: "8", c3: "7", total: "22", grade: "B+", status: 'Published' },
+    { name: "Sneha K.", c1: "8", c2: "7", c3: "8", total: "23", grade: "A", status: 'Published' },
+    { name: "Ananya S.", c1: "10", c2: "9", c3: "9", total: "28", grade: "A+", status: 'Ready' },
+    { name: "Vikram R.", c1: "6", c2: "7", c3: "5", total: "18", grade: "C+", status: 'Revision' },
+  ]
 
   const commonGaps = [
-    { label: "Authorization Logic", gap: "34% of students missed state.auth validation", severity: "high" },
-    { label: "MVC Dependency Injection", gap: "12 submissions had circular constructor refs", severity: "medium" },
-    { label: "Documentation Standards", gap: "API contract missing in 15% of cohort", severity: "low" },
+    { label: "Authorization Logic", gap: "34% of students missed state.auth validation", severity: "high", impact: "Security Vulnerability" },
+    { label: "MVC Dependency Injection", gap: "12 submissions had circular constructor refs", severity: "medium", impact: "Runtime Stability" },
+    { label: "Documentation Standards", gap: "API contract missing in 15% of cohort", severity: "low", impact: "Code Maintainability" },
   ]
 
-  const rosterData = [
-    { name: "Rohan Verma", c1: "7", c2: "8", c3: "6", total: "21", grade: "B" },
-    { name: "Arjun Mehta", c1: "9", c2: "9", c3: "8", total: "26", grade: "A+" },
-    { name: "Priya Patel", c1: "7", c2: "8", c3: "7", total: "22", grade: "B+" },
-    { name: "Sneha K.", c1: "8", c2: "7", c3: "8", total: "23", grade: "A" },
-    { name: "Ananya S.", c1: "10", c2: "9", c3: "9", total: "28", grade: "A+" },
-    { name: "Vikram R.", c1: "6", c2: "7", c3: "5", total: "18", grade: "C+" },
-  ]
-
-  if (viewState === "release") {
-    return (
-      <div className="max-w-4xl mx-auto py-12 px-6 space-y-10 animate-in slide-in-from-right-8 fade-in duration-500">
-        <div className="space-y-4">
+  // Shared Header Component
+  const PageHeader = ({ title, subtitle, showBack = true, children }: any) => (
+    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-border/40">
+      <div className="space-y-4">
+        {showBack && (
           <Button
             variant="ghost"
             size="sm"
-            className="pl-0 text-muted-foreground hover:text-foreground transition-colors group"
+            className="h-8 -ml-3 text-muted-foreground hover:text-foreground group rounded-lg"
             onClick={() => setViewState("insights")}
           >
-            <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" /> Back to Insights
+            <ArrowLeft className="mr-2 h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
+            <span className="text-[10px] font-black uppercase tracking-widest">Back to Insights</span>
           </Button>
-          <div className="space-y-1">
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter secondary-text">Release Configuration</h1>
-            <p className="text-muted-foreground text-base font-medium leading-relaxed">Schedule and publish evaluation outcomes for <span className="text-foreground font-bold">Software Engineering: Phase 2</span>.</p>
+        )}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-black tracking-tight text-foreground">{title}</h1>
+            <Badge variant="outline" className="h-5 px-2 bg-primary/5 text-primary border-primary/20 text-[9px] font-black uppercase tracking-widest rounded-full">
+              PROTOCOL P1
+            </Badge>
           </div>
+          <p className="text-sm font-medium text-muted-foreground">{subtitle}</p>
         </div>
+      </div>
+      <div className="flex items-center gap-2">
+        {children}
+      </div>
+    </div>
+  )
 
-        <Card className="border border-border/40 rounded-xl overflow-hidden">
-          <CardHeader className="p-6 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
-            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Batch Progress</CardTitle>
-            <span className="text-sm font-black text-foreground tabular-nums">45/45 Evaluated</span>
-          </CardHeader>
-          <CardContent className="p-6 space-y-4">
-            <Progress value={100} className="h-1.5 rounded-full bg-muted/30" />
-            <div className="flex flex-wrap gap-2 pt-2">
-              <Badge variant="outline" className="bg-amber-500/5 text-amber-600 border-amber-500/20 px-2.5 py-0.5 text-[8px] uppercase font-black tracking-widest rounded-full h-5"><AlertCircle className="mr-1 h-3 w-3" /> 2 High Risk</Badge>
-              <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 px-2.5 py-0.5 text-[8px] uppercase font-black tracking-widest rounded-full h-5"><Zap className="mr-1 h-3 w-3" /> 5 Elevated</Badge>
-              <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 px-2.5 py-0.5 text-[8px] uppercase font-black tracking-widest rounded-full h-5"><Users className="mr-1 h-3 w-3" /> 3 Manual Review</Badge>
-              <Badge variant="outline" className="bg-emerald-500/5 text-emerald-600 border-emerald-500/20 px-2.5 py-0.5 text-[8px] uppercase font-black tracking-widest rounded-full h-5"><CheckCircle2 className="mr-1 h-3 w-3" /> 35 High Confidence</Badge>
+  if (viewState === "release") {
+    return (
+      <div className="max-w-5xl mx-auto py-12 px-8 space-y-10 font-sans select-none animate-in slide-in-from-right-4 fade-in duration-500">
+        <PageHeader 
+          title="Release Configuration" 
+          subtitle="Schedule and publish evaluation outcomes for Software Engineering: Phase 2."
+        >
+          <Button variant="ghost" className="h-10 px-4 text-[10px] font-black uppercase tracking-widest gap-2">
+            <Settings2 className="w-4 h-4" /> Policy Audit
+          </Button>
+        </PageHeader>
+
+        <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-10">
+            {/* Batch Status Card */}
+            <Card className="border-border/60 shadow-[0_4px_20px_rgb(0,0,0,0.02)] rounded-[24px] overflow-hidden bg-background">
+              <CardHeader className="p-8 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-[11px] font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+                    <Activity className="w-3.5 h-3.5 text-primary" /> Batch Readiness
+                  </CardTitle>
+                  <CardDescription className="text-[10px] uppercase font-bold text-muted-foreground/50 mt-1">Cohort SE-PH2 Evaluation</CardDescription>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-black text-foreground tabular-nums tracking-tighter">45<span className="text-muted-foreground/30 text-sm">/45</span></div>
+                  <div className="text-[9px] font-black text-green-600 uppercase tracking-widest">100% Processed</div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-8 space-y-8">
+                <div className="relative pt-2">
+                  <Progress value={100} className="h-3 rounded-full bg-muted/30" />
+                  <div className="absolute top-0 left-0 w-full h-3 bg-primary/10 blur-md rounded-full -z-10" />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: 'High Confidence', count: 35, color: 'text-emerald-600', bg: 'bg-emerald-500/10' },
+                    { label: 'Manual Review', count: 3, color: 'text-amber-600', bg: 'bg-amber-500/10' },
+                    { label: 'Elevated Cases', count: 5, color: 'text-primary', bg: 'bg-primary/10' },
+                    { label: 'Integrity Alert', count: 2, color: 'text-red-600', bg: 'bg-red-500/10' },
+                  ].map((stat) => (
+                    <div key={stat.label} className={cn("p-4 rounded-2xl border border-border/40 flex items-center justify-between", stat.bg)}>
+                      <span className="text-[10px] font-bold text-muted-foreground/80 uppercase tracking-tight">{stat.label}</span>
+                      <span className={cn("text-lg font-black", stat.color)}>{stat.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Timing Selection */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 px-2">
+                 <Clock className="w-4 h-4 text-primary" />
+                 <span className="text-[11px] font-black uppercase tracking-[0.2em] text-foreground">Launch Scheduling</span>
+              </div>
+              <div className="grid gap-4">
+                {[
+                  { key: "monday" as const, title: "Standard Protocol", time: "Monday, 9:00 AM", desc: "Allows maximum window for office hours and follow-up support.", icon: Calendar, badge: "Recommended" },
+                  { key: "immediate" as const, title: "Immediate Release", time: "Effective Instantly", desc: "Bypasses scheduling queue. Students will be notified immediately.", icon: Zap, badge: null },
+                  { key: "custom" as const, title: "Custom Window", time: "Configure Date/Time", desc: "Select a specific future timestamp for cohort-wide publication.", icon: Command, badge: null },
+                ].map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setReleaseTiming(opt.key)}
+                    className={cn(
+                      "flex items-start gap-5 p-7 rounded-[24px] border transition-all text-left group",
+                      releaseTiming === opt.key
+                        ? "bg-primary/[0.03] border-primary/40 shadow-sm"
+                        : "bg-background border-border/30 hover:border-border/60 hover:bg-muted/10"
+                    )}
+                  >
+                    <div className={cn(
+                      "mt-1 size-6 rounded-full flex items-center justify-center shrink-0 border-2 transition-all",
+                      releaseTiming === opt.key ? "bg-primary border-primary scale-110" : "border-muted-foreground/20 group-hover:border-muted-foreground/40"
+                    )}>
+                      {releaseTiming === opt.key && <div className="size-2 bg-primary-foreground rounded-full" />}
+                    </div>
+                    <div className="flex-1 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-3">
+                            <span className={cn("text-sm font-black tracking-tight", releaseTiming === opt.key ? "text-primary" : "text-foreground")}>{opt.title}</span>
+                            {opt.badge && <Badge variant="outline" className="h-4 px-1.5 text-[8px] font-black bg-emerald-500/10 text-emerald-700 border-green-200 uppercase tracking-widest rounded-sm">{opt.badge}</Badge>}
+                         </div>
+                         <opt.icon className={cn("w-4 h-4 opacity-20", releaseTiming === opt.key ? "text-primary opacity-60" : "text-muted-foreground")} />
+                      </div>
+                      <p className="text-[13px] font-bold text-foreground/80">{opt.time}</p>
+                      <p className="text-[11px] font-medium text-muted-foreground leading-relaxed">{opt.desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <div className="space-y-4">
-          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 ml-1">Release Timing</p>
-          <div className="grid gap-3">
-            {[
-              { key: "monday" as const, title: "Monday 9:00 AM", desc: "Students have the full week to schedule office hours and review feedback.", badge: "Recommended" },
-              { key: "immediate" as const, title: "Release Immediately", desc: "Not recommended on weekends or late hours.", badge: null },
-              { key: "custom" as const, title: "Custom Date & Time", desc: "Set a specific release schedule.", badge: null },
-            ].map((opt) => (
-              <button
-                key={opt.key}
-                onClick={() => setReleaseTiming(opt.key)}
-                className={cn(
-                  "flex items-start gap-4 p-6 rounded-xl border text-left transition-all",
-                  releaseTiming === opt.key
-                    ? "bg-primary/[0.03] border-primary/30"
-                    : "bg-card border-border/30 hover:border-border/60 hover:bg-muted/10 cursor-pointer"
-                )}
-              >
-                <div className={cn(
-                  "mt-0.5 size-5 rounded-full flex items-center justify-center shrink-0 border transition-colors",
-                  releaseTiming === opt.key ? "bg-primary border-primary" : "border-muted-foreground/20"
-                )}>
-                  {releaseTiming === opt.key && <div className="size-2 bg-primary-foreground rounded-full" />}
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <span className={cn("font-black tracking-tight", releaseTiming === opt.key ? "text-primary" : "text-foreground")}>{opt.title}</span>
-                    {opt.badge && <Badge variant="outline" className="px-2 py-0 text-[8px] uppercase font-black tracking-widest bg-emerald-500/5 text-emerald-600 border-emerald-500/20 rounded-full h-4">{opt.badge}</Badge>}
+          {/* Impact & Actions Sidebar */}
+          <aside className="space-y-6">
+            <div className="sticky top-8">
+              <Card className="border-primary/20 shadow-[0_20px_50px_rgba(59,130,246,0.08)] rounded-[24px] overflow-hidden bg-primary/5">
+                <CardHeader className="p-8 border-b border-primary/10">
+                   <CardTitle className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Finalize Batch</CardTitle>
+                </CardHeader>
+                <CardContent className="p-8 space-y-8">
+                  <div className="space-y-6">
+                    <div className="flex gap-4">
+                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><Users className="w-5 h-5 text-primary" /></div>
+                       <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">Target Cohort</p>
+                          <p className="text-sm font-bold text-foreground">45 Evaluated Students</p>
+                       </div>
+                    </div>
+                    <div className="flex gap-4">
+                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><ShieldCheck className="w-5 h-5 text-primary" /></div>
+                       <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">Audit Status</p>
+                          <p className="text-sm font-bold text-foreground">Verified & Immutable</p>
+                       </div>
+                    </div>
                   </div>
-                  <p className="text-xs font-medium text-muted-foreground leading-relaxed">{opt.desc}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
 
-        <div className="flex items-center justify-between pt-8 border-t border-border/10">
-          <div className="space-y-1">
-            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Impact Scope</p>
-            <p className="text-sm font-bold text-foreground">45 grades queued for {releaseTiming === "immediate" ? "immediate release" : "scheduled publication"}.</p>
-          </div>
-          <Button
-            disabled={isSyncing}
-            onClick={() => {
-              setIsSyncing(true)
-              setTimeout(() => setIsSyncing(false), 2000)
-            }}
-            className="h-14 px-12 text-lg font-black tracking-tight rounded-xl shadow-none active:scale-95 transition-all bg-primary hover:bg-primary/90"
-          >
-            {isSyncing ? (
-              <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Publishing...</>
-            ) : (
-              'Finalize Publication'
-            )}
-          </Button>
-        </div>
+                  <div className="p-5 rounded-2xl bg-background border border-primary/20 border-dashed">
+                      <p className="text-[11px] font-medium text-muted-foreground leading-relaxed italic">
+                        "Publishing will notify all students in the cohort and unlock their solution direction roadmaps."
+                      </p>
+                  </div>
+
+                  <Button
+                    disabled={isSyncing}
+                    onClick={() => {
+                      setIsSyncing(true)
+                      setTimeout(() => setIsSyncing(false), 2000)
+                    }}
+                    className="w-full h-16 text-lg font-black tracking-tight rounded-2xl shadow-[0_10px_40px_rgba(59,130,246,0.25)] hover:bg-primary hover:shadow-[0_15px_60px_rgba(59,130,246,0.35)] transition-all active:scale-95 bg-primary"
+                  >
+                    {isSyncing ? (
+                      <><RefreshCw className="mr-3 h-5 w-5 animate-spin" /> Publishing...</>
+                    ) : (
+                      'Finalize Launch'
+                    )}
+                  </Button>
+                  <p className="text-center text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">Protocol Version v.2.4.1</p>
+                </CardContent>
+              </Card>
+            </div>
+          </aside>
+        </main>
       </div>
     )
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-10 px-6 space-y-8 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between border-b border-border/10 pb-6">
-        <div className="space-y-1">
-          <Link href="/dashboard/evaluation">
-            <Button variant="ghost" size="sm" className="pl-0 text-muted-foreground hover:text-foreground transition-colors group -ml-2">
-              <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" /> Triage Desk
-            </Button>
-          </Link>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black tracking-tight secondary-text">Instructional Insights</h1>
-            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-[8px] font-black uppercase tracking-widest px-2 h-5 rounded-full">Protocol P1</Badge>
-          </div>
-          <p className="text-muted-foreground text-sm font-medium">Comprehensive audit of <span className="text-foreground font-bold">Software Engineering: Phase 2</span></p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="h-9 border-border/40 bg-background hover:bg-muted/20 px-4 text-[9px] font-black uppercase tracking-widest shadow-none rounded-lg">
-            <FileText className="mr-2 h-3.5 w-3.5 text-muted-foreground" /> Session Protocol
+    <div className="max-w-7xl mx-auto py-12 px-8 space-y-12 font-sans select-none animate-in fade-in duration-700">
+      {/* Dashboard Top Header */}
+      <PageHeader 
+        title="Instructional Insights" 
+        subtitle="Comprehensive audit and cohort analytics for Software Engineering: Phase 2."
+        showBack={false}
+      >
+        <div className="flex items-center gap-3">
+          <Button variant="outline" className="h-10 border-border/60 bg-background hover:bg-muted/40 px-5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm">
+            <Download className="mr-2.5 h-4 w-4 text-muted-foreground" /> Export Data
           </Button>
-          <Button variant="outline" className="h-9 border-border/40 bg-background hover:bg-muted/20 px-4 text-[9px] font-black uppercase tracking-widest shadow-none rounded-lg">
-            <Download className="mr-2 h-3.5 w-3.5 text-muted-foreground" /> Export
-          </Button>
-          <Button onClick={() => setViewState("release")} className="h-9 px-4 text-[9px] font-black uppercase tracking-widest shadow-none rounded-lg bg-primary hover:bg-primary/90">
-            Publish Grades
+          <Button onClick={() => setViewState("release")} className="h-10 px-8 text-[11px] font-black uppercase tracking-widest rounded-xl bg-primary hover:bg-primary/90 transition-all shadow-[0_4px_20px_rgba(59,130,246,0.2)]">
+            <Sparkles className="mr-2 h-4 w-4" /> Publish Outcomes
           </Button>
         </div>
-      </div>
+      </PageHeader>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* KPI Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: "Cohort Average", value: averageScore, unit: "%", sub: "+4.2% vs Phase 1", icon: TrendingUp, highlight: false },
-          { label: "Completion Rate", value: 100, unit: "%", sub: `${totalStudents} Submissions`, icon: Users, highlight: false },
-          { label: "Authenticity Score", value: 98, unit: "%", sub: "Protocol P1 Valid", icon: ShieldCheck, highlight: false },
-          { label: "Evaluation Flow", value: 2.4, unit: "m/avg", sub: "4.2x Faster", icon: Zap, highlight: false },
+          { label: "Cohort Average", value: 84.2, unit: "%", sub: "+4.2% vs Phase 1", icon: TrendingUp, trend: 'up' },
+          { label: "Completion Rate", value: 100, unit: "%", sub: `45 Submissions`, icon: Users, trend: 'neutral' },
+          { label: "Integrity Score", value: 98, unit: "%", sub: "Clean Audit Log", icon: ShieldCheck, trend: 'up' },
+          { label: "Evaluation Lift", value: 68, unit: "%", sub: "AI Efficiency Gain", icon: Zap, trend: 'up' },
         ].map((stat) => (
-          <Card key={stat.label} className={cn(
-            "p-6 border transition-all",
-            stat.highlight
-              ? "bg-primary/[0.02] border-primary/20"
-              : "bg-card border-border/30"
-          )}>
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">{stat.label}</p>
-                <p className={cn(
-                  "text-4xl font-black tracking-tighter tabular-nums",
-                  stat.highlight ? "text-primary" : "text-foreground"
-                )}>
-                  {stat.value}<span className="text-xs font-bold text-muted-foreground/40 ml-0.5">{stat.unit}</span>
-                </p>
+          <motion.div whileHover={{ y: -4 }} key={stat.label} className="p-7 bg-background border border-border/40 rounded-[28px] shadow-[0_4px_24px_rgb(0,0,0,0.02)] transition-all">
+            <div className="flex items-start justify-between mb-4">
+              <span className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/40">{stat.label}</span>
+              <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center">
+                 <stat.icon className="h-5 w-5 text-primary opacity-60" />
               </div>
-              <stat.icon className={cn("h-4 w-4 mt-1 opacity-30", stat.highlight ? "text-primary" : "text-muted-foreground")} />
             </div>
-            <div className={cn(
-              "mt-3 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest",
-              stat.highlight ? "text-primary" : "text-muted-foreground/50"
-            )}>
-              <stat.icon className="h-3 w-3" /> {stat.sub}
+            <div className="space-y-1">
+              <div className="text-4xl font-black tracking-tighter tabular-nums text-foreground">
+                {stat.value}<span className="text-sm font-bold text-muted-foreground/40 ml-1.5">{stat.unit}</span>
+              </div>
+              <div className={cn(
+                "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest",
+                stat.trend === 'up' ? 'text-green-600' : 'text-muted-foreground/60'
+              )}>
+                {stat.trend === 'up' && <ArrowUpRight className="w-3.5 h-3.5" />} {stat.sub}
+              </div>
             </div>
-          </Card>
+          </motion.div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 border border-border/30 rounded-xl overflow-hidden">
-          <CardHeader className="p-6 border-b border-border/10 bg-muted/5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0">
-                <CardTitle className="text-base font-black tracking-tight secondary-text">Grade Distribution</CardTitle>
-                <CardDescription className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-widest">Performance across cohort</CardDescription>
-              </div>
-              <Badge variant="outline" className="border-border/30 px-2 py-0 text-[8px] font-black tracking-widest uppercase bg-background/50 h-5 rounded-full">P1 Calibrated</Badge>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Grade Distribution Chart Card */}
+        <Card className="lg:col-span-2 border-border/40 rounded-[32px] overflow-hidden bg-background shadow-[0_8px_40px_rgb(0,0,0,0.03)]">
+          <CardHeader className="p-10 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-xl font-extrabold tracking-tight text-foreground">Performance Distribution</CardTitle>
+              <CardDescription className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mt-1">Cohort Frequency Mapping</CardDescription>
             </div>
+            <Badge variant="outline" className="border-border/30 px-3 h-6 text-[9px] font-bold tracking-widest uppercase bg-background shadow-sm rounded-full">P1 Calibrated</Badge>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="flex items-end gap-4 h-64">
+          <CardContent className="p-10">
+            <div className="flex items-end gap-5 h-72">
               {distributionData.map((data, i) => {
                 const heightPct = (data.count / maxCount) * 100
                 return (
                   <div key={data.range} className="flex-1 flex flex-col items-center group relative h-full">
                     <div className="relative w-full flex flex-col items-center justify-end flex-1">
-                      <div
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: `${heightPct}%` }}
+                        transition={{ duration: 1, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                         className={cn(
-                          "w-full max-w-[72px] rounded-t-xl transition-all duration-700 ease-out",
-                          i === 1 ? 'bg-primary' : 'bg-primary/15 group-hover:bg-primary/30'
+                          "w-full max-w-[80px] rounded-t-2xl transition-all relative overflow-hidden",
+                          data.color,
+                          "hover:brightness-110 shadow-lg shadow-primary/5"
                         )}
-                        style={{ height: `${heightPct}%` }}
-                      />
-                      <div className="absolute -top-7 text-[9px] font-black text-foreground opacity-0 group-hover:opacity-100 transition-all">
-                        {data.count}
+                      >
+                         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </motion.div>
+                      <div className="absolute -top-10 text-xs font-black text-foreground opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 px-2 py-1 bg-background border border-border/40 rounded-lg shadow-xl tabular-nums">
+                        {data.count} <span className="text-[9px] text-muted-foreground">SUBMISSIONS</span>
                       </div>
                     </div>
-                    <div className="text-center space-y-0.5 pt-3 shrink-0">
-                      <p className="text-[10px] font-black text-foreground tracking-tighter tabular-nums">{data.range}</p>
-                      <p className="text-[7px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">{data.label}</p>
+                    <div className="text-center space-y-1 pt-5 shrink-0">
+                      <p className="text-[11px] font-black text-foreground tracking-tighter tabular-nums">{data.range}</p>
+                      <p className="text-[8px] font-black text-muted-foreground/30 uppercase tracking-[0.2em]">{data.label}</p>
                     </div>
                   </div>
                 )
@@ -254,83 +337,120 @@ export default function ResultInsights() {
           </CardContent>
         </Card>
 
-        <div className="space-y-6 flex flex-col">
-          <Card className="border border-border/30 rounded-xl overflow-hidden flex-1 flex flex-col">
-            <CardHeader className="p-6 border-b border-border/10 bg-muted/5">
-              <div className="flex items-center gap-2 text-primary mb-1">
-                <FileText className="h-3.5 w-3.5" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Session Insights</span>
-              </div>
-              <CardTitle className="text-base font-black tracking-tight secondary-text">Instructional Gaps</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 flex-1">
-              <div className="divide-y divide-border/10">
-                {commonGaps.map((gap) => (
-                  <div key={gap.label} className="px-6 py-5 space-y-2 hover:bg-muted/10 transition-colors group">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black text-foreground uppercase tracking-widest">{gap.label}</span>
-                      <AlertCircle className={cn("h-3.5 w-3.5", gap.severity === 'high' ? 'text-amber-500' : 'text-muted-foreground/20')} />
-                    </div>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed font-medium">{gap.gap}</p>
-                    <button
-                      disabled={activeInterventions.includes(gap.label)}
-                      onClick={() => setActiveInterventions(prev => [...prev, gap.label])}
-                      className={cn(
-                        "flex items-center gap-1 text-[9px] font-black uppercase tracking-widest transition-all p-0",
-                        activeInterventions.includes(gap.label) ? "text-emerald-600" : "text-primary hover:gap-1.5"
-                      )}
-                    >
-                      {activeInterventions.includes(gap.label) ? (
-                        <>Initialized <CheckCircle2 className="h-3 w-3" /></>
-                      ) : (
-                        <>Initialize <ChevronRight className="h-3 w-3" /></>
-                      )}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Instructional Interventions Card */}
+        <Card className="border-border/40 rounded-[32px] overflow-hidden bg-background shadow-[0_8px_40px_rgb(0,0,0,0.03)] flex flex-col">
+          <CardHeader className="p-10 border-b border-border/10 bg-muted/5">
+            <div className="flex items-center gap-2 text-primary mb-1">
+              <Sparkles className="h-4 w-4 animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">Smart Interventions</span>
+            </div>
+            <CardTitle className="text-xl font-extrabold tracking-tight text-foreground leading-tight">Identified Logic Gaps</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0 flex-1">
+            <ScrollArea className="h-full">
+               <div className="divide-y divide-border/10">
+                 {commonGaps.map((gap) => (
+                   <div key={gap.label} className="p-8 space-y-3 hover:bg-muted/10 transition-colors group">
+                     <div className="flex items-center justify-between">
+                       <span className="text-[11px] font-black text-foreground uppercase tracking-widest">{gap.label}</span>
+                       <Badge variant="outline" className={cn(
+                         "h-5 text-[8px] font-black uppercase tracking-widest rounded-sm",
+                         gap.severity === 'high' ? 'bg-amber-500/10 text-amber-600 border-amber-200' : 'bg-muted/50 text-muted-foreground border-border/40'
+                       )}>
+                         {gap.severity} RISK
+                       </Badge>
+                     </div>
+                     <p className="text-[12px] text-muted-foreground leading-relaxed font-semibold">{gap.gap}</p>
+                     <div className="pt-2">
+                       <Button
+                         variant="ghost"
+                         disabled={activeInterventions.includes(gap.label)}
+                         onClick={() => setActiveInterventions(prev => [...prev, gap.label])}
+                         className={cn(
+                           "flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all p-0 h-auto hover:bg-transparent",
+                           activeInterventions.includes(gap.label) ? "text-emerald-600" : "text-primary group-hover:gap-3"
+                         )}
+                       >
+                         {activeInterventions.includes(gap.label) ? (
+                           <>INTERVENTION DEPLOYED <CheckCircle2 className="h-4 w-4" /></>
+                         ) : (
+                           <>INITIATE INTERVENTION <ArrowRight className="h-4 w-4" /></>
+                         )}
+                       </Button>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
       </div>
 
-      <Card className="border border-border/30 rounded-xl overflow-hidden">
-        <CardHeader className="p-6 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
-          <div className="space-y-0">
-            <CardTitle className="text-base font-black tracking-tight secondary-text">Cohort Roster</CardTitle>
-            <CardDescription className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-widest">Individual breakdown across criteria</CardDescription>
+      {/* Cohort Roster Card */}
+      <Card className="border-border/40 rounded-[32px] overflow-hidden bg-background shadow-[0_8px_40px_rgb(0,0,0,0.03)]">
+        <CardHeader className="p-10 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
+          <div className="space-y-1">
+            <CardTitle className="text-xl font-extrabold tracking-tight text-foreground">Cohort Roster</CardTitle>
+            <CardDescription className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Breakdown by Assessment Standard</CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+             <Button variant="ghost" className="h-9 px-4 text-[9px] font-black uppercase tracking-widest rounded-lg border border-border/40">Filter Range</Button>
+             <Button variant="ghost" size="icon" className="h-9 w-9 border border-border/40"><Settings2 className="w-4 h-4" /></Button>
           </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="bg-muted/5 border-b border-border/10">
+              <thead className="bg-muted/20 border-b border-border/10">
                 <tr>
-                  <th className="px-6 py-3 font-black uppercase tracking-widest text-[9px] text-muted-foreground/40">Student</th>
-                  <th className="px-4 py-3 font-black uppercase tracking-widest text-[9px] text-muted-foreground/40 text-center">C1</th>
-                  <th className="px-4 py-3 font-black uppercase tracking-widest text-[9px] text-muted-foreground/40 text-center">C2</th>
-                  <th className="px-4 py-3 font-black uppercase tracking-widest text-[9px] text-muted-foreground/40 text-center">C3</th>
-                  <th className="px-4 py-3 font-black uppercase tracking-widest text-[9px] text-muted-foreground/40 text-center">Total</th>
-                  <th className="px-6 py-3 font-black uppercase tracking-widest text-[9px] text-muted-foreground/40 text-right">Grade</th>
+                  <th className="px-10 py-5 font-black uppercase tracking-widest text-[10px] text-muted-foreground/50">Student Identity</th>
+                  <th className="px-6 py-5 font-black uppercase tracking-widest text-[10px] text-muted-foreground/50 text-center">Score Matrix</th>
+                  <th className="px-6 py-5 font-black uppercase tracking-widest text-[10px] text-muted-foreground/50 text-center">Protocol Status</th>
+                  <th className="px-10 py-5 font-black uppercase tracking-widest text-[10px] text-muted-foreground/50 text-right">Evaluation Grade</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/10">
                 {rosterData.map((student) => (
-                  <tr key={student.name} className="hover:bg-muted/5 transition-colors">
-                    <td className="px-6 py-3 font-bold text-foreground text-[12px]">{student.name}</td>
-                    <td className="px-4 py-3 font-medium text-muted-foreground text-center text-[12px]">{student.c1}</td>
-                    <td className="px-4 py-3 font-medium text-muted-foreground text-center text-[12px]">{student.c2}</td>
-                    <td className="px-4 py-3 font-medium text-muted-foreground text-center text-[12px]">{student.c3}</td>
-                    <td className="px-4 py-3 font-black text-foreground text-center text-[12px]">{student.total}</td>
-                    <td className="px-6 py-3 text-right">
-                      <Badge variant="outline" className={cn(
-                        "font-black text-[9px] uppercase tracking-wider rounded-full h-5 px-2",
-                        student.grade.includes('A') ? 'bg-primary/5 text-primary border-primary/20' :
-                        student.grade.includes('B') ? 'bg-emerald-500/5 text-emerald-600 border-emerald-500/20' :
-                        'bg-amber-500/5 text-amber-600 border-amber-500/20'
-                      )}>
-                        {student.grade}
-                      </Badge>
+                  <tr key={student.name} className="hover:bg-muted/5 transition-colors group">
+                    <td className="px-10 py-6">
+                      <div className="flex items-center gap-4">
+                         <div className="w-10 h-10 rounded-2xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-[10px] font-black text-muted-foreground group-hover:text-primary">
+                            {student.name.split(' ').map(n => n[0]).join('')}
+                         </div>
+                         <span className="font-extrabold text-foreground text-sm tracking-tight">{student.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-6 font-mono text-muted-foreground text-center">
+                       <div className="flex items-center justify-center gap-3">
+                          <span className="text-[11px] font-bold">{student.c1}</span>
+                          <span className="text-muted-foreground/20 text-[10px]">|</span>
+                          <span className="text-[11px] font-bold">{student.c2}</span>
+                          <span className="text-muted-foreground/20 text-[10px]">|</span>
+                          <span className="text-[11px] font-bold">{student.c3}</span>
+                          <span className="text-muted-foreground/20 text-[10px]">|</span>
+                          <span className="text-[11px] font-black text-foreground">{student.total}</span>
+                       </div>
+                    </td>
+                    <td className="px-6 py-6 text-center">
+                       <Badge variant="outline" className={cn(
+                         "h-5 px-2 text-[8px] font-black uppercase tracking-widest rounded-full",
+                         student.status === 'Published' ? 'bg-green-500/5 text-green-700 border-green-200' :
+                         student.status === 'Ready' ? 'bg-primary/5 text-primary border-primary/20' :
+                         'bg-amber-500/5 text-amber-700 border-amber-200'
+                       )}>
+                          {student.status}
+                       </Badge>
+                    </td>
+                    <td className="px-10 py-6 text-right">
+                      <div className="flex items-center justify-end gap-3">
+                        <span className="text-xl font-black tabular-nums tracking-tighter text-foreground">{student.grade}</span>
+                        <div className={cn(
+                          "w-1.5 h-6 rounded-full",
+                          student.grade.includes('A') ? 'bg-primary' :
+                          student.grade.includes('B') ? 'bg-emerald-500' :
+                          'bg-amber-500'
+                        )} />
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -339,6 +459,11 @@ export default function ResultInsights() {
           </div>
         </CardContent>
       </Card>
+      
+      {/* Footer Audit Message */}
+      <div className="text-center pb-12">
+         <p className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-[0.4em]">End of Transcript · EducAItors AI Protocol Verified</p>
+      </div>
     </div>
   )
 }

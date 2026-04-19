@@ -49,23 +49,33 @@ export function generateCriterionFeedback(
   return { tier, tierLabel, feedbackText, thinkingPrompt };
 }
 
+export interface OverallFeedbackContent {
+  performanceSnapshot: string;
+  strengths: string[];
+  keyGaps: string[];
+  improvementDirection: string[];
+  closingNote: string;
+}
+
 export function generateOverallFeedback(
   criteria: { name: string; level: number; maxLevel: number; feedbackText: string }[],
   studentName: string
-) {
+): OverallFeedbackContent {
   const averageLevel = criteria.reduce((sum, c) => sum + c.level, 0) / (criteria.length || 1);
   
   let snapshot = '';
-  if (averageLevel >= 4) {
-    snapshot = `${studentName} has demonstrated a strong understanding of the core concepts and delivered a high-quality submission. The work is well-structured and shows clear mastery of the material.`;
-  } else if (averageLevel >= 3) {
-    snapshot = `${studentName} has submitted a solid effort with some good foundational elements, but there are noticeable gaps that prevent it from being a top-tier submission.`;
+  if (averageLevel >= 4.5) {
+    snapshot = `${studentName} has delivered an exceptional submission. The work demonstrates complete mastery of the core concepts with production-level precision and rigor.`;
+  } else if (averageLevel >= 3.5) {
+    snapshot = `${studentName} has submitted a solid effort with strong foundational elements. The approach is well-structured, though minor refinements would elevate it to professional grade.`;
+  } else if (averageLevel >= 2.5) {
+    snapshot = `${studentName}'s work shows a satisfactory understanding but contains significant gaps in key areas. Targeted revision is needed to move from basic implementation to mastery.`;
   } else {
-    snapshot = `${studentName}'s submission requires significant rework. There are fundamental misunderstandings of the core concepts that need to be addressed.`;
+    snapshot = `${studentName}'s submission requires major rework. Fundamental misunderstandings of the core principles are evident and must be addressed through a complete revision.`;
   }
 
   const strengths = criteria.filter(c => c.level >= 4).map(c => c.name);
-  if (strengths.length === 0) strengths.push('Effort and foundational setup');
+  if (strengths.length === 0) strengths.push('Core effort and structural setup');
 
   const gaps = criteria.filter(c => c.level < 4).map(c => c.name);
   if (gaps.length === 0) gaps.push('Minor polishing and edge-case handling');
@@ -75,29 +85,54 @@ export function generateOverallFeedback(
     strengths,
     keyGaps: gaps,
     improvementDirection: [
-      'Review the criteria where you scored below expectations.',
-      'Incorporate the specific feedback provided for each section.',
-      'Focus on adding depth and clarity to your explanations.'
+      'Prioritize addressing the "Major Gaps" identified in the criterion feedback.',
+      'Explicitly state non-goals and constraints before describing solutions.',
+      'Ensure every technical claim is backed by specific evidence from the manuscript.'
     ],
-    closingNote: 'Keep pushing forward. Use this feedback to refine your understanding and improve your future work.'
+    closingNote: 'The foundation is built. Focus your next revision on the high-impact gaps identified to significantly improve the total assessment.'
   };
 }
 
-export function generateSolutionSteps(criteria: { name: string; level: number }[]) {
+export interface SolutionStep {
+  criterionName: string;
+  priority: 'critical' | 'important' | 'maintain';
+  score: string;
+  steps: string[];
+}
+
+export function generateSolutionSteps(criteria: { name: string; level: number }[]): SolutionStep[] {
   return criteria.map(c => {
     let priority: 'critical' | 'important' | 'maintain' = 'maintain';
-    if (c.level < 3) priority = 'critical';
-    else if (c.level < 4) priority = 'important';
+    let steps: string[] = [];
+    
+    if (c.level < 2.5) {
+      priority = 'critical';
+      steps = [
+        `Start from first principles. Re-read the foundational concepts for ${c.name}.`,
+        `Draft a new response that addresses every specific requirement in the rubric.`,
+        `Schedule a peer-review session to validate your new logic.`
+      ];
+    } else if (c.level < 4) {
+      priority = 'important';
+      steps = [
+        `Refine the evidence mapping for ${c.name} to show deeper integration.`,
+        `Add a "Decision Log" explaining the rationale behind your implementation choice.`,
+        `Check for boundary conditions and edge cases that may have been missed.`
+      ];
+    } else {
+      priority = 'maintain';
+      steps = [
+        `Keep up this level of detail.`,
+        `Ensure these patterns are applied consistently throughout the entire project.`,
+        `Consider documenting this approach as a best-practice template.`
+      ];
+    }
 
     return {
       criterionName: c.name,
       priority,
       score: `${c.level}/5`,
-      steps: [
-        `Re-evaluate your approach to ${c.name}.`,
-        `Cross-reference your work with the rubric requirements.`,
-        `Apply the specific feedback provided in the evaluation.`
-      ]
+      steps
     };
   });
 }

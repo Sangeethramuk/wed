@@ -32,7 +32,7 @@ export interface RevisionEvent {
   id: string
   type: RevisionEventType
   timestamp: Date
-  criterionId: number
+  criterionId: string
   criterionLabel: string
   actor: "instructor" | "ai"
   details: {
@@ -141,7 +141,7 @@ function EventCard({ event }: { event: RevisionEvent }) {
               variant="outline"
               className={`h-4 px-1.5 text-[8px] font-bold rounded-sm ${config.bgColor} ${config.color} ${config.borderColor} border`}
             >
-              C{event.criterionId}
+              {String(event.criterionId).toUpperCase()}
             </Badge>
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground/50">
