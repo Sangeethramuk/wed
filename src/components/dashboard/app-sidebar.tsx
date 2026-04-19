@@ -6,7 +6,6 @@ import {
   PlusCircle,
   ClipboardCheck,
   BarChart3,
-  RefreshCcw,
 } from "lucide-react"
 
 import {
@@ -44,11 +43,6 @@ const mainNavItems = [
     url: "/dashboard/post-evaluation",
     icon: BarChart3,
   },
-  {
-    title: "Re-evaluation Requests",
-    url: "/dashboard/re-evaluation",
-    icon: RefreshCcw,
-  },
 ]
 
 export function AppSidebar() {
@@ -62,10 +56,10 @@ export function AppSidebar() {
               render={<Link href="/dashboard" />}
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-red-100 text-red-800 shrink-0">
-                <span className="text-[10px] font-bold">IIMB</span>
+                <span className="text-[10px] font-bold">SIU</span>
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-semibold text-base tracking-tight">IIM Bangalore</span>
+                <span className="font-semibold text-base tracking-tight">Symbiosis International University</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -76,7 +70,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-2">
+            <SidebarMenu>
               {mainNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
@@ -93,21 +87,10 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4 group-data-[collapsible=icon]:p-2">
-        {/* Expanded View */}
-        <div className="flex w-full flex-col items-center justify-center gap-1 group-data-[collapsible=icon]:hidden">
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider text-center">
-            Powered by
-          </span>
-          <span className="font-semibold normal-case text-muted-foreground text-xs">
-            Educ<span className="text-blue-500">AI</span>tors
-          </span>
-        </div>
-
-        {/* Collapsed View */}
-        <div className="hidden w-full items-center justify-center group-data-[collapsible=icon]:flex">
-          <span className="font-bold text-muted-foreground">
-            E<span className="text-blue-500">AI</span>
+      <SidebarFooter className="border-t border-sidebar-border p-4">
+        <div className="flex w-full items-center justify-center">
+          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+            Powered by <span className="font-semibold normal-case text-foreground">EducAItors</span>
           </span>
         </div>
       </SidebarFooter>
