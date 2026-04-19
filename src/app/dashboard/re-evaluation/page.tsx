@@ -158,19 +158,9 @@ export default function ReEvaluationDashboard() {
                 <span className="text-[10px] font-black uppercase tracking-widest text-primary/80">Re-Evaluation Module</span>
               </div>
               <h1 className="text-4xl font-black tracking-tighter secondary-text">Manage your workload</h1>
-              <div className="flex items-center gap-2 pt-1">
-                <Sparkles className="h-3.5 w-3.5 text-primary opacity-50" />
-                <p className="text-[11px] text-muted-foreground opacity-60 font-medium">
-                  Prioritizing {GLOBAL_KPIS[0].value} pending requests across your active courses.
-                </p>
-              </div>
             </div>
             
             <div className="flex flex-col items-end gap-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-red-500/10 bg-red-500/[0.03] text-red-600/80">
-                <AlertCircle className="size-3.5" />
-                <span className="text-[10px] font-black uppercase tracking-widest">3 Critical Overdue</span>
-              </div>
               <div className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest flex items-center gap-2">
                 <Clock className="h-3 w-3 opacity-50" />
                 Last updated 2 mins ago
@@ -178,13 +168,13 @@ export default function ReEvaluationDashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-3">
             {GLOBAL_KPIS.map((kpi, i) => (
-              <div key={i} className="group px-3 py-2.5 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-all flex flex-col">
-                <span className="text-[7px] font-black uppercase tracking-widest text-muted-foreground/50">{kpi.label}</span>
-                <div className="flex items-baseline gap-1 mt-0.5">
-                  <span className="text-lg font-black tracking-tighter" style={{ color: kpi.accent }}>{kpi.value}</span>
-                  <span className="text-[8px] font-bold text-muted-foreground/30">{kpi.sub}</span>
+              <div key={i} className="group px-4 py-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-all flex flex-col justify-center">
+                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">{kpi.label}</span>
+                <div className="flex items-baseline gap-1.5 mt-1">
+                  <span className="text-xl font-black tracking-tighter" style={{ color: kpi.accent }}>{kpi.value}</span>
+                  <span className="text-[10px] font-bold text-muted-foreground/30">{kpi.sub}</span>
                 </div>
               </div>
             ))}
@@ -233,6 +223,7 @@ export default function ReEvaluationDashboard() {
               <AssignmentCard 
                 key={assignment.id} 
                 {...assignment} 
+                resolvedCount={0}
                 cta="Start Review"
                 onClick={() => assignment.url !== '#' && router.push(assignment.url)}
               />
@@ -253,7 +244,6 @@ export default function ReEvaluationDashboard() {
               <AssignmentCard 
                 key={assignment.id} 
                 {...assignment} 
-                cta="Monitor Queue"
                 variant="outline"
               />
             ))}
@@ -367,12 +357,14 @@ function AssignmentCard({
             </div>
           </div>
 
-          <div className="flex items-center justify-end pt-1">
-            <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-primary/70 group-hover:text-primary transition-colors">
-              {cta}
-              <ArrowRight className="h-2 w-2 group-hover:translate-x-0.5 transition-transform" />
+          {cta && (
+            <div className="flex items-center justify-end pt-1">
+              <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-primary/70 group-hover:text-primary transition-colors">
+                {cta}
+                <ArrowRight className="h-2 w-2 group-hover:translate-x-0.5 transition-transform" />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
