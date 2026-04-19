@@ -224,7 +224,7 @@ export default function ReEvalWorkspacePage() {
                   ))}
 
                   {/* Highlighted Student Evidence */}
-                  <div className="relative my-4 -mx-10 px-10 py-6 bg-amber-500/[0.04] border-l-4 border-amber-500">
+                  <div className="relative my-4 -mx-10 px-10 py-6 bg-amber-50 border-l-4 border-amber-500">
                     <div className="absolute -top-3 left-10 px-3 py-1 rounded-full bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest font-sans shadow-lg shadow-amber-500/20">
                       Student Cited · {st.evidence}
                     </div>
@@ -629,7 +629,7 @@ function DecisionOption({ active, variant, label, desc, onClick, children }: { a
     >
       <div className={`px-5 py-4 flex items-center justify-between ${active ? isUphold ? 'bg-emerald-500 text-white' : 'bg-primary text-white' : ''}`}>
          <div className="flex items-center gap-3">
-            <div className={`size-4 rounded-full border-2 flex items-center justify-center ${active ? 'border-white' : 'border-border/10'}`}>
+            <div className={`size-4 rounded-full border-2 flex items-center justify-center ${active ? 'border-white' : 'border-slate-300'}`}>
                {active && <div className="size-2 rounded-full bg-white" />}
             </div>
             <div className="flex flex-col">
