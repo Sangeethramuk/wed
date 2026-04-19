@@ -1098,7 +1098,6 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                     // Implicit adoption on edit
                                     if (!storeFb) {
                                       confirmFeedback(criterionKey, {
-                                        criterionId: criterionKey,
                                         tier: fb.tier as any,
                                         tierLabel: fb.tierLabel,
                                         feedbackText: text,
@@ -1113,7 +1112,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                     if (!storeFb) {
                                        // If not yet in store, just adopt the regen
                                        confirmFeedback(criterionKey, {
-                                        criterionId: criterionKey,
+
                                         tier: regen.tier as any,
                                         tierLabel: regen.tierLabel,
                                         feedbackText: regen.feedbackText,
@@ -1127,7 +1126,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                     // Explicit adoption on confirm
                                     if (!storeFb) {
                                       confirmFeedback(criterionKey, {
-                                        criterionId: criterionKey,
+
                                         tier: fb.tier as any,
                                         tierLabel: fb.tierLabel,
                                         feedbackText: fb.feedbackText,

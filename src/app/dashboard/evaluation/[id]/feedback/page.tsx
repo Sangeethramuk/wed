@@ -214,7 +214,7 @@ export default function FeedbackPage() {
     }
   };
 
-  const isAI = overallFeedback?.authorship === 'ai_generated';
+  const isAI = studentOverallFeedback?.authorship === 'ai_generated';
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden font-sans select-none">
