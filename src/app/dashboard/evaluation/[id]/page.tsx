@@ -205,13 +205,13 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   const currentStudent = allSubmissions.find(s => s.id === selectedSubmission)
 
   const rubricPoints = [
-    { id: 1, type: "c1", label: "Problem Understanding & Direction", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the problem framing, user/task clarity, assumptions/constraints, outcomes/non-goals, and scoped use-case mapping is present, and 20% of the work has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
-    { id: 2, type: "c2", label: "Iteration & Improvement", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the iteration rationale, before/after evidence, and next-steps articulation is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
-    { id: 3, type: "c3", label: "Documentation & Reproducibility", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the setup/run steps, samples/expected outputs, troubleshooting, and limitations is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] },
-    { id: 4, type: "c4", label: "Technical Setup & Integration", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the tool/API integration, config documentation, runnable end-to-end execution, basic error handling, and test path is present, and 20% has issues.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] }
+    { id: "c1", type: "c1", label: "Problem Understanding & Direction", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the problem framing, user/task clarity, assumptions/constraints, outcomes/non-goals, and scoped use-case mapping is present, and 20% of the work has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
+    { id: "c2", type: "c2", label: "Iteration & Improvement", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the iteration rationale, before/after evidence, and next-steps articulation is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
+    { id: "c3", type: "c3", label: "Documentation & Reproducibility", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the setup/run steps, samples/expected outputs, troubleshooting, and limitations is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] },
+    { id: "c4", type: "c4", label: "Technical Setup & Integration", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the tool/API integration, config documentation, runnable end-to-end execution, basic error handling, and test path is present, and 20% has issues.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] }
   ]
 
-  const [criterionState, setCriterionState] = useState<Record<number, { score: number, isOverridden: boolean, feedback: string, confirmed: boolean }>>({})
+  const [criterionState, setCriterionState] = useState<Record<string, { score: number, isOverridden: boolean, feedback: string, confirmed: boolean }>>({})
 
   const calculateTotalScore = () => {
     return rubricPoints.reduce((total, point) => {
@@ -225,7 +225,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
   const totalMaxPoints = rubricPoints.reduce((sum, p) => sum + p.maxPoints, 0)
   const currentTotalScore = calculateTotalScore()  
-  const handleScoreConfirm = (id: number, aiScore: number) => {
+  const handleScoreConfirm = (id: string, aiScore: number) => {
     setCriterionState(prev => ({ ...prev, [id]: { ...prev[id], score: aiScore, isOverridden: false, confirmed: true } }))
     addRevisionEvent({
       type: 'score_confirmed',
@@ -237,7 +237,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     if (nextIndex < rubricPoints.length) setActiveRubricCriterionIdx(nextIndex)
   }
 
-  const handleOverrideScore = (id: number, newScore: number) => {
+  const handleOverrideScore = (id: string, newScore: number) => {
     setCriterionState(prev => ({ ...prev, [id]: { ...prev[id], score: newScore, isOverridden: true, confirmed: true } }))
   }
   
@@ -250,17 +250,17 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     }])
   }
 
-  const handleScoreLevelClick = (criterionId: number, proposedScore: number, aiScore: number) => {
+  const handleScoreLevelClick = (criterionId: string, proposedScore: number, aiScore: number) => {
     if (proposedScore === aiScore) {
       handleScoreConfirm(criterionId, aiScore)
       setActiveOverrideId(null)
       return
     }
     const direction = proposedScore > aiScore ? 'increase' : 'decrease'
-    setActiveOverrideId(criterionId)
+    setActiveOverrideId(criterionId as any)
     setOverrideDrafts(prev => ({
       ...prev,
-      [criterionId]: {
+      [criterionId as any]: {
         criterionId,
         proposedScore,
         aiScore,
@@ -272,7 +272,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     }))
   }
 
-  const handleUpdateDraft = (criterionId: number, updates: Partial<OverrideDraft>) => {
+  const handleUpdateDraft = (criterionId: string, updates: Partial<OverrideDraft>) => {
     setOverrideDrafts(prev => {
       const existing = prev[criterionId]
       if (!existing) return prev
@@ -280,7 +280,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     })
   }
 
-  const handleConfirmOverride = (criterionId: number) => {
+  const handleConfirmOverride = (criterionId: string) => {
     const draft = overrideDrafts[criterionId]
     if (!draft || draft.reasoning.length < 20) return
     setCriterionState(prev => ({
@@ -319,17 +319,17 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     setTextSelectionMode({ active: false, criterionId: null })
     setOverrideDrafts(prev => {
       const next = { ...prev }
-      delete next[criterionId]
+      delete next[criterionId as any]
       return next
     })
   }
 
-  const handleCancelOverride = (criterionId: number) => {
+  const handleCancelOverride = (criterionId: string) => {
     setActiveOverrideId(null)
     setTextSelectionMode({ active: false, criterionId: null })
   }
 
-  const handleLinkOverrideEvidence = (text: string, page: number, criterionId: number) => {
+  const handleLinkOverrideEvidence = (text: string, page: number, criterionId: string) => {
     const draft = overrideDrafts[criterionId]
     if (!draft) return
     const newEvidence = { id: `ov-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, text, page }
@@ -338,7 +338,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     setSelection(null)
   }
 
-  const handleRemoveOverrideEvidence = (criterionId: number, evidenceId: string) => {
+  const handleRemoveOverrideEvidence = (criterionId: string, evidenceId: string) => {
     const draft = overrideDrafts[criterionId]
     if (!draft) return
     handleUpdateDraft(criterionId, { linkedEvidence: draft.linkedEvidence.filter(e => e.id !== evidenceId) })
@@ -360,13 +360,13 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     { value: 'superficial', label: 'Superficial treatment despite appearances' },
   ] as const
   
-  const handleFeedbackChange = (id: number, text: string) => {
+  const handleFeedbackChange = (id: string, text: string) => {
     setCriterionState(prev => ({ ...prev, [id]: { ...prev[id], feedback: text } }))
   }
 
-  const handleConfirmAndGenerate = (pointId: number, pointLabel: string, score: number) => {
-    setGeneratingFeedbackFor(pointId)
-    const criterionKey = `eval-${pointId}`
+  const handleConfirmAndGenerate = (pointId: string, pointLabel: string, score: number) => {
+    setGeneratingFeedbackFor(pointId as any)
+    const criterionKey = pointId
     setTimeout(() => {
       const fb = generateCriterionFeedback(pointLabel, Math.round(score / 2), [], '')
       confirmFeedback(criterionKey, {
@@ -379,7 +379,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     }, 1800)
   }
   
-  const handleDismiss = (id: number) => {
+  const handleDismiss = (id: string) => {
     setDismissedPoints(prev => [...prev, id])
   }
 
@@ -412,14 +412,14 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     setTextSelectionMode({ active: false, criterionId: null })
   }
 
-  const handleMapEvidence = (criterionId: number) => {
+  const handleMapEvidence = (criterionId: string) => {
     if (selection) {
       setMappedEvidence(prev => [...prev, { id: Math.random().toString(), text: selection.text, criterionId }])
       setSelection(null)
     }
   }
 
-  const handleToggleRecording = (criterionId: number) => {
+  const handleToggleRecording = (criterionId: string) => {
     if (recordingId === criterionId) {
       // Stop recording
       recognitionRef.current?.stop()
@@ -1007,54 +1007,79 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                           </div>
                         )}
 
-                        {/* AI Feedback — Confirm + Generate + Card */}
+                        {/* Pre-filled Feedback — seamless review & edit */}
                         {(() => {
-                          const criterionKey = `eval-${point.id}`
-                          const fb = criterionFeedbacks[criterionKey]
-                          const isGenerating = generatingFeedbackFor === point.id
-                          const isConfirmed = state.confirmed && fb?.isConfirmed
+                          const criterionKey = point.id 
+                          const storeFb = criterionFeedbacks[criterionKey]
+                          const isGenerating = generatingFeedbackFor === (point.id as any)
+                          
+                          // Consistently use suggested or stored feedback
+                          const currentScore = state.score ?? point.aiScore
+                          const suggestedFb = !storeFb ? generateCriterionFeedback(point.label, Math.round(currentScore / 2), [], '') : null
+                          
+                          const fb = storeFb || {
+                            ...suggestedFb,
+                            authorship: 'ai_generated' as const,
+                            isConfirmed: false,
+                            isApproved: false,
+                            regenCount: 0,
+                          }
 
                           return (
-                            <div className="space-y-2">
-                              {!isConfirmed && !isGenerating && (
-                                <>
-                                  {state.confirmed ? (
-                                    <button
-                                      onClick={() => handleConfirmAndGenerate(point.id, point.label, state.score ?? point.aiScore)}
-                                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-green-600 text-white hover:bg-green-700 transition-all cursor-pointer border-none"
-                                    >
-                                      <CheckCircle2 className="w-3.5 h-3.5" />
-                                      Generate Feedback
-                                    </button>
-                                  ) : (
-                                    <div className="flex items-start gap-2.5 p-3 border-2 border-dashed border-border rounded-xl bg-muted/10">
-                                      <Info className="w-4 h-4 text-muted-foreground/40 shrink-0 mt-0.5" />
-                                      <div className="text-[10px] text-muted-foreground leading-relaxed">
-                                        <strong className="text-foreground/60 block mb-0.5">Score first</strong>
-                                        Confirm or override the score to generate AI feedback for this criterion.
-                                      </div>
-                                    </div>
-                                  )}
-                                </>
-                              )}
-
-                              {isGenerating && <FeedbackGenerating />}
-
-                              {isConfirmed && !isGenerating && fb && (
+                            <div className="space-y-4">
+                              {isGenerating ? (
+                                <FeedbackGenerating />
+                              ) : (
                                 <CriterionFeedbackCard
-                                  tier={fb.tier}
+                                  tier={fb.tier as any}
                                   tierLabel={fb.tierLabel}
                                   feedbackText={fb.feedbackText}
                                   thinkingPrompt={fb.thinkingPrompt}
                                   authorship={fb.authorship}
                                   isApproved={fb.isApproved}
                                   regenCount={fb.regenCount}
-                                  onEdit={(text) => updateCriterionFeedback(criterionKey, text)}
-                                  onRegenerate={() => {
-                                    const regen = generateCriterionFeedback(point.label, Math.round((state.score ?? point.aiScore) / 2), [], '')
-                                    regenerateCriterionFeedback(criterionKey, regen.feedbackText, regen.tier, regen.tierLabel)
+                                  onEdit={(text) => {
+                                    // Implicit adoption on edit
+                                    if (!storeFb) {
+                                      confirmFeedback(criterionKey, {
+                                        criterionId: criterionKey,
+                                        tier: fb.tier as any,
+                                        tierLabel: fb.tierLabel,
+                                        feedbackText: text,
+                                        thinkingPrompt: fb.thinkingPrompt,
+                                      })
+                                    } else {
+                                      updateCriterionFeedback(criterionKey, text)
+                                    }
                                   }}
-                                  onApprove={() => approveCriterionFeedback(criterionKey)}
+                                  onRegenerate={() => {
+                                    const regen = generateCriterionFeedback(point.label, Math.round(currentScore / 2), [], '')
+                                    if (!storeFb) {
+                                       // If not yet in store, just adopt the regen
+                                       confirmFeedback(criterionKey, {
+                                        criterionId: criterionKey,
+                                        tier: regen.tier as any,
+                                        tierLabel: regen.tierLabel,
+                                        feedbackText: regen.feedbackText,
+                                        thinkingPrompt: regen.thinkingPrompt,
+                                      })
+                                    } else {
+                                      regenerateCriterionFeedback(criterionKey, regen.feedbackText, regen.tier as any, regen.tierLabel)
+                                    }
+                                  }}
+                                  onApprove={() => {
+                                    // Explicit adoption on confirm
+                                    if (!storeFb) {
+                                      confirmFeedback(criterionKey, {
+                                        criterionId: criterionKey,
+                                        tier: fb.tier as any,
+                                        tierLabel: fb.tierLabel,
+                                        feedbackText: fb.feedbackText,
+                                        thinkingPrompt: fb.thinkingPrompt,
+                                      })
+                                    }
+                                    approveCriterionFeedback(criterionKey)
+                                  }}
                                 />
                               )}
                             </div>

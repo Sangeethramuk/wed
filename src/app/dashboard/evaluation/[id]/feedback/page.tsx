@@ -204,9 +204,11 @@ export default function FeedbackPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className={`text-[9px] font-bold h-5 ${isEdited ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-primary/10 text-primary border-primary/20'}`}>
-            {isEdited ? <><Pencil className="w-2.5 h-2.5 mr-1" /> Instructor Edited</> : <><Sparkles className="w-2.5 h-2.5 mr-1" /> AI Generated</>}
-          </Badge>
+          {isEdited && (
+            <Badge variant="outline" className="text-[9px] font-bold h-5 bg-amber-50 text-amber-700 border-amber-200">
+               <Pencil className="w-2.5 h-2.5 mr-1" /> Locally Adjusted
+            </Badge>
+          )}
         </div>
       </header>
 
@@ -254,10 +256,7 @@ export default function FeedbackPage() {
               {/* Edit bar */}
               {isEdited && (
                 <div className="px-6 py-2 bg-amber-50 border-b border-amber-200 flex items-center justify-between">
-                  <span className="text-[10px] text-amber-700 font-medium">Document has been edited</span>
-                  <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] text-amber-700 gap-1" onClick={handleRevert}>
-                    <Undo2 className="w-3 h-3" /> Revert to AI version
-                  </Button>
+                  <span className="text-[10px] text-amber-700 font-medium italic">Document contains custom modifications</span>
                 </div>
               )}
 
