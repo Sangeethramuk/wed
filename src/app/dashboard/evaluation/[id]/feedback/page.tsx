@@ -257,7 +257,7 @@ export default function FeedbackPage() {
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-2.5">
               {Object.values(activeStudent.criteria).map(c => {
-                const fb = criterionFeedbacks[c.id];
+                const fb = studentCriterionFeedbacks[c.id];
                 if (!fb?.isConfirmed) return null;
                 return (
                   <CriteriaRecapCard
