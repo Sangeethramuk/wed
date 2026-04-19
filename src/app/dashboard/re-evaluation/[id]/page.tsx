@@ -122,7 +122,7 @@ export default function ReEvalWorkspacePage() {
     <div className="flex flex-col h-[calc(100vh-2rem)] bg-slate-50/50 rounded-2xl border border-border/10 overflow-hidden shadow-sm">
       {/* Institutional Topbar */}
       <div className="h-16 px-6 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-border/10 flex-shrink-0 z-50">
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <button
             onClick={handleBack}
             className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-all group"
@@ -131,7 +131,7 @@ export default function ReEvalWorkspacePage() {
             Re-evaluation Requests
           </button>
           
-          <div className="w-px h-6 bg-border/10" />
+          <div className="w-px h-4 bg-slate-200" />
           
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-black tracking-tighter text-slate-800 flex items-center gap-2">
