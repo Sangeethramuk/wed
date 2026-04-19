@@ -1065,8 +1065,8 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
                         {/* Pre-filled Feedback — seamless review & edit */}
                         {(() => {
-                          const criterionKey = point.id 
-                          const storeFb = criterionFeedbacks[criterionKey]
+                          const criterionKey = point.id
+                          const storeFb = studentCriterionFeedbacks[criterionKey]
                           const isGenerating = generatingFeedbackFor === point.id
                           
                           // Consistently use suggested or stored feedback

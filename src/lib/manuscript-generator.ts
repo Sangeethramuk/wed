@@ -877,7 +877,7 @@ const REFERENCES = [
 // ── Page Builder ──────────────────────────────────────────────────────────────
 
 interface PageContentPool {
-  paragraphs: { text: string; highlightable?: { criterionId: number; confidence: number } }[]
+  paragraphs: { text: string; highlightable?: { criterionId: string; confidence: number } }[]
   codeBlocks: { language: string; code: string }[]
   tables: { headers: string[]; rows: string[][]; caption?: string }[]
   bulletLists: string[][]

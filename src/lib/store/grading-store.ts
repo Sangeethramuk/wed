@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { SolutionStep } from '@/lib/feedback-generator';
 
 export type GradingPhase = 'selection' | 'blind' | 'delta' | 'desk' | 'feedback' | 'complete';
 export type FixType = 'f1' | 'f2' | 'f3' | 'f4';

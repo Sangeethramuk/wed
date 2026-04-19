@@ -31,7 +31,7 @@ function ConfidenceBars({ confidence }: { confidence: number }) {
   )
 }
 
-function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterionId: number; id?: string }) {
+function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterionId: string; id?: string }) {
   const c = CRITERION_COLORS[criterionId] ?? CRITERION_COLORS[1]
   const label = CRITERION_LABELS[criterionId] ?? `Criterion ${criterionId}`
   return (
@@ -58,9 +58,9 @@ function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterio
 
 function splitByEvidence(
   text: string,
-  evidences: { id: string; text: string; criterionId: number }[]
-): Array<{ text: string; evidence?: { criterionId: number; id: string } }> {
-  let segments: Array<{ text: string; evidence?: { criterionId: number; id: string } }> = [{ text }]
+  evidences: { id: string; text: string; criterionId: string }[]
+): Array<{ text: string; evidence?: { criterionId: string; id: string } }> {
+  let segments: Array<{ text: string; evidence?: { criterionId: string; id: string } }> = [{ text }]
   for (const ev of evidences) {
     const next: typeof segments = []
     for (const seg of segments) {
@@ -89,11 +89,11 @@ function HighlightedSpan({
   const c = CRITERION_COLORS[criterionId] ?? CRITERION_COLORS[1]
   const label = CRITERION_LABELS[criterionId] ?? `Criterion ${criterionId}`
 
-  const descriptions: Record<number, string> = {
-    1: "This passage demonstrates clear framing of the problem context, user/task clarity, and primary objectives.",
-    2: "Demonstrates iterative thinking through progressive refinement with clear articulation of improvements.",
-    3: "Provides technical documentation with clear explanations that enable reproducibility of the approach.",
-    4: "Shows practical implementation capability with proper tool integration and configuration management.",
+  const descriptions: Record<string, string> = {
+    "c1": "This passage demonstrates clear framing of the problem context, user/task clarity, and primary objectives.",
+    "c2": "Demonstrates iterative thinking through progressive refinement with clear articulation of improvements.",
+    "c3": "Provides technical documentation with clear explanations that enable reproducibility of the approach.",
+    "c4": "Shows practical implementation capability with proper tool integration and configuration management.",
   }
 
   return (
@@ -211,7 +211,7 @@ export default function ManuscriptRenderer({
   userEvidence = [],
 }: {
   elements: ManuscriptElement[]
-  userEvidence?: { id: string; text: string; criterionId: number }[]
+  userEvidence?: { id: string; text: string; criterionId: string }[]
 }) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">

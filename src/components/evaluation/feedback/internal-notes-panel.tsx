@@ -46,20 +46,20 @@ function getCategoryStyle(cat: string) {
 }
 
 export function InternalNotesPanel() {
-  const { internalNotes, addInternalNote } = useGradingStore();
+  const { internalNotes, addInternalNote, activeStudentId } = useGradingStore();
   const [isExpanded, setIsExpanded] = useState(true);
   const [currentNoteIdx, setCurrentNoteIdx] = useState(0);
   const [newNoteText, setNewNoteText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
 
-  const notes = internalNotes;
+  const notes = (activeStudentId ? internalNotes[activeStudentId] : null) ?? [];
   const totalNotes = notes.length;
 
   const canAdd = newNoteText.trim().length > 0 && selectedCategory;
 
   const handleAddNote = () => {
     if (!canAdd) return;
-    addInternalNote({
+    addInternalNote(activeStudentId ?? '', {
       author: 'You (Dr. J. Desai)',
       role: 'Primary Grader',
       initials: 'JD',
