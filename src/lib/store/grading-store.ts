@@ -4,6 +4,41 @@ import { persist } from 'zustand/middleware';
 export type GradingPhase = 'selection' | 'blind' | 'delta' | 'desk' | 'feedback' | 'complete';
 export type FixType = 'f1' | 'f2' | 'f3' | 'f4';
 export type IntegrityStatus = 'clean' | 'suspicious' | 'manipulated';
+export type FeedbackTier = 'perfect' | 'minor' | 'gap' | 'major';
+export type AuthorshipState = 'ai_generated' | 'instructor_edited' | 'regenerated';
+
+export interface InternalNote {
+  id: string;
+  author: string;
+  role: string;
+  initials: string;
+  avatarColor: string;
+  text: string;
+  timestamp: string;
+  category: 'Medical Leave' | 'Academic Context' | 'Grading Decision' | 'Conduct' | 'Other';
+  isFlagged: boolean;
+  isOwn: boolean;
+}
+
+export interface CriterionFeedbackState {
+  criterionId: string;
+  tier: FeedbackTier;
+  tierLabel: string;
+  feedbackText: string;
+  thinkingPrompt?: string;
+  authorship: AuthorshipState;
+  isConfirmed: boolean;
+  isApproved: boolean;
+  regenCount: number;
+}
+
+export interface OverallFeedbackState {
+  documentText: string;
+  originalDocumentText: string;
+  instructorNote: string;
+  authorship: AuthorshipState;
+  isSubmitted: boolean;
+}
 
 export type CalibrationPhase =
   | 'not_started'
@@ -332,6 +367,22 @@ interface GradingState {
   addEvidenceExchange: (assignmentId: string, paperId: string, criterionId: string, exchange: Omit<EvidenceExchange, 'id' | 'timestamp'>) => void;
   resolveScore: (assignmentId: string, paperId: string, criterionId: string, status: 'accepted' | 'resolved') => void;
   completeCalibration: (assignmentId: string) => void;
+
+  // Feedback & Notes State
+  internalNotes: InternalNote[];
+  criterionFeedbacks: Record<string, CriterionFeedbackState>;
+  overallFeedback: OverallFeedbackState | null;
+
+  // Feedback Actions
+  addInternalNote: (note: Omit<InternalNote, 'id' | 'timestamp'>) => void;
+  confirmCriterionScore: (criterionId: string, data: Pick<CriterionFeedbackState, 'tier' | 'tierLabel' | 'feedbackText' | 'thinkingPrompt'>) => void;
+  updateCriterionFeedback: (criterionId: string, text: string) => void;
+  approveCriterionFeedback: (criterionId: string) => void;
+  regenerateCriterionFeedback: (criterionId: string, newText: string, newTier: FeedbackTier, newTierLabel: string) => void;
+  setOverallFeedback: (data: OverallFeedbackState) => void;
+  updateOverallFeedbackText: (text: string) => void;
+  mergeInstructorNote: (note: string) => void;
+  submitFinalFeedback: () => void;
 }
 
 export const useGradingStore = create<GradingState>()(
@@ -342,6 +393,9 @@ export const useGradingStore = create<GradingState>()(
       phase: 'selection',
       spotCheckActive: false,
       calibration: {},
+      internalNotes: [],
+      criterionFeedbacks: {},
+      overallFeedback: null,
 
       assignments: {
         'se-101': {
@@ -528,6 +582,94 @@ export const useGradingStore = create<GradingState>()(
         const cal = state.calibration[assignmentId];
         if (!cal) return state;
         return { calibration: { ...state.calibration, [assignmentId]: { ...cal, phase: 'complete' } } };
+      }),
+
+      // --- Feedback Actions ---
+      addInternalNote: (note) => set((state) => ({
+        internalNotes: [...state.internalNotes, {
+          ...note,
+          id: `note-${Date.now()}`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        }],
+      })),
+
+      confirmCriterionScore: (criterionId, data) => set((state) => ({
+        criterionFeedbacks: {
+          ...state.criterionFeedbacks,
+          [criterionId]: {
+            ...data,
+            criterionId,
+            authorship: 'ai_generated',
+            isConfirmed: true,
+            isApproved: false,
+            regenCount: 0,
+          },
+        },
+      })),
+
+      updateCriterionFeedback: (criterionId, text) => set((state) => {
+        const fb = state.criterionFeedbacks[criterionId];
+        if (!fb) return state;
+        return {
+          criterionFeedbacks: {
+            ...state.criterionFeedbacks,
+            [criterionId]: { ...fb, feedbackText: text, authorship: 'instructor_edited' },
+          },
+        };
+      }),
+
+      approveCriterionFeedback: (criterionId) => set((state) => {
+        const fb = state.criterionFeedbacks[criterionId];
+        if (!fb) return state;
+        return {
+          criterionFeedbacks: {
+            ...state.criterionFeedbacks,
+            [criterionId]: { ...fb, isApproved: true },
+          },
+        };
+      }),
+
+      regenerateCriterionFeedback: (criterionId, newText, newTier, newTierLabel) => set((state) => {
+        const fb = state.criterionFeedbacks[criterionId];
+        if (!fb || fb.regenCount >= 2) return state;
+        return {
+          criterionFeedbacks: {
+            ...state.criterionFeedbacks,
+            [criterionId]: {
+              ...fb,
+              feedbackText: newText,
+              tier: newTier,
+              tierLabel: newTierLabel,
+              regenCount: fb.regenCount + 1,
+              authorship: 'regenerated',
+            },
+          },
+        };
+      }),
+
+      setOverallFeedback: (data) => set(() => ({
+        overallFeedback: data,
+      })),
+
+      updateOverallFeedbackText: (text) => set((state) => {
+        if (!state.overallFeedback) return state;
+        return {
+          overallFeedback: { ...state.overallFeedback, documentText: text, authorship: 'instructor_edited' },
+        };
+      }),
+
+      mergeInstructorNote: (note) => set((state) => {
+        if (!state.overallFeedback) return state;
+        return {
+          overallFeedback: { ...state.overallFeedback, instructorNote: note },
+        };
+      }),
+
+      submitFinalFeedback: () => set((state) => {
+        if (!state.overallFeedback) return state;
+        return {
+          overallFeedback: { ...state.overallFeedback, isSubmitted: true },
+        };
       }),
     }),
     { name: 'grading-hub-storage' }

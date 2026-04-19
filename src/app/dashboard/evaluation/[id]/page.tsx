@@ -48,6 +48,11 @@ import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { RevisionHistorySheet, RevisionEvent } from "@/components/evaluation/revision-history-sheet"
 import { FeedbackSummaryModal } from "@/components/evaluation/feedback-summary-modal"
+import { CriterionFeedbackCard } from "@/components/evaluation/feedback/criterion-feedback-card"
+import { FeedbackGenerating } from "@/components/evaluation/feedback/feedback-generating"
+import { InternalNotesPanel } from "@/components/evaluation/feedback/internal-notes-panel"
+import { generateCriterionFeedback } from "@/lib/feedback-generator"
+import { useGradingStore as useFeedbackStore } from "@/lib/store/grading-store"
 
 export default function GradingDesk({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -115,6 +120,16 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   // Feedback summary modal state
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false)
   const [overallFeedback, setOverallFeedback] = useState("")
+  
+  // AI Feedback flow state
+  const {
+    criterionFeedbacks,
+    confirmCriterionScore: confirmFeedback,
+    updateCriterionFeedback,
+    approveCriterionFeedback,
+    regenerateCriterionFeedback,
+  } = useFeedbackStore()
+  const [generatingFeedbackFor, setGeneratingFeedbackFor] = useState<number | null>(null)
 
   const manuscript = useMemo(() => generateManuscript(selectedSubmission), [selectedSubmission])
   const artifacts = useMemo(() => generateArtifacts(selectedSubmission), [selectedSubmission])
@@ -346,6 +361,21 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   
   const handleFeedbackChange = (id: number, text: string) => {
     setCriterionState(prev => ({ ...prev, [id]: { ...prev[id], feedback: text } }))
+  }
+
+  const handleConfirmAndGenerate = (pointId: number, pointLabel: string, score: number) => {
+    setGeneratingFeedbackFor(pointId)
+    const criterionKey = `eval-${pointId}`
+    setTimeout(() => {
+      const fb = generateCriterionFeedback(pointLabel, Math.round(score / 2), [], '')
+      confirmFeedback(criterionKey, {
+        tier: fb.tier,
+        tierLabel: fb.tierLabel,
+        feedbackText: fb.feedbackText,
+        thinkingPrompt: fb.thinkingPrompt,
+      })
+      setGeneratingFeedbackFor(null)
+    }, 1800)
   }
   
   const handleDismiss = (id: number) => {
@@ -1007,15 +1037,59 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                           </div>
                         )}
 
-                        <div className="space-y-1.5">
-                          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Feedback</span>
-                          <textarea
-                            value={state.feedback || ''}
-                            onChange={e => handleFeedbackChange(point.id, e.target.value)}
-                            placeholder="Add specific feedback for this criterion..."
-                            className="w-full h-20 rounded-lg border border-border bg-muted/5 p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground/80 placeholder:text-xs"
-                          />
-                        </div>
+                        {/* AI Feedback — Confirm + Generate + Card */}
+                        {(() => {
+                          const criterionKey = `eval-${point.id}`
+                          const fb = criterionFeedbacks[criterionKey]
+                          const isGenerating = generatingFeedbackFor === point.id
+                          const isConfirmed = state.confirmed && fb?.isConfirmed
+
+                          return (
+                            <div className="space-y-2">
+                              {!isConfirmed && !isGenerating && (
+                                <>
+                                  {state.confirmed ? (
+                                    <button
+                                      onClick={() => handleConfirmAndGenerate(point.id, point.label, state.score ?? point.aiScore)}
+                                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-green-600 text-white hover:bg-green-700 transition-all cursor-pointer border-none"
+                                    >
+                                      <CheckCircle2 className="w-3.5 h-3.5" />
+                                      Generate Feedback
+                                    </button>
+                                  ) : (
+                                    <div className="flex items-start gap-2.5 p-3 border-2 border-dashed border-border rounded-xl bg-muted/10">
+                                      <Info className="w-4 h-4 text-muted-foreground/40 shrink-0 mt-0.5" />
+                                      <div className="text-[10px] text-muted-foreground leading-relaxed">
+                                        <strong className="text-foreground/60 block mb-0.5">Score first</strong>
+                                        Confirm or override the score to generate AI feedback for this criterion.
+                                      </div>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+
+                              {isGenerating && <FeedbackGenerating />}
+
+                              {isConfirmed && !isGenerating && fb && (
+                                <CriterionFeedbackCard
+                                  tier={fb.tier}
+                                  tierLabel={fb.tierLabel}
+                                  feedbackText={fb.feedbackText}
+                                  thinkingPrompt={fb.thinkingPrompt}
+                                  authorship={fb.authorship}
+                                  isApproved={fb.isApproved}
+                                  regenCount={fb.regenCount}
+                                  onEdit={(text) => updateCriterionFeedback(criterionKey, text)}
+                                  onRegenerate={() => {
+                                    const regen = generateCriterionFeedback(point.label, Math.round((state.score ?? point.aiScore) / 2), [], '')
+                                    regenerateCriterionFeedback(criterionKey, regen.feedbackText, regen.tier, regen.tierLabel)
+                                  }}
+                                  onApprove={() => approveCriterionFeedback(criterionKey)}
+                                />
+                              )}
+                            </div>
+                          )
+                        })()}
                       </div>
                     </div>
 
@@ -1111,6 +1185,9 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                   </div>
                 </ScrollArea>
 
+                {/* Internal Notes */}
+                <InternalNotesPanel />
+
                 <div className="p-4 border-t border-border bg-background shrink-0 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
@@ -1145,19 +1222,13 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                         size="sm"
                         disabled={!allConfirmed}
                         onClick={() => {
-                          if (!gradedSubmissions.includes(selectedSubmission)) {
-                            setGradedSubmissions(prev => [...new Set([...prev, selectedSubmission])])
-                          }
-                          const nextUngraded = submissions.find(s => !gradedSubmissions.includes(s.id) && s.id !== selectedSubmission)
-                          if (nextUngraded) {
-                            setSelectedSubmission(nextUngraded.id)
-                            setIsFixed(false)
-                            setCurrentPage(1)
+                          if (allConfirmed) {
+                            router.push(`/dashboard/evaluation/${id}/feedback`)
                           }
                         }}
                         className="h-9 flex-1 text-[10px] font-black uppercase tracking-widest bg-foreground text-background hover:bg-foreground/90 disabled:opacity-40 disabled:pointer-events-none"
                       >
-                        {allConfirmed ? 'Submit Grade →' : `· ${rubricPoints.length - confirmedCount} remaining`}
+                        {allConfirmed ? 'Overall Feedback →' : `· ${rubricPoints.length - confirmedCount} remaining`}
                       </Button>
                     ) : (
                       <Button
