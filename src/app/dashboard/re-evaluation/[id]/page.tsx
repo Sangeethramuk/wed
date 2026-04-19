@@ -162,8 +162,8 @@ export default function ReEvalWorkspacePage() {
       {/* Workspace Area */}
       <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Left Panel: Submission Viewer */}
-        <div className="flex-1 flex flex-col bg-white overflow-hidden relative">
-          <div className="h-14 px-6 flex items-center justify-between border-b border-border/5 bg-slate-50/30 flex-shrink-0">
+        <div className="flex-1 flex flex-col bg-slate-50/80 overflow-hidden relative">
+          <div className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white shadow-sm z-10 flex-shrink-0">
             <div className="flex items-center gap-4">
               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Submission Viewer</span>
               <div className="flex bg-muted/40 p-1 rounded-xl border border-border/5">
@@ -193,9 +193,9 @@ export default function ReEvalWorkspacePage() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50" style={{ scrollbarWidth: 'thin' }}>
+          <div className="flex-1 overflow-y-auto p-8" style={{ scrollbarWidth: 'thin' }}>
             {view === 'scan' ? (
-              <div className="max-w-2xl mx-auto rounded-2xl bg-white border border-border/10 shadow-2xl shadow-slate-200/50 p-10 font-serif text-[14px] leading-[1.8] text-slate-800 relative">
+              <div className="max-w-2xl mx-auto rounded-2xl bg-white border border-slate-200 shadow-xl shadow-slate-200/50 p-10 font-serif text-[14px] leading-[1.8] text-slate-800 relative ring-1 ring-slate-900/5">
                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-border/5">
                   <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 font-sans">
                     {st.rollId} · {st.name} · {st.assign}
@@ -281,14 +281,14 @@ export default function ReEvalWorkspacePage() {
         </div>
 
         {/* Right Panel: Decision Area */}
-        <div className="w-[480px] flex-shrink-0 flex flex-col bg-slate-50/30 overflow-hidden border-l border-border/10 relative z-10 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
+        <div className="w-[480px] flex-shrink-0 flex flex-col bg-slate-50 overflow-hidden border-l border-slate-200 relative z-10 shadow-[-4px_0_24px_rgba(0,0,0,0.05)]">
           {/* Intelligence Header: KPI Strip */}
-          <div className="flex border-b border-border/10 bg-white shadow-sm flex-shrink-0 relative z-20">
-            <KPIBlock label="Original Score" className="flex-[0.9] border-r border-border/5">
+          <div className="flex border-b border-slate-200 bg-white shadow-sm flex-shrink-0 relative z-20">
+            <KPIBlock label="Original Score" className="flex-[0.9] border-r border-slate-200/60">
               <div className="text-lg font-black tracking-tighter" style={{ color: st.accentColor }}>{st.origScore}<span className="text-muted-foreground/30 font-bold ml-1">/ {st.maxScore}</span></div>
               <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">{st.critShort}</div>
             </KPIBlock>
-            <KPIBlock label="Evidence Used" className="flex-[1.4] border-r border-border/5">
+            <KPIBlock label="Evidence Used" className="flex-[1.4] border-r border-slate-200/60">
               <div className="text-[10px] font-bold text-slate-600 leading-tight line-clamp-2">"{st.gradingEvidence}"</div>
               <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1">At Grading</div>
             </KPIBlock>
@@ -306,9 +306,9 @@ export default function ReEvalWorkspacePage() {
               <>
                 {/* Section: Student Dispute */}
                 <section className="space-y-3">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">Intelligence Layer</div>
-                  <div className="rounded-2xl bg-white border border-border/10 shadow-sm overflow-hidden">
-                    <div className="px-5 py-4 border-b border-border/5 bg-slate-50/30">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Intelligence Layer</div>
+                  <div className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
                       <div className="flex items-center justify-between">
                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Disputed Reasoning</span>
                          <span className="px-2 py-0.5 rounded bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest">
@@ -336,11 +336,11 @@ export default function ReEvalWorkspacePage() {
                 {/* Section: Your Decision */}
                 <section className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">Action Hub</div>
-                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/20">Decision Workspace</span>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Action Hub</div>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/30">Decision Workspace</span>
                   </div>
 
-                  <div className="rounded-2xl bg-white border border-border/10 shadow-sm p-2 space-y-2">
+                  <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-2 space-y-2">
                     <DecisionOption
                       active={decision === 'uphold'}
                       variant="uphold"
@@ -433,7 +433,7 @@ export default function ReEvalWorkspacePage() {
                 {/* Section: Rationale */}
                 <section className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">Official Record</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Official Record</div>
                   </div>
                   <div className="rounded-2xl bg-white border-2 border-primary/20 shadow-sm p-5 space-y-4">
                     <div className="flex items-center justify-between">
@@ -623,8 +623,8 @@ function DecisionOption({ active, variant, label, desc, onClick, children }: { a
       onClick={onClick}
       className={`rounded-xl border-2 transition-all cursor-pointer overflow-hidden ${
         active 
-          ? isUphold ? 'border-emerald-500 bg-emerald-500/5' : 'border-primary bg-primary/5 shadow-lg shadow-primary/5' 
-          : 'border-border/10 bg-slate-50/50 hover:border-border/30 hover:bg-white'
+          ? isUphold ? 'border-emerald-500 bg-emerald-500/5' : 'border-primary bg-primary/5 shadow-md shadow-primary/5' 
+          : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
       }`}
     >
       <div className={`px-5 py-4 flex items-center justify-between ${active ? isUphold ? 'bg-emerald-500 text-white' : 'bg-primary text-white' : ''}`}>
