@@ -33,6 +33,13 @@ export default function ReEvaluationPage() {
   const done = resolvedIds.length + hodPendingIds.length
   const progressPct = Math.round((done / TOTAL) * 100)
 
+  const GLOBAL_KPIS = [
+    { label: 'Pending', value: pending, sub: 'Awaiting your response', accent: '#EF4444' },
+    { label: 'Due Today', value: 2, sub: 'Over 48 hrs — respond', accent: '#F59E0B' },
+    { label: 'Awaiting HOD', value: hodCount, sub: 'Institutional review', accent: '#FBBF24' },
+    { label: 'Resolved', value: resolved, sub: 'This batch total', accent: '#10B981' },
+  ]
+
   const orderedStudents = [
     ...STUDENT_ORDER.filter((id) => getStatus(id) === 'pending'),
     ...STUDENT_ORDER.filter((id) => getStatus(id) === 'hod'),
@@ -40,78 +47,80 @@ export default function ReEvaluationPage() {
   ]
 
   return (
-    <div className="space-y-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      {/* Page header */}
-      <div className="flex flex-col gap-4 mb-6">
-        <button
-          onClick={() => router.push('/dashboard/re-evaluation')}
-          className="flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground hover:text-[#6B5FC4] transition-colors w-fit"
-        >
-          <ChevronLeft className="size-4" />
-          Back to Assignments
-        </button>
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#1E293B]">Re-evaluation Requests</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              CS301 · DSA Batch 4 · Results released Mon 9:00 AM · Appeal window closes Sunday night
-            </p>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {pending > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold" style={{ background: '#FEF2F2', color: '#EF4444', border: '1px solid #FECACA' }}>
-                ⏱ 2 waiting over 48 hours
-              </div>
-            )}
+    <div className="flex flex-col min-h-[calc(100vh-8rem)] relative bg-[#F8FAFC]/30">
+      {/* Header Section — Sticky with blur matching Pre-evaluation */}
+      <div className="sticky top-0 z-50 bg-background/60 backdrop-blur-md pt-6 pb-6 border-b border-border/10">
+        <div className="max-w-6xl mx-auto w-full px-4">
+          <div className="flex items-center gap-4 mb-4">
             <button
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[12px] font-medium transition-colors hover:bg-accent"
-              style={{ border: '1.5px solid #CBD5E1', background: 'transparent', color: '#475569', cursor: 'pointer', fontFamily: 'inherit' }}
+              onClick={() => router.push('/dashboard/re-evaluation')}
+              className="group flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 hover:text-primary transition-all"
             >
-              <Download className="size-3.5" />
-              Download full record
+              <ChevronLeft className="size-3 group-hover:-translate-x-0.5 transition-transform" />
+              Back to Assignments
             </button>
           </div>
+
+          <div className="flex items-start justify-between mb-8">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">IIM Bangalore</span>
+                <span className="text-muted-foreground/20 text-[9px]">·</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary/80">DSA · Batch 4</span>
+                <span className="text-muted-foreground/20 text-[9px]">·</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Re-Evaluation Desk</span>
+              </div>
+              <h1 className="text-4xl font-black tracking-tighter secondary-text">Review Requests</h1>
+              <div className="flex items-center gap-2 pt-1">
+                <p className="text-[11px] text-muted-foreground opacity-60 font-medium">
+                  Results released Mon 9:00 AM · Appeal window closes Sunday night
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex flex-col items-end gap-3">
+              <button
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/30 bg-card/50 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-card hover:border-border transition-all"
+              >
+                <Download className="size-3" />
+                Download Record
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-3">
+            {GLOBAL_KPIS.map((kpi, i) => (
+              <div key={i} className="group px-4 py-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-all flex flex-col justify-center">
+                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">{kpi.label}</span>
+                <div className="flex items-baseline gap-1.5 mt-1">
+                  <span className="text-xl font-black tracking-tighter" style={{ color: kpi.accent }}>{kpi.value}</span>
+                  <span className="text-[10px] font-bold text-muted-foreground/30">{kpi.sub}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          
         </div>
       </div>
 
-      {/* KPI cards */}
-      <div className="grid grid-cols-4 gap-2.5 mb-4">
-        <KpiCard label="Pending" value={pending} sub="Awaiting your response" accent="#EF4444" />
-        <KpiCard label="Due today" value={2} sub="Over 48 hrs — respond now" accent="#F59E0B" />
-        <KpiCard label="Awaiting HOD" value={hodCount} sub="Under institutional review" accent="#FBBF24" />
-        <KpiCard label="Resolved" value={resolved} sub="This batch" accent="#10B981" />
-      </div>
-
-      {/* Progress */}
-      <div className="flex items-center gap-2.5 mb-4">
-        <span className="text-[12px] text-muted-foreground whitespace-nowrap">
-          {pending} request{pending !== 1 ? 's' : ''} remaining
-        </span>
-        <div className="flex-1 h-1.5 rounded-full" style={{ background: '#E2E8F0' }}>
+      {/* Main Content Sections */}
+      <div className="max-w-6xl mx-auto w-full pb-20 px-4 pt-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        
+        {/* Table Container */}
+        <div className="rounded-2xl border border-border/10 bg-card/10 backdrop-blur-sm overflow-hidden">
+          {/* Header */}
           <div
-            className="h-1.5 rounded-full transition-all duration-500"
-            style={{ width: `${progressPct}%`, background: '#6B5FC4' }}
-          />
-        </div>
-        <span className="text-[12px] font-semibold text-muted-foreground whitespace-nowrap">{done} / {TOTAL}</span>
-      </div>
-
-      {/* Table */}
-      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #E2E8F0' }}>
-        {/* Header */}
-        <div
-          className="grid text-[10px] font-bold uppercase tracking-[0.07em]"
-          style={{
-            gridTemplateColumns: '200px 160px 110px 1fr 85px 125px 120px',
-            background: '#F1F5F9',
-            borderBottom: '1px solid #CBD5E1',
-            color: '#94A3B8',
-          }}
-        >
-          {['Student', 'Assignment · Criterion', 'Concern', 'Student reasoning', 'Submitted', 'Status', ''].map((h, i) => (
-            <div key={i} className="px-3 py-2.5" style={{ borderRight: i < 6 ? '1px solid #E2E8F0' : 'none' }}>{h}</div>
-          ))}
-        </div>
+            className="grid text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40"
+            style={{
+              gridTemplateColumns: '220px 180px 130px 1fr 100px 140px 140px',
+              background: 'rgba(var(--muted), 0.05)',
+              borderBottom: '1px solid rgba(var(--border), 0.1)',
+            }}
+          >
+            {['Student', 'Assignment · Criterion', 'Concern', 'Student reasoning', 'Submitted', 'Status', 'Action'].map((h, i) => (
+              <div key={i} className="px-4 py-4">{h}</div>
+            ))}
+          </div>
 
         {/* Rows */}
         {orderedStudents.map((id) => {
@@ -120,65 +129,61 @@ export default function ReEvaluationPage() {
           const cs = CONCERN_STYLES[st.concernVariant]
 
           return (
-            <div key={id} className="relative" style={{ borderBottom: '1px solid #E2E8F0' }}>
+            <div key={id} className="relative group/row" style={{ borderBottom: '1px solid rgba(var(--border), 0.1)' }}>
               <div
-                className="grid"
+                className="grid hover:bg-muted/5 transition-colors"
                 style={{
-                  gridTemplateColumns: '200px 160px 110px 1fr 85px 125px 120px',
-                  minHeight: 70,
-                  background: st.rowBg ?? '#fff',
+                  gridTemplateColumns: '220px 180px 130px 1fr 100px 140px 140px',
+                  minHeight: 80,
+                  background: st.rowBg ?? 'transparent',
                 }}
               >
                 {/* Student */}
-                <div className="flex items-stretch p-0" style={{ borderRight: '1px solid #E2E8F0' }}>
-                  <div className="w-0.5 flex-shrink-0 self-stretch" style={{ background: st.accentColor }} />
-                  <div className="px-3 py-2.5 flex flex-col justify-center gap-1 flex-1">
-                    <div className="flex items-center gap-2">
+                <div className="flex items-stretch p-0" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
+                  <div className="w-1 flex-shrink-0 self-stretch" style={{ background: st.accentColor }} />
+                  <div className="px-4 py-4 flex flex-col justify-center gap-1.5 flex-1">
+                    <div className="flex items-center gap-3">
                       <div
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black flex-shrink-0"
                         style={{
-                          background: st.isNew ? '#EFF6FF' : st.ageStatus === 'overdue' ? '#FEF2F2' : '#F1F5F9',
-                          border: `1px solid ${st.isNew ? '#BFDBFE' : st.ageStatus === 'overdue' ? '#FECACA' : '#E2E8F0'}`,
+                          background: st.isNew ? '#EFF6FF' : st.ageStatus === 'overdue' ? '#FEF2F2' : '#F8FAFC',
+                          border: `1px solid ${st.isNew ? '#BFDBFE' : st.ageStatus === 'overdue' ? '#FECACA' : 'rgba(var(--border), 0.1)'}`,
                           color: st.isNew ? '#3B82F6' : st.ageStatus === 'overdue' ? '#EF4444' : '#64748B',
                         }}
                       >
                         {st.name.split(' ').map((n) => n[0]).join('')}
                       </div>
-                      <div>
-                        <div className="text-[13px] font-bold flex items-center gap-1.5" style={{ color: '#1E293B' }}>
-                          {st.name}
-                          {st.isNew && <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: '#3B7FE8' }} />}
+                      <div className="flex flex-col gap-1">
+                        <div>
+                          <div className="text-[13px] font-black tracking-tight flex items-center gap-1.5 text-[#1E293B]">
+                            {st.name}
+                            {st.isNew && <span className="w-1.5 h-1.5 rounded-full inline-block bg-primary" />}
+                          </div>
+                          <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">{st.rollId}</div>
                         </div>
-                        <div className="text-[10px]" style={{ color: '#94A3B8', fontFamily: 'monospace' }}>{st.rollId}</div>
+                        {st.isCluster && (
+                          <span className="self-start text-[8px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-amber-500/5 text-amber-600 border border-amber-500/10 w-fit">
+                            C2 cluster
+                          </span>
+                        )}
                       </div>
                     </div>
-                    {st.isCluster && (
-                      <span
-                        className="self-start text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-[0.04em]"
-                        style={{ background: '#FFF7ED', color: '#92400E', border: '1px solid #FED7AA' }}
-                      >
-                        C2 cluster
-                      </span>
-                    )}
                   </div>
                 </div>
 
                 {/* Assignment · Criterion */}
-                <div className="px-3 py-2.5 flex flex-col justify-center gap-1" style={{ borderRight: '1px solid #E2E8F0' }}>
-                  <div className="text-[12px] font-medium" style={{ color: '#1E293B' }}>{st.assign}</div>
-                  <span
-                    className="self-start text-[11px] font-bold px-2 py-0.5 rounded-full"
-                    style={{ background: '#EDE9FB', color: '#6B5FC4', border: '1px solid #C4BDF0' }}
-                  >
-                    {st.critShort} · {st.origScore} / {st.maxScore}
+                <div className="px-4 py-4 flex flex-col justify-center gap-1.5" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
+                  <div className="text-[12px] font-black tracking-tight text-[#1E293B]">{st.assign}</div>
+                  <span className="self-start text-[9px] font-black px-2 py-0.5 rounded-md bg-primary/5 text-primary border border-primary/10 uppercase tracking-widest">
+                    {st.critShort} · {st.origScore}/{st.maxScore}
                   </span>
                 </div>
 
                 {/* Concern */}
-                <div className="px-3 py-2.5 flex flex-col justify-center gap-1" style={{ borderRight: '1px solid #E2E8F0' }}>
-                  <div className="text-[12px]" style={{ color: '#475569' }}>{st.concern}</div>
+                <div className="px-4 py-4 flex flex-col justify-center gap-1.5" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
+                  <div className="text-[12px] font-bold text-slate-600">{st.concern}</div>
                   <span
-                    className="self-start text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-[0.04em]"
+                    className="self-start text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-widest"
                     style={{ background: cs.bg, color: cs.text, border: `1px solid ${cs.border}` }}
                   >
                     {st.concernType}
@@ -186,54 +191,52 @@ export default function ReEvaluationPage() {
                 </div>
 
                 {/* Student reasoning */}
-                <div className="px-3 py-2.5 flex items-center" style={{ borderRight: '1px solid #E2E8F0' }}>
+                <div className="px-4 py-4 flex items-center" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
                   <div
-                    className="text-[12px] leading-relaxed overflow-hidden"
+                    className="text-[11px] font-medium leading-relaxed overflow-hidden text-slate-500 italic"
                     style={{
-                      color: '#475569',
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical' as const,
                     }}
                   >
-                    {st.sv}
+                    "{st.sv}"
                   </div>
                 </div>
 
                 {/* Submitted */}
-                <div className="px-3 py-2.5 flex flex-col justify-center" style={{ borderRight: '1px solid #E2E8F0' }}>
+                <div className="px-4 py-4 flex flex-col justify-center" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
                   <div
-                    className="text-[11px] font-bold"
-                    style={{ color: st.ageStatus === 'overdue' ? '#EF4444' : st.ageStatus === 'new' ? '#475569' : '#92400E' }}
+                    className="text-[10px] font-black tracking-tighter"
+                    style={{ color: st.ageStatus === 'overdue' ? '#EF4444' : st.ageStatus === 'new' ? '#64748B' : '#92400E' }}
                   >
                     {st.ageLabel}
                   </div>
-                  <div className="text-[10px] capitalize" style={{ color: '#94A3B8' }}>
+                  <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/30">
                     {st.ageStatus === 'overdue' ? 'Overdue' : st.ageStatus === 'new' ? 'New' : 'Pending'}
                   </div>
                 </div>
 
                 {/* Status */}
-                <div className="px-3 py-2.5 flex items-center" style={{ borderRight: '1px solid #E2E8F0' }}>
+                <div className="px-4 py-4 flex items-center" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
                   <StatusPill status={status} ageStatus={st.ageStatus} />
                 </div>
 
                 {/* Action */}
-                <div className="px-3 py-2.5 flex items-center justify-center">
+                <div className="px-4 py-4 flex items-center justify-center">
                   {status === 'pending' && (
                     <button
                       onClick={() => setBriefingId(id)}
-                      className="px-4 py-1.5 rounded-lg text-[11px] font-bold text-white transition-colors"
-                      style={{ background: '#6B5FC4', border: 'none', cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 2px 6px rgba(107,95,196,.35)' }}
+                      className="group/btn flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white bg-primary hover:bg-primary/90 transition-all shadow-[0_2px_10px_rgba(var(--primary),0.2)]"
                     >
-                      Review now →
+                      Review now
+                      <ChevronLeft className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
                     </button>
                   )}
                   {status === 'hod' && (
                     <button
                       onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                      className="px-4 py-1.5 rounded-lg text-[11px] font-medium transition-colors hover:bg-slate-50"
-                      style={{ border: '1.5px solid #CBD5E1', background: '#fff', color: '#475569', cursor: 'pointer', fontFamily: 'inherit' }}
+                      className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-muted-foreground border border-border/30 bg-card/50 hover:bg-card hover:border-border transition-all"
                     >
                       View →
                     </button>
@@ -290,51 +293,43 @@ export default function ReEvaluationPage() {
           }}
         />
       )}
+      </div>
     </div>
   )
 }
 
-function KpiCard({ label, value, sub, accent }: { label: string; value: number; sub: string; accent: string }) {
-  return (
-    <div className="rounded-xl p-3.5" style={{ background: '#fff', border: '1px solid #E2E8F0', borderLeft: `3px solid ${accent}`, boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1" style={{ color: '#94A3B8' }}>{label}</div>
-      <div className="text-[24px] font-extrabold tracking-tight leading-tight" style={{ color: accent }}>{value}</div>
-      <div className="text-[11px] mt-1" style={{ color: '#94A3B8' }}>{sub}</div>
-    </div>
-  )
-}
 
 function StatusPill({ status, ageStatus }: { status: 'pending' | 'hod' | 'resolved'; ageStatus: string }) {
   if (status === 'resolved') {
     return (
-      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em]" style={{ background: '#ECFDF5', color: '#065F46', border: '1px solid #A7F3D0' }}>
+      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-emerald-500/5 text-emerald-600 border border-emerald-500/10">
         Resolved
       </span>
     )
   }
   if (status === 'hod') {
     return (
-      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em]" style={{ background: '#FFFBEB', color: '#92400E', border: '1px solid #FDE68A' }}>
+      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-amber-500/5 text-amber-600 border border-amber-500/10">
         Awaiting HOD
       </span>
     )
   }
   if (ageStatus === 'overdue') {
     return (
-      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em] text-white" style={{ background: '#EF4444', border: '1px solid #EF4444' }}>
+      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-red-500 text-white">
         Overdue
       </span>
     )
   }
   if (ageStatus === 'new') {
     return (
-      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em]" style={{ background: '#ECFDF5', color: '#065F46', border: '1px solid #A7F3D0' }}>
+      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-blue-500/5 text-blue-600 border border-blue-500/10">
         New
       </span>
     )
   }
   return (
-    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em]" style={{ background: '#F1F5F9', color: '#94A3B8', border: '1px solid #CBD5E1' }}>
+    <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-slate-500/5 text-slate-500 border border-slate-500/10">
       Pending
     </span>
   )
