@@ -56,10 +56,10 @@ export function AppSidebar() {
               render={<Link href="/dashboard" />}
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-red-100 text-red-800 shrink-0">
-                <span className="text-[10px] font-bold">IIMB</span>
+                <span className="text-[10px] font-bold">SIU</span>
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-semibold text-base tracking-tight">IIM Bangalore</span>
+                <span className="font-semibold text-base tracking-tight">Symbiosis International University</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
