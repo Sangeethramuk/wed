@@ -1040,11 +1040,12 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                             <div className="flex flex-wrap gap-2 py-1">
                               {pointEvidence.map((ev, i) => (
                                 <Tooltip key={ev.id}>
-                                  <TooltipTrigger asChild>
+                                  <TooltipTrigger render={
                                     <button
                                       onClick={() => scrollToEvidence(ev.id)}
                                       className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-border hover:border-primary hover:bg-primary/5 transition-all active:scale-95 shadow-sm"
-                                    >
+                                    />
+                                  }>
                                       <div className="w-1.5 h-1.5 rounded-full bg-primary group-hover:animate-pulse" />
                                       <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">
                                         Evidence #{i+1}
@@ -1059,7 +1060,6 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                       >
                                         <X className="h-2.5 w-2.5 text-red-400 hover:text-red-600" />
                                       </div>
-                                    </button>
                                   </TooltipTrigger>
                                   <TooltipContent side="bottom" className="max-w-xs p-3 z-[100] bg-popover text-popover-foreground border border-border shadow-xl">
                                     <div className="space-y-1">
