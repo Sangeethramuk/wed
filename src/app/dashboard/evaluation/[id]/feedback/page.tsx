@@ -418,7 +418,7 @@ export default function FeedbackPage() {
                                        className="text-[12px] text-muted-foreground/90 leading-[1.6] outline-none cursor-text hover:bg-red-50/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-red-100/50 focus:bg-red-50 focus:border-red-200/50"
                                        contentEditable
                                        suppressContentEditableWarning
-                                       onBlur={(e) => updateSolutionStep(step.criterionName, j, e.currentTarget.innerText)}
+                                       onBlur={(e) => updateSolutionStep(activeStudent.id, step.criterionName, j, e.currentTarget.innerText)}
                                     >
                                        {s}
                                     </p>
@@ -456,7 +456,7 @@ export default function FeedbackPage() {
                                        className="text-[12px] text-muted-foreground/90 leading-[1.6] outline-none cursor-text hover:bg-amber-50/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-amber-100/50 focus:bg-amber-50 focus:border-amber-200/50"
                                        contentEditable
                                        suppressContentEditableWarning
-                                       onBlur={(e) => updateSolutionStep(step.criterionName, j, e.currentTarget.innerText)}
+                                       onBlur={(e) => updateSolutionStep(activeStudent.id, step.criterionName, j, e.currentTarget.innerText)}
                                     >
                                        {s}
                                     </p>
@@ -488,7 +488,7 @@ export default function FeedbackPage() {
                                        className="text-[11px] text-muted-foreground/70 leading-[1.6] italic outline-none cursor-text hover:bg-green-50/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-green-100/50 focus:bg-green-50 focus:border-green-200/50"
                                        contentEditable
                                        suppressContentEditableWarning
-                                       onBlur={(e) => updateSolutionStep(step.criterionName, j, e.currentTarget.innerText)}
+                                       onBlur={(e) => updateSolutionStep(activeStudent.id, step.criterionName, j, e.currentTarget.innerText)}
                                     >
                                        {s}
                                     </p>
