@@ -68,7 +68,7 @@ export function CourseSelection() {
         <div className="space-y-6">
           <div className="flex items-center gap-2 flex-wrap">
             <button className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border/30 bg-card/20 hover:bg-card/50 transition-all text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 hover:text-foreground/80">
-              Computer Science
+              Department: Computer Science
               <ChevronDown className="h-3 w-3 opacity-40 group-hover:opacity-80" />
             </button>
           </div>
@@ -154,7 +154,6 @@ export function CourseSelection() {
                     <div className="h-1 w-1 rounded-full bg-emerald-500/70" />
                     <span className="text-[8px] font-black uppercase tracking-widest text-emerald-600/70">{course.status}</span>
                   </div>
-                  <Badge variant="outline" className="font-black text-[9px] uppercase tracking-widest border-border/20 py-0.5 px-2 rounded-md bg-background/30 h-5 opacity-60">{course.code}</Badge>
                 </div>
 
                 <CardHeader className="pb-6 pt-8 px-6">
@@ -163,7 +162,7 @@ export function CourseSelection() {
                   </div>
                   <CardTitle className="mt-6 text-xl font-black tracking-tight">{course.name}</CardTitle>
                   <CardDescription className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-widest opacity-80 mt-1">
-                    {course.semester}
+                    {course.code} <span className="opacity-40">•</span> {course.semester}
                   </CardDescription>
                 </CardHeader>
 

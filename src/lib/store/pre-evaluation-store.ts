@@ -552,22 +552,12 @@ export const usePreEvalStore = create<PreEvalState>()(
       calibrationStatus: null,
 
       setStep: (step) => set({ currentStep: step }),
-      nextStep: () => set((state) => {
-        const next = state.currentStep + 1;
-        // Skip calibration (step 5) for reused assignments
-        if (next === 5 && state.creationMode === "history" && state.selectedHistoryId) {
-          return { currentStep: 6 as Step };
-        }
-        return { currentStep: Math.min(next, 6) as Step };
-      }),
-      prevStep: () => set((state) => {
-        const prev = state.currentStep - 1;
-        // Skip back over calibration (step 5) for reused assignments
-        if (prev === 5 && state.creationMode === "history" && state.selectedHistoryId) {
-          return { currentStep: 4 as Step };
-        }
-        return { currentStep: Math.max(prev, 1) as Step };
-      }),
+      nextStep: () => set((state) => ({
+        currentStep: Math.min(state.currentStep + 1, 6) as Step,
+      })),
+      prevStep: () => set((state) => ({
+        currentStep: Math.max(state.currentStep - 1, 1) as Step,
+      })),
       setCalibrationConfirmed: (confirmed) => set({ calibrationConfirmed: confirmed }),
       setCalibrationStatus: (status) => set({ calibrationStatus: status }),
       
