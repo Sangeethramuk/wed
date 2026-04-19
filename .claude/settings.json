@@ -2,9 +2,6 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc *)"
-    ],
-    "additionalDirectories": [
-      "d:\\Downloads\\EducAItors Week 3\\wed\\src\\app\\dashboard\\re-evaluation"
     ]
   }
 }
