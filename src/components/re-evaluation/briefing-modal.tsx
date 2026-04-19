@@ -20,6 +20,7 @@ type Props = {
 export function BriefingModal({ studentId, onClose, onStart }: Props) {
   const bodyRef = useRef<HTMLDivElement>(null)
   const [scrolled, setScrolled] = useState(false)
+  const [isNavigating, setIsNavigating] = useState(false)
   const [accOpen, setAccOpen] = useState<Record<string, boolean>>({
     timeline: false,
     evidence: false
@@ -38,9 +39,16 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
   }, [onClose])
 
   const handleScroll = () => {
-    if (scrolled || !bodyRef.current) return
-    const el = bodyRef.current
-    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 80) setScrolled(true)
+    if (bodyRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = bodyRef.current
+      if (scrollTop + clientHeight >= scrollHeight - 20) setScrolled(true)
+    }
+  }
+
+  const handleStart = () => {
+    if (!onStart || isNavigating) return
+    setIsNavigating(true)
+    onStart()
   }
 
   const toggleAcc = (key: string) =>
@@ -335,16 +343,27 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
             </div>
             {onStart && (
               <button
-                onClick={canStart ? onStart : undefined}
-                disabled={!canStart}
-                className={`group/btn flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                  canStart 
+                onClick={canStart && !isNavigating ? handleStart : undefined}
+                disabled={!canStart || isNavigating}
+                className={`group/btn flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all min-w-[180px] ${
+                  canStart && !isNavigating
                     ? 'bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.25)] hover:shadow-[0_6_20px_rgba(var(--primary),0.35)] translate-y-0 active:scale-[0.98]' 
-                    : 'bg-muted/50 text-muted-foreground/50 border border-border/10 opacity-50 cursor-not-allowed'
+                    : isNavigating
+                      ? 'bg-primary/80 text-white cursor-wait shadow-[0_4px_12px_rgba(var(--primary),0.15)]'
+                      : 'bg-muted/50 text-muted-foreground/50 border border-border/10 opacity-50 cursor-not-allowed'
                 }`}
               >
-                Start Re-Evaluation
-                <ChevronLeftIcon className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
+                {isNavigating ? (
+                  <>
+                    <div className="size-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    Opening Workspace...
+                  </>
+                ) : (
+                  <>
+                    Start Re-Evaluation
+                    <ChevronLeftIcon className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
+                  </>
+                )}
               </button>
             )}
           </div>

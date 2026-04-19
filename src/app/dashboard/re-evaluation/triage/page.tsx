@@ -288,7 +288,7 @@ export default function ReEvaluationPage() {
           studentId={briefingId}
           onClose={() => setBriefingId(null)}
           onStart={() => {
-            setBriefingId(null)
+            // Allow smooth navigation by keeping the modal open while routing
             router.push(`/dashboard/re-evaluation/${briefingId}`)
           }}
         />
