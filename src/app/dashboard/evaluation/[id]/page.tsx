@@ -79,23 +79,41 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     )
   }
 
-  const [selectedSubmission, setSelectedSubmission] = useState("STU-102")
+  const { assignments, activeStudentId, setActiveStudent } = useGradingStore()
+  const assignment = assignments[id]
+  
+  // Resolve active student from multiple sources
+  const [selectedSubmission, setSelectedSubmission] = useState(() => {
+    // 1. Check if we have an active assignment/student in store
+    if (activeStudentId && assignment?.students.find(s => s.id === activeStudentId)) {
+      return activeStudentId
+    }
+    // 2. Fallback to first student
+    return assignment?.students[0]?.id || "STU-102"
+  })
+
+  // Sync with store
+  useEffect(() => {
+    if (selectedSubmission && selectedSubmission !== activeStudentId) {
+      setActiveStudent(selectedSubmission)
+    }
+  }, [selectedSubmission, activeStudentId, setActiveStudent])
   const [isFixed, setIsFixed] = useState(false)
   const [activeTab, setActiveTab] = useState<"rubric" | "feedback" | "integrity">("rubric")
   const [triageFilter, setTriageFilter] = useState<"all" | "critical" | "focus" | "verified">("all")
   const [showInsights, setShowInsights] = useState(true)
   const [isPaused, setIsPaused] = useState(false)
-  const [dismissedPoints, setDismissedPoints] = useState<number[]>([])
+  const [dismissedPoints, setDismissedPoints] = useState<string[]>([])
   const [gradedSubmissions, setGradedSubmissions] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [zoom, setZoom] = useState(100)
   const [showThumbnails, setShowThumbnails] = useState(true)
   const [selection, setSelection] = useState<{ text: string, x: number, y: number } | null>(null)
-  const [mappedEvidence, setMappedEvidence] = useState<{ id: string, text: string, criterionId: number }[]>([])
+  const [mappedEvidence, setMappedEvidence] = useState<{ id: string, text: string, criterionId: string }[]>([])
 
   // Override draft state management
   interface OverrideDraft {
-    criterionId: number
+    criterionId: string
     proposedScore: number
     aiScore: number
     direction: 'increase' | 'decrease' | 'same'
@@ -105,14 +123,15 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     reasoning: string
   }
 
-  const [overrideDrafts, setOverrideDrafts] = useState<Record<number, OverrideDraft>>({})
-  const [activeOverrideId, setActiveOverrideId] = useState<number | null>(null)
-  const [textSelectionMode, setTextSelectionMode] = useState<{ active: boolean, criterionId: number | null }>({ active: false, criterionId: null })
+  const [overrideDrafts, setOverrideDrafts] = useState<Record<string, OverrideDraft>>({})
+  const [activeOverrideId, setActiveOverrideId] = useState<string | null>(null)
+  const [textSelectionMode, setTextSelectionMode] = useState<{ active: boolean, criterionId: string | null }>({ active: false, criterionId: null })
   const [pendingTextSelection, setPendingTextSelection] = useState<{ text: string, page: number } | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [expandedRubricId, setExpandedRubricId] = useState<number>(1)
-  const [overrideReasoning, setOverrideReasoning] = useState<Record<number, string>>({})
-  const [recordingId, setRecordingId] = useState<number | null>(null)
+  const [expandedRubricId, setExpandedRubricId] = useState<string>("c1")
+  const [overrideReasoning, setOverrideReasoning] = useState<Record<string, string>>({})
+  const [generatingFeedbackFor, setGeneratingFeedbackFor] = useState<string | null>(null)
+  const [recordingId, setRecordingId] = useState<string | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
   const [revisionEvents, setRevisionEvents] = useState<RevisionEvent[]>([])
@@ -125,12 +144,19 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   // AI Feedback flow state
   const {
     criterionFeedbacks,
-    confirmCriterionScore: confirmFeedback,
-    updateCriterionFeedback,
-    approveCriterionFeedback,
-    regenerateCriterionFeedback,
+    confirmCriterionScore: confirmFeedbackAction,
+    updateCriterionFeedback: updateCriterionFeedbackAction,
+    approveCriterionFeedback: approveCriterionFeedbackAction,
+    regenerateCriterionFeedback: regenerateCriterionFeedbackAction,
   } = useFeedbackStore()
-  const [generatingFeedbackFor, setGeneratingFeedbackFor] = useState<number | null>(null)
+
+  // Keyed feedback for current student
+  const studentCriterionFeedbacks = criterionFeedbacks[selectedSubmission] || {}
+
+  const confirmFeedback = (cid: string, data: any) => confirmFeedbackAction(selectedSubmission, cid, data)
+  const updateCriterionFeedback = (cid: string, text: string) => updateCriterionFeedbackAction(selectedSubmission, cid, text)
+  const approveCriterionFeedback = (cid: string) => approveCriterionFeedbackAction(selectedSubmission, cid)
+  const regenerateCriterionFeedback = (cid: string, nt: string, ntier: any, nlbl: string) => regenerateCriterionFeedbackAction(selectedSubmission, cid, nt, ntier, nlbl)
 
   const manuscript = useMemo(() => generateManuscript(selectedSubmission), [selectedSubmission])
   const artifacts = useMemo(() => generateArtifacts(selectedSubmission), [selectedSubmission])
@@ -386,7 +412,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   const [isSpotCheckActive, setIsSpotCheckActive] = useState(false)
   const [activeRubricCriterionIdx, setActiveRubricCriterionIdx] = useState(0)
   const [rubricAccordionOpen, setRubricAccordionOpen] = useState<Record<string, boolean>>({})
-  const [rubricReviewStripOpen, setRubricReviewStripOpen] = useState<Record<number, boolean>>({})
+  const [rubricReviewStripOpen, setRubricReviewStripOpen] = useState<Record<string, boolean>>({})
 
   const handleConfirmNext = () => {
     const currentSub = submissions.find(s => s.id === selectedSubmission)
@@ -1011,7 +1037,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                         {(() => {
                           const criterionKey = point.id 
                           const storeFb = criterionFeedbacks[criterionKey]
-                          const isGenerating = generatingFeedbackFor === (point.id as any)
+                          const isGenerating = generatingFeedbackFor === point.id
                           
                           // Consistently use suggested or stored feedback
                           const currentScore = state.score ?? point.aiScore

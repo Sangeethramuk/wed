@@ -3,18 +3,18 @@
 import { type ManuscriptElement } from "@/lib/manuscript-generator"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 
-export const CRITERION_COLORS: Record<number, { bg: string; border: string; hoverBg: string; badge: string; dot: string; text: string; bar: string; cardBg: string; cardBorder: string; label: string }> = {
-  1: { bg: "bg-yellow-100/80", border: "border-yellow-400", hoverBg: "hover:bg-yellow-200/80", badge: "bg-yellow-50", dot: "bg-yellow-500", text: "text-yellow-700", bar: "bg-yellow-400", cardBg: "bg-yellow-50/40", cardBorder: "border-yellow-200", label: "text-yellow-700" },
-  2: { bg: "bg-green-100/80",  border: "border-green-400",  hoverBg: "hover:bg-green-200/80",  badge: "bg-green-50",  dot: "bg-green-500",  text: "text-green-700",  bar: "bg-green-400",  cardBg: "bg-green-50/40",  cardBorder: "border-green-200",  label: "text-green-700"  },
-  3: { bg: "bg-blue-100/80",   border: "border-blue-400",   hoverBg: "hover:bg-blue-200/80",   badge: "bg-blue-50",   dot: "bg-blue-500",   text: "text-blue-700",   bar: "bg-blue-400",   cardBg: "bg-blue-50/40",   cardBorder: "border-blue-200",   label: "text-blue-700"   },
-  4: { bg: "bg-purple-100/80", border: "border-purple-400", hoverBg: "hover:bg-purple-200/80", badge: "bg-purple-50", dot: "bg-purple-500", text: "text-purple-700", bar: "bg-purple-400", cardBg: "bg-purple-50/40", cardBorder: "border-purple-200", label: "text-purple-700" },
+export const CRITERION_COLORS: Record<string, { bg: string; border: string; hoverBg: string; badge: string; dot: string; text: string; bar: string; cardBg: string; cardBorder: string; label: string }> = {
+  "c1": { bg: "bg-yellow-100/80", border: "border-yellow-400", hoverBg: "hover:bg-yellow-200/80", badge: "bg-yellow-50", dot: "bg-yellow-500", text: "text-yellow-700", bar: "bg-yellow-400", cardBg: "bg-yellow-50/40", cardBorder: "border-yellow-200", label: "text-yellow-700" },
+  "c2": { bg: "bg-green-100/80",  border: "border-green-400",  hoverBg: "hover:bg-green-200/80",  badge: "bg-green-50",  dot: "bg-green-500",  text: "text-green-700",  bar: "bg-green-400",  cardBg: "bg-green-50/40",  cardBorder: "border-green-200",  label: "text-green-700"  },
+  "c3": { bg: "bg-blue-100/80",   border: "border-blue-400",   hoverBg: "hover:bg-blue-200/80",   badge: "bg-blue-50",   dot: "bg-blue-500",   text: "text-blue-700",   bar: "bg-blue-400",   cardBg: "bg-blue-50/40",   cardBorder: "border-blue-200",   label: "text-blue-700"   },
+  "c4": { bg: "bg-purple-100/80", border: "border-purple-400", hoverBg: "hover:bg-purple-200/80", badge: "bg-purple-50", dot: "bg-purple-500", text: "text-purple-700", bar: "bg-purple-400", cardBg: "bg-purple-50/40", cardBorder: "border-purple-200", label: "text-purple-700" },
 }
 
-const CRITERION_LABELS: Record<number, string> = {
-  1: "Problem Understanding & Direction",
-  2: "Iteration & Improvement",
-  3: "Documentation & Reproducibility",
-  4: "Technical Setup & Integration",
+const CRITERION_LABELS: Record<string, string> = {
+  "c1": "Problem Understanding & Direction",
+  "c2": "Iteration & Improvement",
+  "c3": "Documentation & Reproducibility",
+  "c4": "Technical Setup & Integration",
 }
 
 function ConfidenceBars({ confidence }: { confidence: number }) {
@@ -31,7 +31,7 @@ function ConfidenceBars({ confidence }: { confidence: number }) {
   )
 }
 
-function UserHighlightedSpan({ text, criterionId }: { text: string; criterionId: number }) {
+function UserHighlightedSpan({ text, criterionId }: { text: string; criterionId: string }) {
   const c = CRITERION_COLORS[criterionId] ?? CRITERION_COLORS[1]
   const label = CRITERION_LABELS[criterionId] ?? `Criterion ${criterionId}`
   return (
@@ -57,9 +57,9 @@ function UserHighlightedSpan({ text, criterionId }: { text: string; criterionId:
 
 function splitByEvidence(
   text: string,
-  evidences: { text: string; criterionId: number }[]
-): Array<{ text: string; evidence?: { criterionId: number } }> {
-  let segments: Array<{ text: string; evidence?: { criterionId: number } }> = [{ text }]
+  evidences: { text: string; criterionId: string }[]
+): Array<{ text: string; evidence?: { criterionId: string } }> {
+  let segments: Array<{ text: string; evidence?: { criterionId: string } }> = [{ text }]
   for (const ev of evidences) {
     const next: typeof segments = []
     for (const seg of segments) {
@@ -82,7 +82,7 @@ function HighlightedSpan({
   confidence,
 }: {
   text: string
-  criterionId: number
+  criterionId: string
   confidence: number
 }) {
   const c = CRITERION_COLORS[criterionId] ?? CRITERION_COLORS[1]
@@ -210,7 +210,7 @@ export default function ManuscriptRenderer({
   userEvidence = [],
 }: {
   elements: ManuscriptElement[]
-  userEvidence?: { text: string; criterionId: number }[]
+  userEvidence?: { text: string; criterionId: string }[]
 }) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
