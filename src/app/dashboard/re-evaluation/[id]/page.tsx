@@ -46,6 +46,16 @@ export default function ReEvalWorkspacePage() {
   const [briefingOpen, setBriefingOpen] = useState(false)
 
   const rpScrollRef = useRef<HTMLDivElement>(null)
+  const trackRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (decision === 'adjust' && trackRef.current) {
+      setTimeout(() => {
+        const el = trackRef.current?.querySelector('[data-orig="true"]')
+        if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+      }, 50)
+    }
+  }, [decision])
 
   useEffect(() => {
     setWsState('active')
@@ -362,36 +372,37 @@ export default function ReEvalWorkspacePage() {
                     >
                       <div className="space-y-5 py-2">
                         {/* Score Picker UI */}
-                        <div className="flex items-center gap-6 p-4 rounded-xl bg-slate-50 border border-slate-100">
-                           <div className="flex flex-col items-center">
-                              <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mb-1">Current</span>
-                              <div className="text-3xl font-black tracking-tighter text-slate-400">{st.origScore}</div>
-                           </div>
-                           <ArrowRightIcon className="size-4 text-muted-foreground/20" />
-                           <div className="flex flex-col items-center flex-1">
-                              <span className="text-[8px] font-black uppercase tracking-widest text-primary/60 mb-1">Proposed New Score</span>
-                              <div className="flex gap-1 flex-wrap justify-center mt-2">
-                                {Array.from({ length: st.maxScore + 1 }, (_, i) => i).map((s) => {
-                                  const isOrig = s === st.origScore
-                                  const isPicked = s === pickedScore
-                                  return (
-                                    <button
-                                      key={s}
-                                      onClick={isOrig ? undefined : () => handlePickScore(s)}
-                                      disabled={isOrig}
-                                      className={`size-8 rounded-lg text-[11px] font-black transition-all ${
-                                        isPicked 
-                                          ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                                          : isOrig 
-                                            ? 'bg-muted/30 text-muted-foreground/30 cursor-not-allowed border border-dashed border-border/10' 
-                                            : 'bg-white border border-border/10 text-slate-600 hover:border-primary/40 hover:text-primary'
-                                      }`}
-                                    >
-                                      {s}
-                                    </button>
-                                  )
-                                })}
-                              </div>
+                        <div className="flex flex-col items-center p-5 rounded-xl bg-slate-50 border border-slate-200 overflow-hidden relative shadow-inner">
+                           <span className="text-[9px] font-black uppercase tracking-widest text-primary/60 mb-4">Proposed New Score</span>
+                           
+                           {/* Scrollable Track */}
+                           <div 
+                             ref={trackRef}
+                             className="w-full flex items-center overflow-x-auto gap-3 pb-4 px-4 snap-x relative scroll-smooth" 
+                             style={{ scrollbarWidth: 'none', maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}
+                           >
+                             {Array.from({ length: st.maxScore + 1 }, (_, i) => i).map((s) => {
+                               const isOrig = s === st.origScore
+                               const isPicked = s === pickedScore
+                               return (
+                                 <button
+                                   key={s}
+                                   data-orig={isOrig}
+                                   onClick={isOrig ? undefined : () => handlePickScore(s)}
+                                   disabled={isOrig}
+                                   className={`flex-shrink-0 flex flex-col items-center justify-center size-12 rounded-2xl transition-all snap-center relative ${
+                                     isPicked 
+                                       ? 'bg-primary text-white shadow-[0_4px_16px_rgba(var(--primary),0.3)] scale-110 z-10 border border-primary' 
+                                       : isOrig 
+                                         ? 'bg-slate-200 text-slate-700 cursor-not-allowed border border-slate-300 shadow-sm' 
+                                         : 'bg-white border border-slate-200 text-slate-600 hover:border-primary/40 hover:text-primary hover:bg-primary/5 hover:scale-105 shadow-sm'
+                                   }`}
+                                 >
+                                   <span className={`${isOrig ? 'text-[12px]' : 'text-[14px]'} font-black`}>{s}</span>
+                                   {isOrig && <span className="text-[7px] font-black uppercase tracking-widest text-slate-500 mt-0.5">Orig</span>}
+                                 </button>
+                               )
+                             })}
                            </div>
                         </div>
 
