@@ -362,36 +362,37 @@ export default function ReEvalWorkspacePage() {
                     >
                       <div className="space-y-5 py-2">
                         {/* Score Picker UI */}
-                        <div className="flex items-center gap-6 p-4 rounded-xl bg-slate-50 border border-slate-100">
-                           <div className="flex flex-col items-center">
-                              <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mb-1">Current</span>
-                              <div className="text-3xl font-black tracking-tighter text-slate-400">{st.origScore}</div>
-                           </div>
-                           <ArrowRightIcon className="size-4 text-muted-foreground/20" />
-                           <div className="flex flex-col items-center flex-1">
-                              <span className="text-[8px] font-black uppercase tracking-widest text-primary/60 mb-1">Proposed New Score</span>
-                              <div className="flex gap-1 flex-wrap justify-center mt-2">
-                                {Array.from({ length: st.maxScore + 1 }, (_, i) => i).map((s) => {
-                                  const isOrig = s === st.origScore
-                                  const isPicked = s === pickedScore
-                                  return (
-                                    <button
-                                      key={s}
-                                      onClick={isOrig ? undefined : () => handlePickScore(s)}
-                                      disabled={isOrig}
-                                      className={`size-8 rounded-lg text-[11px] font-black transition-all ${
-                                        isPicked 
-                                          ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                                          : isOrig 
-                                            ? 'bg-muted/30 text-muted-foreground/30 cursor-not-allowed border border-dashed border-border/10' 
-                                            : 'bg-white border border-border/10 text-slate-600 hover:border-primary/40 hover:text-primary'
-                                      }`}
-                                    >
-                                      {s}
-                                    </button>
-                                  )
-                                })}
-                              </div>
+                        <div className="flex flex-col mb-1 mt-1">
+                           <p className="text-[12px] font-medium text-slate-600 px-2">
+                             The original score is <strong className="text-slate-800">{st.origScore}</strong>. Select your proposed score below:
+                           </p>
+                        </div>
+                        <div className="flex flex-col items-center p-4 rounded-xl bg-slate-50 border border-slate-200 overflow-hidden relative shadow-inner mx-1">
+                           <span className="text-[9px] font-black uppercase tracking-widest text-primary/60 mb-3">Proposed New Score</span>
+                           
+                           <div className="w-full flex justify-center gap-1.5">
+                             {Array.from({ length: st.maxScore + 1 }, (_, i) => i).map((s) => {
+                               const isOrig = s === st.origScore
+                               const isPicked = s === pickedScore
+                               return (
+                                 <button
+                                   key={s}
+                                   data-orig={isOrig}
+                                   onClick={isOrig ? undefined : () => handlePickScore(s)}
+                                   disabled={isOrig}
+                                   className={`flex-shrink-0 flex flex-col items-center justify-center w-8 h-10 rounded-lg transition-all relative ${
+                                     isPicked 
+                                       ? 'bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.3)] scale-110 z-10 border border-primary' 
+                                       : isOrig 
+                                         ? 'bg-slate-200 text-slate-700 cursor-not-allowed border border-slate-300 shadow-sm' 
+                                         : 'bg-white border border-slate-200 text-slate-600 hover:border-primary/40 hover:text-primary hover:bg-primary/5 shadow-sm'
+                                   }`}
+                                 >
+                                   <span className={`${isOrig ? 'text-[11px]' : 'text-[13px]'} font-black`}>{s}</span>
+                                   {isOrig && <span className="text-[6px] font-black uppercase tracking-widest text-slate-500 mt-0.5">Orig</span>}
+                                 </button>
+                               )
+                             })}
                            </div>
                         </div>
 
