@@ -41,7 +41,7 @@ function CriteriaRecapCard({ name, level, tier, tierLabel, feedbackSnippet, isEx
           </div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0 pl-2 border-l border-border/30 ml-2">
-          <span className="text-xs font-black font-mono text-foreground">{level}<span className="text-xs text-muted-foreground/50">/5</span></span>
+          <span className="text-xs font-semibold font-mono text-foreground">{level}<span className="text-xs text-muted-foreground/50">/5</span></span>
           {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground/40" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground/40" />}
         </div>
       </Button>
@@ -228,7 +228,7 @@ export default function FeedbackPage() {
           <div>
             <div className="flex items-center gap-2 mb-0.5">
               <h2 className="text-lg font-bold text-foreground tracking-tight">Final Feedback Summary</h2>
-              <Badge variant="outline" className="text-xs h-4.5 px-1.5 rounded-sm font-mono tracking-tighter border-border bg-muted/30">STUDENT RECORD</Badge>
+              <Badge variant="outline" className="text-xs h-4.5 px-1.5 rounded-sm font-mono tracking-tight border-border bg-muted/30">STUDENT RECORD</Badge>
             </div>
             <div className="flex items-center gap-2">
                <span className="eyebrow text-muted-foreground/60 leading-none grow-0">{activeStudent.name}</span>
@@ -239,7 +239,7 @@ export default function FeedbackPage() {
         </div>
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-end mr-2">
-             <div className="text-2xl font-black text-foreground leading-none font-mono">60<span className="text-sm text-muted-foreground/40 font-medium">/100</span></div>
+             <div className="text-2xl font-semibold text-foreground leading-none font-mono">60<span className="text-sm text-muted-foreground/40 font-medium">/100</span></div>
              <Badge variant="outline" className="eyebrow h-4 px-1.5 bg-green-50 text-green-700 border-green-200 mt-1">Satisfactory</Badge>
           </div>
           <Button variant="ghost" size="icon">✕</Button>
@@ -274,7 +274,7 @@ export default function FeedbackPage() {
               })}
               {confirmedCriteria.length === 3 && (
                 <div className="p-4 border border-dashed border-border rounded-xl bg-muted/5">
-                   <p className="text-xs text-muted-foreground/50 font-black text-center">Using Evaluation Benchmarks</p>
+                   <p className="text-xs text-muted-foreground/50 font-semibold text-center">Using Evaluation Benchmarks</p>
                 </div>
               )}
             </div>
@@ -411,13 +411,13 @@ export default function FeedbackPage() {
                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-white border-1.5 border-red-100 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(220,38,38,0.03)] hover:shadow-md transition-all">
                             <div className="flex items-center justify-between mb-4">
                                <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center"><AlertTriangle className="w-4 h-4 text-red-600" /></div>
-                               <span className="text-xs font-black font-mono text-red-700 bg-red-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
+                               <span className="text-xs font-semibold font-mono text-red-700 bg-red-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
                             </div>
                             <h4 className="text-sm font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
                             <div className="space-y-3">
                                {step.steps.map((s: string, j: number) => (
                                  <div key={j} className="flex gap-3 group/step">
-                                    <div className="text-xs font-black text-red-200 mt-0.5">{j+1}.</div>
+                                    <div className="text-xs font-semibold text-red-200 mt-0.5">{j+1}.</div>
                                     <p 
                                        className="text-xs text-muted-foreground/90 leading-[1.6] outline-none cursor-text hover:bg-red-50/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-red-100/50 focus:bg-red-50 focus:border-red-200/50"
                                        contentEditable
@@ -449,13 +449,13 @@ export default function FeedbackPage() {
                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-white border-1.5 border-amber-100 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(217,119,6,0.03)] hover:shadow-md transition-all">
                             <div className="flex items-center justify-between mb-4">
                                <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center"><Lightbulb className="w-4 h-4 text-amber-600" /></div>
-                               <span className="text-xs font-black font-mono text-amber-700 bg-amber-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
+                               <span className="text-xs font-semibold font-mono text-amber-700 bg-amber-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
                             </div>
                             <h4 className="text-sm font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
                             <div className="space-y-3">
                                {step.steps.map((s: string, j: number) => (
                                  <div key={j} className="flex gap-3 group/step">
-                                    <div className="text-xs font-black text-amber-200 mt-0.5">{j+1}.</div>
+                                    <div className="text-xs font-semibold text-amber-200 mt-0.5">{j+1}.</div>
                                     <p 
                                        className="text-xs text-muted-foreground/90 leading-[1.6] outline-none cursor-text hover:bg-amber-50/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-amber-100/50 focus:bg-amber-50 focus:border-amber-200/50"
                                        contentEditable
@@ -481,7 +481,7 @@ export default function FeedbackPage() {
                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-white border-1.5 border-green-100 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(5,150,105,0.03)] hover:shadow-md transition-all opacity-80 filter grayscale-[20%]">
                             <div className="flex items-center justify-between mb-4">
                                <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center"><StarIcon className="w-4 h-4 text-green-600" /></div>
-                               <span className="text-xs font-black font-mono text-green-700 bg-green-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
+                               <span className="text-xs font-semibold font-mono text-green-700 bg-green-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
                             </div>
                             <h4 className="text-sm font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
                             <div className="space-y-3">

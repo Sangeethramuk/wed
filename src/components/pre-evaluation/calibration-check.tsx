@@ -276,7 +276,7 @@ export function CalibrationCheck() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-black tracking-tight secondary-text">Calibration</h1>
+          <h1 className="text-2xl font-semibold tracking-tight secondary-text">Calibration</h1>
           <p className="eyebrow font-semibold text-muted-foreground/40">
             Evaluation readiness check
           </p>
@@ -298,7 +298,7 @@ export function CalibrationCheck() {
                   {config.badge}
                 </Badge>
                 <div>
-                  <h2 className="text-lg font-black tracking-tight">{config.title}</h2>
+                  <h2 className="text-lg font-semibold tracking-tight">{config.title}</h2>
                   <p className="text-sm text-muted-foreground/70 font-medium mt-1">{config.explanation}</p>
                 </div>
               </div>
@@ -488,7 +488,7 @@ export function CalibrationCheck() {
                 </Button>
                 <Button
                   size="lg"
-                  className="h-12 px-10 font-black tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90"
+                  className="h-12 px-10 font-semibold tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90"
                   onClick={handleConfirm}
                   disabled={confirming}
                 >
@@ -508,7 +508,7 @@ export function CalibrationCheck() {
                 </Button>
                 <Button
                   size="lg"
-                  className="h-12 px-10 font-black tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90"
+                  className="h-12 px-10 font-semibold tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90"
                   onClick={handleGoToForm}
                 >
                   Review and update →
@@ -518,7 +518,7 @@ export function CalibrationCheck() {
             {calState === "calibration_needed" && (
               <Button
                 size="lg"
-                className="h-12 px-10 font-black tracking-tight rounded-xl shadow-none ml-auto bg-primary hover:bg-primary/90"
+                className="h-12 px-10 font-semibold tracking-tight rounded-xl shadow-none ml-auto bg-primary hover:bg-primary/90"
                 onClick={handleGoToForm}
               >
                 Start calibration →
@@ -537,7 +537,7 @@ export function CalibrationCheck() {
                 </Button>
                 <Button
                   size="lg"
-                  className="h-12 px-10 font-black tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90"
+                  className="h-12 px-10 font-semibold tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90"
                   onClick={handleGoToForm}
                 >
                   Improve guidance →
@@ -552,7 +552,7 @@ export function CalibrationCheck() {
       {phase === "form" && (
         <div className="space-y-6">
           <div className="space-y-1">
-            <h2 className="text-xl font-black tracking-tight">Answer guidance</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Answer guidance</h2>
             <p className="text-sm text-muted-foreground/60 font-medium">
               Describe how this assignment should be evaluated. Your guidance helps the system
               support consistent grading.
@@ -656,7 +656,7 @@ export function CalibrationCheck() {
                       : "border-border/20 bg-card/20 hover:border-border/40"
                   }`}
                 >
-                  <span className="text-sm font-black tracking-tight">{opt.label}</span>
+                  <span className="text-sm font-semibold tracking-tight">{opt.label}</span>
                   <span className="text-xs font-medium text-muted-foreground/50 mt-0.5">
                     {opt.sub}
                   </span>
@@ -692,7 +692,7 @@ export function CalibrationCheck() {
             </Button>
             <Button
               size="lg"
-              className="h-12 px-10 font-black tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90 disabled:opacity-40"
+              className="h-12 px-10 font-semibold tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90 disabled:opacity-40"
               onClick={handleGenerateSummary}
               disabled={!isFormValid || isAnalyzing}
             >
@@ -706,7 +706,7 @@ export function CalibrationCheck() {
       {phase === "summary" && (
         <div className="space-y-5">
           <div className="space-y-1">
-            <h2 className="text-xl font-black tracking-tight">Calibration summary</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Calibration summary</h2>
             <p className="text-sm text-muted-foreground/60 font-medium">
               Here is how the system will interpret this assignment during evaluation.
             </p>
@@ -831,7 +831,7 @@ export function CalibrationCheck() {
             </Button>
             <Button
               size="lg"
-              className="h-12 px-10 font-black tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90 disabled:opacity-50"
+              className="h-12 px-10 font-semibold tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90 disabled:opacity-50"
               onClick={handleConfirm}
               disabled={confirming}
             >

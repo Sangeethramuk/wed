@@ -92,7 +92,7 @@ export function FilterBar() {
             <button
               key={opt.value}
               onClick={() => setFilter(group.key, opt.value)}
-              className={`px-2.5 py-1 rounded-md text-xs font-black tracking-wider transition-all ${
+              className={`px-2.5 py-1 rounded-md text-xs font-semibold tracking-wider transition-all ${
                 activeValues[group.key] === opt.value
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:bg-background/60"

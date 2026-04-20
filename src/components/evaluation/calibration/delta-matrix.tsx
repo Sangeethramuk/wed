@@ -117,7 +117,7 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
                   onClick={handleStart}
                   className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors cursor-pointer"
                 >
-                  <div className={`w-[22px] h-[22px] rounded-full text-xs font-black flex items-center justify-center shrink-0 border ${deltaNumClass(score.delta)}`}>
+                  <div className={`w-[22px] h-[22px] rounded-full text-xs font-semibold flex items-center justify-center shrink-0 border ${deltaNumClass(score.delta)}`}>
                     {deltaIndicator(score.delta)}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -127,7 +127,7 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
                   <span className="text-xs font-mono text-muted-foreground/70 shrink-0">
                     {score.instructorLevel} vs {score.aiLevel}
                   </span>
-                  <Badge className={`text-xs font-black border shadow-none shrink-0 ${deltaBadgeClass(score.delta)}`}>
+                  <Badge className={`text-xs font-semibold border shadow-none shrink-0 ${deltaBadgeClass(score.delta)}`}>
                     +{score.delta}
                   </Badge>
                 </div>
@@ -170,7 +170,7 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
                     return (
                       <td key={p.paperId} className="px-3 py-2.5 text-center">
                         <div className={`inline-flex flex-col items-center rounded-md px-2 py-1 ${cellStyle(delta)}`}>
-                          <span className="text-xs font-black font-mono leading-tight">
+                          <span className="text-xs font-semibold font-mono leading-tight">
                             {score?.instructorLevel || "—"}
                           </span>
                           <span className="text-xs font-mono opacity-60 leading-tight">

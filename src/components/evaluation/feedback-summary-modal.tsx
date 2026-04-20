@@ -148,7 +148,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                   <MessageSquare className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-black tracking-tight">Final Feedback Summary</h2>
+                  <h2 className="text-sm font-semibold tracking-tight">Final Feedback Summary</h2>
                   <p className="text-xs text-muted-foreground">{studentName}</p>
                 </div>
               </div>
@@ -157,10 +157,10 @@ Review the feedback for each criterion above and focus on the specific areas men
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <div className="flex items-baseline gap-2 justify-end">
-                  <span className="text-2xl font-black tracking-tighter">{percentage}</span>
+                  <span className="text-2xl font-semibold tracking-tight">{percentage}</span>
                   <span className="text-sm font-bold text-muted-foreground/50">/ 100</span>
                 </div>
-                <Badge className={`${performance.bg} ${performance.color} border-0 text-xs font-black tracking-wider`}>
+                <Badge className={`${performance.bg} ${performance.color} border-0 text-xs font-semibold tracking-wider`}>
                   {performance.label}
                 </Badge>
               </div>
@@ -187,11 +187,11 @@ Review the feedback for each criterion above and focus on the specific areas men
                         <div className="flex-1">
                           <h4 className="text-sm font-bold tracking-tight">{criterion.label}</h4>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-xs font-black">
+                            <Badge variant="outline" className="text-xs font-semibold">
                               {criterion.score.toFixed(1)} / {criterion.maxPoints} pts
                             </Badge>
                             {criterion.isOverridden && (
-                              <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs font-black">
+                              <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs font-semibold">
                                 Overridden from {criterion.aiScore}
                               </Badge>
                             )}

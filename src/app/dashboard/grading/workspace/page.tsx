@@ -149,7 +149,7 @@ export default function WorkspacePage() {
             <h2 className="eyebrow text-muted-foreground/70 font-mono leading-none mb-1">Evaluation Workspace</h2>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-foreground">{assignment.title}</span>
-              <Badge variant="secondary" className="bg-muted text-xs h-4 px-1.5 rounded font-mono tracking-tighter border-none">
+              <Badge variant="secondary" className="bg-muted text-xs h-4 px-1.5 rounded font-mono tracking-tight border-none">
                 {assignment.id}
               </Badge>
             </div>
@@ -627,8 +627,8 @@ export default function WorkspacePage() {
                      <div className={`p-5 rounded-[2rem] ${fix.bg} w-fit mb-8 transition-all group-hover:scale-110 shadow-sm`}>
                         <fix.icon className={`w-10 h-10 ${fix.color}`} />
                      </div>
-                     <h4 className="text-xl font-black text-foreground tracking-tight mb-4">{fix.title}</h4>
-                     <p className="text-sm text-muted-foreground/70 font-bold leading-[1.6] tracking-tighter">{fix.desc}</p>
+                     <h4 className="text-xl font-semibold text-foreground tracking-tight mb-4">{fix.title}</h4>
+                     <p className="text-sm text-muted-foreground/70 font-bold leading-[1.6] tracking-tight">{fix.desc}</p>
 
                      {assignment.targetFix === fix.id && (
                        <Badge className="eyebrow absolute top-8 right-10 bg-foreground text-background px-3 h-6 animate-pulse">

@@ -51,7 +51,7 @@ export function LaunchLaunchpad() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-4xl font-black tracking-tight secondary-text">Your digital desk is ready</h1>
+          <h1 className="text-4xl font-semibold tracking-tight secondary-text">Your digital desk is ready</h1>
           <p className="text-muted-foreground font-semibold text-base opacity-70">Setting up grading patterns... Success! Your students can now submit their work.</p>
         </div>
       </div>
@@ -71,7 +71,7 @@ export function LaunchLaunchpad() {
               <Input 
                 readOnly 
                 value={shareLink} 
-                className="h-14 bg-muted/20 border-2 border-border/40 rounded-2xl font-black text-sm px-6 focus-visible:ring-primary/10 tracking-tight"
+                className="h-14 bg-muted/20 border-2 border-border/40 rounded-2xl font-semibold text-sm px-6 focus-visible:ring-primary/10 tracking-tight"
               />
               <Button
                 variant="outline"

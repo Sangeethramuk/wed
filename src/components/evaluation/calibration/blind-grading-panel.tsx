@@ -197,7 +197,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                       <span className="eyebrow text-primary/60 mb-0.5">
                         Blind Manuscript
                       </span>
-                      <h2 className="text-sm font-black tracking-tight text-foreground">
+                      <h2 className="text-sm font-semibold tracking-tight text-foreground">
                         {currentPaper.anonymizedLabel}
                       </h2>
                     </div>

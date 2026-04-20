@@ -19,7 +19,7 @@ export function CalibrationConfirm() {
             <ArrowLeft />
           </Button>
           <div className="space-y-1">
-            <h1 className="text-3xl font-black tracking-tight secondary-text">Preparing your digital desk</h1>
+            <h1 className="text-3xl font-semibold tracking-tight secondary-text">Preparing your digital desk</h1>
             <p className="eyebrow font-semibold text-muted-foreground/40 leading-none">Confirm your strategy and publish the assignment.</p>
           </div>
         </div>
@@ -34,7 +34,7 @@ export function CalibrationConfirm() {
                   </div>
                   <span className="eyebrow">Verified Strategy</span>
                 </div>
-                <CardTitle className="mt-4 text-3xl font-black secondary-text tracking-tighter">Based on your past results</CardTitle>
+                <CardTitle className="mt-4 text-3xl font-semibold secondary-text tracking-tight">Based on your past results</CardTitle>
                 <CardDescription className="text-base font-semibold opacity-60 leading-relaxed mt-2">
                   AI has analyzed patterns from your previous semesters. 150+ sample responses are ready to guide the grading logic.
                 </CardDescription>
@@ -45,7 +45,7 @@ export function CalibrationConfirm() {
                     <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="eyebrow opacity-40 group-hover:opacity-100 transition-opacity">Institutional Alignment</span>
                   </div>
-                  <span className="text-lg font-black text-emerald-600 tracking-tighter">98% Match</span>
+                  <span className="text-lg font-semibold text-emerald-600 tracking-tight">98% Match</span>
                 </div>
               </CardContent>
             </Card>
@@ -58,7 +58,7 @@ export function CalibrationConfirm() {
                   </div>
                   <span className="eyebrow">New Environment</span>
                 </div>
-                <CardTitle className="mt-4 text-3xl font-black secondary-text tracking-tighter">Ready to start grading?</CardTitle>
+                <CardTitle className="mt-4 text-3xl font-semibold secondary-text tracking-tight">Ready to start grading?</CardTitle>
                 <CardDescription className="text-base font-semibold opacity-60 leading-relaxed mt-2">
                   You are deploying this assignment format for the first time. Choose how the AI should learn your standards.
                 </CardDescription>
@@ -67,7 +67,7 @@ export function CalibrationConfirm() {
                 <div className="flex items-start gap-5 p-6 rounded-2xl bg-background/50 border border-amber-500/10 group hover:border-amber-500/40 transition-all cursor-pointer hover:bg-white shadow-none hover:shadow-lg hover:shadow-amber-500/5">
                   <div className="eyebrow px-3 py-1 rounded-md bg-amber-100 text-amber-700 mt-1">Option 1</div>
                   <div className="space-y-1 flex-1">
-                    <p className="text-lg font-black tracking-tight">Interactive Calibration</p>
+                    <p className="text-lg font-semibold tracking-tight">Interactive Calibration</p>
                     <p className="text-xs font-semibold text-muted-foreground opacity-60 leading-relaxed">The AI will observe your grading of the first 5 student responses to align with your personal bias.</p>
                   </div>
                 </div>
@@ -75,7 +75,7 @@ export function CalibrationConfirm() {
                   <div className="eyebrow px-3 py-1 rounded-md bg-muted text-muted-foreground mt-1">Option 2</div>
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center justify-between">
-                      <p className="text-lg font-black tracking-tight">Expert Reference Sheet</p>
+                      <p className="text-lg font-semibold tracking-tight">Expert Reference Sheet</p>
                     </div>
                     <p className="text-xs font-semibold text-muted-foreground opacity-60 leading-relaxed">Upload a master answer key for the AI to synchronize immediately.</p>
                     <Button variant="link" size="sm" className="mt-2">Upload key →</Button>
@@ -90,7 +90,7 @@ export function CalibrationConfirm() {
               <TooltipTrigger className="border border-border/20 rounded-2xl overflow-hidden shadow-none bg-muted/[0.02] hover:bg-white transition-all hover:border-primary/20 cursor-help">
                 <CardContent className="pt-6 pb-6 px-6 space-y-2">
                   <p className="eyebrow text-muted-foreground opacity-30">Assignment Scope</p>
-                  <p className="text-sm font-black tracking-tight secondary-text">Multiple Files (Artifacts)</p>
+                  <p className="text-sm font-semibold tracking-tight secondary-text">Multiple Files (Artifacts)</p>
                 </CardContent>
               </TooltipTrigger>
               <TooltipContent className="bg-slate-900 border-none p-2 shadow-none rounded-lg"><p className="text-xs font-bold text-white">Project-style submission with secondary documentation support</p></TooltipContent>
@@ -100,7 +100,7 @@ export function CalibrationConfirm() {
               <TooltipTrigger className="border border-border/20 rounded-2xl overflow-hidden shadow-none bg-muted/[0.02] hover:bg-white transition-all hover:border-primary/20 cursor-help">
                 <CardContent className="pt-6 pb-6 px-6 space-y-2">
                   <p className="eyebrow text-muted-foreground opacity-30">Framework Mapping</p>
-                  <p className="text-sm font-black tracking-tight secondary-text">3 Linked CO-POs</p>
+                  <p className="text-sm font-semibold tracking-tight secondary-text">3 Linked CO-POs</p>
                 </CardContent>
               </TooltipTrigger>
               <TooltipContent className="bg-slate-900 border-none p-2 shadow-none rounded-lg"><p className="text-xs font-bold text-white">Accreditation outcomes verified for this session</p></TooltipContent>
@@ -110,7 +110,7 @@ export function CalibrationConfirm() {
               <TooltipTrigger className="border border-border/20 rounded-2xl overflow-hidden shadow-none bg-muted/[0.02] hover:bg-white transition-all hover:border-primary/20 cursor-help">
                 <CardContent className="pt-6 pb-6 px-6 space-y-2">
                   <p className="eyebrow text-muted-foreground opacity-30">Class Size</p>
-                  <p className="text-sm font-black tracking-tight secondary-text">~45 Students</p>
+                  <p className="text-sm font-semibold tracking-tight secondary-text">~45 Students</p>
                 </CardContent>
               </TooltipTrigger>
               <TooltipContent className="bg-slate-900 border-none p-2 shadow-none rounded-lg"><p className="text-xs font-bold text-white">Based on current course enrollment</p></TooltipContent>

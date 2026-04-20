@@ -99,7 +99,7 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="text-sm font-bold text-foreground truncate">{assignment.title}</span>
-          <Badge variant="outline" className={`text-xs font-black tracking-wider shrink-0 ${TYPE_BADGE[assignment.assignmentType] ?? ""}`}>
+          <Badge variant="outline" className={`text-xs font-semibold tracking-wider shrink-0 ${TYPE_BADGE[assignment.assignmentType] ?? ""}`}>
             {assignment.assignmentType}
           </Badge>
         </div>
@@ -114,7 +114,7 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
 
       {/* Papers count */}
       <div className="w-16 text-right shrink-0">
-        <p className="text-sm font-black tabular-nums text-foreground">{assignment.totalSubmissions}</p>
+        <p className="text-sm font-semibold tabular-nums text-foreground">{assignment.totalSubmissions}</p>
         <p className="text-xs font-bold text-muted-foreground/40 tracking-wider">Papers</p>
       </div>
 
@@ -123,20 +123,20 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
         {assignment.integrityFlags > 0 ? (
           <Tooltip>
             <TooltipTrigger>
-              <Badge variant="destructive" className="gap-1 px-2 py-0.5 text-xs font-black animate-pulse cursor-help">
+              <Badge variant="destructive" className="gap-1 px-2 py-0.5 text-xs font-semibold animate-pulse cursor-help">
                 <ShieldAlert className="h-2.5 w-2.5" /> {assignment.integrityFlags}
               </Badge>
             </TooltipTrigger>
             <TooltipContent>{assignment.integrityFlags} integrity flag{assignment.integrityFlags > 1 ? "s" : ""} detected</TooltipContent>
           </Tooltip>
         ) : (
-          <span className="text-xs font-black text-muted-foreground/20">—</span>
+          <span className="text-xs font-semibold text-muted-foreground/20">—</span>
         )}
       </div>
 
       {/* Grading progress */}
       <div className="w-24 shrink-0 text-right">
-        <p className="text-sm font-black tabular-nums">
+        <p className="text-sm font-semibold tabular-nums">
           <span className="text-foreground">{assignment.gradedSubmissions}</span>
           <span className="text-muted-foreground/30 mx-0.5 text-xs">/</span>
           <span className="text-muted-foreground/50 text-xs">{assignment.totalSubmissions}</span>
@@ -179,7 +179,7 @@ function DeptGroup({ department, assignments }: { department: string; assignment
         <div className="flex items-center gap-2.5 flex-1">
           <ColorDot color={{ kind: "category", value: department }} size="md" />
           <span className="eyebrow text-foreground/80">{department}</span>
-          <CategoryBadge category={department} showDot={false} className="text-xs font-black tracking-wider">
+          <CategoryBadge category={department} showDot={false} className="text-xs font-semibold tracking-wider">
             {assignments.length} assignment{assignments.length !== 1 ? "s" : ""}
           </CategoryBadge>
         </div>

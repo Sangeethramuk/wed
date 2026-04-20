@@ -52,7 +52,7 @@ export function RubricTweak() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="space-y-0">
-              <h1 className="text-2xl font-black tracking-tight secondary-text">Grading Rubric</h1>
+              <h1 className="text-2xl font-semibold tracking-tight secondary-text">Grading Rubric</h1>
               <p className="eyebrow font-semibold text-muted-foreground/40">Define your grade levels</p>
             </div>
           </div>
@@ -68,7 +68,7 @@ export function RubricTweak() {
                 <div className="space-y-1">
                   <p className="eyebrow text-muted-foreground opacity-50">Readiness</p>
                   <div className="flex items-center gap-3">
-                    <span className="text-xl font-black text-primary tracking-tighter">{healthScore}%</span>
+                    <span className="text-xl font-semibold text-primary tracking-tight">{healthScore}%</span>
                     <Progress value={healthScore} className="h-1 w-24 rounded-full bg-muted/20 shadow-none" />
                   </div>
                 </div>
@@ -135,7 +135,7 @@ export function RubricTweak() {
                       <th key={level} className="p-4 text-center border-r border-border/10 min-w-[200px] shadow-none">
                         <div className="space-y-0.5">
                           <span className={`eyebrow ${i === 0 ? 'text-primary' : 'text-muted-foreground/50'}`}>{level}</span>
-                          <span className="block text-xs font-black text-muted-foreground/30 tracking-tighter">Grade: {i === 0 ? '100' : i === 1 ? '75' : i === 2 ? '50' : '25'}%</span>
+                          <span className="block text-xs font-semibold text-muted-foreground/30 tracking-tight">Grade: {i === 0 ? '100' : i === 1 ? '75' : i === 2 ? '50' : '25'}%</span>
                         </div>
                       </th>
                     ))}
@@ -149,7 +149,7 @@ export function RubricTweak() {
                           <div className="space-y-2 flex-1 shadow-none">
                             <Textarea 
                               value={crit.name}
-                              className="font-black text-xs text-foreground tracking-tight leading-tight border border-border/40 p-3 h-auto min-h-[60px] bg-background/50 focus-visible:ring-primary/20 shadow-none rounded-lg resize-none"
+                              className="font-semibold text-xs text-foreground tracking-tight leading-tight border border-border/40 p-3 h-auto min-h-[60px] bg-background/50 focus-visible:ring-primary/20 shadow-none rounded-lg resize-none"
                               placeholder="Enter criterion name..."
                               onChange={(e) => {
                                 updateRubric(rubric.map(c => c.id === crit.id ? { ...c, name: e.target.value } : c))
@@ -157,7 +157,7 @@ export function RubricTweak() {
                             />
                             <div className="flex items-center justify-between">
                               <Tooltip>
-                                <TooltipTrigger className="text-xs font-black tracking-widest border-border/20 text-muted-foreground/60 bg-background/30 py-0 px-2 rounded-full h-4 shadow-none cursor-help">
+                                <TooltipTrigger className="text-xs font-semibold tracking-widest border-border/20 text-muted-foreground/60 bg-background/30 py-0 px-2 rounded-full h-4 shadow-none cursor-help">
                                   <Badge variant="outline" className="border-none p-0 h-auto">
                                     {crit.linkedCO}
                                   </Badge>

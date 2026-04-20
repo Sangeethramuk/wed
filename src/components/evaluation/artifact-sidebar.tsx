@@ -216,7 +216,7 @@ export default function ArtifactSidebar({
           ) : (
             <Badge
               variant="outline"
-              className="h-5 w-5 p-0 flex items-center justify-center text-xs font-black rounded-full mx-auto"
+              className="h-5 w-5 p-0 flex items-center justify-center text-xs font-semibold rounded-full mx-auto"
             >
               {totalCount}
             </Badge>
@@ -267,7 +267,7 @@ export default function ArtifactSidebar({
                           {artifact.name}
                         </span>
                         {artifact.isPrimary && (
-                          <Badge className="h-4 px-1 rounded text-xs font-black bg-primary text-primary-foreground shrink-0">
+                          <Badge className="h-4 px-1 rounded text-xs font-semibold bg-primary text-primary-foreground shrink-0">
                             PRIMARY
                           </Badge>
                         )}

@@ -79,7 +79,7 @@ export function StudentPreview() {
             </div>
           </div>
           <div className="space-y-2">
-            <h1 className="text-4xl font-black tracking-tight secondary-text">Your assignment is live!</h1>
+            <h1 className="text-4xl font-semibold tracking-tight secondary-text">Your assignment is live!</h1>
             <p className="text-muted-foreground font-semibold text-base opacity-70">Your students can now submit their work.</p>
           </div>
         </div>
@@ -95,7 +95,7 @@ export function StudentPreview() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <Input readOnly value={shareLink} className="h-12 bg-muted/10 border border-border/30 rounded-xl font-black text-sm px-5 focus-visible:ring-primary/10 tracking-tight" />
+                <Input readOnly value={shareLink} className="h-12 bg-muted/10 border border-border/30 rounded-xl font-semibold text-sm px-5 focus-visible:ring-primary/10 tracking-tight" />
                 <Button variant="secondary" size="icon" onClick={copyToClipboard}>
                   {copied ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <Copy className="h-5 w-5" />}
                 </Button>
@@ -151,7 +151,7 @@ export function StudentPreview() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-black tracking-tight secondary-text">Preview & Publish</h1>
+            <h1 className="text-2xl font-semibold tracking-tight secondary-text">Preview & Publish</h1>
             <p className="eyebrow font-semibold text-muted-foreground/40">Review before publishing</p>
           </div>
         </div>
@@ -242,7 +242,7 @@ function StudentView({
         <p className="eyebrow text-muted-foreground/40">
           {assignment.institution.name}
         </p>
-        <h2 className="text-2xl font-black tracking-tight">
+        <h2 className="text-2xl font-semibold tracking-tight">
           {assignment.title || "Untitled Assignment"}
         </h2>
         {assignment.type && (
@@ -308,7 +308,7 @@ function StudentView({
             <div className="rounded-xl border border-border/15 overflow-hidden divide-y divide-border/10">
               {allDeliverables.map((item, idx) => (
                 <div key={item.id} className="flex items-center gap-3 px-4 py-3 bg-muted/[0.02]">
-                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center shrink-0">{idx + 1}</span>
+                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center shrink-0">{idx + 1}</span>
                   <p className="text-sm font-semibold text-foreground">{item.name || <span className="italic opacity-40">Untitled</span>}</p>
                 </div>
               ))}
@@ -329,12 +329,12 @@ function StudentView({
                 return (
                   <div key={crit.id} className="px-4 py-3.5 bg-muted/[0.02] space-y-1">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-black text-foreground">{crit.name}</p>
+                      <p className="text-sm font-semibold text-foreground">{crit.name}</p>
                       <span className="eyebrow text-muted-foreground/40">{crit.weight}%</span>
                     </div>
                     {exemplary?.description.trim() && (
                       <p className="text-xs text-muted-foreground/70 font-medium leading-relaxed">
-                        <span className="text-primary/60 font-black">→ </span>{exemplary.description}
+                        <span className="text-primary/60 font-semibold">→ </span>{exemplary.description}
                       </p>
                     )}
                   </div>
@@ -405,7 +405,7 @@ function InstructorView({
             {assignment.institution.name} — {assignment.institution.dept}
           </p>
         </div>
-        <h2 className="text-2xl font-black tracking-tight secondary-text">{assignment.title || "Untitled Assignment"}</h2>
+        <h2 className="text-2xl font-semibold tracking-tight secondary-text">{assignment.title || "Untitled Assignment"}</h2>
         {assignment.type && (
           <Badge variant="outline" className="eyebrow mt-3 bg-primary/5 text-primary border-primary/20 px-2 h-5 rounded-full">{assignment.type}</Badge>
         )}
@@ -456,7 +456,7 @@ function InstructorView({
               <Card key={block.id} className="border border-border/20 rounded-lg overflow-hidden shadow-none">
                 <div className="px-5 py-3 bg-muted/5 border-b border-border/10 flex items-center gap-2">
                   <Icon className="h-3.5 w-3.5 text-primary/70" />
-                  <p className="text-xs font-black text-foreground tracking-tight">{block.title}</p>
+                  <p className="text-xs font-semibold text-foreground tracking-tight">{block.title}</p>
                 </div>
 
                 {block.type === "instructions" && (
@@ -483,7 +483,7 @@ function InstructorView({
                               {q.bloomLevel}
                             </Badge>
                           </div>
-                          <span className="text-sm font-black text-foreground tabular-nums shrink-0">{q.weight}%</span>
+                          <span className="text-sm font-semibold text-foreground tabular-nums shrink-0">{q.weight}%</span>
                         </div>
                       ))
                     }

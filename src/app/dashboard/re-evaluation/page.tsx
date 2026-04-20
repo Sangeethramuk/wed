@@ -157,7 +157,7 @@ export default function ReEvaluationDashboard() {
                 <span className="text-muted-foreground/20 text-xs">·</span>
                 <span className="eyebrow text-primary/80">Re-Evaluation Module</span>
               </div>
-              <h1 className="text-4xl font-black tracking-tighter secondary-text">Manage your workload</h1>
+              <h1 className="text-4xl font-semibold tracking-tight secondary-text">Manage your workload</h1>
             </div>
             
             <div className="flex flex-col items-end gap-3">
@@ -173,7 +173,7 @@ export default function ReEvaluationDashboard() {
               <div key={i} className="group px-4 py-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-all flex flex-col justify-center">
                 <span className="eyebrow text-muted-foreground/50">{kpi.label}</span>
                 <div className="flex items-baseline gap-1.5 mt-1">
-                  <span className="text-xl font-black tracking-tighter" style={{ color: kpi.accent }}>{kpi.value}</span>
+                  <span className="text-xl font-semibold tracking-tight" style={{ color: kpi.accent }}>{kpi.value}</span>
                   <span className="text-xs font-bold text-muted-foreground/30">{kpi.sub}</span>
                 </div>
               </div>
@@ -328,7 +328,7 @@ function AssignmentCard({
           <div className="p-1.5 w-fit rounded-lg bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300 border border-primary/10 mb-3">
             <BookOpen className="h-4 w-4" />
           </div>
-          <h3 className="text-sm font-black tracking-tight line-clamp-1 text-[#1E293B]">{title}</h3>
+          <h3 className="text-sm font-semibold tracking-tight line-clamp-1 text-[#1E293B]">{title}</h3>
           <div className="eyebrow flex items-center gap-1 text-xs text-muted-foreground/50 mt-0.5">
             {code} <span className="opacity-40">•</span> {subject} <span className="opacity-40">•</span> {batch}
           </div>
@@ -338,11 +338,11 @@ function AssignmentCard({
           <div className="flex items-end justify-between pt-3 border-t border-border/10">
             <div className="space-y-0.5">
               <span className="eyebrow text-xs text-muted-foreground/30">Workload</span>
-              <div className="text-xs font-black text-foreground/80">{pendingCount} Pending</div>
+              <div className="text-xs font-semibold text-foreground/80">{pendingCount} Pending</div>
             </div>
             <div className="space-y-0.5 text-right">
               <span className="eyebrow text-xs text-muted-foreground/30">Progress</span>
-              <div className="text-xs font-black text-muted-foreground">{resolvedCount}/{totalCount}</div>
+              <div className="text-xs font-semibold text-muted-foreground">{resolvedCount}/{totalCount}</div>
             </div>
           </div>
 

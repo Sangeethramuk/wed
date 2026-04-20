@@ -143,7 +143,7 @@ export default function EvaluationResults() {
           </Button>
           <div className="space-y-1.5">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-3xl font-black tracking-tight text-foreground">Class Report</h1>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">Class Report</h1>
               <Badge variant="outline" className="eyebrow h-5 px-2 bg-green-50 text-green-700 border-green-200 rounded-full">
                 Evaluation Complete
               </Badge>
@@ -208,7 +208,7 @@ export default function EvaluationResults() {
               <span className="eyebrow text-muted-foreground/40">{stat.label}</span>
               <stat.icon className={cn("h-4 w-4 opacity-60", stat.highlight ? "text-amber-500" : "text-primary")} />
             </div>
-            <div className="text-3xl font-black tracking-tighter tabular-nums text-foreground">{stat.value}</div>
+            <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{stat.value}</div>
             <div className={cn("eyebrow mt-1", stat.highlight ? "text-amber-600" : "text-muted-foreground/50")}>
               {stat.sub}
             </div>
@@ -236,10 +236,10 @@ export default function EvaluationResults() {
             {distribution.map((band, i) => (
               <div key={band.label} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-foreground tracking-tight">{band.label}</span>
+                  <span className="text-xs font-semibold text-foreground tracking-tight">{band.label}</span>
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-bold text-muted-foreground/40">{band.range}</span>
-                    <span className="text-xs font-black text-foreground tabular-nums w-5 text-right">{band.count}</span>
+                    <span className="text-xs font-semibold text-foreground tabular-nums w-5 text-right">{band.count}</span>
                   </div>
                 </div>
                 <div className="h-9 bg-muted/20 rounded-xl overflow-hidden">
@@ -268,7 +268,7 @@ export default function EvaluationResults() {
               <div key={cs.cid} className="space-y-2">
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-xs font-bold text-foreground leading-snug">{cs.name}</span>
-                  <span className="text-xs font-black tabular-nums text-foreground shrink-0">
+                  <span className="text-xs font-semibold tabular-nums text-foreground shrink-0">
                     {cs.avg.toFixed(1)}<span className="text-muted-foreground/30 text-xs">/5</span>
                   </span>
                 </div>
@@ -366,7 +366,7 @@ export default function EvaluationResults() {
                   >
                     {/* # */}
                     <td className="px-6 py-5">
-                      <span className="text-xs font-black text-muted-foreground/25 tabular-nums">
+                      <span className="text-xs font-semibold text-muted-foreground/25 tabular-nums">
                         {String(idx + 1).padStart(2, "0")}
                       </span>
                     </td>
@@ -374,7 +374,7 @@ export default function EvaluationResults() {
                     {/* Student name + avatar */}
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-black text-muted-foreground group-hover:text-primary shrink-0">
+                        <div className="w-8 h-8 rounded-xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-semibold text-muted-foreground group-hover:text-primary shrink-0">
                           {student.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
                         </div>
                         <span className="text-xs font-extrabold text-foreground tracking-tight whitespace-nowrap">{student.name}</span>
@@ -400,7 +400,7 @@ export default function EvaluationResults() {
 
                     {/* Score % */}
                     <td className="px-6 py-5 text-center">
-                      <span className="text-xs font-black tabular-nums text-foreground">{scorePct}%</span>
+                      <span className="text-xs font-semibold tabular-nums text-foreground">{scorePct}%</span>
                     </td>
 
                     {/* Grade badge */}

@@ -265,7 +265,7 @@ export function RevisionHistorySheet({
             </div>
             <Badge
               variant="outline"
-              className="h-6 px-2 text-xs font-black rounded-full"
+              className="h-6 px-2 text-xs font-semibold rounded-full"
             >
               {events.length} {events.length === 1 ? "event" : "events"}
             </Badge>

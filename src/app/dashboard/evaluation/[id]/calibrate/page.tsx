@@ -77,7 +77,7 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
               </Link>
               <div className="w-px h-4 bg-border/50" />
               <div className="eyebrow flex items-center gap-3">
-                <span className="text-primary font-black">
+                <span className="text-primary font-semibold">
                   Step {currentStep?.step ?? 1} of {PHASE_STEPS.length - 1} — {currentStep?.label}
                 </span>
                 {nextStep && cal.phase !== "negotiation" && (

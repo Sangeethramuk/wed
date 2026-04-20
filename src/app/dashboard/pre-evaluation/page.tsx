@@ -65,7 +65,7 @@ export default function PreEvaluationPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="eyebrow flex items-center gap-6 transition-all">
                 <div className="flex items-center gap-3">
-                    <span className="text-primary opacity-100 font-black">Step {currentStep} of 6 — {currentStepData?.label}</span>
+                    <span className="text-primary opacity-100 font-semibold">Step {currentStep} of 6 — {currentStepData?.label}</span>
                 </div>
                 <div className="flex gap-2 text-muted-foreground/10 px-4">
                     {steps.map(s => (

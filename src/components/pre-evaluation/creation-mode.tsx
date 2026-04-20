@@ -82,7 +82,7 @@ export function CreationMode() {
       </div>
 
       <div className="space-y-1">
-        <h1 className="text-4xl font-black tracking-tighter secondary-text">
+        <h1 className="text-4xl font-semibold tracking-tight secondary-text">
           {showHistoryList ? "Pick an assignment to adapt" : "How would you like to start?"}
         </h1>
         <p className="eyebrow text-base text-muted-foreground font-medium opacity-70 border-b border-border/10 pb-6">
@@ -105,7 +105,7 @@ export function CreationMode() {
                   <History className="h-6 w-6" />
                 </div>
               </div>
-              <CardTitle className="text-2xl font-black tracking-tight">Use an existing assignment</CardTitle>
+              <CardTitle className="text-2xl font-semibold tracking-tight">Use an existing assignment</CardTitle>
               <CardDescription className="text-sm font-medium leading-relaxed mt-3 opacity-70">
                 We&apos;ll show relevant assignments you can adapt — fastest way to get started.
               </CardDescription>
@@ -141,7 +141,7 @@ export function CreationMode() {
                   <Sparkles className="h-6 w-6" />
                 </div>
               </div>
-              <CardTitle className="text-2xl font-black tracking-tight">Start with suggestions</CardTitle>
+              <CardTitle className="text-2xl font-semibold tracking-tight">Start with suggestions</CardTitle>
               <CardDescription className="text-sm font-medium leading-relaxed mt-3 opacity-80">
                 We&apos;ll suggest the best assignment formats for this course — based on outcomes and past usage.
               </CardDescription>
@@ -171,7 +171,7 @@ export function CreationMode() {
                   <PlusCircle className="h-6 w-6" />
                 </div>
               </div>
-              <CardTitle className="text-2xl font-black tracking-tight">Create from scratch</CardTitle>
+              <CardTitle className="text-2xl font-semibold tracking-tight">Create from scratch</CardTitle>
               <CardDescription className="text-sm font-medium leading-relaxed mt-3 opacity-70">
                 We&apos;ll guide you step-by-step as you build — full control over every detail.
               </CardDescription>
@@ -243,7 +243,7 @@ export function CreationMode() {
           {/* Fallback */}
           <div className="flex items-center justify-between rounded-xl border border-dashed border-border/40 bg-card/10 px-6 py-5">
             <div className="space-y-1">
-              <p className="text-sm font-black tracking-tight">Can&apos;t find a good match?</p>
+              <p className="text-sm font-semibold tracking-tight">Can&apos;t find a good match?</p>
               <p className="text-xs text-muted-foreground opacity-60 font-medium">
                 Skip the library and start a fresh assignment — we&apos;ll guide you step-by-step.
               </p>
@@ -279,7 +279,7 @@ export function CreationMode() {
                     {previewed.lastUsed}
                   </span>
                 </div>
-                <SheetTitle className="text-xl font-black tracking-tight mt-2">
+                <SheetTitle className="text-xl font-semibold tracking-tight mt-2">
                   {previewed.title}
                 </SheetTitle>
                 <SheetDescription className="eyebrow opacity-60">
@@ -314,7 +314,7 @@ export function CreationMode() {
                     <ul className="space-y-1.5">
                       {previewed.sampleQuestions.map((q, i) => (
                         <li key={i} className="text-sm leading-relaxed opacity-80 flex gap-2">
-                          <span className="text-xs font-black text-muted-foreground opacity-50 mt-1">{String(i + 1).padStart(2, "0")}</span>
+                          <span className="text-xs font-semibold text-muted-foreground opacity-50 mt-1">{String(i + 1).padStart(2, "0")}</span>
                           <span>{q}</span>
                         </li>
                       ))}
@@ -426,7 +426,7 @@ function HistoryCard({
             {hist.avgScore}% avg
           </span>
         </div>
-        <CardTitle className="mt-3 text-lg font-black tracking-tight line-clamp-2">
+        <CardTitle className="mt-3 text-lg font-semibold tracking-tight line-clamp-2">
           {hist.title}
         </CardTitle>
         <CardDescription className="eyebrow opacity-60 mt-1">

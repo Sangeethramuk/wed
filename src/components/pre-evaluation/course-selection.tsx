@@ -74,7 +74,7 @@ export function CourseSelection() {
           </div>
 
           <div className="space-y-3">
-            <h1 className="text-4xl font-black tracking-tighter secondary-text">Set up your assignment</h1>
+            <h1 className="text-4xl font-semibold tracking-tight secondary-text">Set up your assignment</h1>
             <p className="text-base text-muted-foreground font-medium opacity-70">Select a course to begin</p>
             <div className="flex items-center gap-2 pt-1">
               <Sparkles className="h-3.5 w-3.5 text-primary opacity-50" />
@@ -104,7 +104,7 @@ export function CourseSelection() {
                       <BookOpen className="h-4 w-4 text-primary opacity-70" />
                     </div>
                     <div className="min-w-0 space-y-1">
-                      <p className="text-sm font-black tracking-tight truncate">{draft.title}</p>
+                      <p className="text-sm font-semibold tracking-tight truncate">{draft.title}</p>
                       <div className="eyebrow flex items-center gap-2 text-muted-foreground opacity-60">
                         <span>{draft.course}</span>
                         <span className="opacity-40">•</span>
@@ -159,7 +159,7 @@ export function CourseSelection() {
                   <div className="p-3 w-fit rounded-lg bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300 border border-primary/10">
                     <BookOpen className="h-6 w-6" />
                   </div>
-                  <CardTitle className="mt-6 text-xl font-black tracking-tight">{course.name}</CardTitle>
+                  <CardTitle className="mt-6 text-xl font-semibold tracking-tight">{course.name}</CardTitle>
                   <CardDescription className="eyebrow flex items-center gap-2 text-xs opacity-80 mt-1">
                     {course.code} <span className="opacity-40">•</span> {course.semester}
                   </CardDescription>
@@ -169,13 +169,13 @@ export function CourseSelection() {
                   <div className="grid grid-cols-2 gap-4 pt-6 border-t border-border/10">
                     <div className="space-y-1">
                       <span className="eyebrow text-muted-foreground opacity-30">Assignments</span>
-                      <div className="flex items-center gap-1.5 text-xs font-black">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold">
                         <span>{course.assignmentCount} Created</span>
                       </div>
                     </div>
                     <div className="space-y-1">
                       <span className="eyebrow text-muted-foreground opacity-30">Last Created</span>
-                      <div className="flex items-center gap-1.5 text-xs font-black text-muted-foreground">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
                         <Clock className="h-3 w-3 opacity-50" />
                         <span>{course.lastAssignment}</span>
                       </div>

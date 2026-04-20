@@ -139,7 +139,7 @@ export default function ReEvalWorkspacePage() {
           <div className="w-px h-6 bg-border/10" />
           
           <div className="flex items-center gap-3">
-            <h1 className="text-lg font-black tracking-tighter text-slate-800 flex items-center gap-2">
+            <h1 className="text-lg font-semibold tracking-tight text-slate-800 flex items-center gap-2">
               {st.name}
               <span className="eyebrow text-muted-foreground/40 px-2 py-0.5 bg-muted/50 rounded-md">
                 {st.rollId}
@@ -290,7 +290,7 @@ export default function ReEvalWorkspacePage() {
           {/* Intelligence Header: KPI Strip */}
           <div className="flex border-b border-slate-200 bg-white shadow-sm flex-shrink-0 relative z-20">
             <KPIBlock label="Original Score" className="flex-[0.9] border-r border-slate-200/60">
-              <div className={cn("text-lg font-black tracking-tighter", statusStyles[ageStatusKind(st.ageStatus)].text)}>{st.origScore}<span className="text-muted-foreground/30 font-bold ml-1">/ {st.maxScore}</span></div>
+              <div className={cn("text-lg font-semibold tracking-tight", statusStyles[ageStatusKind(st.ageStatus)].text)}>{st.origScore}<span className="text-muted-foreground/30 font-bold ml-1">/ {st.maxScore}</span></div>
               <div className="eyebrow text-muted-foreground/40 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">{st.critShort}</div>
             </KPIBlock>
             <KPIBlock label="Evidence Used" className="flex-[1.4] border-r border-slate-200/60">
@@ -300,7 +300,7 @@ export default function ReEvalWorkspacePage() {
             <KPIBlock label="Confidence" className="flex-[0.9]">
               <div className="flex items-center gap-1.5">
                 <div className={cn("size-2 rounded-full", confidenceStyles[confidenceKind(st.confLabel)].dot)} />
-                <span className="text-sm font-black tracking-tighter text-slate-800">{st.confScore}</span>
+                <span className="text-sm font-semibold tracking-tight text-slate-800">{st.confScore}</span>
               </div>
               <div className="eyebrow text-muted-foreground/40 mt-1 whitespace-nowrap">{st.hasOverride ? 'Prior Override' : 'System Default'}</div>
             </KPIBlock>
@@ -439,9 +439,9 @@ export default function ReEvalWorkspacePage() {
                       <div className="eyebrow flex items-center gap-2 text-slate-800">
                         <EditIcon className="size-3.5" />
                         Decision Rationale
-                        <span className="px-1.5 py-0.5 rounded bg-red-500 text-white text-xs font-black tracking-widest">REQUIRED</span>
+                        <span className="px-1.5 py-0.5 rounded bg-red-500 text-white text-xs font-semibold tracking-widest">REQUIRED</span>
                       </div>
-                      <span className="text-xs font-black tracking-widest text-muted-foreground/30">{reasonLen} / 500</span>
+                      <span className="text-xs font-semibold tracking-widest text-muted-foreground/30">{reasonLen} / 500</span>
                     </div>
                     <textarea
                       value={reasonText}
@@ -477,7 +477,7 @@ export default function ReEvalWorkspacePage() {
                         <CheckIcon className="size-3 text-white" />
                       </div>
                     )}
-                    <h3 className="text-lg font-black tracking-tighter">
+                    <h3 className="text-lg font-semibold tracking-tight">
                       {comparing ? 'Synthesizing Parallel Review...' : 'AI Re-evaluation Completed'}
                     </h3>
                   </div>
@@ -509,7 +509,7 @@ export default function ReEvalWorkspacePage() {
                          { n: 3, label: 'Student Update', val: 'Notified only after HOD final signature' },
                        ].map(item => (
                          <div key={item.n} className="flex gap-4 group">
-                           <div className="size-6 rounded-lg bg-muted flex items-center justify-center text-xs font-black text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">{item.n}</div>
+                           <div className="size-6 rounded-lg bg-muted flex items-center justify-center text-xs font-semibold text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">{item.n}</div>
                            <div className="flex-1 -mt-0.5">
                              <div className="eyebrow text-muted-foreground/30 mb-0.5">{item.label}</div>
                              <div className="text-xs font-bold text-slate-700">{item.val}</div>
@@ -529,7 +529,7 @@ export default function ReEvalWorkspacePage() {
                     <CheckIcon className="size-10 text-white" />
                   </div>
                   <div className="text-center space-y-2">
-                    <h2 className="text-3xl font-black tracking-tighter">Review Submitted</h2>
+                    <h2 className="text-3xl font-semibold tracking-tight">Review Submitted</h2>
                     <p className="text-sm text-muted-foreground font-medium">Successfully routed to HOD dashboard for final approval.</p>
                   </div>
                   <div className="w-full max-w-sm p-6 rounded-2xl bg-white border border-border/10 shadow-sm space-y-4">
@@ -648,7 +648,7 @@ function CompareCard({ label, score, reason, variant }: { label: string; score: 
   return (
     <div className={`rounded-2xl p-5 border ${isPrimary ? 'bg-primary/5 border-primary/20' : 'bg-slate-50 border-border/10'}`}>
        <span className={`eyebrow ${isPrimary ? 'text-primary' : 'text-muted-foreground/40'}`}>{label}</span>
-       <div className={`text-2xl font-black tracking-tighter my-1 ${isPrimary ? 'text-primary' : 'text-slate-800'}`}>{score}<span className="text-muted-foreground/30 font-bold ml-1 text-base">/ 10</span></div>
+       <div className={`text-2xl font-semibold tracking-tight my-1 ${isPrimary ? 'text-primary' : 'text-slate-800'}`}>{score}<span className="text-muted-foreground/30 font-bold ml-1 text-base">/ 10</span></div>
        <p className="text-xs font-medium text-slate-500 leading-snug line-clamp-2">{reason}</p>
     </div>
   )

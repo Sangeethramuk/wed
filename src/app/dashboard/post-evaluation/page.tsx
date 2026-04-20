@@ -80,7 +80,7 @@ export default function ResultInsights() {
         )}
         <div className="space-y-1.5">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-black tracking-tight text-foreground">{title}</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{title}</h1>
             <Badge variant="outline" className="eyebrow h-5 px-2 bg-primary/5 text-primary border-primary/20 rounded-full">
               PROTOCOL P1
             </Badge>
@@ -118,7 +118,7 @@ export default function ResultInsights() {
                   <CardDescription className="text-xs font-bold text-muted-foreground/50 mt-1">Cohort SE-PH2 Evaluation</CardDescription>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-black text-foreground tabular-nums tracking-tighter">45<span className="text-muted-foreground/30 text-sm">/45</span></div>
+                  <div className="text-2xl font-semibold text-foreground tabular-nums tracking-tight">45<span className="text-muted-foreground/30 text-sm">/45</span></div>
                   <div className="eyebrow text-green-600">100% Processed</div>
                 </div>
               </CardHeader>
@@ -137,7 +137,7 @@ export default function ResultInsights() {
                   ].map((stat) => (
                     <div key={stat.label} className={cn("p-4 rounded-2xl border border-border/40 flex items-center justify-between", stat.bg)}>
                       <span className="text-xs font-bold text-muted-foreground/80 tracking-tight">{stat.label}</span>
-                      <span className={cn("text-lg font-black", stat.color)}>{stat.count}</span>
+                      <span className={cn("text-lg font-semibold", stat.color)}>{stat.count}</span>
                     </div>
                   ))}
                 </div>
@@ -175,7 +175,7 @@ export default function ResultInsights() {
                     <div className="flex-1 space-y-1.5">
                       <div className="flex items-center justify-between">
                          <div className="flex items-center gap-3">
-                            <span className={cn("text-sm font-black tracking-tight", releaseTiming === opt.key ? "text-primary" : "text-foreground")}>{opt.title}</span>
+                            <span className={cn("text-sm font-semibold tracking-tight", releaseTiming === opt.key ? "text-primary" : "text-foreground")}>{opt.title}</span>
                             {opt.badge && <Badge variant="outline" className="eyebrow h-4 px-1.5 bg-emerald-500/10 text-emerald-700 border-green-200 rounded-sm">{opt.badge}</Badge>}
                          </div>
                          <opt.icon className={cn("w-4 h-4 opacity-20", releaseTiming === opt.key ? "text-primary opacity-60" : "text-muted-foreground")} />
@@ -279,7 +279,7 @@ export default function ResultInsights() {
               </div>
             </div>
             <div className="space-y-1">
-              <div className="text-4xl font-black tracking-tighter tabular-nums text-foreground">
+              <div className="text-4xl font-semibold tracking-tight tabular-nums text-foreground">
                 {stat.value}<span className="text-sm font-bold text-muted-foreground/40 ml-1.5">{stat.unit}</span>
               </div>
               <div className={cn(
@@ -322,12 +322,12 @@ export default function ResultInsights() {
                       >
                          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </motion.div>
-                      <div className="absolute -top-10 text-xs font-black text-foreground opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 px-2 py-1 bg-background border border-border/40 rounded-lg shadow-xl tabular-nums">
+                      <div className="absolute -top-10 text-xs font-semibold text-foreground opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 px-2 py-1 bg-background border border-border/40 rounded-lg shadow-xl tabular-nums">
                         {data.count} <span className="text-xs text-muted-foreground">SUBMISSIONS</span>
                       </div>
                     </div>
                     <div className="text-center space-y-1 pt-5 shrink-0">
-                      <p className="text-xs font-black text-foreground tracking-tighter tabular-nums">{data.range}</p>
+                      <p className="text-xs font-semibold text-foreground tracking-tight tabular-nums">{data.range}</p>
                       <p className="eyebrow text-muted-foreground/30">{data.label}</p>
                     </div>
                   </div>
@@ -411,7 +411,7 @@ export default function ResultInsights() {
                   <tr key={student.name} className="hover:bg-muted/5 transition-colors group">
                     <td className="px-10 py-6">
                       <div className="flex items-center gap-4">
-                         <div className="w-10 h-10 rounded-2xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-black text-muted-foreground group-hover:text-primary">
+                         <div className="w-10 h-10 rounded-2xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-semibold text-muted-foreground group-hover:text-primary">
                             {student.name.split(' ').map(n => n[0]).join('')}
                          </div>
                          <span className="font-extrabold text-foreground text-sm tracking-tight">{student.name}</span>
@@ -425,7 +425,7 @@ export default function ResultInsights() {
                           <span className="text-muted-foreground/20 text-xs">|</span>
                           <span className="text-xs font-bold">{student.c3}</span>
                           <span className="text-muted-foreground/20 text-xs">|</span>
-                          <span className="text-xs font-black text-foreground">{student.total}</span>
+                          <span className="text-xs font-semibold text-foreground">{student.total}</span>
                        </div>
                     </td>
                     <td className="px-6 py-6 text-center">
@@ -440,7 +440,7 @@ export default function ResultInsights() {
                     </td>
                     <td className="px-10 py-6 text-right">
                       <div className="flex items-center justify-end gap-3">
-                        <span className="text-xl font-black tabular-nums tracking-tighter text-foreground">{student.grade}</span>
+                        <span className="text-xl font-semibold tabular-nums tracking-tight text-foreground">{student.grade}</span>
                         <div className={cn(
                           "w-1.5 h-6 rounded-full",
                           student.grade.includes('A') ? 'bg-primary' :

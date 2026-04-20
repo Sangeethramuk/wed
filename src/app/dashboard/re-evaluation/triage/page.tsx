@@ -66,7 +66,7 @@ export default function ReEvaluationPage() {
                 <span className="text-muted-foreground/20 text-xs">·</span>
                 <span className="eyebrow text-muted-foreground/40">Re-Evaluation Desk</span>
               </div>
-              <h1 className="text-4xl font-black tracking-tighter secondary-text">Review Requests</h1>
+              <h1 className="text-4xl font-semibold tracking-tight secondary-text">Review Requests</h1>
               <div className="flex items-center gap-2 pt-1">
                 <p className="text-xs text-muted-foreground opacity-60 font-medium">
                   Results released Mon 9:00 AM · Appeal window closes Sunday night
@@ -89,7 +89,7 @@ export default function ReEvaluationPage() {
               <div key={i} className="group px-4 py-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-all flex flex-col justify-center">
                 <span className="eyebrow text-muted-foreground/50">{kpi.label}</span>
                 <div className="flex items-baseline gap-1.5 mt-1">
-                  <span className={cn("text-xl font-black tracking-tighter", statusStyles[kpi.tone].text)}>{kpi.value}</span>
+                  <span className={cn("text-xl font-semibold tracking-tight", statusStyles[kpi.tone].text)}>{kpi.value}</span>
                   <span className="text-xs font-bold text-muted-foreground/30">{kpi.sub}</span>
                 </div>
               </div>
@@ -139,12 +139,12 @@ export default function ReEvaluationPage() {
                   <div className={cn("w-1 flex-shrink-0 self-stretch", statusStyles[ageStatusKind(st.ageStatus)].dot)} />
                   <div className="px-4 py-4 flex flex-col justify-center gap-1.5 flex-1">
                     <div className="flex items-center gap-3">
-                      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 border", avatar.bg, avatar.border, avatar.text)}>
+                      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 border", avatar.bg, avatar.border, avatar.text)}>
                         {st.name.split(' ').map((n) => n[0]).join('')}
                       </div>
                       <div className="flex flex-col gap-1">
                         <div>
-                          <div className="text-sm font-black tracking-tight flex items-center gap-1.5 text-foreground">
+                          <div className="text-sm font-semibold tracking-tight flex items-center gap-1.5 text-foreground">
                             {st.name}
                             {st.isNew && <span className="w-1.5 h-1.5 rounded-full inline-block bg-primary" />}
                           </div>
@@ -162,7 +162,7 @@ export default function ReEvaluationPage() {
 
                 {/* Assignment · Criterion */}
                 <div className="px-4 py-4 flex flex-col justify-center gap-1.5 border-r border-border/30">
-                  <div className="text-xs font-black tracking-tight text-foreground">{st.assign}</div>
+                  <div className="text-xs font-semibold tracking-tight text-foreground">{st.assign}</div>
                   <span className="eyebrow self-start px-2 py-0.5 rounded-md bg-primary/5 text-primary border border-primary/10">
                     {st.critShort} · {st.origScore}/{st.maxScore}
                   </span>
@@ -192,7 +192,7 @@ export default function ReEvaluationPage() {
 
                 {/* Submitted */}
                 <div className="px-4 py-4 flex flex-col justify-center border-r border-border/30">
-                  <div className={cn("text-xs font-black tracking-tighter", statusStyles[st.ageStatus === 'overdue' ? 'error' : st.ageStatus === 'new' ? 'neutral' : 'warning'].text)}>
+                  <div className={cn("text-xs font-semibold tracking-tight", statusStyles[st.ageStatus === 'overdue' ? 'error' : st.ageStatus === 'new' ? 'neutral' : 'warning'].text)}>
                     {st.ageLabel}
                   </div>
                   <div className="eyebrow text-muted-foreground/30">

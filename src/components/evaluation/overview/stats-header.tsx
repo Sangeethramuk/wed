@@ -25,7 +25,7 @@ export function StatsHeader({ total, pendingCalibration, inGrading, complete }: 
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <p className="eyebrow text-muted-foreground/60">{stat.label}</p>
-              <p className={`text-4xl font-black tracking-tighter tabular-nums ${stat.color}`}>{stat.value}</p>
+              <p className={`text-4xl font-semibold tracking-tight tabular-nums ${stat.color}`}>{stat.value}</p>
             </div>
             <stat.icon className={`h-5 w-5 mt-1 ${stat.color} opacity-40`} />
           </div>

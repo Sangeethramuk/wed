@@ -235,7 +235,7 @@ export function AssignmentSpecs() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-4xl font-black tracking-tighter secondary-text">Choose an assignment type</h1>
+          <h1 className="text-4xl font-semibold tracking-tight secondary-text">Choose an assignment type</h1>
           <p className="text-base text-muted-foreground font-medium opacity-70">
             Each type is a guided starting template — we&apos;ll pre-fill the structure and rubric so you can adapt it.
           </p>
@@ -269,7 +269,7 @@ export function AssignmentSpecs() {
                     <div className="p-2.5 w-fit rounded-lg bg-muted/30 border border-border/20 group-hover:bg-primary group-hover:text-white transition-all">
                       <t.icon className={cn("h-5 w-5", t.color, "group-hover:text-inherit")} />
                     </div>
-                    <h3 className="text-lg tracking-tight font-black pt-1">{t.label}</h3>
+                    <h3 className="text-lg tracking-tight font-semibold pt-1">{t.label}</h3>
                   </div>
 
                   <div className="space-y-3 pt-2 border-t border-border/10">
@@ -296,7 +296,7 @@ export function AssignmentSpecs() {
             </div>
             <div className="flex-1 min-w-0 space-y-1">
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-black tracking-tight">Create your own type</h3>
+                <h3 className="text-base font-semibold tracking-tight">Create your own type</h3>
                 <Badge variant="outline" className="eyebrow border-border/40 opacity-70">Configurable</Badge>
               </div>
               <p className="text-xs text-muted-foreground opacity-70 font-medium leading-relaxed">
@@ -341,7 +341,7 @@ export function AssignmentSpecs() {
             </Button>
             <div className="space-y-0">
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black tracking-tight secondary-text">Assignment Details</h1>
+                <h1 className="text-xl font-semibold tracking-tight secondary-text">Assignment Details</h1>
                 <Badge variant="outline" className="eyebrow bg-primary/5 text-primary border-primary/20 px-2 h-5 text-center">{assignment.type}</Badge>
               </div>
               <p className="text-muted-foreground text-xs font-semibold opacity-50 tracking-wider">Build it block by block — structure only, grading comes next</p>
@@ -380,7 +380,7 @@ export function AssignmentSpecs() {
                   <Label className="eyebrow text-muted-foreground opacity-50">Assignment title</Label>
                   <Input
                     placeholder="Give your assignment a name — e.g. MVC Architecture Implementation"
-                    className="text-lg font-black h-11 border border-border/60 bg-muted/10 px-4 focus-visible:ring-primary/10 rounded-lg placeholder:opacity-30 tracking-tight"
+                    className="text-lg font-semibold h-11 border border-border/60 bg-muted/10 px-4 focus-visible:ring-primary/10 rounded-lg placeholder:opacity-30 tracking-tight"
                     value={assignment.title}
                     onChange={(e) => updateAssignment({ title: e.target.value })}
                   />
@@ -521,7 +521,7 @@ export function AssignmentSpecs() {
                     </div>
                   </div>
                   <span className={cn(
-                    "text-2xl font-black tracking-tighter leading-none",
+                    "text-2xl font-semibold tracking-tight leading-none",
                     readyScore === 100 ? "text-emerald-600" : readyScore >= 60 ? "text-amber-500" : "text-muted-foreground/40"
                   )}>
                     {readyScore}%
@@ -755,7 +755,7 @@ function QuestionRow({
                 const val = e.target.value.replace(/[^0-9]/g, "")
                 onUpdate({ weight: Math.min(100, Number(val) || 0) })
               }}
-              className="h-7 w-14 text-right pr-2 font-black text-xs bg-muted/10 border border-border/40 rounded-md focus-visible:ring-primary/10"
+              className="h-7 w-14 text-right pr-2 font-semibold text-xs bg-muted/10 border border-border/40 rounded-md focus-visible:ring-primary/10"
             />
             <span className="text-muted-foreground/40">%</span>
           </div>
