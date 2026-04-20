@@ -2,6 +2,7 @@
 
 import { type ManuscriptElement } from "@/lib/manuscript-generator"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { criterionStyles, type CriterionKey } from "@/lib/design-tokens"
 
 type CriterionColor = {
@@ -301,26 +302,24 @@ export default function ManuscriptRenderer({
           case "table":
             return (
               <div key={i} className="my-6 overflow-hidden border border-border/50 rounded-lg">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="bg-muted/40 border-b border-border/50">
-                        {el.headers.map((h, hi) => (
-                          <th key={hi} className="eyebrow px-4 py-2.5 text-muted-foreground">{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {el.rows.map((row, ri) => (
-                        <tr key={ri} className="border-b border-border/30 last:border-0 hover:bg-muted/20 transition-colors">
-                          {row.map((cell, ci) => (
-                            <td key={ci} className="px-4 py-2 text-xs text-foreground/80">{cell}</td>
-                          ))}
-                        </tr>
+                <Table className="text-left">
+                  <TableHeader>
+                    <TableRow className="bg-muted/40 border-b border-border/50 hover:bg-muted/40">
+                      {el.headers.map((h, hi) => (
+                        <TableHead key={hi} className="eyebrow px-4 py-2.5 text-muted-foreground">{h}</TableHead>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {el.rows.map((row, ri) => (
+                      <TableRow key={ri} className="border-b border-border/30 last:border-0 hover:bg-muted/20">
+                        {row.map((cell, ci) => (
+                          <TableCell key={ci} className="px-4 py-2 text-xs text-foreground/80 whitespace-normal">{cell}</TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
                 {el.caption && (
                   <div className="px-4 py-2 bg-muted/20 border-t border-border/30">
                     <span className="text-xs font-bold text-muted-foreground italic">{el.caption}</span>
