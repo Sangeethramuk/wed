@@ -277,7 +277,7 @@ export function CalibrationCheck() {
         </Button>
         <div>
           <h1 className="text-2xl font-black tracking-tight secondary-text">Calibration</h1>
-          <p className="text-[10px] font-semibold text-muted-foreground/40 uppercase tracking-widest">
+          <p className="eyebrow font-semibold text-muted-foreground/40">
             Evaluation readiness check
           </p>
         </div>
@@ -292,7 +292,7 @@ export function CalibrationCheck() {
               <div className="space-y-3">
                 <Badge
                   variant="outline"
-                  className={`text-[9px] font-black uppercase tracking-widest rounded-full px-2.5 py-1 ${config.badgeClass}`}
+                  className={`eyebrow rounded-full px-2.5 py-1 ${config.badgeClass}`}
                 >
                   <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1.5 ${config.dotClass}`} />
                   {config.badge}
@@ -304,7 +304,7 @@ export function CalibrationCheck() {
               </div>
               <button
                 onClick={() => setExpandDetails(!expandDetails)}
-                className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors"
+                className="eyebrow flex items-center gap-1.5 text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors"
               >
                 {expandDetails ? (
                   <ChevronUp className="h-3 w-3" />
@@ -318,7 +318,7 @@ export function CalibrationCheck() {
                   {config.details.map((d, i) => (
                     <div
                       key={i}
-                      className="flex items-center gap-2 text-[11px] text-muted-foreground/60 font-medium"
+                      className="flex items-center gap-2 text-xs text-muted-foreground/60 font-medium"
                     >
                       <div className="h-1 w-1 rounded-full bg-muted-foreground/30 shrink-0" />
                       {d}
@@ -332,14 +332,14 @@ export function CalibrationCheck() {
           {/* Block 2: What we're using */}
           <Card className="border border-border/20 bg-card/20 rounded-xl shadow-none">
             <CardContent className="p-6 space-y-3">
-              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">
+              <p className="eyebrow text-muted-foreground/40">
                 What calibration is based on
               </p>
               <div className="flex flex-wrap gap-2">
                 {sourcesConfig.map((src) => (
                   <div
                     key={src.label}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-bold ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold ${
                       src.active
                         ? "border-primary/20 bg-primary/5 text-primary/70"
                         : "border-border/20 bg-muted/10 text-muted-foreground/30 line-through"
@@ -363,7 +363,7 @@ export function CalibrationCheck() {
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-600/60" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700/60">
+                  <p className="eyebrow text-emerald-700/60">
                     What we learned previously
                   </p>
                 </div>
@@ -386,14 +386,14 @@ export function CalibrationCheck() {
             <div className="space-y-4">
               <Card className="border border-amber-500/10 bg-amber-500/[0.03] rounded-xl shadow-none">
                 <CardContent className="p-6 space-y-4">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-amber-600/60">
+                  <p className="eyebrow text-amber-600/60">
                     Detected changes
                   </p>
                   <div className="space-y-3">
                     {MOCK_CHANGES.map((c, i) => (
                       <div key={i} className="space-y-0.5">
                         <p className="text-sm font-bold text-foreground/80">{c.item}</p>
-                        <p className="text-[11px] text-muted-foreground/50 font-medium">{c.impact}</p>
+                        <p className="text-xs text-muted-foreground/50 font-medium">{c.impact}</p>
                       </div>
                     ))}
                   </div>
@@ -401,7 +401,7 @@ export function CalibrationCheck() {
               </Card>
               <Card className="border border-border/20 bg-card/20 rounded-xl shadow-none">
                 <CardContent className="p-6 space-y-1">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">
+                  <p className="eyebrow text-muted-foreground/40">
                     Recommended action
                   </p>
                   <p className="text-sm text-muted-foreground/70 font-medium">
@@ -415,7 +415,7 @@ export function CalibrationCheck() {
           {calState === "calibration_needed" && (
             <Card className="border border-primary/10 bg-primary/[0.02] rounded-xl shadow-none">
               <CardContent className="p-6 space-y-1">
-                <p className="text-[9px] font-black uppercase tracking-widest text-primary/50">
+                <p className="eyebrow text-primary/50">
                   Next step
                 </p>
                 <p className="text-sm text-muted-foreground/70 font-medium">
@@ -429,7 +429,7 @@ export function CalibrationCheck() {
           {calState === "limited" && (
             <Card className="border border-orange-500/10 bg-orange-500/[0.03] rounded-xl shadow-none">
               <CardContent className="p-6 space-y-3">
-                <p className="text-[9px] font-black uppercase tracking-widest text-orange-600/60">
+                <p className="eyebrow text-orange-600/60">
                   Issues detected
                 </p>
                 <div className="space-y-2">
@@ -453,7 +453,7 @@ export function CalibrationCheck() {
               <CardContent className="p-6 space-y-3">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-3.5 w-3.5 text-primary/40" />
-                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">
+                  <p className="eyebrow text-muted-foreground/40">
                     {calState === "pre_calibrated"
                       ? "Learnings from past evaluations"
                       : "Guidance suggestions"}
@@ -463,7 +463,7 @@ export function CalibrationCheck() {
                   {nudges.map((n, i) => (
                     <p
                       key={i}
-                      className="text-[11px] text-muted-foreground/60 font-medium leading-relaxed flex items-start gap-2"
+                      className="text-xs text-muted-foreground/60 font-medium leading-relaxed flex items-start gap-2"
                     >
                       <span className="mt-1 h-1 w-1 rounded-full bg-primary/30 shrink-0" />
                       {n}
@@ -481,7 +481,7 @@ export function CalibrationCheck() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 hover:text-muted-foreground shadow-none"
+                  className="eyebrow text-muted-foreground/40 hover:text-muted-foreground shadow-none"
                   onClick={handleGoToForm}
                 >
                   Add optional guidance
@@ -501,7 +501,7 @@ export function CalibrationCheck() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 hover:text-muted-foreground shadow-none"
+                  className="eyebrow text-muted-foreground/40 hover:text-muted-foreground shadow-none"
                   onClick={handleProceedWithExisting}
                 >
                   Proceed with existing calibration
@@ -529,7 +529,7 @@ export function CalibrationCheck() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 hover:text-muted-foreground shadow-none"
+                  className="eyebrow text-muted-foreground/40 hover:text-muted-foreground shadow-none"
                   onClick={handleConfirm}
                   disabled={confirming}
                 >
@@ -562,14 +562,14 @@ export function CalibrationCheck() {
           {/* Field 1 */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <p className="text-[10px] font-black uppercase tracking-widest text-foreground/70">
+              <p className="eyebrow text-foreground/70">
                 What should a strong answer include?
               </p>
-              <span className="text-[8px] font-black uppercase tracking-widest text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">
+              <span className="eyebrow text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">
                 Required
               </span>
             </div>
-            <p className="text-[11px] text-muted-foreground/50 font-medium">
+            <p className="text-xs text-muted-foreground/50 font-medium">
               Describe the key qualities, concepts, evidence, structure, or reasoning a strong
               submission should demonstrate.
             </p>
@@ -586,14 +586,14 @@ export function CalibrationCheck() {
           {/* Field 2 */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <p className="text-[10px] font-black uppercase tracking-widest text-foreground/70">
+              <p className="eyebrow text-foreground/70">
                 What separates average from excellent?
               </p>
-              <span className="text-[8px] font-black uppercase tracking-widest text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">
+              <span className="eyebrow text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">
                 Required
               </span>
             </div>
-            <p className="text-[11px] text-muted-foreground/50 font-medium">
+            <p className="text-xs text-muted-foreground/50 font-medium">
               What makes a response merely acceptable versus truly strong?
             </p>
             <Textarea
@@ -609,14 +609,14 @@ export function CalibrationCheck() {
           {/* Field 3 */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <p className="text-[10px] font-black uppercase tracking-widest text-foreground/70">
+              <p className="eyebrow text-foreground/70">
                 What should be penalized?
               </p>
-              <span className="text-[8px] font-black uppercase tracking-widest text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">
+              <span className="eyebrow text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">
                 Required
               </span>
             </div>
-            <p className="text-[11px] text-muted-foreground/50 font-medium">
+            <p className="text-xs text-muted-foreground/50 font-medium">
               List common mistakes, missing elements, or weak patterns that should reduce the score.
             </p>
             <Textarea
@@ -632,10 +632,10 @@ export function CalibrationCheck() {
           {/* Field 4: Multiple approaches */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <p className="text-[10px] font-black uppercase tracking-widest text-foreground/70">
+              <p className="eyebrow text-foreground/70">
                 Are multiple valid answer approaches acceptable?
               </p>
-              <span className="text-[8px] font-black uppercase tracking-widest text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">
+              <span className="eyebrow text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">
                 Required
               </span>
             </div>
@@ -657,7 +657,7 @@ export function CalibrationCheck() {
                   }`}
                 >
                   <span className="text-sm font-black tracking-tight">{opt.label}</span>
-                  <span className="text-[10px] font-medium text-muted-foreground/50 mt-0.5">
+                  <span className="text-xs font-medium text-muted-foreground/50 mt-0.5">
                     {opt.sub}
                   </span>
                 </button>
@@ -671,7 +671,7 @@ export function CalibrationCheck() {
               <CardContent className="p-5 space-y-3">
                 <div className="flex items-center gap-2">
                   <Zap className="h-3.5 w-3.5 text-primary/50 animate-pulse" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">
+                  <p className="eyebrow text-primary/60">
                     Analysing alignment...
                   </p>
                 </div>
@@ -685,7 +685,7 @@ export function CalibrationCheck() {
             <Button
               variant="ghost"
               size="sm"
-              className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 shadow-none"
+              className="eyebrow text-muted-foreground/40 shadow-none"
               onClick={() => setPhase("status")}
             >
               ← Back
@@ -715,7 +715,7 @@ export function CalibrationCheck() {
           {/* System understanding */}
           <Card className="border border-border/20 bg-card/20 rounded-xl shadow-none">
             <CardContent className="p-6 space-y-5">
-              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">
+              <p className="eyebrow text-muted-foreground/40">
                 How this assignment will be interpreted
               </p>
               <div className="space-y-4">
@@ -743,7 +743,7 @@ export function CalibrationCheck() {
                   },
                 ].map((item, i) => (
                   <div key={i} className="space-y-0.5">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">
+                    <p className="eyebrow text-muted-foreground/40">
                       {item.label}
                     </p>
                     <p className="text-sm font-medium text-foreground/70">{item.text}</p>
@@ -756,7 +756,7 @@ export function CalibrationCheck() {
           {/* Rubric alignment */}
           <Card className="border border-border/20 bg-card/20 rounded-xl shadow-none">
             <CardContent className="p-6 space-y-3">
-              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">
+              <p className="eyebrow text-muted-foreground/40">
                 Rubric alignment
               </p>
               <div className="space-y-0">
@@ -771,7 +771,7 @@ export function CalibrationCheck() {
                         <span className="text-sm font-bold text-foreground/70">{crit.name}</span>
                         <Badge
                           variant="outline"
-                          className={`text-[9px] font-black uppercase tracking-widest rounded-full ${
+                          className={`eyebrow rounded-full ${
                             status === "aligned"
                               ? "border-emerald-500/20 text-emerald-600/70 bg-emerald-500/5"
                               : "border-amber-500/20 text-amber-600/70 bg-amber-500/5"
@@ -792,7 +792,7 @@ export function CalibrationCheck() {
             <CardContent className="p-6 space-y-3">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-3.5 w-3.5 text-amber-500/50" />
-                <p className="text-[9px] font-black uppercase tracking-widest text-amber-600/50">
+                <p className="eyebrow text-amber-600/50">
                   Ambiguity flags
                 </p>
               </div>
@@ -800,7 +800,7 @@ export function CalibrationCheck() {
                 {AMBIGUITY_FLAGS.map((f, i) => (
                   <p
                     key={i}
-                    className="text-[11px] text-muted-foreground/60 font-medium flex items-start gap-2"
+                    className="text-xs text-muted-foreground/60 font-medium flex items-start gap-2"
                   >
                     <span className="mt-1 h-1 w-1 rounded-full bg-amber-400/40 shrink-0" />
                     {f}
@@ -813,7 +813,7 @@ export function CalibrationCheck() {
           {/* Confidence indicator */}
           <div className="flex items-center gap-2.5 px-1">
             <Info className="h-3.5 w-3.5 text-muted-foreground/30" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
+            <p className="eyebrow text-muted-foreground/40">
               Confidence:{" "}
               <span className={confidence.colorClass}>{confidence.label}</span>
             </p>
@@ -824,7 +824,7 @@ export function CalibrationCheck() {
             <Button
               variant="ghost"
               size="sm"
-              className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 shadow-none"
+              className="eyebrow text-muted-foreground/40 shadow-none"
               onClick={() => (cameFromForm ? setPhase("form") : setPhase("status"))}
             >
               ← {cameFromForm ? "Edit guidance" : "Back"}

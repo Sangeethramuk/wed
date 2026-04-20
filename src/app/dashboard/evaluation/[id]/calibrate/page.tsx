@@ -46,7 +46,7 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
       <div className="flex items-center justify-center h-[60vh]">
         <div className="text-center space-y-2">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Initializing Calibration Protocol…</p>
+          <p className="eyebrow text-muted-foreground/40">Initializing Calibration Protocol…</p>
         </div>
       </div>
     )
@@ -71,12 +71,12 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-4">
               <Link href="/dashboard/evaluation">
-                <Button variant="ghost" size="sm" className="h-8 px-3 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 hover:text-foreground gap-1.5 pl-0">
-                  <ArrowLeft className="h-3 w-3" /> Triage Desk
+                <Button variant="ghost" size="sm">
+                  <ArrowLeft /> Triage desk
                 </Button>
               </Link>
               <div className="w-px h-4 bg-border/50" />
-              <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.2em]">
+              <div className="eyebrow flex items-center gap-3">
                 <span className="text-primary font-black">
                   Step {currentStep?.step ?? 1} of {PHASE_STEPS.length - 1} — {currentStep?.label}
                 </span>
@@ -98,11 +98,11 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
 
             <div className="flex items-center gap-4">
               {cal.phase === "blind_grading" && (
-                <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest bg-muted/30 border-border/30">
+                <Badge variant="outline" className="eyebrow bg-muted/30 border-border/30">
                   {gradedCount}/{totalPapers} papers graded
                 </Badge>
               )}
-              <div className="flex items-center gap-1.5 text-[9px] font-black text-muted-foreground/25 uppercase tracking-widest">
+              <div className="eyebrow flex items-center gap-1.5 text-muted-foreground/25">
                 <CloudCheck className="h-3 w-3 text-green-500/30" />
                 Auto-saved
               </div>

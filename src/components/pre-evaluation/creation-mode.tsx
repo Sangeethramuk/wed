@@ -77,7 +77,7 @@ export function CreationMode() {
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={() => creationMode ? setCreationMode(null) : prevStep()} className="gap-2 px-3 text-muted-foreground hover:text-foreground group">
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="text-[10px] font-black uppercase tracking-widest">{creationMode ? "Back" : "Back to courses"}</span>
+          <span className="eyebrow">{creationMode ? "Back" : "Back to courses"}</span>
         </Button>
       </div>
 
@@ -85,7 +85,7 @@ export function CreationMode() {
         <h1 className="text-4xl font-black tracking-tighter secondary-text">
           {showHistoryList ? "Pick an assignment to adapt" : "How would you like to start?"}
         </h1>
-        <p className="text-base text-muted-foreground font-medium opacity-70 border-b border-border/10 pb-6 uppercase text-[10px] tracking-widest">
+        <p className="eyebrow text-base text-muted-foreground font-medium opacity-70 border-b border-border/10 pb-6">
           {showHistoryList
             ? `${displayed.length} past assignments for ${selectedCourse ?? "this course"} — we'll copy the structure and rubric so you can tweak.`
             : "Pick a starting point — we'll adapt the rest with you."}
@@ -112,11 +112,11 @@ export function CreationMode() {
             </CardHeader>
             <CardContent className="mt-auto pt-6 px-0">
               <div className="flex flex-col gap-2 pt-4 border-t border-border/10">
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                <div className="eyebrow flex items-center gap-2 text-muted-foreground opacity-60">
                   <Sparkles className="h-3 w-3 text-primary/60" />
                   <span>{similarCount} similar assignments available</span>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40">
+                <div className="eyebrow flex items-center gap-2 text-muted-foreground opacity-40">
                   <Clock className="h-3 w-3" />
                   <span>Last used {lastUsed}</span>
                 </div>
@@ -130,7 +130,7 @@ export function CreationMode() {
             onClick={() => handleModeSelect("suggestions")}
           >
             <div className="absolute top-4 right-4 z-10">
-              <Badge className="text-[8px] font-black uppercase tracking-widest bg-primary text-primary-foreground border-0 rounded-full px-2 py-0.5 gap-1">
+              <Badge className="eyebrow bg-primary text-primary-foreground border-0 rounded-full px-2 py-0.5 gap-1">
                 <Sparkles className="h-2.5 w-2.5" />
                 Recommended
               </Badge>
@@ -148,11 +148,11 @@ export function CreationMode() {
             </CardHeader>
             <CardContent className="mt-auto pt-6 px-0">
               <div className="flex flex-col gap-2 pt-4 border-t border-primary/10">
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary/70">
+                <div className="eyebrow flex items-center gap-2 text-primary/70">
                   <Users className="h-3 w-3" />
                   <span>Most instructors choose this</span>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50">
+                <div className="eyebrow flex items-center gap-2 text-muted-foreground opacity-50">
                   <span className="h-1 w-1 rounded-full bg-primary/60" />
                   <span>Tailored to your course outcomes</span>
                 </div>
@@ -178,11 +178,11 @@ export function CreationMode() {
             </CardHeader>
             <CardContent className="mt-auto pt-6 px-0">
               <div className="flex flex-col gap-2 pt-4 border-t border-border/10">
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                <div className="eyebrow flex items-center gap-2 text-muted-foreground opacity-60">
                   <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
                   <span>Guided structure &amp; rubric</span>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40">
+                <div className="eyebrow flex items-center gap-2 text-muted-foreground opacity-40">
                   <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
                   <span>Best for brand-new topics</span>
                 </div>
@@ -197,10 +197,10 @@ export function CreationMode() {
             <section className="space-y-4">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
-                <h2 className="text-[10px] font-black uppercase tracking-widest text-primary/80">
+                <h2 className="eyebrow text-primary/80">
                   Best matches · Top {bestMatches.length}
                 </h2>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-40">
+                <span className="eyebrow text-muted-foreground opacity-40">
                   ranked by CO alignment &amp; past performance
                 </span>
               </div>
@@ -223,7 +223,7 @@ export function CreationMode() {
             <section className="space-y-4">
               <div className="flex items-center gap-2">
                 <Layers className="h-3.5 w-3.5 text-muted-foreground opacity-60" />
-                <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                <h2 className="eyebrow text-muted-foreground opacity-60">
                   {bestMatches.length > 0 ? "Other past assignments" : "All past assignments"}
                 </h2>
               </div>
@@ -244,7 +244,7 @@ export function CreationMode() {
           <div className="flex items-center justify-between rounded-xl border border-dashed border-border/40 bg-card/10 px-6 py-5">
             <div className="space-y-1">
               <p className="text-sm font-black tracking-tight">Can&apos;t find a good match?</p>
-              <p className="text-[11px] text-muted-foreground opacity-60 font-medium">
+              <p className="text-xs text-muted-foreground opacity-60 font-medium">
                 Skip the library and start a fresh assignment — we&apos;ll guide you step-by-step.
               </p>
             </div>
@@ -252,7 +252,7 @@ export function CreationMode() {
               variant="outline"
               size="sm"
               onClick={() => handleModeSelect("scratch")}
-              className="gap-2 text-[10px] font-black uppercase tracking-widest"
+              className="eyebrow gap-2"
             >
               <PlusCircle className="h-3.5 w-3.5" />
               Create from scratch
@@ -268,13 +268,13 @@ export function CreationMode() {
             <>
               <SheetHeader className="p-6 border-b border-border/10 bg-card/30">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-border/40">
+                  <Badge variant="outline" className="eyebrow border-border/40">
                     {previewed.type}
                   </Badge>
-                  <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-border/40">
+                  <Badge variant="outline" className="eyebrow border-border/40">
                     {previewed.semester}
                   </Badge>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50 flex items-center gap-1.5">
+                  <span className="eyebrow text-muted-foreground opacity-50 flex items-center gap-1.5">
                     <Calendar className="h-3 w-3" />
                     {previewed.lastUsed}
                   </span>
@@ -282,7 +282,7 @@ export function CreationMode() {
                 <SheetTitle className="text-xl font-black tracking-tight mt-2">
                   {previewed.title}
                 </SheetTitle>
-                <SheetDescription className="text-[11px] font-bold uppercase tracking-widest opacity-60">
+                <SheetDescription className="eyebrow opacity-60">
                   {previewed.course}
                 </SheetDescription>
               </SheetHeader>
@@ -290,7 +290,7 @@ export function CreationMode() {
               <div className="p-6 space-y-6">
                 {previewed.whyThisFits && (
                   <div className="rounded-lg border border-primary/20 bg-primary/[0.03] px-4 py-3 space-y-1">
-                    <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-primary/70">
+                    <div className="eyebrow flex items-center gap-1.5 text-primary/70">
                       <Sparkles className="h-3 w-3" /> Why this fits
                     </div>
                     <p className="text-sm font-medium leading-relaxed opacity-80">{previewed.whyThisFits}</p>
@@ -299,7 +299,7 @@ export function CreationMode() {
 
                 {previewed.instructionsPreview && (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                    <div className="eyebrow flex items-center gap-1.5 text-muted-foreground opacity-60">
                       <FileText className="h-3 w-3" /> Instructions
                     </div>
                     <p className="text-sm leading-relaxed opacity-80">{previewed.instructionsPreview}</p>
@@ -308,13 +308,13 @@ export function CreationMode() {
 
                 {previewed.sampleQuestions && previewed.sampleQuestions.length > 0 && (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                    <div className="eyebrow flex items-center gap-1.5 text-muted-foreground opacity-60">
                       <ListChecks className="h-3 w-3" /> Sample questions
                     </div>
                     <ul className="space-y-1.5">
                       {previewed.sampleQuestions.map((q, i) => (
                         <li key={i} className="text-sm leading-relaxed opacity-80 flex gap-2">
-                          <span className="text-[10px] font-black text-muted-foreground opacity-50 mt-1">{String(i + 1).padStart(2, "0")}</span>
+                          <span className="text-xs font-black text-muted-foreground opacity-50 mt-1">{String(i + 1).padStart(2, "0")}</span>
                           <span>{q}</span>
                         </li>
                       ))}
@@ -324,7 +324,7 @@ export function CreationMode() {
 
                 {previewed.rubricSummary && previewed.rubricSummary.length > 0 && (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                    <div className="eyebrow flex items-center gap-1.5 text-muted-foreground opacity-60">
                       <Target className="h-3 w-3" /> Rubric summary
                     </div>
                     <ul className="space-y-1.5">
@@ -340,7 +340,7 @@ export function CreationMode() {
 
                 {previewed.coAlignment && (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                    <div className="eyebrow flex items-center gap-1.5 text-muted-foreground opacity-60">
                       <Target className="h-3 w-3" /> Outcome alignment
                     </div>
                     <TooltipProvider delay={100}>
@@ -348,12 +348,12 @@ export function CreationMode() {
                         {previewed.coAlignment.map(a => (
                           <Tooltip key={a.co}>
                             <TooltipTrigger className="cursor-help">
-                              <Badge variant="outline" className={`text-[9px] font-black uppercase tracking-widest rounded-md ${strengthClasses[a.strength]}`}>
+                              <Badge variant="outline" className={`eyebrow rounded-md ${strengthClasses[a.strength]}`}>
                                 {a.co} · {a.strength}
                               </Badge>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="bg-slate-900 border-none p-2 rounded-lg max-w-[200px]">
-                              <p className="text-[9px] font-bold text-white leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
+                              <p className="text-xs font-bold text-white leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
                             </TooltipContent>
                           </Tooltip>
                         ))}
@@ -364,12 +364,12 @@ export function CreationMode() {
               </div>
 
               <div className="sticky bottom-0 border-t border-border/20 bg-background/95 backdrop-blur p-4 flex items-center justify-between gap-3">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60">
+                <div className="eyebrow text-muted-foreground opacity-60">
                   We&apos;ll duplicate &amp; take you to editing
                 </div>
                 <Button
                   onClick={() => { handleHistorySelect(previewed.id); setPreviewId(null) }}
-                  className="gap-2 text-[10px] font-black uppercase tracking-widest"
+                  className="eyebrow gap-2"
                   size="sm"
                 >
                   Use this
@@ -405,7 +405,7 @@ function HistoryCard({
     >
       {emphasis && (
         <div className="absolute top-4 right-4 z-10">
-          <Badge className="text-[8px] font-black uppercase tracking-widest bg-primary text-primary-foreground border-0 rounded-full px-2 py-0.5 gap-1">
+          <Badge className="eyebrow bg-primary text-primary-foreground border-0 rounded-full px-2 py-0.5 gap-1">
             <Sparkles className="h-2.5 w-2.5" />
             Best match
           </Badge>
@@ -414,14 +414,14 @@ function HistoryCard({
 
       <CardHeader className="px-5 pt-5 pb-3">
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="font-black text-[9px] uppercase tracking-widest bg-muted/10 border-border/40 px-2 py-0.5">
+          <Badge variant="outline" className="eyebrow bg-muted/10 border-border/40 px-2 py-0.5">
             {hist.type}
           </Badge>
-          <span className="text-[10px] font-black text-muted-foreground opacity-40 uppercase tracking-widest flex items-center gap-1.5">
+          <span className="eyebrow text-muted-foreground opacity-40 flex items-center gap-1.5">
             <Calendar className="size-3" />
             {hist.lastUsed}
           </span>
-          <span className="text-[10px] font-black text-muted-foreground opacity-40 uppercase tracking-widest flex items-center gap-1.5">
+          <span className="eyebrow text-muted-foreground opacity-40 flex items-center gap-1.5">
             <Star className="size-3 text-amber-500/60" />
             {hist.avgScore}% avg
           </span>
@@ -429,7 +429,7 @@ function HistoryCard({
         <CardTitle className="mt-3 text-lg font-black tracking-tight line-clamp-2">
           {hist.title}
         </CardTitle>
-        <CardDescription className="text-[10px] font-bold uppercase tracking-widest opacity-60 mt-1">
+        <CardDescription className="eyebrow opacity-60 mt-1">
           {hist.course} <span className="opacity-40">·</span> {hist.semester}
         </CardDescription>
       </CardHeader>
@@ -438,7 +438,7 @@ function HistoryCard({
         {/* CO alignment */}
         {hist.coAlignment && hist.coAlignment.length > 0 && (
           <div className="space-y-1.5">
-            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-50">
+            <div className="eyebrow flex items-center gap-1.5 text-muted-foreground opacity-50">
               <Target className="h-3 w-3" /> Outcome alignment
             </div>
             <TooltipProvider delay={100}>
@@ -448,13 +448,13 @@ function HistoryCard({
                     <TooltipTrigger className="cursor-help">
                       <Badge
                         variant="outline"
-                        className={`text-[9px] font-black uppercase tracking-widest rounded-md ${strengthClasses[a.strength]}`}
+                        className={`eyebrow rounded-md ${strengthClasses[a.strength]}`}
                       >
                         {a.co} · {a.strength}
                       </Badge>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="bg-slate-900 border-none p-2 rounded-lg max-w-[200px]">
-                      <p className="text-[9px] font-bold text-white leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
+                      <p className="text-xs font-bold text-white leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
                     </TooltipContent>
                   </Tooltip>
                 ))}
@@ -466,7 +466,7 @@ function HistoryCard({
         {/* Why this fits */}
         {hist.whyThisFits && (
           <div className="rounded-md border border-border/20 bg-muted/5 px-3 py-2">
-            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-primary/70 mb-1">
+            <div className="eyebrow flex items-center gap-1.5 text-primary/70 mb-1">
               <Sparkles className="h-3 w-3" /> Why this fits
             </div>
             <p className="text-xs leading-relaxed opacity-70 font-medium">{hist.whyThisFits}</p>
@@ -488,7 +488,7 @@ function HistoryCard({
             variant="ghost"
             size="sm"
             onClick={(e) => { e.stopPropagation(); onPreview() }}
-            className="gap-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+            className="eyebrow gap-1.5 text-muted-foreground hover:text-foreground"
           >
             <Eye className="h-3.5 w-3.5" />
             Preview
@@ -496,7 +496,7 @@ function HistoryCard({
           <Button
             size="sm"
             onClick={(e) => { e.stopPropagation(); onUse() }}
-            className="gap-1.5 text-[10px] font-black uppercase tracking-widest"
+            className="eyebrow gap-1.5"
           >
             Use this
             <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -509,7 +509,7 @@ function HistoryCard({
 
 function CompletenessPill({ ok, label }: { ok: boolean; label: string }) {
   return (
-    <div className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest ${ok ? "text-emerald-600/70" : "text-muted-foreground/40"}`}>
+    <div className={`eyebrow flex items-center gap-1.5 ${ok ? "text-emerald-600/70" : "text-muted-foreground/40"}`}>
       <CheckCircle2 className={`h-3 w-3 ${ok ? "" : "opacity-30"}`} />
       <span>{label}</span>
     </div>

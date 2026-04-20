@@ -96,7 +96,7 @@ export default function DashboardPage() {
                 <span className="text-muted-foreground">24/45 Graded</span>
               </div>
               <Progress value={53} className="h-2" />
-              <div className="flex justify-between text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
+              <div className="flex justify-between text-xs font-bold tracking-wider text-muted-foreground">
                 <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Evaluation in progress</span>
                 <Link href="/dashboard/evaluation" className="text-primary hover:underline">Continue Grading →</Link>
               </div>
@@ -111,7 +111,7 @@ export default function DashboardPage() {
                 <span className="text-muted-foreground">42/42 Graded</span>
               </div>
               <Progress value={100} className="h-2" />
-              <div className="flex justify-between text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
+              <div className="flex justify-between text-xs font-bold tracking-wider text-muted-foreground">
                 <span className="flex items-center gap-1 text-green-600 dark:text-green-400"><CheckCircle2 className="h-3 w-3" /> Completed</span>
                 <Link href="/dashboard/post-evaluation" className="text-primary hover:underline">View Results →</Link>
               </div>

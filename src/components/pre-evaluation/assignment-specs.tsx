@@ -228,9 +228,9 @@ export function AssignmentSpecs() {
     return (
       <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-10">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={prevStep} className="gap-2 px-3 text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" size="sm" onClick={prevStep}>
             <ArrowLeft className="h-4 w-4" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Back to strategy</span>
+            Back to strategy
           </Button>
         </div>
 
@@ -257,7 +257,7 @@ export function AssignmentSpecs() {
               >
                 {isRecommended && (
                   <div className="absolute top-4 right-4 z-10">
-                    <Badge className="text-[8px] font-black uppercase tracking-widest bg-primary text-primary-foreground border-0 rounded-full px-2 py-0.5 gap-1">
+                    <Badge className="eyebrow bg-primary text-primary-foreground border-0 rounded-full px-2 py-0.5 gap-1">
                       <Star className="h-2.5 w-2.5" />
                       Commonly used
                     </Badge>
@@ -297,9 +297,9 @@ export function AssignmentSpecs() {
             <div className="flex-1 min-w-0 space-y-1">
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-black tracking-tight">Create your own type</h3>
-                <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-border/40 opacity-70">Configurable</Badge>
+                <Badge variant="outline" className="eyebrow border-border/40 opacity-70">Configurable</Badge>
               </div>
-              <p className="text-[11px] text-muted-foreground opacity-70 font-medium leading-relaxed">
+              <p className="text-xs text-muted-foreground opacity-70 font-medium leading-relaxed">
                 Define your own structure blocks and evaluation approach — still wired into the rubric &amp; calibration flow, so nothing breaks.
               </p>
             </div>
@@ -310,7 +310,7 @@ export function AssignmentSpecs() {
         {/* Non-binding helper */}
         <div className="flex items-center gap-2 pt-2 text-muted-foreground/60">
           <Info className="h-3.5 w-3.5 opacity-60" />
-          <p className="text-[11px] font-medium opacity-70">
+          <p className="text-xs font-medium opacity-70">
             You can modify the structure and evaluation later — this just sets your starting template.
           </p>
         </div>
@@ -336,21 +336,21 @@ export function AssignmentSpecs() {
     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-20">
         <div className="flex items-center justify-between border-b border-border/40 pb-4 sticky top-0 z-50 bg-background/80 backdrop-blur-md -mx-4 px-4 pt-4">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 border border-border/30" onClick={() => updateAssignment({ type: null })}>
+            <Button variant="ghost" size="icon" onClick={() => updateAssignment({ type: null })}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="space-y-0">
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-black tracking-tight secondary-text">Assignment Details</h1>
-                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 uppercase font-black text-[9px] tracking-widest px-2 h-5 text-center">{assignment.type}</Badge>
+                <Badge variant="outline" className="eyebrow bg-primary/5 text-primary border-primary/20 px-2 h-5 text-center">{assignment.type}</Badge>
               </div>
-              <p className="text-muted-foreground text-[10px] font-semibold opacity-50 uppercase tracking-wider">Build it block by block — structure only, grading comes next</p>
+              <p className="text-muted-foreground text-xs font-semibold opacity-50 tracking-wider">Build it block by block — structure only, grading comes next</p>
             </div>
           </div>
 
           <div className="flex items-center gap-8">
              <div className="text-right space-y-1">
-                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-50">Late Submissions</p>
+                <p className="eyebrow text-muted-foreground opacity-50">Late Submissions</p>
                 <Select value={assignment.latePolicy} onValueChange={(val) => updateAssignment({ latePolicy: val ?? undefined })}>
                   <SelectTrigger className="font-bold text-xs h-10 bg-background/50 border-2 border-border/40 rounded-lg px-4 hover:bg-muted/20 shadow-none transition-colors w-48">
                     <SelectValue />
@@ -363,7 +363,7 @@ export function AssignmentSpecs() {
                 </Select>
              </div>
              <div className="text-right space-y-1">
-                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-50">Deadline</p>
+                <p className="eyebrow text-muted-foreground opacity-50">Deadline</p>
                 <DateTimePicker
                   date={assignment.deadline}
                   setDate={(d) => updateAssignment({ deadline: d })}
@@ -377,7 +377,7 @@ export function AssignmentSpecs() {
             <Card className="border border-border/30 rounded-xl bg-card/10 backdrop-blur-sm shadow-none">
               <CardContent className="pt-6 pb-6 px-6 space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-50">Assignment title</Label>
+                  <Label className="eyebrow text-muted-foreground opacity-50">Assignment title</Label>
                   <Input
                     placeholder="Give your assignment a name — e.g. MVC Architecture Implementation"
                     className="text-lg font-black h-11 border border-border/60 bg-muted/10 px-4 focus-visible:ring-primary/10 rounded-lg placeholder:opacity-30 tracking-tight"
@@ -398,13 +398,12 @@ export function AssignmentSpecs() {
                   <Input
                     value={block.title}
                     onChange={(e) => updateBlock(block.id, { title: e.target.value } as Partial<Block>)}
-                    className="h-7 bg-transparent border-none text-[11px] font-black uppercase tracking-widest text-foreground/80 px-0 focus-visible:ring-0 flex-1"
+                    className="eyebrow h-7 bg-transparent border-none text-foreground/80 px-0 focus-visible:ring-0 flex-1"
                   />
                   <div className="flex items-center gap-0.5">
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 rounded-md text-muted-foreground/40 hover:text-foreground"
+                      size="icon-sm"
                       onClick={() => reorderBlock(block.id, "up")}
                       disabled={isFirst(block.id)}
                     >
@@ -412,8 +411,7 @@ export function AssignmentSpecs() {
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 rounded-md text-muted-foreground/40 hover:text-foreground"
+                      size="icon-sm"
                       onClick={() => reorderBlock(block.id, "down")}
                       disabled={isLast(block.id)}
                     >
@@ -421,8 +419,7 @@ export function AssignmentSpecs() {
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 rounded-md text-muted-foreground/40 hover:text-foreground"
+                      size="icon-sm"
                       onClick={() => toggleCollapsed(block.id)}
                     >
                       {isCollapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
@@ -430,8 +427,7 @@ export function AssignmentSpecs() {
                     {canRemove && (
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 rounded-md text-muted-foreground/40 hover:text-destructive"
+                        size="icon-sm"
                         onClick={() => removeBlock(block.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -487,13 +483,13 @@ export function AssignmentSpecs() {
 
             {availableToAdd.length > 0 && (
               <div className="flex items-center gap-2 pt-2">
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">Add block</span>
+                <span className="eyebrow text-muted-foreground opacity-40">Add block</span>
                 {availableToAdd.map((opt) => (
                   <Button
                     key={opt.type}
                     variant="outline"
                     size="sm"
-                    className="h-8 text-[9px] font-black uppercase tracking-widest border border-dashed border-border/40 bg-transparent hover:border-primary/40 hover:text-primary rounded-md"
+                    className="border-dashed"
                     onClick={() => addBlock(opt.type)}
                   >
                     <Plus className="h-3 w-3 mr-1" />
@@ -505,7 +501,7 @@ export function AssignmentSpecs() {
 
             <div className="flex items-start gap-2 pt-2 text-muted-foreground/60">
               <Info className="h-3.5 w-3.5 opacity-60 mt-0.5 shrink-0" />
-              <p className="text-[11px] font-medium opacity-70 leading-relaxed">
+              <p className="text-xs font-medium opacity-70 leading-relaxed">
                 Set the structure here. Rubrics and evaluation criteria come on the next step — no need to define them yet.
               </p>
             </div>
@@ -520,8 +516,8 @@ export function AssignmentSpecs() {
                       <ShieldCheck className="h-4 w-4" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-primary/80 leading-tight">Assignment Health</p>
-                      <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40 leading-tight">{readyScore}% ready</p>
+                      <p className="eyebrow text-primary/80 leading-tight">Assignment Health</p>
+                      <p className="eyebrow text-muted-foreground opacity-40 leading-tight">{readyScore}% ready</p>
                     </div>
                   </div>
                   <span className={cn(
@@ -545,12 +541,12 @@ export function AssignmentSpecs() {
                         {c.ok ? <Check className="h-2.5 w-2.5" /> : <AlertTriangle className="h-2.5 w-2.5" />}
                       </div>
                       <p className={cn(
-                        "text-[11px] font-bold leading-tight",
+                        "text-xs font-bold leading-tight",
                         c.ok ? "text-foreground/70" : "text-foreground/90"
                       )}>{c.label}</p>
                     </div>
                     {c.hint && (
-                      <p className="text-[10px] font-medium text-muted-foreground/70 leading-relaxed pl-6">{c.hint}</p>
+                      <p className="text-xs font-medium text-muted-foreground/70 leading-relaxed pl-6">{c.hint}</p>
                     )}
                   </div>
                 ))}
@@ -562,7 +558,6 @@ export function AssignmentSpecs() {
         <div className="flex justify-end pt-6">
           <Button
             size="lg"
-            className="h-14 px-12 text-lg font-black tracking-tight rounded-xl shadow-none active:scale-95 transition-all bg-primary hover:bg-primary/90"
             disabled={!canProceed}
             onClick={nextStep}
           >
@@ -577,8 +572,8 @@ export function AssignmentSpecs() {
 function TypeRow({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="space-y-1">
-      <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-50">{title}</span>
-      <p className="text-[11px] font-medium opacity-75 leading-relaxed">{items.join(" · ")}</p>
+      <span className="eyebrow text-muted-foreground opacity-50">{title}</span>
+      <p className="text-xs font-medium opacity-75 leading-relaxed">{items.join(" · ")}</p>
     </div>
   )
 }
@@ -612,13 +607,12 @@ function InstructionsEditor({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-muted-foreground/60">
           <Sparkles className="h-3 w-3 text-primary opacity-70" />
-          <span className="text-[10px] font-semibold opacity-80">AI assist</span>
+          <span className="text-xs font-semibold opacity-80">AI assist</span>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-[9px] font-black uppercase tracking-widest border border-border/40 rounded-md hover:border-primary/40 hover:text-primary"
             onClick={() => onAIRewrite("clarity")}
             disabled={!hasBody}
           >
@@ -628,7 +622,6 @@ function InstructionsEditor({
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-[9px] font-black uppercase tracking-widest border border-border/40 rounded-md hover:border-primary/40 hover:text-primary"
             onClick={() => onAIRewrite("simplify")}
             disabled={!hasBody}
           >
@@ -665,7 +658,7 @@ function QuestionsEditor({
       {needsMore && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-amber-500/[0.04] border border-amber-500/15">
           <Info className="h-3 w-3 text-amber-600/80 shrink-0" />
-          <p className="text-[10px] font-semibold text-amber-700/80 leading-tight">
+          <p className="text-xs font-semibold text-amber-700/80 leading-tight">
             Add at least 3 questions for better evaluation.
           </p>
         </div>
@@ -688,7 +681,7 @@ function QuestionsEditor({
           <Button
             variant="outline"
             size="sm"
-            className="h-8 text-[9px] font-black uppercase tracking-widest border border-dashed border-border/40 bg-transparent hover:border-primary/40 hover:text-primary rounded-md"
+            className="border-dashed"
             onClick={onAdd}
           >
             <Plus className="h-3 w-3 mr-1" />
@@ -697,7 +690,6 @@ function QuestionsEditor({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 hover:text-primary rounded-md"
             onClick={onImport}
           >
             <Download className="h-3 w-3 mr-1" />
@@ -706,14 +698,13 @@ function QuestionsEditor({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 hover:text-primary rounded-md"
             onClick={onSuggest}
           >
             <Sparkles className="h-3 w-3 mr-1" />
             Add suggested question
           </Button>
         </div>
-        <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest">
+        <div className="eyebrow flex items-center gap-1.5">
           <span className="text-muted-foreground/50">Total</span>
           <span className={cn(
             "tabular-nums",
@@ -751,9 +742,9 @@ function QuestionRow({
   return (
     <div className="group relative rounded-lg border border-border/30 bg-background/40 hover:border-primary/20 transition-all">
       <div className="flex items-center justify-between px-4 pt-3 pb-1">
-        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Question {index}</span>
+        <span className="eyebrow text-muted-foreground/60">Question {index}</span>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
+          <div className="eyebrow flex items-center gap-1 text-muted-foreground/50">
             <span>Weight</span>
             <Input
               type="number"
@@ -770,8 +761,8 @@ function QuestionRow({
           </div>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-6 w-6 rounded-md text-muted-foreground/30 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+            size="icon-xs"
+            className="opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={onRemove}
           >
             <X className="h-3 w-3" />
@@ -787,37 +778,39 @@ function QuestionRow({
         />
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Bloom&apos;s level</Label>
+            <Label className="eyebrow text-muted-foreground/50">Bloom&apos;s level</Label>
             <Tooltip>
               <TooltipTrigger className="text-muted-foreground/40 hover:text-primary">
                 <HelpCircle className="h-3 w-3" />
               </TooltipTrigger>
               <TooltipContent className="bg-slate-900 border-none p-2 rounded-lg shadow-none max-w-[220px]">
-                <p className="text-[9px] font-bold text-white leading-relaxed">Cognitive depth for this question. We auto-suggest based on the verbs in the prompt — change it if the suggestion feels off.</p>
+                <p className="text-xs font-bold text-white leading-relaxed">Cognitive depth for this question. We auto-suggest based on the verbs in the prompt — change it if the suggestion feels off.</p>
               </TooltipContent>
             </Tooltip>
           </div>
           <Select value={question.bloomLevel} onValueChange={(val) => { if (val) onUpdate({ bloomLevel: val as BloomLevel }) }}>
-            <SelectTrigger className="h-7 w-40 font-bold text-[10px] bg-muted/10 border border-border/40 text-primary rounded-md px-2">
+            <SelectTrigger className="h-7 w-40 font-bold text-xs bg-muted/10 border border-border/40 text-primary rounded-md px-2">
               <SelectValue />
             </SelectTrigger>
             <SelectContent sideOffset={5} className="z-[105] border border-border/20 rounded-xl p-1 shadow-none">
               {BLOOM_OPTIONS.map(L => (
-                <SelectItem key={L.value} value={L.value} className="text-[11px] font-bold py-1.5 rounded-md">
+                <SelectItem key={L.value} value={L.value} className="text-xs font-bold py-1.5 rounded-md">
                   {L.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {question.text.trim().length > 0 && !suggestionMatches && (
-            <button
+            <Button
               type="button"
-              className="inline-flex items-center gap-1.5 px-2 h-7 rounded-md border border-dashed border-primary/30 bg-primary/[0.04] hover:bg-primary/[0.08] text-[9px] font-black uppercase tracking-widest text-primary/80 transition-colors"
+              variant="outline"
+              size="sm"
+              className="border-dashed"
               onClick={() => onUpdate({ bloomLevel: question.bloomSuggested })}
             >
               <Sparkles className="h-3 w-3" />
               AI suggests {suggestedLabel}
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -841,7 +834,7 @@ function DeliverablesEditor({
       {items.length === 0 ? (
         <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-amber-500/[0.04] border border-amber-500/15">
           <AlertTriangle className="h-3 w-3 text-amber-600/80 shrink-0" />
-          <p className="text-[10px] font-semibold text-amber-700/80 leading-tight">
+          <p className="text-xs font-semibold text-amber-700/80 leading-tight">
             Add at least one deliverable so students know what to submit.
           </p>
         </div>
@@ -851,7 +844,7 @@ function DeliverablesEditor({
             <div key={item.id} className="group grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-2 items-start rounded-lg border border-border/30 bg-background/40 px-3 py-2.5 hover:border-primary/20 transition-all">
               <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 shrink-0">#{idx + 1}</span>
+                  <span className="eyebrow text-muted-foreground/60 shrink-0">#{idx + 1}</span>
                   <Input
                     placeholder="Deliverable name — e.g. Design document, Source code, Test report"
                     value={item.name}
@@ -863,27 +856,27 @@ function DeliverablesEditor({
                   placeholder="Short description (optional)"
                   value={item.description}
                   onChange={(e) => onUpdate(item.id, { description: e.target.value })}
-                  className="h-7 text-[11px] font-medium bg-transparent border border-border/20 rounded-md px-2 focus-visible:ring-primary/10 placeholder:opacity-30 ml-6"
+                  className="h-7 text-xs font-medium bg-transparent border border-border/20 rounded-md px-2 focus-visible:ring-primary/10 placeholder:opacity-30 ml-6"
                 />
               </div>
               <Select value={item.format} onValueChange={(val) => { if (val) onUpdate(item.id, { format: val }) }}>
-                <SelectTrigger className="h-8 w-32 text-[10px] font-bold bg-muted/10 border border-border/40 rounded-md px-2">
+                <SelectTrigger className="h-8 w-32 text-xs font-bold bg-muted/10 border border-border/40 rounded-md px-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent sideOffset={5} className="z-[105] border border-border/20 rounded-xl p-1 shadow-none">
-                  <SelectItem value="PDF" className="text-[11px] font-bold py-1.5 rounded-md">PDF</SelectItem>
-                  <SelectItem value="Word Doc" className="text-[11px] font-bold py-1.5 rounded-md">Word Doc</SelectItem>
-                  <SelectItem value="Slides" className="text-[11px] font-bold py-1.5 rounded-md">Slides</SelectItem>
-                  <SelectItem value="Code repo" className="text-[11px] font-bold py-1.5 rounded-md">Code repo</SelectItem>
-                  <SelectItem value="Figma link" className="text-[11px] font-bold py-1.5 rounded-md">Figma link</SelectItem>
-                  <SelectItem value="Video" className="text-[11px] font-bold py-1.5 rounded-md">Video</SelectItem>
-                  <SelectItem value="Other" className="text-[11px] font-bold py-1.5 rounded-md">Other</SelectItem>
+                  <SelectItem value="PDF" className="text-xs font-bold py-1.5 rounded-md">PDF</SelectItem>
+                  <SelectItem value="Word Doc" className="text-xs font-bold py-1.5 rounded-md">Word Doc</SelectItem>
+                  <SelectItem value="Slides" className="text-xs font-bold py-1.5 rounded-md">Slides</SelectItem>
+                  <SelectItem value="Code repo" className="text-xs font-bold py-1.5 rounded-md">Code repo</SelectItem>
+                  <SelectItem value="Figma link" className="text-xs font-bold py-1.5 rounded-md">Figma link</SelectItem>
+                  <SelectItem value="Video" className="text-xs font-bold py-1.5 rounded-md">Video</SelectItem>
+                  <SelectItem value="Other" className="text-xs font-bold py-1.5 rounded-md">Other</SelectItem>
                 </SelectContent>
               </Select>
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-md text-muted-foreground/30 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                size="icon-sm"
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => onRemove(item.id)}
               >
                 <X className="h-3 w-3" />
@@ -895,7 +888,7 @@ function DeliverablesEditor({
       <Button
         variant="outline"
         size="sm"
-        className="h-8 text-[9px] font-black uppercase tracking-widest border border-dashed border-border/40 bg-transparent hover:border-primary/40 hover:text-primary rounded-md"
+        className="border-dashed"
         onClick={onAdd}
       >
         <Plus className="h-3 w-3 mr-1" />
@@ -919,7 +912,7 @@ function ResourcesEditor({
   return (
     <div className="space-y-3">
       {items.length === 0 ? (
-        <p className="text-[11px] font-medium text-muted-foreground/60 leading-relaxed">
+        <p className="text-xs font-medium text-muted-foreground/60 leading-relaxed">
           Optional — share textbook chapters, references, starter files, or anything else students should read before starting.
         </p>
       ) : (
@@ -936,12 +929,12 @@ function ResourcesEditor({
                 placeholder="Link (optional)"
                 value={item.link}
                 onChange={(e) => onUpdate(item.id, { link: e.target.value })}
-                className="h-8 text-[11px] font-medium bg-transparent border border-border/30 rounded-md px-2 focus-visible:ring-primary/10 placeholder:opacity-30"
+                className="h-8 text-xs font-medium bg-transparent border border-border/30 rounded-md px-2 focus-visible:ring-primary/10 placeholder:opacity-30"
               />
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-md text-muted-foreground/30 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                size="icon-sm"
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => onRemove(item.id)}
               >
                 <X className="h-3 w-3" />
@@ -953,7 +946,7 @@ function ResourcesEditor({
       <Button
         variant="outline"
         size="sm"
-        className="h-8 text-[9px] font-black uppercase tracking-widest border border-dashed border-border/40 bg-transparent hover:border-primary/40 hover:text-primary rounded-md"
+        className="border-dashed"
         onClick={onAdd}
       >
         <Plus className="h-3 w-3 mr-1" />

@@ -4,6 +4,7 @@ import { useState } from "react"
 import { type StudentArtifact, type ArtifactType } from "@/lib/manuscript-generator"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { artifactStyles } from "@/lib/design-tokens"
 import {
   FileText,
   Presentation,
@@ -29,25 +30,11 @@ const ARTIFACT_ICONS: Record<ArtifactType, React.ElementType> = {
   image: Image,
 }
 
-const ARTIFACT_COLORS: Record<ArtifactType, string> = {
-  pdf: "text-red-500",
-  docx: "text-blue-500",
-  pptx: "text-orange-500",
-  video: "text-purple-500",
-  link: "text-cyan-500",
-  code: "text-green-500",
-  image: "text-pink-500",
-}
+const resolveArtifactColor = (type: ArtifactType): string =>
+  artifactStyles[type as keyof typeof artifactStyles]?.text ?? "text-muted-foreground"
 
-const ARTIFACT_BG: Record<ArtifactType, string> = {
-  pdf: "bg-red-50",
-  docx: "bg-blue-50",
-  pptx: "bg-orange-50",
-  video: "bg-purple-50",
-  link: "bg-cyan-50",
-  code: "bg-green-50",
-  image: "bg-pink-50",
-}
+const resolveArtifactBg = (type: ArtifactType): string =>
+  artifactStyles[type as keyof typeof artifactStyles]?.bg ?? "bg-muted"
 
 function ArtifactPreviewDialog({
   artifact,
@@ -67,12 +54,12 @@ function ArtifactPreviewDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-sm">
-            <div className={`h-8 w-8 rounded-md ${ARTIFACT_BG[artifact.type]} flex items-center justify-center`}>
-              <Icon className={`h-4 w-4 ${ARTIFACT_COLORS[artifact.type]}`} />
+            <div className={`h-8 w-8 rounded-md ${resolveArtifactBg(artifact.type)} flex items-center justify-center`}>
+              <Icon className={`h-4 w-4 ${resolveArtifactColor(artifact.type)}`} />
             </div>
             <div>
               <div className="font-bold text-foreground">{artifact.name}</div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <div className="eyebrow text-muted-foreground">
                 {artifact.type.toUpperCase()} {artifact.size && `• ${artifact.size}`}
               </div>
             </div>
@@ -87,7 +74,7 @@ function ArtifactPreviewDialog({
                 <div className="h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 hover:bg-white/20 transition-colors cursor-pointer">
                   <Play className="h-8 w-8 text-white ml-1" />
                 </div>
-                <span className="text-xs font-bold text-white/50 uppercase tracking-widest">Video Preview</span>
+                <span className="eyebrow text-xs text-white/50">Video Preview</span>
                 <span className="text-sm font-mono text-white/70">{artifact.size}</span>
               </div>
             </div>
@@ -128,7 +115,7 @@ function ArtifactPreviewDialog({
                   <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
                   <div className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
                 </div>
-                <span className="text-[9px] text-slate-400 font-mono ml-2">{artifact.name}</span>
+                <span className="text-xs text-slate-400 font-mono ml-2">{artifact.name}</span>
               </div>
               <div className="p-6 bg-slate-900 min-h-[200px] flex items-center justify-center">
                 <div className="text-center space-y-3">
@@ -146,7 +133,7 @@ function ArtifactPreviewDialog({
                   <div key={i} className="aspect-[16/9] bg-muted/40 border border-border/50 rounded-md flex items-center justify-center">
                     <div className="text-center">
                       <Presentation className="h-4 w-4 text-muted-foreground/40 mx-auto mb-1" />
-                      <span className="text-[9px] text-muted-foreground/40">Slide {i + 1}</span>
+                      <span className="text-xs text-muted-foreground/40">Slide {i + 1}</span>
                     </div>
                   </div>
                 ))}
@@ -222,14 +209,14 @@ export default function ArtifactSidebar({
         <div className="p-2 border-b border-border flex items-center justify-between">
           {expanded ? (
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground truncate">
+              <span className="eyebrow text-muted-foreground truncate">
                 {totalCount} Artifact{totalCount !== 1 ? "s" : ""}
               </span>
             </div>
           ) : (
             <Badge
               variant="outline"
-              className="h-5 w-5 p-0 flex items-center justify-center text-[9px] font-black rounded-full mx-auto"
+              className="h-5 w-5 p-0 flex items-center justify-center text-xs font-black rounded-full mx-auto"
             >
               {totalCount}
             </Badge>
@@ -246,8 +233,8 @@ export default function ArtifactSidebar({
           <div className={`p-1.5 space-y-1 ${expanded ? "" : "flex flex-col items-center"}`}>
             {artifacts.map((artifact) => {
               const Icon = ARTIFACT_ICONS[artifact.type]
-              const color = ARTIFACT_COLORS[artifact.type]
-              const bg = ARTIFACT_BG[artifact.type]
+              const color = resolveArtifactColor(artifact.type)
+              const bg = resolveArtifactBg(artifact.type)
 
               return (
                 <button
@@ -276,16 +263,16 @@ export default function ArtifactSidebar({
                   {expanded && (
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-bold text-foreground truncate">
+                        <span className="text-xs font-bold text-foreground truncate">
                           {artifact.name}
                         </span>
                         {artifact.isPrimary && (
-                          <Badge className="h-4 px-1 rounded text-[8px] font-black bg-primary text-primary-foreground shrink-0">
+                          <Badge className="h-4 px-1 rounded text-xs font-black bg-primary text-primary-foreground shrink-0">
                             PRIMARY
                           </Badge>
                         )}
                       </div>
-                      <span className="text-[9px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         {artifact.type.toUpperCase()}
                         {artifact.size ? ` • ${artifact.size}` : ""}
                       </span>

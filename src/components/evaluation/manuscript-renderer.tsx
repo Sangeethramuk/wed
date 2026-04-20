@@ -2,12 +2,42 @@
 
 import { type ManuscriptElement } from "@/lib/manuscript-generator"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
+import { criterionStyles, type CriterionKey } from "@/lib/design-tokens"
 
-export const CRITERION_COLORS: Record<string, { bg: string; border: string; hoverBg: string; badge: string; dot: string; text: string; bar: string; cardBg: string; cardBorder: string; label: string }> = {
-  "c1": { bg: "bg-yellow-100/80", border: "border-yellow-400", hoverBg: "hover:bg-yellow-200/80", badge: "bg-yellow-50", dot: "bg-yellow-500", text: "text-yellow-700", bar: "bg-yellow-400", cardBg: "bg-yellow-50/40", cardBorder: "border-yellow-200", label: "text-yellow-700" },
-  "c2": { bg: "bg-green-100/80",  border: "border-green-400",  hoverBg: "hover:bg-green-200/80",  badge: "bg-green-50",  dot: "bg-green-500",  text: "text-green-700",  bar: "bg-green-400",  cardBg: "bg-green-50/40",  cardBorder: "border-green-200",  label: "text-green-700"  },
-  "c3": { bg: "bg-blue-100/80",   border: "border-blue-400",   hoverBg: "hover:bg-blue-200/80",   badge: "bg-blue-50",   dot: "bg-blue-500",   text: "text-blue-700",   bar: "bg-blue-400",   cardBg: "bg-blue-50/40",   cardBorder: "border-blue-200",   label: "text-blue-700"   },
-  "c4": { bg: "bg-purple-100/80", border: "border-purple-400", hoverBg: "hover:bg-purple-200/80", badge: "bg-purple-50", dot: "bg-purple-500", text: "text-purple-700", bar: "bg-purple-400", cardBg: "bg-purple-50/40", cardBorder: "border-purple-200", label: "text-purple-700" },
+type CriterionColor = {
+  bg: string
+  border: string
+  hoverBg: string
+  badge: string
+  dot: string
+  text: string
+  bar: string
+  cardBg: string
+  cardBorder: string
+  label: string
+}
+
+const buildCriterionColor = (key: CriterionKey): CriterionColor => {
+  const style = criterionStyles[key]
+  return {
+    bg: style.bg,
+    border: style.border,
+    hoverBg: `hover:${style.bg}`,
+    badge: style.bg,
+    dot: style.dot,
+    text: style.text,
+    bar: style.dot,
+    cardBg: style.bg,
+    cardBorder: style.border,
+    label: style.text,
+  }
+}
+
+export const CRITERION_COLORS: Record<string, CriterionColor> = {
+  c1: buildCriterionColor("c1"),
+  c2: buildCriterionColor("c2"),
+  c3: buildCriterionColor("c3"),
+  c4: buildCriterionColor("c4"),
 }
 
 const CRITERION_LABELS: Record<string, string> = {
@@ -46,10 +76,10 @@ function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterio
         <div className="space-y-2">
           <div className={`inline-flex items-center gap-2 px-2 py-1 ${c.badge} rounded-md`}>
             <div className={`w-2 h-2 rounded-full ${c.dot}`} />
-            <span className={`text-[9px] font-black uppercase tracking-widest ${c.text}`}>Your Evidence</span>
+            <span className={`eyebrow ${c.text}`}>Your Evidence</span>
           </div>
           <p className="text-sm font-bold text-popover-foreground">{label}</p>
-          <p className="text-[10px] text-muted-foreground italic">Manually mapped by instructor</p>
+          <p className="text-xs text-muted-foreground italic">Manually mapped by instructor</p>
         </div>
       </HoverCardContent>
     </HoverCard>
@@ -107,7 +137,7 @@ function HighlightedSpan({
         <div className="space-y-3">
           <div className={`inline-flex items-center gap-2 px-2 py-1 ${c.badge} rounded-md`}>
             <div className={`w-2 h-2 rounded-full ${c.dot}`} />
-            <span className={`text-[9px] font-black uppercase tracking-widest ${c.text}`}>
+            <span className={`eyebrow ${c.text}`}>
               Evidence
             </span>
           </div>
@@ -118,7 +148,7 @@ function HighlightedSpan({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[9px] font-black uppercase tracking-widest text-popover-foreground/50">
+            <span className="eyebrow text-popover-foreground/50">
               AI Confidence
             </span>
             <ConfidenceBars confidence={confidence} />
@@ -139,7 +169,7 @@ function DiagramElement({
   return (
     <div className="my-6 border border-border/60 rounded-lg overflow-hidden">
       <div className="px-4 py-2 bg-muted/30 border-b border-border/40">
-        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+        <span className="eyebrow text-muted-foreground">
           {label}
         </span>
       </div>
@@ -152,17 +182,17 @@ function DiagramElement({
               { name: "Products", fields: ["id", "sku", "price"] },
             ].map((t) => (
               <div key={t.name} className="border border-blue-200 rounded bg-blue-50/50">
-                <div className="px-2 py-1 bg-blue-100 border-b border-blue-200 text-[10px] font-bold text-blue-800 text-center">
+                <div className="px-2 py-1 bg-blue-100 border-b border-blue-200 text-xs font-bold text-blue-800 text-center">
                   {t.name}
                 </div>
                 {t.fields.map((f) => (
-                  <div key={f} className="px-2 py-0.5 text-[9px] text-foreground/70 font-mono border-b border-blue-100 last:border-0">
+                  <div key={f} className="px-2 py-0.5 text-xs text-foreground/70 font-mono border-b border-blue-100 last:border-0">
                     {f}
                   </div>
                 ))}
               </div>
             ))}
-            <div className="col-span-3 flex justify-center gap-8 text-[9px] text-muted-foreground font-mono">
+            <div className="col-span-3 flex justify-center gap-8 text-xs text-muted-foreground font-mono">
               <span>Users ──1:N──▸ Orders</span>
               <span>Orders ──N:M──▸ Products</span>
             </div>
@@ -172,7 +202,7 @@ function DiagramElement({
           <div className="flex flex-col items-center gap-2 w-full max-w-xs">
             {["Client Request", "API Gateway", "Auth Middleware", "Controller", "Database"].map((step, i) => (
               <div key={step} className="flex flex-col items-center gap-1">
-                <div className="px-4 py-2 border border-slate-300 rounded-md bg-slate-50 text-[10px] font-bold text-foreground/80">
+                <div className="px-4 py-2 border border-slate-300 rounded-md bg-slate-50 text-xs font-bold text-foreground/80">
                   {step}
                 </div>
                 {i < 4 && <div className="w-px h-3 bg-slate-300" />}
@@ -182,19 +212,19 @@ function DiagramElement({
         )}
         {diagramType === "architecture" && (
           <div className="flex flex-col items-center gap-3 w-full">
-            <div className="px-6 py-2 border border-amber-300 rounded-md bg-amber-50 text-[10px] font-bold text-amber-800">
+            <div className="px-6 py-2 border border-amber-300 rounded-md bg-amber-50 text-xs font-bold text-amber-800">
               API Gateway
             </div>
             <div className="flex gap-4">
               {["User Svc", "Order Svc", "Notify Svc"].map((svc) => (
-                <div key={svc} className="px-3 py-2 border border-green-300 rounded-md bg-green-50 text-[9px] font-bold text-green-800">
+                <div key={svc} className="px-3 py-2 border border-green-300 rounded-md bg-green-50 text-xs font-bold text-green-800">
                   {svc}
                 </div>
               ))}
             </div>
             <div className="flex gap-4">
               {["PostgreSQL", "Redis", "Kafka"].map((db) => (
-                <div key={db} className="px-3 py-1.5 border border-purple-300 rounded bg-purple-50 text-[9px] font-mono text-purple-800">
+                <div key={db} className="px-3 py-1.5 border border-purple-300 rounded bg-purple-50 text-xs font-mono text-purple-800">
                   {db}
                 </div>
               ))}
@@ -259,8 +289,8 @@ export default function ManuscriptRenderer({
             return (
               <div key={i} className="my-4 rounded-lg overflow-hidden border border-border/40">
                 <div className="px-4 py-2 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">{el.language}</span>
-                  <span className="text-[9px] text-slate-500 font-mono">source</span>
+                  <span className="eyebrow text-slate-400">{el.language}</span>
+                  <span className="text-xs text-slate-500 font-mono">source</span>
                 </div>
                 <pre className="p-4 bg-slate-900 overflow-x-auto">
                   <code className="text-sm text-green-400 font-mono leading-relaxed whitespace-pre">{el.code}</code>
@@ -276,7 +306,7 @@ export default function ManuscriptRenderer({
                     <thead>
                       <tr className="bg-muted/40 border-b border-border/50">
                         {el.headers.map((h, hi) => (
-                          <th key={hi} className="px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">{h}</th>
+                          <th key={hi} className="eyebrow px-4 py-2.5 text-muted-foreground">{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -293,7 +323,7 @@ export default function ManuscriptRenderer({
                 </div>
                 {el.caption && (
                   <div className="px-4 py-2 bg-muted/20 border-t border-border/30">
-                    <span className="text-[9px] font-bold text-muted-foreground italic">{el.caption}</span>
+                    <span className="text-xs font-bold text-muted-foreground italic">{el.caption}</span>
                   </div>
                 )}
               </div>
@@ -330,7 +360,7 @@ export default function ManuscriptRenderer({
                   &ldquo;{el.text}&rdquo;
                 </p>
                 {el.source && (
-                  <p className="mt-2 text-[11px] font-bold text-muted-foreground/60 not-italic">
+                  <p className="mt-2 text-xs font-bold text-muted-foreground/60 not-italic">
                     — {el.source}
                   </p>
                 )}

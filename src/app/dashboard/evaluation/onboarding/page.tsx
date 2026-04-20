@@ -50,7 +50,7 @@ export default function EvaluationOnboarding() {
         animate={{ opacity: 1, scale: 1 }}
         className="text-center space-y-4"
       >
-        <Badge variant="secondary" className="rounded-full px-4 py-1 text-[10px] font-black tracking-[0.2em] uppercase bg-primary/10 text-primary border-primary/20">
+        <Badge variant="secondary" className="eyebrow rounded-full px-4 py-1 bg-primary/10 text-primary border-primary/20">
           Academic Protocol Active
         </Badge>
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
@@ -82,7 +82,7 @@ export default function EvaluationOnboarding() {
               </div>
               <div className="space-y-2.5 pt-6 border-t border-border/50">
                 {item.points.map((point) => (
-                  <div key={point} className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">
+                  <div key={point} className="eyebrow flex items-center gap-2.5 text-muted-foreground/80">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary/50" />
                     {point}
                   </div>
@@ -100,16 +100,16 @@ export default function EvaluationOnboarding() {
         className="pt-8 flex flex-col items-center gap-4 w-full"
       >
         <Link href="/dashboard/evaluation/SWE-PH2" className="w-full max-w-sm">
-          <Button className="w-full rounded-full py-8 text-lg font-bold shadow-2xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] group bg-primary text-primary-foreground">
-            Initialize Session <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+          <Button size="lg" className="w-full group">
+            Initialize session <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Button>
         </Link>
-        <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">
+        <p className="eyebrow text-muted-foreground/60">
           Estimated session time: 45-60 minutes
         </p>
       </motion.div>
 
-      <div className="flex items-center gap-8 py-6 px-12 rounded-full border border-border/50 bg-muted/20 backdrop-blur-md text-[10px] uppercase font-black tracking-[0.3em] text-muted-foreground/60 shadow-sm">
+      <div className="eyebrow flex items-center gap-8 py-6 px-12 rounded-full border border-border/50 bg-muted/20 backdrop-blur-md text-muted-foreground/60 shadow-sm">
         <div className="flex items-center gap-2.5">
           <Scale className="h-3.5 w-3.5 text-primary/60" /> Neutral Context
         </div>

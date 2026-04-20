@@ -87,12 +87,12 @@ export function FilterBar() {
       {/* Filter Groups */}
       {FILTER_GROUPS.map(group => (
         <div key={group.key} className="flex items-center gap-1 p-1 bg-muted/40 rounded-lg border border-border/30">
-          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-1">{group.label}</span>
+          <span className="eyebrow text-muted-foreground/40 px-1">{group.label}</span>
           {group.options.map(opt => (
             <button
               key={opt.value}
               onClick={() => setFilter(group.key, opt.value)}
-              className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ${
+              className={`px-2.5 py-1 rounded-md text-xs font-black tracking-wider transition-all ${
                 activeValues[group.key] === opt.value
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:bg-background/60"
@@ -109,7 +109,7 @@ export function FilterBar() {
           variant="ghost"
           size="sm"
           onClick={clearAll}
-          className="h-8 px-3 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 hover:text-destructive gap-1.5"
+          className="eyebrow h-8 px-3 text-muted-foreground/60 hover:text-destructive gap-1.5"
         >
           <X className="h-3 w-3" /> Clear
         </Button>

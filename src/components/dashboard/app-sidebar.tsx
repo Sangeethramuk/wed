@@ -62,7 +62,7 @@ export function AppSidebar() {
               render={<Link href="/dashboard" />}
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-red-100 text-red-800 shrink-0">
-                <span className="text-[10px] font-bold">SIU</span>
+                <span className="text-xs font-bold">SIU</span>
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
                 <span className="font-semibold text-base tracking-tight">Symbiosis International University</span>
@@ -95,8 +95,8 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border p-4">
         <div className="flex w-full items-center justify-center">
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-            Powered by <span className="font-semibold normal-case text-foreground">EducAItors</span>
+          <span className="text-xs text-muted-foreground font-medium tracking-wider">
+            Powered by <span className="font-semibold text-foreground">EducAItors</span>
           </span>
         </div>
       </SidebarFooter>

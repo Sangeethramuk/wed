@@ -22,7 +22,7 @@ export function SampleReview({ assignmentId }: { assignmentId: string }) {
       <div className="w-full max-w-lg space-y-8">
 
         <div className="space-y-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/60">
+          <p className="eyebrow font-semibold text-muted-foreground/60">
             Independent Review
           </p>
           <h2 className="text-3xl font-semibold tracking-tight leading-snug">

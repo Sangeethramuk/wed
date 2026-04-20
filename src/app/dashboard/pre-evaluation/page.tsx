@@ -63,7 +63,7 @@ export default function PreEvaluationPage() {
         <div className="sticky top-0 z-50 bg-background/60 backdrop-blur-md pt-4 pb-8 mb-8 border-b border-border/10">
           <div className="max-w-6xl mx-auto w-full px-4">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] transition-all">
+              <div className="eyebrow flex items-center gap-6 transition-all">
                 <div className="flex items-center gap-3">
                     <span className="text-primary opacity-100 font-black">Step {currentStep} of 6 — {currentStepData?.label}</span>
                 </div>
@@ -75,7 +75,7 @@ export default function PreEvaluationPage() {
               </div>
               
               <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground/30 uppercase tracking-widest">
+                <div className="eyebrow flex items-center gap-2 text-muted-foreground/30">
                     <CloudCheck className="h-3.5 w-3.5 text-green-500/40" />
                     <span>Auto-saved at {lastSaved}</span>
                 </div>
@@ -84,13 +84,13 @@ export default function PreEvaluationPage() {
             </div>
             {selectedCourse && courseData && (
               <div className="flex items-center gap-2 mb-3 flex-wrap">
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">IIM Bangalore</span>
-                <span className="text-muted-foreground/20 text-[9px]">·</span>
-                <span className="text-[9px] font-black uppercase tracking-widest text-foreground/60">{courseData.name}</span>
-                <span className="text-muted-foreground/20 text-[9px]">·</span>
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">{courseData.semester}</span>
-                <span className="text-muted-foreground/20 text-[9px]">·</span>
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">{courseData.code}</span>
+                <span className="eyebrow text-muted-foreground/40">IIM Bangalore</span>
+                <span className="text-muted-foreground/20 text-xs">·</span>
+                <span className="eyebrow text-foreground/60">{courseData.name}</span>
+                <span className="text-muted-foreground/20 text-xs">·</span>
+                <span className="eyebrow text-muted-foreground/50">{courseData.semester}</span>
+                <span className="text-muted-foreground/20 text-xs">·</span>
+                <span className="eyebrow text-muted-foreground/40">{courseData.code}</span>
               </div>
             )}
             <Progress value={progressPercent} className="h-0.5 transition-all duration-1000 ease-in-out bg-primary/10" />

@@ -132,10 +132,10 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
             <div className="flex flex-col h-full border-r border-border">
               <div className="p-4 border-b border-border space-y-4 shrink-0">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground/80">
+                  <h2 className="eyebrow text-muted-foreground/80">
                     Blind Queue
                   </h2>
-                  <Badge variant="outline" className="rounded-full bg-background border-border text-[9px]">
+                  <Badge variant="outline" className="rounded-full bg-background border-border text-xs">
                     {totalGradedPapers}/{papers.length}
                   </Badge>
                 </div>
@@ -166,10 +166,10 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         <div className="flex items-center gap-2.5 flex-1 min-w-0">
                           <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${catConfig.dot} ${isActive ? 'shadow-[0_0_8px_rgba(var(--primary),0.4)]' : ''}`} />
                           <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className={`font-bold tracking-tight text-[11px] uppercase tracking-widest truncate ${isActive ? "text-primary" : "text-foreground/70"}`}>
+                            <span className={`eyebrow tracking-tight truncate ${isActive ? "text-primary" : "text-foreground/70"}`}>
                               {paper.anonymizedLabel}
                             </span>
-                            <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest tabular-nums">
+                            <span className="eyebrow text-muted-foreground/40 tabular-nums">
                               Paper {idx + 1}
                             </span>
                           </div>
@@ -194,22 +194,22 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60 mb-0.5">
+                      <span className="eyebrow text-primary/60 mb-0.5">
                         Blind Manuscript
                       </span>
-                      <h2 className="text-sm font-black tracking-tight text-foreground uppercase">
+                      <h2 className="text-sm font-black tracking-tight text-foreground">
                         {currentPaper.anonymizedLabel}
                       </h2>
                     </div>
                     <Separator orientation="vertical" className="h-6 bg-border mx-2" />
-                    <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
+                    <span className="eyebrow text-muted-foreground/40">
                       Paper {currentPaperIndex + 1} of {papers.length}
                     </span>
                   </div>
 
                   {/* Engagement gates strip */}
                   <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3 px-5 py-2 bg-accent/40 rounded-full border border-border/50 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 transition-all cursor-default">
+                    <div className="eyebrow flex items-center gap-3 px-5 py-2 bg-accent/40 rounded-full border border-border/50 text-muted-foreground/60 transition-all cursor-default">
                       <Tooltip>
                         <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${hasScrolledToBottom ? "text-green-500" : ""}`} />}>
                           {hasScrolledToBottom ? <CheckCircle2 className="h-3 w-3" /> : "○"} Read
@@ -246,8 +246,8 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                   style={{ width: "100%", maxWidth: "800px", minHeight: "100%" }}
                 >
                   <div className="absolute top-8 left-8 flex flex-col items-start gap-1">
-                    <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary/40 group-hover/page:text-primary transition-colors">Blind Calibration</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[#E6E1D6] group-hover/page:text-slate-400 transition-colors">Digital Manuscript</span>
+                    <span className="eyebrow text-primary/40 group-hover/page:text-primary transition-colors">Blind Calibration</span>
+                    <span className="eyebrow text-[#E6E1D6] group-hover/page:text-slate-400 transition-colors">Digital Manuscript</span>
                   </div>
 
                   <div className="p-16 lg:p-24 h-full font-serif overflow-hidden flex-1">
@@ -263,7 +263,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         {criteria.map((criterion, idx) => (
                           <div key={criterion.id} className="space-y-6">
                             <h2 className="text-xl font-bold italic border-l-2 border-amber-500 pl-4 tracking-tight text-slate-800 flex items-center gap-3">
-                              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-500/80 not-italic shrink-0">
+                              <span className="eyebrow text-amber-500/80 not-italic shrink-0">
                                 {criterion.id.toUpperCase()}
                               </span>
                               {criterion.name}
@@ -285,7 +285,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         <div className="pt-20 pb-8 shrink-0 w-full flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity">
                             <div className="flex flex-col items-center gap-4">
                               <CheckCircle2 className="h-10 w-10 text-primary" />
-                              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground">End of Submission</span>
+                              <span className="eyebrow text-muted-foreground">End of Submission</span>
                             </div>
                         </div>
                       )}
@@ -306,8 +306,8 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
               {/* Sticky nav */}
               <div className="bg-background border-b border-border px-4 pt-3 pb-0 shrink-0">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[13px] font-semibold text-foreground">Rubric evaluation</span>
-                  <span className="text-[11px] font-mono text-muted-foreground/60 bg-muted/40 border border-border/60 rounded-full px-2 py-0.5">
+                  <span className="text-sm font-semibold text-foreground">Rubric evaluation</span>
+                  <span className="text-xs font-mono text-muted-foreground/60 bg-muted/40 border border-border/60 rounded-full px-2 py-0.5">
                     {gradedCriteria.length} of {criteria.length} scored
                   </span>
                 </div>
@@ -324,14 +324,16 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                     const isDone = (sc?.instructorLevel ?? 0) > 0
                     const isActive = i === activeCriterionIdx
                     return (
-                      <button
+                      <Button
                         key={c.id}
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setActiveCriterionIdx(i)}
-                        className={`flex-1 flex flex-col items-center gap-1 px-1 pt-1.5 pb-2.5 border-b-2 transition-all cursor-pointer bg-transparent font-sans ${
-                          isActive ? 'border-primary' : 'border-transparent hover:bg-muted/20'
+                        className={`flex-1 h-auto flex-col gap-1 border-b-2 rounded-none ${
+                          isActive ? 'border-primary' : 'border-transparent'
                         }`}
                       >
-                        <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center text-[10px] font-semibold transition-all ${
+                        <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
                           isDone
                             ? 'bg-primary border-primary text-primary-foreground'
                             : isActive
@@ -340,10 +342,10 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         }`}>
                           {isDone ? '✓' : i + 1}
                         </div>
-                        <span className={`text-[10px] font-medium text-center leading-tight max-w-[70px] ${
+                        <span className={`text-xs font-medium text-center leading-tight max-w-[70px] ${
                           isDone ? 'text-muted-foreground' : isActive ? 'text-primary' : 'text-muted-foreground/50'
                         }`}>{c.name}</span>
-                      </button>
+                      </Button>
                     )
                   })}
                 </div>
@@ -358,28 +360,25 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                       <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
                         <div className="p-3.5 space-y-3.5">
                           <div>
-                            <h4 className="text-[15px] font-semibold text-foreground leading-snug">{activeCriterion.name}</h4>
-                            <p className="text-[12px] text-muted-foreground leading-relaxed mt-1">
+                            <h4 className="text-sm font-semibold text-foreground leading-snug">{activeCriterion.name}</h4>
+                            <p className="text-xs text-muted-foreground leading-relaxed mt-1">
                               {activeCriterion.levelLabels.join(' → ')}
                             </p>
                           </div>
 
                           {/* Score */}
                           <div>
-                            <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-2">Your score</span>
+                            <span className="eyebrow font-semibold text-muted-foreground/60 block mb-2">Your score</span>
                             <div className="flex gap-1.5">
                               {[1, 2, 3, 4, 5].map(v => (
-                                <button
+                                <Button
                                   key={v}
+                                  variant={activeScore === v ? "default" : "outline"}
+                                  size="icon-sm"
                                   onClick={() => handleLevelSelect(activeCriterion.id, v)}
-                                  className={`w-[38px] h-[38px] rounded-md border text-sm font-medium cursor-pointer transition-all font-sans ${
-                                    activeScore === v
-                                      ? 'bg-foreground border-foreground text-background shadow-sm'
-                                      : 'bg-background border-border/70 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5'
-                                  }`}
                                 >
                                   {v}
-                                </button>
+                                </Button>
                               ))}
                             </div>
                           </div>
@@ -387,26 +386,26 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                           {/* Reason (shown once score is selected) */}
                           {activeScore > 0 && (
                             <div>
-                              <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-1.5">Reason for this score</span>
+                              <span className="eyebrow font-semibold text-muted-foreground/60 block mb-1.5">Reason for this score</span>
                               <textarea
                                 value={reasons[activeCriterion.id] ?? ''}
                                 onChange={e => setReasons(r => ({ ...r, [activeCriterion.id]: e.target.value }))}
                                 rows={3}
                                 placeholder="Explain your reasoning for this score…"
-                                className="w-full text-[13px] leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[72px] transition-colors"
+                                className="w-full text-sm leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[72px] transition-colors"
                               />
                             </div>
                           )}
 
                           {/* Feedback */}
                           <div>
-                            <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-1.5">Feedback</span>
+                            <span className="eyebrow font-semibold text-muted-foreground/60 block mb-1.5">Feedback</span>
                             <textarea
                               value={feedbacks[activeCriterion.id] ?? ''}
                               onChange={e => setFeedbacks(f => ({ ...f, [activeCriterion.id]: e.target.value }))}
                               rows={4}
                               placeholder="Write feedback for this criterion…"
-                              className="w-full text-[13px] leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[90px] transition-colors"
+                              className="w-full text-sm leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[90px] transition-colors"
                             />
                           </div>
                         </div>
@@ -414,9 +413,10 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
 
                       {/* Evidence accordion */}
                       <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
-                        <button
+                        <Button
+                          variant="ghost"
                           onClick={() => toggleAccordion('evidence')}
-                          className="w-full flex items-center justify-between px-3.5 py-2.5 text-[13px] font-medium text-foreground hover:bg-muted/20 transition-colors text-left gap-2 bg-transparent border-none cursor-pointer font-sans"
+                          className="w-full justify-between"
                         >
                           <div className="flex items-center gap-2">
                             <div className="w-5 h-5 rounded-[5px] bg-primary/10 flex items-center justify-center shrink-0 text-primary">
@@ -425,16 +425,16 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                             Evidence (0 linked)
                           </div>
                           <ChevronRight className={`h-4 w-4 text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen.evidence ? 'rotate-90' : ''}`} />
-                        </button>
+                        </Button>
                         {accordionOpen.evidence && (
                           <div className="border-t border-border p-3.5 space-y-2">
-                            <div className="text-[12px] text-primary bg-primary/5 border border-dashed border-primary/30 rounded-md p-2.5">
+                            <div className="text-xs text-primary bg-primary/5 border border-dashed border-primary/30 rounded-md p-2.5">
                               No evidence linked yet — select text in the left panel to add evidence
                             </div>
-                            <button className="w-full flex items-center gap-1.5 text-[12px] text-primary font-medium border border-dashed border-primary/30 rounded-md px-3 py-1.5 hover:bg-primary/5 transition-all bg-transparent cursor-pointer font-sans">
+                            <Button variant="outline" size="sm" className="w-full border-dashed">
                               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                               Add evidence — select text in left panel
-                            </button>
+                            </Button>
                           </div>
                         )}
                       </div>
@@ -446,52 +446,50 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
               {/* Footer */}
               <div className="px-4 py-3 border-t border-border bg-background shrink-0 space-y-2">
                 {isLastCriterion && (
-                  <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 pb-1">
+                  <div className="eyebrow flex items-center justify-between text-muted-foreground/40 pb-1">
                     <span>Paper {currentPaperIndex + 1} of {papers.length}</span>
                     <span>{totalGradedPapers} complete</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between gap-2">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setActiveCriterionIdx(i => Math.max(0, i - 1))}
                     disabled={activeCriterionIdx === 0}
-                    className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium text-muted-foreground rounded-md hover:bg-muted/30 transition-colors disabled:opacity-30 bg-transparent border-none cursor-pointer font-sans"
                   >
                     <ChevronLeft className="h-3.5 w-3.5" /> Previous
-                  </button>
+                  </Button>
 
                   <div className="flex items-center gap-1.5">
-                    <button className="px-3 py-1.5 text-[13px] font-medium text-foreground bg-muted/40 border border-border/60 rounded-md hover:bg-muted/60 transition-colors cursor-pointer font-sans">
+                    <Button variant="outline" size="sm">
                       Save
-                    </button>
+                    </Button>
 
                     {!isLastCriterion ? (
-                      <button
+                      <Button
+                        size="sm"
                         onClick={() => setActiveCriterionIdx(i => i + 1)}
-                        className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors cursor-pointer font-sans"
                       >
                         Next criterion <ArrowRight className="h-3.5 w-3.5" />
-                      </button>
+                      </Button>
                     ) : (
                       <Tooltip>
                         <TooltipTrigger render={<span className="inline-flex" />}>
-                          <button
+                          <Button
+                            size="sm"
+                            disabled={!isGateUnlocked}
                             onClick={isGateUnlocked ? handleNext : undefined}
-                            className={`flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors font-sans ${
-                              isGateUnlocked
-                                ? 'text-primary-foreground bg-primary hover:bg-primary/90 cursor-pointer'
-                                : 'opacity-40 text-primary-foreground bg-primary cursor-not-allowed'
-                            }`}
                           >
                             {isGateUnlocked ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
-                            {isLastPaper ? 'View Delta' : 'Next Paper'}
+                            {isLastPaper ? 'View delta' : 'Next paper'}
                             <ArrowRight className="h-3.5 w-3.5" />
-                          </button>
+                          </Button>
                         </TooltipTrigger>
                         {!isGateUnlocked && (
                           <TooltipContent className="max-w-xs p-3 space-y-1 mb-2">
-                            <p className="font-bold text-xs uppercase tracking-widest text-primary">Protocol Gate Locked</p>
-                            <p className="text-[11px] italic text-muted-foreground">
+                            <p className="eyebrow text-xs text-primary">Protocol Gate Locked</p>
+                            <p className="text-xs italic text-muted-foreground">
                               Scroll the manuscript, spend 3s reviewing, and score all {criteria.length} criteria.
                             </p>
                           </TooltipContent>

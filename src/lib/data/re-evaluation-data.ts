@@ -1,5 +1,42 @@
+import type { StatusKey, ConfidenceKey } from '@/lib/design-tokens'
+
 export type AgeStatus = 'overdue' | 'pending' | 'new'
 export type ConcernVariant = 'red' | 'orange' | 'blue'
+
+/**
+ * Map UI state to a design-system status key.
+ * Consumers should read these instead of the deprecated raw-hex fields.
+ */
+export function ageStatusKind(age: AgeStatus): StatusKey {
+  if (age === 'overdue') return 'error'
+  if (age === 'pending') return 'warning'
+  return 'info'
+}
+
+export function confidenceKind(label: string): ConfidenceKey {
+  if (label === 'Strong') return 'high'
+  if (label === 'Partial') return 'low'
+  return 'med'
+}
+
+export function verdictKind(vcolor: string): StatusKey {
+  // Maps mock-data hex strings to semantic keys. Will disappear once
+  // the `vcolor` field is removed in Phase 2.
+  if (vcolor === '#10B981') return 'success'
+  if (vcolor === '#F59E0B') return 'warning'
+  if (vcolor === '#3B82F6') return 'info'
+  if (vcolor === '#EF4444') return 'error'
+  return 'neutral'
+}
+
+export function auditEventKind(color: string): StatusKey {
+  if (color === '#10B981') return 'success'
+  if (color === '#F59E0B') return 'warning'
+  if (color === '#EF4444') return 'error'
+  if (color === '#3B7FE8') return 'info'
+  if (color === '#7C3AED') return 'info'
+  return 'neutral'
+}
 
 export type StudentRecord = {
   id: string

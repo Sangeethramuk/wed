@@ -63,7 +63,7 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
 
       {/* Header card */}
       <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-sm space-y-4">
-        <h2 className="text-[17px] font-bold tracking-tight">Review &amp; Align Your Scores</h2>
+        <h2 className="text-lg font-bold tracking-tight">Review &amp; Align Your Scores</h2>
 
         {discrepancies.length > 0 ? (
           <div className="flex items-start gap-3 bg-red-50 border border-red-200/70 rounded-xl px-4 py-3">
@@ -102,7 +102,7 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
       {discrepancies.length > 0 && (
         <div className="bg-white border border-border/60 rounded-xl overflow-hidden shadow-sm">
           <div className="px-4 py-2.5 border-b border-border/40">
-            <span className="text-[11px] font-black uppercase tracking-[0.12em] text-muted-foreground/60">
+            <span className="eyebrow text-muted-foreground/60">
               Discrepancy items · sorted by gap
             </span>
           </div>
@@ -117,17 +117,17 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
                   onClick={handleStart}
                   className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors cursor-pointer"
                 >
-                  <div className={`w-[22px] h-[22px] rounded-full text-[10px] font-black flex items-center justify-center shrink-0 border ${deltaNumClass(score.delta)}`}>
+                  <div className={`w-[22px] h-[22px] rounded-full text-xs font-black flex items-center justify-center shrink-0 border ${deltaNumClass(score.delta)}`}>
                     {deltaIndicator(score.delta)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{criterion?.name}</p>
-                    <p className="text-[11px] font-mono text-muted-foreground/60">{paper?.anonymizedLabel}</p>
+                    <p className="text-xs font-mono text-muted-foreground/60">{paper?.anonymizedLabel}</p>
                   </div>
-                  <span className="text-[11px] font-mono text-muted-foreground/70 shrink-0">
+                  <span className="text-xs font-mono text-muted-foreground/70 shrink-0">
                     {score.instructorLevel} vs {score.aiLevel}
                   </span>
-                  <Badge className={`text-[10px] font-black border shadow-none shrink-0 ${deltaBadgeClass(score.delta)}`}>
+                  <Badge className={`text-xs font-black border shadow-none shrink-0 ${deltaBadgeClass(score.delta)}`}>
                     +{score.delta}
                   </Badge>
                 </div>
@@ -140,20 +140,20 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
       {/* Score matrix */}
       <div className="bg-white border border-border/60 rounded-xl overflow-hidden shadow-sm">
         <div className="px-4 py-2.5 border-b border-border/40 flex items-center justify-between">
-          <span className="text-[11px] font-black uppercase tracking-[0.12em] text-muted-foreground/60">Score matrix</span>
-          <span className="text-[11px] font-mono text-muted-foreground/40">yours / AI</span>
+          <span className="eyebrow text-muted-foreground/60">Score matrix</span>
+          <span className="text-xs font-mono text-muted-foreground/40">yours / AI</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-border/30 bg-muted/20">
-                <th className="text-left px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-muted-foreground/50 min-w-[120px]">
+                <th className="eyebrow text-left px-4 py-2.5 text-muted-foreground/50 min-w-[120px]">
                   Criterion
                 </th>
                 {papers.map(p => (
                   <th
                     key={p.paperId}
-                    className="px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 text-center min-w-[70px]"
+                    className="eyebrow px-3 py-2.5 text-muted-foreground/50 text-center min-w-[70px]"
                   >
                     {p.anonymizedLabel.replace('Paper #', 'P')}
                   </th>
@@ -173,7 +173,7 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
                           <span className="text-xs font-black font-mono leading-tight">
                             {score?.instructorLevel || "—"}
                           </span>
-                          <span className="text-[9px] font-mono opacity-60 leading-tight">
+                          <span className="text-xs font-mono opacity-60 leading-tight">
                             {score?.aiLevel ?? "—"}
                           </span>
                         </div>
@@ -186,13 +186,13 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
           </table>
         </div>
         <div className="flex gap-4 px-4 py-2.5 border-t border-border/30 bg-muted/10">
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
             <div className="w-2 h-2 rounded-full bg-green-500" />Match
           </div>
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
             <div className="w-2 h-2 rounded-full bg-amber-500" />±1 gap
           </div>
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
             <div className="w-2 h-2 rounded-full bg-red-500" />±2+ gap
           </div>
         </div>

@@ -22,7 +22,7 @@ export function AuditSidebar() {
 
   return (
     <Sheet>
-      <SheetTrigger className="inline-flex items-center justify-center rounded-lg border border-border/20 bg-background/30 backdrop-blur-sm px-3 h-8 text-[9px] font-black uppercase tracking-widest hover:bg-muted/50 gap-2 transition-all active:scale-95 shadow-none">
+      <SheetTrigger className="eyebrow inline-flex items-center justify-center rounded-lg border border-border/20 bg-background/30 backdrop-blur-sm px-3 h-8 hover:bg-muted/50 gap-2 transition-all active:scale-95 shadow-none">
         <History className="h-3 w-3 opacity-40" />
         Trail
       </SheetTrigger>
@@ -35,7 +35,7 @@ export function AuditSidebar() {
             <SheetTitle className="text-2xl font-black tracking-tight secondary-text">
               Audit
             </SheetTitle>
-            <p className="text-[10px] font-semibold text-muted-foreground/40 leading-relaxed uppercase tracking-widest">
+            <p className="eyebrow font-semibold text-muted-foreground/40 leading-relaxed">
               Faculty activity calibration log.
             </p>
           </div>
@@ -51,12 +51,12 @@ export function AuditSidebar() {
                 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-[11px] font-black uppercase tracking-tight text-foreground/60">{event.action}</h4>
-                    <span className="text-[8px] text-muted-foreground/30 font-black tracking-widest uppercase bg-muted/20 px-1.5 py-0.5 rounded border border-border/10">{event.timestamp}</span>
+                    <h4 className="text-xs font-black tracking-tight text-foreground/60">{event.action}</h4>
+                    <span className="eyebrow text-muted-foreground/30 bg-muted/20 px-1.5 py-0.5 rounded border border-border/10">{event.timestamp}</span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground/50 font-medium leading-relaxed pr-4">{event.details}</p>
+                  <p className="text-xs text-muted-foreground/50 font-medium leading-relaxed pr-4">{event.details}</p>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className={`text-[7px] uppercase tracking-widest py-0 px-2 font-black border border-border/20 bg-transparent opacity-30 rounded-full h-4`}>
+                    <Badge variant="outline" className={`eyebrow text-xs py-0 px-2 border border-border/20 bg-transparent opacity-30 rounded-full h-4`}>
                       {event.type}
                     </Badge>
                   </div>
@@ -70,10 +70,10 @@ export function AuditSidebar() {
            <div className="p-4 rounded-xl border border-dashed border-primary/10 bg-primary/[0.01] flex items-start gap-4">
               <ShieldCheck className="h-8 w-8 text-primary opacity-5" />
               <div className="space-y-0.5">
-                <p className="text-[8px] font-black text-primary/30 uppercase tracking-widest">
+                <p className="eyebrow text-primary/30">
                   Secure Log
                 </p>
-                <p className="text-[9px] font-bold text-muted-foreground/30 leading-relaxed">
+                <p className="text-xs font-bold text-muted-foreground/30 leading-relaxed">
                   Record #ESU-{Date.now().toString(36).toUpperCase()} locked.
                 </p>
               </div>

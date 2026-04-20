@@ -90,6 +90,62 @@
 }
 
 /* ============================================
+   SEMANTIC STATUS + CATEGORY TOKENS
+   Shared across themes. Consumed by
+   src/lib/design-tokens.ts and DS primitives.
+   Override per-theme only if dark mode needs
+   different luminance.
+   ============================================ */
+:root {
+  --status-success: oklch(0.7064 0.1822 151.7125);
+  --status-success-bg: oklch(0.7064 0.1822 151.7125 / 0.1);
+  --status-warning: oklch(0.7336 0.1758 50.5517);
+  --status-warning-bg: oklch(0.7336 0.1758 50.5517 / 0.1);
+  --status-error: oklch(0.6290 0.1902 23.0704);
+  --status-error-bg: oklch(0.6290 0.1902 23.0704 / 0.1);
+  --status-info: oklch(0.6723 0.1606 244.9955);
+  --status-info-bg: oklch(0.6723 0.1606 244.9955 / 0.1);
+
+  --category-1: oklch(0.6723 0.1606 244.9955);
+  --category-1-bg: oklch(0.6723 0.1606 244.9955 / 0.1);
+  --category-2: oklch(0.5393 0.2713 286.7462);
+  --category-2-bg: oklch(0.5393 0.2713 286.7462 / 0.1);
+  --category-3: oklch(0.7064 0.1822 151.7125);
+  --category-3-bg: oklch(0.7064 0.1822 151.7125 / 0.1);
+  --category-4: oklch(0.6290 0.1902 23.0704);
+  --category-4-bg: oklch(0.6290 0.1902 23.0704 / 0.1);
+  --category-5: oklch(0.7336 0.1758 50.5517);
+  --category-5-bg: oklch(0.7336 0.1758 50.5517 / 0.1);
+  --category-6: oklch(0.6691 0.1569 260.1063);
+  --category-6-bg: oklch(0.6691 0.1569 260.1063 / 0.1);
+}
+
+[data-theme="twitter-dark"],
+[data-theme="violet-dark"] {
+  --status-success: oklch(0.8003 0.1821 151.7110);
+  --status-success-bg: oklch(0.8003 0.1821 151.7110 / 0.15);
+  --status-warning: oklch(0.8214 0.1600 82.5337);
+  --status-warning-bg: oklch(0.8214 0.1600 82.5337 / 0.15);
+  --status-error: oklch(0.7106 0.1661 22.2162);
+  --status-error-bg: oklch(0.7106 0.1661 22.2162 / 0.15);
+  --status-info: oklch(0.7857 0.1153 246.6596);
+  --status-info-bg: oklch(0.7857 0.1153 246.6596 / 0.15);
+
+  --category-1: oklch(0.7857 0.1153 246.6596);
+  --category-1-bg: oklch(0.7857 0.1153 246.6596 / 0.15);
+  --category-2: oklch(0.6132 0.2294 291.7437);
+  --category-2-bg: oklch(0.6132 0.2294 291.7437 / 0.15);
+  --category-3: oklch(0.8003 0.1821 151.7110);
+  --category-3-bg: oklch(0.8003 0.1821 151.7110 / 0.15);
+  --category-4: oklch(0.7106 0.1661 22.2162);
+  --category-4-bg: oklch(0.7106 0.1661 22.2162 / 0.15);
+  --category-5: oklch(0.8214 0.1600 82.5337);
+  --category-5-bg: oklch(0.8214 0.1600 82.5337 / 0.15);
+  --category-6: oklch(0.6691 0.1569 260.1063);
+  --category-6-bg: oklch(0.6691 0.1569 260.1063 / 0.15);
+}
+
+/* ============================================
    TWITTER DARK THEME
    ============================================ */
 [data-theme="twitter-dark"] {
@@ -150,14 +206,15 @@
 /* ============================================
    VIOLET BLOOM LIGHT THEME
    ============================================ */
-[data-theme="violet-light"] {
+[data-theme="violet-light"],
+[data-theme="brand-light"] {
   --background: oklch(0.9940 0 0);
   --foreground: oklch(0 0 0);
   --card: oklch(0.9940 0 0);
   --card-foreground: oklch(0 0 0);
   --popover: oklch(0.9911 0 0);
   --popover-foreground: oklch(0 0 0);
-  --primary: oklch(0.5393 0.2713 286.7462);
+  --primary: #21508c;
   --primary-foreground: oklch(1.0000 0 0);
   --secondary: oklch(0.9540 0.0063 255.4755);
   --secondary-foreground: oklch(0.1344 0 0);
@@ -169,7 +226,7 @@
   --destructive-foreground: oklch(1.0000 0 0);
   --border: oklch(0.9300 0.0094 286.2156);
   --input: oklch(0.9401 0 0);
-  --ring: oklch(0 0 0);
+  --ring: #21508c;
   --chart-1: oklch(0.7459 0.1483 156.4499);
   --chart-2: oklch(0.5393 0.2713 286.7462);
   --chart-3: oklch(0.7336 0.1758 50.5517);
@@ -184,9 +241,9 @@
   --sidebar-border: oklch(0.9401 0 0);
   --sidebar-ring: oklch(0 0 0);
   --destructive-foreground: oklch(1.0000 0 0);
-  --font-sans: "Plus Jakarta Sans", sans-serif;
-  --font-serif: "Lora", serif;
-  --font-mono: "IBM Plex Mono", monospace;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Inter", ui-monospace, monospace;
   --shadow-color: hsl(0 0% 0%);
   --shadow-opacity: 0.16;
   --shadow-blur: 3px;
@@ -249,9 +306,9 @@
   --sidebar-border: oklch(0.3289 0.0092 268.3843);
   --sidebar-ring: oklch(0.6132 0.2294 291.7437);
   --destructive-foreground: oklch(1.0000 0 0);
-  --font-sans: "Plus Jakarta Sans", sans-serif;
-  --font-serif: "Lora", serif;
-  --font-mono: "IBM Plex Mono", monospace;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Inter", ui-monospace, monospace;
   --shadow-color: hsl(0 0% 0%);
   --shadow-opacity: 0.16;
   --shadow-blur: 3px;
@@ -417,4 +474,41 @@ h1, h2, h3, h4, h5, h6 {
 /* Allow explicit semibold/bold on specific semantic elements */
 strong, b {
   font-weight: 600;
+}
+
+/* ============================================
+   EDITORIAL UTILITY CLASSES
+   Sourced from the EducAItors design bundle.
+   Use these for eyebrows, kickers, labels,
+   tabular numerals and big number displays.
+   ============================================ */
+.eyebrow,
+.kicker {
+  font-size: 0.75rem;
+  line-height: 1;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+  opacity: 0.85;
+}
+
+.ds-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--foreground);
+  letter-spacing: var(--tracking-wider);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.num-display {
+  font-family: var(--font-sans);
+  font-weight: 900;
+  font-size: 2.5rem;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }

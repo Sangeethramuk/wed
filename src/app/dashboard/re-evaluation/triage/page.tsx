@@ -3,9 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, Download } from 'lucide-react'
-import { STUDENTS, STUDENT_ORDER } from '@/lib/data/re-evaluation-data'
+import { STUDENTS, STUDENT_ORDER, ageStatusKind } from '@/lib/data/re-evaluation-data'
 import { useReEvalStore } from '@/lib/store/re-evaluation-store'
 import { BriefingModal } from '@/components/re-evaluation/briefing-modal'
+import { statusStyles } from '@/lib/design-tokens'
+import { cn } from '@/lib/utils'
 
 const TOTAL = 7
 const INITIAL_RESOLVED = 12
@@ -54,7 +56,7 @@ export default function ReEvaluationPage() {
           <div className="flex items-center gap-4 mb-4">
             <button
               onClick={() => router.push('/dashboard/re-evaluation')}
-              className="group flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 hover:text-primary transition-all"
+              className="eyebrow group flex items-center gap-1.5 text-muted-foreground/40 hover:text-primary transition-all"
             >
               <ChevronLeft className="size-3 group-hover:-translate-x-0.5 transition-transform" />
               Back to Assignments
@@ -64,15 +66,15 @@ export default function ReEvaluationPage() {
           <div className="flex items-start justify-between mb-8">
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">IIM Bangalore</span>
-                <span className="text-muted-foreground/20 text-[9px]">·</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary/80">DSA · Batch 4</span>
-                <span className="text-muted-foreground/20 text-[9px]">·</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Re-Evaluation Desk</span>
+                <span className="eyebrow text-muted-foreground/40">IIM Bangalore</span>
+                <span className="text-muted-foreground/20 text-xs">·</span>
+                <span className="eyebrow text-primary/80">DSA · Batch 4</span>
+                <span className="text-muted-foreground/20 text-xs">·</span>
+                <span className="eyebrow text-muted-foreground/40">Re-Evaluation Desk</span>
               </div>
               <h1 className="text-4xl font-black tracking-tighter secondary-text">Review Requests</h1>
               <div className="flex items-center gap-2 pt-1">
-                <p className="text-[11px] text-muted-foreground opacity-60 font-medium">
+                <p className="text-xs text-muted-foreground opacity-60 font-medium">
                   Results released Mon 9:00 AM · Appeal window closes Sunday night
                 </p>
               </div>
@@ -80,7 +82,7 @@ export default function ReEvaluationPage() {
             
             <div className="flex flex-col items-end gap-3">
               <button
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/30 bg-card/50 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-card hover:border-border transition-all"
+                className="eyebrow flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/30 bg-card/50 text-muted-foreground hover:bg-card hover:border-border transition-all"
               >
                 <Download className="size-3" />
                 Download Record
@@ -91,10 +93,10 @@ export default function ReEvaluationPage() {
           <div className="grid grid-cols-4 gap-3">
             {GLOBAL_KPIS.map((kpi, i) => (
               <div key={i} className="group px-4 py-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-all flex flex-col justify-center">
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">{kpi.label}</span>
+                <span className="eyebrow text-muted-foreground/50">{kpi.label}</span>
                 <div className="flex items-baseline gap-1.5 mt-1">
                   <span className="text-xl font-black tracking-tighter" style={{ color: kpi.accent }}>{kpi.value}</span>
-                  <span className="text-[10px] font-bold text-muted-foreground/30">{kpi.sub}</span>
+                  <span className="text-xs font-bold text-muted-foreground/30">{kpi.sub}</span>
                 </div>
               </div>
             ))}
@@ -110,7 +112,7 @@ export default function ReEvaluationPage() {
         <div className="rounded-2xl border border-border/10 bg-card/10 backdrop-blur-sm overflow-hidden">
           {/* Header */}
           <div
-            className="grid text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40"
+            className="eyebrow grid text-muted-foreground/40"
             style={{
               gridTemplateColumns: '220px 180px 130px 1fr 100px 140px 140px',
               background: 'rgba(var(--muted), 0.05)',
@@ -140,11 +142,11 @@ export default function ReEvaluationPage() {
               >
                 {/* Student */}
                 <div className="flex items-stretch p-0" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
-                  <div className="w-1 flex-shrink-0 self-stretch" style={{ background: st.accentColor }} />
+                  <div className={cn("w-1 flex-shrink-0 self-stretch", statusStyles[ageStatusKind(st.ageStatus)].dot)} />
                   <div className="px-4 py-4 flex flex-col justify-center gap-1.5 flex-1">
                     <div className="flex items-center gap-3">
                       <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black flex-shrink-0"
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
                         style={{
                           background: st.isNew ? '#EFF6FF' : st.ageStatus === 'overdue' ? '#FEF2F2' : '#F8FAFC',
                           border: `1px solid ${st.isNew ? '#BFDBFE' : st.ageStatus === 'overdue' ? '#FECACA' : 'rgba(var(--border), 0.1)'}`,
@@ -155,14 +157,14 @@ export default function ReEvaluationPage() {
                       </div>
                       <div className="flex flex-col gap-1">
                         <div>
-                          <div className="text-[13px] font-black tracking-tight flex items-center gap-1.5 text-[#1E293B]">
+                          <div className="text-sm font-black tracking-tight flex items-center gap-1.5 text-[#1E293B]">
                             {st.name}
                             {st.isNew && <span className="w-1.5 h-1.5 rounded-full inline-block bg-primary" />}
                           </div>
-                          <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">{st.rollId}</div>
+                          <div className="eyebrow text-muted-foreground/40">{st.rollId}</div>
                         </div>
                         {st.isCluster && (
-                          <span className="self-start text-[8px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-amber-500/5 text-amber-600 border border-amber-500/10 w-fit">
+                          <span className="eyebrow self-start px-2 py-0.5 rounded-md bg-amber-500/5 text-amber-600 border border-amber-500/10 w-fit">
                             C2 cluster
                           </span>
                         )}
@@ -173,17 +175,17 @@ export default function ReEvaluationPage() {
 
                 {/* Assignment · Criterion */}
                 <div className="px-4 py-4 flex flex-col justify-center gap-1.5" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
-                  <div className="text-[12px] font-black tracking-tight text-[#1E293B]">{st.assign}</div>
-                  <span className="self-start text-[9px] font-black px-2 py-0.5 rounded-md bg-primary/5 text-primary border border-primary/10 uppercase tracking-widest">
+                  <div className="text-xs font-black tracking-tight text-[#1E293B]">{st.assign}</div>
+                  <span className="eyebrow self-start px-2 py-0.5 rounded-md bg-primary/5 text-primary border border-primary/10">
                     {st.critShort} · {st.origScore}/{st.maxScore}
                   </span>
                 </div>
 
                 {/* Concern */}
                 <div className="px-4 py-4 flex flex-col justify-center gap-1.5" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
-                  <div className="text-[12px] font-bold text-slate-600">{st.concern}</div>
+                  <div className="text-xs font-bold text-slate-600">{st.concern}</div>
                   <span
-                    className="self-start text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-widest"
+                    className="eyebrow self-start px-1.5 py-0.5 rounded-md"
                     style={{ background: cs.bg, color: cs.text, border: `1px solid ${cs.border}` }}
                   >
                     {st.concernType}
@@ -193,7 +195,7 @@ export default function ReEvaluationPage() {
                 {/* Student reasoning */}
                 <div className="px-4 py-4 flex items-center" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
                   <div
-                    className="text-[11px] font-medium leading-relaxed overflow-hidden text-slate-500 italic"
+                    className="text-xs font-medium leading-relaxed overflow-hidden text-slate-500 italic"
                     style={{
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
@@ -207,12 +209,12 @@ export default function ReEvaluationPage() {
                 {/* Submitted */}
                 <div className="px-4 py-4 flex flex-col justify-center" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
                   <div
-                    className="text-[10px] font-black tracking-tighter"
+                    className="text-xs font-black tracking-tighter"
                     style={{ color: st.ageStatus === 'overdue' ? '#EF4444' : st.ageStatus === 'new' ? '#64748B' : '#92400E' }}
                   >
                     {st.ageLabel}
                   </div>
-                  <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/30">
+                  <div className="eyebrow text-muted-foreground/30">
                     {st.ageStatus === 'overdue' ? 'Overdue' : st.ageStatus === 'new' ? 'New' : 'Pending'}
                   </div>
                 </div>
@@ -227,7 +229,7 @@ export default function ReEvaluationPage() {
                   {status === 'pending' && (
                     <button
                       onClick={() => setBriefingId(id)}
-                      className="group/btn flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white bg-primary hover:bg-primary/90 transition-all shadow-[0_2px_10px_rgba(var(--primary),0.2)]"
+                      className="eyebrow group/btn flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-white bg-primary hover:bg-primary/90 transition-all shadow-[0_2px_10px_rgba(var(--primary),0.2)]"
                     >
                       Review now
                       <ChevronLeft className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
@@ -236,7 +238,7 @@ export default function ReEvaluationPage() {
                   {status === 'hod' && (
                     <button
                       onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                      className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-muted-foreground border border-border/30 bg-card/50 hover:bg-card hover:border-border transition-all"
+                      className="eyebrow px-4 py-1.5 rounded-lg text-muted-foreground border border-border/30 bg-card/50 hover:bg-card hover:border-border transition-all"
                     >
                       View →
                     </button>
@@ -247,7 +249,7 @@ export default function ReEvaluationPage() {
               {/* Resolved overlay */}
               {status === 'resolved' && (
                 <div
-                  className="absolute inset-0 flex items-center px-4 gap-2.5 text-[12px] font-semibold pointer-events-none"
+                  className="absolute inset-0 flex items-center px-4 gap-2.5 text-xs font-semibold pointer-events-none"
                   style={{ background: 'rgba(240,253,244,.96)', color: '#065F46', zIndex: 5 }}
                 >
                   <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
@@ -261,7 +263,7 @@ export default function ReEvaluationPage() {
               {/* HOD overlay */}
               {status === 'hod' && (
                 <div
-                  className="absolute inset-0 flex items-center px-4 gap-2 text-[12px] font-semibold pointer-events-none"
+                  className="absolute inset-0 flex items-center px-4 gap-2 text-xs font-semibold pointer-events-none"
                   style={{ background: 'rgba(255,251,235,.95)', color: '#92400E', zIndex: 5 }}
                 >
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -270,7 +272,7 @@ export default function ReEvaluationPage() {
                   Awaiting HOD approval · Dr. R. Kumar · Student notified once HOD approves
                   <button
                     onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                    className="ml-auto pointer-events-auto px-3 py-1 rounded text-[11px] font-semibold"
+                    className="ml-auto pointer-events-auto px-3 py-1 rounded text-xs font-semibold"
                     style={{ background: '#FEF3DC', border: '1px solid #FDE68A', color: '#92400E', cursor: 'pointer', fontFamily: 'inherit' }}
                   >
                     View →
@@ -302,34 +304,34 @@ export default function ReEvaluationPage() {
 function StatusPill({ status, ageStatus }: { status: 'pending' | 'hod' | 'resolved'; ageStatus: string }) {
   if (status === 'resolved') {
     return (
-      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-emerald-500/5 text-emerald-600 border border-emerald-500/10">
+      <span className="eyebrow px-2 py-0.5 rounded-md bg-emerald-500/5 text-emerald-600 border border-emerald-500/10">
         Resolved
       </span>
     )
   }
   if (status === 'hod') {
     return (
-      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-amber-500/5 text-amber-600 border border-amber-500/10">
+      <span className="eyebrow px-2 py-0.5 rounded-md bg-amber-500/5 text-amber-600 border border-amber-500/10">
         Awaiting HOD
       </span>
     )
   }
   if (ageStatus === 'overdue') {
     return (
-      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-red-500 text-white">
+      <span className="eyebrow px-2 py-0.5 rounded-md bg-red-500 text-white">
         Overdue
       </span>
     )
   }
   if (ageStatus === 'new') {
     return (
-      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-blue-500/5 text-blue-600 border border-blue-500/10">
+      <span className="eyebrow px-2 py-0.5 rounded-md bg-blue-500/5 text-blue-600 border border-blue-500/10">
         New
       </span>
     )
   }
   return (
-    <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-slate-500/5 text-slate-500 border border-slate-500/10">
+    <span className="eyebrow px-2 py-0.5 rounded-md bg-slate-500/5 text-slate-500 border border-slate-500/10">
       Pending
     </span>
   )

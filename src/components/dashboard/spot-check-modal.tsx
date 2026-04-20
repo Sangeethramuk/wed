@@ -164,8 +164,8 @@ export function SpotCheckModal() {
                     </svg>
                   </div>
                   <div>
-                    <div className="text-[15px] font-semibold tracking-tight">Mandatory Spot Check</div>
-                    <div className="text-[12px] text-muted-foreground">
+                    <div className="text-sm font-semibold tracking-tight">Mandatory Spot Check</div>
+                    <div className="text-xs text-muted-foreground">
                       {scStep === -1 ? 'Accuracy verification · 5 questions' : scStep === 5 ? 'All done' : `Question ${scStep + 1} of 5`}
                     </div>
                   </div>
@@ -187,7 +187,7 @@ export function SpotCheckModal() {
                         style={{ width: `${(answeredCount / 5) * 100}%`, background: PURPLE }}
                       />
                     </div>
-                    <span className="text-[11px] font-mono text-muted-foreground/70 flex-shrink-0">{answeredCount} / 5</span>
+                    <span className="text-xs font-mono text-muted-foreground/70 flex-shrink-0">{answeredCount} / 5</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     {SC_QUESTIONS.map((_, i) => {
@@ -198,7 +198,7 @@ export function SpotCheckModal() {
                       return (
                         <div key={i} className="flex items-center" style={{ flex: i < 4 ? '1 1 auto' : 'none' }}>
                           <div
-                            className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold flex-shrink-0 transition-all"
+                            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-all"
                             style={{
                               background: isOverride ? '#FEF3DC' : isDone ? PURPLE : isCurrent ? PURPLE_BG : '#F2F1EE',
                               border: `1.5px solid ${isOverride ? '#F0C97A' : isDone ? PURPLE : isCurrent ? PURPLE : '#D0CEC7'}`,
@@ -226,16 +226,16 @@ export function SpotCheckModal() {
                   <div className="p-4 rounded-lg bg-[#FFF9EB] border border-[#FBEAC3] flex gap-3">
                     <AlertTriangle className="w-5 h-5 text-[#B47818] flex-shrink-0 mt-0.5" />
                     <div>
-                      <div className="text-[13px] font-semibold text-[#8A5A00] mb-1">Why this appeared</div>
-                      <p className="text-[12px] text-[#8A5A00] leading-relaxed">
+                      <div className="text-sm font-semibold text-[#8A5A00] mb-1">Why this appeared</div>
+                      <p className="text-xs text-[#8A5A00] leading-relaxed">
                         The system noticed that grading pace in this batch was significantly faster in the second half — a common sign of fatigue. This check runs automatically to protect accuracy before grades are locked.
                       </p>
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-[11px] font-bold text-muted-foreground/60 tracking-wider uppercase mb-2">WHAT IS A MANDATORY SPOT CHECK?</div>
-                    <p className="text-[14px] text-foreground leading-relaxed">
+                    <div className="text-xs font-bold text-muted-foreground/60 tracking-wider mb-2">WHAT IS A MANDATORY SPOT CHECK?</div>
+                    <p className="text-sm text-foreground leading-relaxed">
                       Think of it as your session's <span className="font-bold">final quality gate</span> — a 2-minute safety net that catches accidental "speed-grading" before any grade reaches a student.
                     </p>
                   </div>
@@ -247,8 +247,8 @@ export function SpotCheckModal() {
                         <CheckSquare className="w-5 h-5 text-[#5B50D6]" />
                       </div>
                       <div>
-                        <div className="text-[14px] font-semibold mb-0.5">5 questions, ~2 minutes</div>
-                        <p className="text-[12px] text-muted-foreground leading-relaxed">
+                        <div className="text-sm font-semibold mb-0.5">5 questions, ~2 minutes</div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                           The system picks 5 items you already graded and shows them one at a time for a quick re-confirm.
                         </p>
                       </div>
@@ -259,8 +259,8 @@ export function SpotCheckModal() {
                         <Info className="w-5 h-5 text-[#2D7D52]" />
                       </div>
                       <div>
-                        <div className="text-[14px] font-semibold mb-0.5">Fix mistakes in real time</div>
-                        <p className="text-[12px] text-muted-foreground leading-relaxed">
+                        <div className="text-sm font-semibold mb-0.5">Fix mistakes in real time</div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                           Spot an error? Change the score right here — it's logged as a correction and helps the AI learn.
                         </p>
                       </div>
@@ -271,8 +271,8 @@ export function SpotCheckModal() {
                         <FileText className="w-5 h-5 text-[#1976D2]" />
                       </div>
                       <div>
-                        <div className="text-[14px] font-semibold mb-0.5">Creates an audit trail</div>
-                        <p className="text-[12px] text-muted-foreground leading-relaxed">
+                        <div className="text-sm font-semibold mb-0.5">Creates an audit trail</div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                           A Spot Check Record is saved as proof that a human expert — not just AI — verified the final grades.
                         </p>
                       </div>
@@ -282,7 +282,7 @@ export function SpotCheckModal() {
                   {/* Clarification Footer Card */}
                   <div className="flex gap-3 p-4 rounded-xl border border-border bg-[#F5F5F5]">
                     <CheckCircle2 className="w-4 h-4 text-muted-foreground/60 flex-shrink-0 mt-0.5" />
-                    <p className="text-[12px] text-muted-foreground leading-relaxed">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
                       This isn't a sign of distrust — it's a standard professional check-in. Every session with engagement flags goes through this before grades are locked.
                     </p>
                   </div>
@@ -297,50 +297,50 @@ export function SpotCheckModal() {
                   <div>
                     {/* Student strip */}
                     <div className="flex items-center gap-2.5 p-2.5 rounded-lg mb-3.5 border" style={{ background: '#F2F1EE', borderColor: '#E2E0DA' }}>
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold flex-shrink-0" style={{ background: PURPLE_BG, border: `1px solid ${PURPLE_BORDER}`, color: PURPLE }}>
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0" style={{ background: PURPLE_BG, border: `1px solid ${PURPLE_BORDER}`, color: PURPLE }}>
                         {q.initials}
                       </div>
                       <div>
-                        <div className="text-[13px] font-semibold leading-tight">{q.student}</div>
-                        <div className="text-[11px] font-mono text-muted-foreground/70">{q.roll} · Criterion {q.critNum}</div>
+                        <div className="text-sm font-semibold leading-tight">{q.student}</div>
+                        <div className="text-xs font-mono text-muted-foreground/70">{q.roll} · Criterion {q.critNum}</div>
                       </div>
                     </div>
 
                     {/* Criterion */}
-                    <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-0.5">Criterion {q.critNum} of 5</div>
-                    <div className="text-[15px] font-semibold mb-0.5">{q.criterion}</div>
-                    <p className="text-[12px] text-muted-foreground leading-relaxed mb-3.5">{q.desc}</p>
+                    <div className="text-xs font-semibold tracking-wider text-muted-foreground/60 mb-0.5">Criterion {q.critNum} of 5</div>
+                    <div className="text-sm font-semibold mb-0.5">{q.criterion}</div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-3.5">{q.desc}</p>
 
                     {/* Score strip */}
                     <div className="flex items-center gap-3.5 p-3 rounded-lg mb-3.5 border" style={{ background: '#F2F1EE', borderColor: '#E2E0DA' }}>
                       <div>
-                        <span className="text-[28px] font-semibold leading-none font-mono" style={{ color: PURPLE }}>{q.score}</span>
-                        <span className="text-[13px] text-muted-foreground/70 ml-0.5"> / {q.maxScore}</span>
+                        <span className="text-3xl font-semibold leading-none font-mono" style={{ color: PURPLE }}>{q.score}</span>
+                        <span className="text-sm text-muted-foreground/70 ml-0.5"> / {q.maxScore}</span>
                       </div>
                       <div className="w-px h-7 bg-border" />
                       <div className="flex flex-col gap-1">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold" style={{ background: conf.bg, color: conf.color }}>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold" style={{ background: conf.bg, color: conf.color }}>
                           <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: conf.color }} />
                           {q.confLabel}
                         </span>
-                        <span className="text-[11px] text-muted-foreground/60">{q.criterion}</span>
+                        <span className="text-xs text-muted-foreground/60">{q.criterion}</span>
                       </div>
                     </div>
 
                     {/* Evidence */}
-                    <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-1.5">Evidence extracted by AI</div>
-                    <div className="text-[12px] text-muted-foreground leading-relaxed italic border-l-[3px] rounded-r-md px-3 py-2.5 mb-1" style={{ background: '#F2F1EE', borderColor: PURPLE }}>
+                    <div className="text-xs font-semibold tracking-wider text-muted-foreground/60 mb-1.5">Evidence extracted by AI</div>
+                    <div className="text-xs text-muted-foreground leading-relaxed italic border-l-[3px] rounded-r-md px-3 py-2.5 mb-1" style={{ background: '#F2F1EE', borderColor: PURPLE }}>
                       {q.evidence}
                     </div>
-                    <div className="text-[11px] font-mono text-muted-foreground/60 mb-3.5">{q.evLoc}</div>
+                    <div className="text-xs font-mono text-muted-foreground/60 mb-3.5">{q.evLoc}</div>
 
                     {/* Confirm question */}
-                    <div className="text-[14px] font-medium text-foreground mb-3">Does this score reflect the evidence?</div>
+                    <div className="text-sm font-medium text-foreground mb-3">Does this score reflect the evidence?</div>
 
                     {/* Override toggle button */}
                     <button
                       onClick={toggleOverride}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-medium transition-all"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
                       style={{
                         background: overridePanelOpen ? '#F2F1EE' : '#FEF3DC',
                         border: `1px solid ${overridePanelOpen ? '#D0CEC7' : '#F0C97A'}`,
@@ -361,24 +361,24 @@ export function SpotCheckModal() {
                     {/* Override panel */}
                     {overridePanelOpen && (
                       <div className="mt-3 rounded-lg p-3.5" style={{ background: '#FFFAED', border: '1px solid #F0C97A' }}>
-                        <div className="flex items-center gap-1.5 text-[12px] font-semibold mb-3" style={{ color: '#8A5A00' }}>
+                        <div className="flex items-center gap-1.5 text-xs font-semibold mb-3" style={{ color: '#8A5A00' }}>
                           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v5M6.5 8.5v.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" /><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" strokeWidth="1.1" /></svg>
                           Override — change the score
                         </div>
 
                         <div className="flex items-center gap-2 mb-2.5">
-                          <span className="text-[12px] text-muted-foreground w-14 flex-shrink-0">AI score</span>
-                          <span className="text-[13px] font-semibold font-mono text-muted-foreground/70">{q.score} / {q.maxScore}</span>
+                          <span className="text-xs text-muted-foreground w-14 flex-shrink-0">AI score</span>
+                          <span className="text-sm font-semibold font-mono text-muted-foreground/70">{q.score} / {q.maxScore}</span>
                         </div>
 
                         <div className="flex items-center gap-2 mb-3">
-                          <span className="text-[12px] text-muted-foreground w-14 flex-shrink-0">Your score</span>
+                          <span className="text-xs text-muted-foreground w-14 flex-shrink-0">Your score</span>
                           <div className="flex gap-1">
                             {[1, 2, 3, 4, 5].map(v => (
                               <button
                                 key={v}
                                 onClick={() => setPickedScore(v)}
-                                className="w-8 h-8 rounded-md text-[12px] font-medium transition-all"
+                                className="w-8 h-8 rounded-md text-xs font-medium transition-all"
                                 style={{
                                   background: pickedScore === v ? '#8A5A00' : '#fff',
                                   border: `1px solid ${pickedScore === v ? '#c07700' : '#D0CEC7'}`,
@@ -391,13 +391,13 @@ export function SpotCheckModal() {
                           </div>
                         </div>
 
-                        <div className="text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#8A5A00' }}>Reason for override</div>
+                        <div className="text-xs font-semibold tracking-wider mb-1.5" style={{ color: '#8A5A00' }}>Reason for override</div>
                         <div className="flex flex-col gap-1 mb-3">
                           {OVERRIDE_REASONS.map(r => (
                             <button
                               key={r}
                               onClick={() => setPickedReason(r)}
-                              className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[12px] text-left transition-all"
+                              className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-left transition-all"
                               style={{
                                 background: pickedReason === r ? '#FEF3DC' : '#fff',
                                 border: `1px solid ${pickedReason === r ? '#F0C97A' : '#E2E0DA'}`,
@@ -420,7 +420,7 @@ export function SpotCheckModal() {
                         </div>
 
                         <textarea
-                          className="w-full text-[12px] px-2.5 py-2 rounded-md resize-none border focus:outline-none"
+                          className="w-full text-xs px-2.5 py-2 rounded-md resize-none border focus:outline-none"
                           style={{ background: '#fff', borderColor: '#D0CEC7', color: '#1A1917', minHeight: 50 }}
                           placeholder="Optional: add a brief note to help the AI improve…"
                           rows={2}
@@ -442,12 +442,12 @@ export function SpotCheckModal() {
                         <path d="M5 12l5 5L19 7" stroke="#2D7D52" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
-                    <div className="text-[18px] font-semibold tracking-tight mb-1.5">
+                    <div className="text-lg font-semibold tracking-tight mb-1.5">
                       {overrideCount === 0
                         ? 'Spot check complete'
                         : `Spot check complete — ${overrideCount} override${overrideCount > 1 ? 's' : ''} logged`}
                     </div>
-                    <p className="text-[13px] text-muted-foreground leading-[1.75] mb-4">
+                    <p className="text-sm text-muted-foreground leading-[1.75] mb-4">
                       {overrideCount === 0
                         ? '5 of 5 scores confirmed. All evidence matches — the session is accurate and ready to close.'
                         : `${confirmedCount} confirmed, ${overrideCount} overridden. Your corrections have been saved and sent as learning signals.`}
@@ -460,17 +460,17 @@ export function SpotCheckModal() {
                         return (
                           <div
                             key={i}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] border"
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm border"
                             style={{
                               background: isOverride ? '#FEF3DC' : '#E8F5EE',
                               borderColor: isOverride ? '#F0C97A' : '#86C9A4',
                             }}
                           >
-                            <span className="text-[14px] flex-shrink-0">{isOverride ? '⚠' : '✓'}</span>
+                            <span className="text-sm flex-shrink-0">{isOverride ? '⚠' : '✓'}</span>
                             <span className="flex-1 font-medium">{q.student}</span>
-                            <span className="text-[11px] font-mono text-muted-foreground/70">{q.criterion}</span>
+                            <span className="text-xs font-mono text-muted-foreground/70">{q.criterion}</span>
                             <span
-                              className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                              className="text-xs font-semibold px-2 py-0.5 rounded-full"
                               style={{
                                 background: isOverride ? '#FEF3DC' : '#E8F5EE',
                                 border: `1px solid ${isOverride ? '#F0C97A' : '#86C9A4'}`,
@@ -484,7 +484,7 @@ export function SpotCheckModal() {
                       })}
                     </div>
 
-                    <div className="flex justify-between items-center px-3 py-3 rounded-lg text-[13px] border bg-muted/30">
+                    <div className="flex justify-between items-center px-3 py-3 rounded-lg text-sm border bg-muted/30">
                       <span className="text-muted-foreground">Overrides logged</span>
                       <span className="font-semibold font-mono">{overrideCount}</span>
                     </div>
@@ -499,7 +499,7 @@ export function SpotCheckModal() {
                 {scStep < 5 && (
                   <button
                     onClick={dismissSpotCheck}
-                    className="text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted/50"
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted/50"
                   >
                     {scStep === -1 ? 'Skip spot check' : 'Save & exit'}
                   </button>
@@ -509,7 +509,7 @@ export function SpotCheckModal() {
                 {scStep > 0 && scStep < 5 && (
                   <button
                     onClick={goBack}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-md text-[13px] font-medium border transition-colors hover:bg-muted/50"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium border transition-colors hover:bg-muted/50"
                     style={{ borderColor: '#D0CEC7', color: '#5C5A55' }}
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
@@ -519,7 +519,7 @@ export function SpotCheckModal() {
                 <button
                   onClick={goNext}
                   disabled={isNextDisabled}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-md text-[13px] font-medium text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{ background: scStep === 5 ? '#2D7D52' : PURPLE }}
                 >
                   {scStep === -1 && <><span>Begin spot check</span><ChevronRight className="w-3.5 h-3.5" /></>}

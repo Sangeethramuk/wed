@@ -153,15 +153,15 @@ export default function ReEvaluationDashboard() {
           <div className="flex items-start justify-between mb-6">
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">IIM Bangalore</span>
-                <span className="text-muted-foreground/20 text-[9px]">·</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary/80">Re-Evaluation Module</span>
+                <span className="eyebrow text-muted-foreground/40">IIM Bangalore</span>
+                <span className="text-muted-foreground/20 text-xs">·</span>
+                <span className="eyebrow text-primary/80">Re-Evaluation Module</span>
               </div>
               <h1 className="text-4xl font-black tracking-tighter secondary-text">Manage your workload</h1>
             </div>
             
             <div className="flex flex-col items-end gap-3">
-              <div className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest flex items-center gap-2">
+              <div className="eyebrow text-muted-foreground/40 flex items-center gap-2">
                 <Clock className="h-3 w-3 opacity-50" />
                 Last updated 2 mins ago
               </div>
@@ -171,10 +171,10 @@ export default function ReEvaluationDashboard() {
           <div className="grid grid-cols-4 gap-3">
             {GLOBAL_KPIS.map((kpi, i) => (
               <div key={i} className="group px-4 py-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-all flex flex-col justify-center">
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">{kpi.label}</span>
+                <span className="eyebrow text-muted-foreground/50">{kpi.label}</span>
                 <div className="flex items-baseline gap-1.5 mt-1">
                   <span className="text-xl font-black tracking-tighter" style={{ color: kpi.accent }}>{kpi.value}</span>
-                  <span className="text-[10px] font-bold text-muted-foreground/30">{kpi.sub}</span>
+                  <span className="text-xs font-bold text-muted-foreground/30">{kpi.sub}</span>
                 </div>
               </div>
             ))}
@@ -291,9 +291,9 @@ function Section({ title, subtitle, icon, count, accent, children }: any) {
             <div className={`p-1 rounded-lg border ${accentColors[accent]}`}>
               {icon}
             </div>
-            <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">{title} ({count})</h2>
+            <h2 className="eyebrow text-muted-foreground/70">{title} ({count})</h2>
           </div>
-          <p className="text-[11px] font-bold text-muted-foreground/30 pl-8">{subtitle}</p>
+          <p className="text-xs font-bold text-muted-foreground/30 pl-8">{subtitle}</p>
         </div>
       </div>
       {children}
@@ -313,11 +313,11 @@ function AssignmentCard({
     >
       <div className="absolute top-4 right-4 z-10">
         {overdueCount > 0 ? (
-          <Badge variant="outline" className="text-[7px] font-black uppercase tracking-widest border-red-500/20 text-red-600/70 bg-red-500/[0.04] rounded-md px-1.5 py-0">
+          <Badge variant="outline" className="eyebrow text-xs border-red-500/20 text-red-600/70 bg-red-500/[0.04] rounded-md px-1.5 py-0">
             {overdueCount} Overdue
           </Badge>
         ) : (
-          <Badge variant="outline" className="text-[7px] font-black uppercase tracking-widest border-border/30 text-muted-foreground/60 rounded-md px-1.5 py-0">
+          <Badge variant="outline" className="eyebrow text-xs border-border/30 text-muted-foreground/60 rounded-md px-1.5 py-0">
              {appealWindow}
           </Badge>
         )}
@@ -328,8 +328,8 @@ function AssignmentCard({
           <div className="p-1.5 w-fit rounded-lg bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300 border border-primary/10 mb-3">
             <BookOpen className="h-4 w-4" />
           </div>
-          <h3 className="text-[14px] font-black tracking-tight line-clamp-1 text-[#1E293B]">{title}</h3>
-          <div className="flex items-center gap-1 text-[7px] font-black uppercase tracking-widest text-muted-foreground/50 mt-0.5">
+          <h3 className="text-sm font-black tracking-tight line-clamp-1 text-[#1E293B]">{title}</h3>
+          <div className="eyebrow flex items-center gap-1 text-xs text-muted-foreground/50 mt-0.5">
             {code} <span className="opacity-40">•</span> {subject} <span className="opacity-40">•</span> {batch}
           </div>
         </div>
@@ -337,18 +337,18 @@ function AssignmentCard({
         <div className="mt-auto space-y-3">
           <div className="flex items-end justify-between pt-3 border-t border-border/10">
             <div className="space-y-0.5">
-              <span className="text-[6px] uppercase font-black tracking-widest text-muted-foreground/30">Workload</span>
-              <div className="text-[10px] font-black text-foreground/80">{pendingCount} Pending</div>
+              <span className="eyebrow text-xs text-muted-foreground/30">Workload</span>
+              <div className="text-xs font-black text-foreground/80">{pendingCount} Pending</div>
             </div>
             <div className="space-y-0.5 text-right">
-              <span className="text-[6px] uppercase font-black tracking-widest text-muted-foreground/30">Progress</span>
-              <div className="text-[10px] font-black text-muted-foreground">{resolvedCount}/{totalCount}</div>
+              <span className="eyebrow text-xs text-muted-foreground/30">Progress</span>
+              <div className="text-xs font-black text-muted-foreground">{resolvedCount}/{totalCount}</div>
             </div>
           </div>
 
           <div className="space-y-1">
             <Progress value={progressPct} className="h-0.5 bg-primary/5" />
-            <div className="flex items-center justify-between text-[6px] font-black uppercase tracking-widest text-muted-foreground/40">
+            <div className="eyebrow flex items-center justify-between text-xs text-muted-foreground/40">
               <span>{progressPct}% Resolved</span>
               <div className="flex items-center gap-1">
                  {shared && <Users className="h-2 w-2" />}
@@ -359,7 +359,7 @@ function AssignmentCard({
 
           {cta && (
             <div className="flex items-center justify-end pt-1">
-              <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-primary/70 group-hover:text-primary transition-colors">
+              <div className="eyebrow flex items-center gap-1 text-primary/70 group-hover:text-primary transition-colors">
                 {cta}
                 <ArrowRight className="h-2 w-2 group-hover:translate-x-0.5 transition-transform" />
               </div>
