@@ -2,16 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { STUDENTS, STUDENT_ORDER, AI_REVALS, ageStatusKind, confidenceKind } from '@/lib/data/re-evaluation-data'
+import { STUDENTS, AI_REVALS, ageStatusKind, confidenceKind } from '@/lib/data/re-evaluation-data'
 import { useReEvalStore } from '@/lib/store/re-evaluation-store'
 import { BriefingModal } from '@/components/re-evaluation/briefing-modal'
 import { statusStyles, confidenceStyles } from '@/lib/design-tokens'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
-import { Search, CheckCircle2, Clock, ShieldAlert } from 'lucide-react'
 
 type Decision = 'uphold' | 'adjust'
 type WorkspaceState = 'active' | 'compare' | 'submitted'
@@ -37,8 +33,7 @@ export default function ReEvalWorkspacePage() {
   const router = useRouter()
   const params = useParams()
   const studentId = params.id as string
-  const { addHodPending, addResolved, getStatus } = useReEvalStore()
-  const [queueSearch, setQueueSearch] = useState('')
+  const { addHodPending, addResolved } = useReEvalStore()
 
   const st = STUDENTS[studentId]
   const aiReval = AI_REVALS[studentId]
@@ -170,84 +165,10 @@ export default function ReEvalWorkspacePage() {
         </div>
       </div>
 
-      {/* Workspace Area — 3-panel DS layout mirroring grading workspace:
-          Triage Navigator (left) · Submission Viewer (center) · Decision Area (right) */}
-      <ResizablePanelGroup orientation="horizontal" className="flex-1 min-h-0">
-
-        {/* Triage Navigator — reuses the grading sidebar visual pattern:
-            eyebrow header + progress badge, search, and the
-            border-l-2 / bg-primary/5 active-row treatment. */}
-        <ResizablePanel defaultSize={20} minSize={16} maxSize={28} className="bg-muted/5">
-          <aside className="flex flex-col h-full border-r border-border">
-            <div className="p-4 border-b border-border space-y-3 shrink-0">
-              <div className="flex items-center justify-between">
-                <h2 className="eyebrow text-muted-foreground/80">Re-evaluation queue</h2>
-                <Badge variant="outline" className="rounded-full bg-background border-border text-xs font-semibold">
-                  {STUDENT_ORDER.filter((id) => getStatus(id) === 'pending').length} pending
-                </Badge>
-              </div>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
-                <Input
-                  value={queueSearch}
-                  onChange={(e) => setQueueSearch(e.target.value)}
-                  className="pl-8 h-8 text-xs bg-background border-border focus-visible:ring-primary/20"
-                  placeholder="Filter queue..."
-                />
-              </div>
-            </div>
-            <div className="flex-1 overflow-y-auto p-2 space-y-1">
-              {STUDENT_ORDER.filter((id) => {
-                const s = STUDENTS[id]
-                if (!queueSearch) return true
-                const q = queueSearch.toLowerCase()
-                return s.name.toLowerCase().includes(q) || s.rollId.toLowerCase().includes(q)
-              }).map((id) => {
-                const s = STUDENTS[id]
-                const sStatus = getStatus(id)
-                const isActive = id === studentId
-                const Icon =
-                  sStatus === 'resolved' ? CheckCircle2 :
-                  sStatus === 'hod' ? ShieldAlert :
-                  Clock
-                const iconColor =
-                  sStatus === 'resolved' ? 'text-[color:var(--status-success)]' :
-                  sStatus === 'hod' ? 'text-[color:var(--status-warning)]' :
-                  statusStyles[ageStatusKind(s.ageStatus)].text
-                return (
-                  <button
-                    key={id}
-                    onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                    className={cn(
-                      "w-full flex flex-col gap-1.5 p-3 rounded-lg transition-all text-left text-sm cursor-pointer border-l-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
-                      isActive
-                        ? "bg-primary/5 border-l-primary text-foreground"
-                        : "hover:bg-muted/50 border-l-transparent text-muted-foreground",
-                    )}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Icon className={cn("size-3 shrink-0", iconColor)} />
-                      <span className={cn("eyebrow tracking-tight truncate", isActive ? "text-primary" : "text-foreground/70")}>
-                        {s.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 ml-5">
-                      <span className="text-xs font-semibold text-muted-foreground/40 tabular-nums">{s.rollId}</span>
-                      <span className="text-xs opacity-40">•</span>
-                      <span className="eyebrow text-muted-foreground/50 truncate">{s.critShort}</span>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-          </aside>
-        </ResizablePanel>
-
-        <ResizableHandle />
-
-        {/* Submission Viewer */}
-        <ResizablePanel defaultSize={50} minSize={30}>
-          <div className="flex-1 flex flex-col bg-muted/40/80 overflow-hidden relative h-full">
+      {/* Workspace Area */}
+      <div className="flex flex-1 overflow-hidden min-h-0">
+        {/* Left Panel: Submission Viewer */}
+        <div className="flex-1 flex flex-col bg-muted/40/80 overflow-hidden relative">
           <div className="h-14 px-6 flex items-center justify-between border-b border-border bg-background shadow-sm z-10 flex-shrink-0">
             <div className="flex items-center gap-4">
               <span className="eyebrow text-muted-foreground/40">Submission Viewer</span>
@@ -362,14 +283,10 @@ export default function ReEvalWorkspacePage() {
               </div>
             )}
           </div>
-          </div>
-        </ResizablePanel>
-
-        <ResizableHandle />
+        </div>
 
         {/* Right Panel: Decision Area */}
-        <ResizablePanel defaultSize={30} minSize={24} maxSize={40}>
-        <div className="h-full flex flex-col bg-muted/40 overflow-hidden border-l border-border relative z-10">
+        <div className="w-[480px] flex-shrink-0 flex flex-col bg-muted/40 overflow-hidden border-l border-border relative z-10 shadow-[-4px_0_24px_rgba(0,0,0,0.05)]">
           {/* Intelligence Header: KPI Strip */}
           <div className="flex border-b border-border bg-background shadow-sm flex-shrink-0 relative z-20">
             <KPIBlock label="Original Score" className="flex-[0.9] border-r border-border/60">
@@ -665,8 +582,7 @@ export default function ReEvalWorkspacePage() {
             </div>
           )}
         </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+      </div>
 
       {/* Case Briefing Modal */}
       {briefingOpen && (
