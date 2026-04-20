@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { useGradingStore } from "@/lib/store/grading-store"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { AlertCircle, ArrowRight, CheckCircle2, TrendingUp } from "lucide-react"
 
 export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
@@ -143,48 +144,46 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
           <span className="eyebrow text-muted-foreground/60">Score matrix</span>
           <span className="text-xs font-mono text-muted-foreground/40">yours / AI</span>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr className="border-b border-border/30 bg-muted/20">
-                <th className="eyebrow text-left px-4 py-2.5 text-muted-foreground/50 min-w-[120px]">
-                  Criterion
-                </th>
-                {papers.map(p => (
-                  <th
-                    key={p.paperId}
-                    className="eyebrow px-3 py-2.5 text-muted-foreground/50 text-center min-w-[70px]"
-                  >
-                    {p.anonymizedLabel.replace('Paper #', 'P')}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {criteria.map(criterion => (
-                <tr key={criterion.id} className="border-b border-border/20 last:border-0 hover:bg-muted/10 transition-colors">
-                  <td className="px-4 py-2.5 text-xs font-medium text-muted-foreground/80">{criterion.name}</td>
-                  {papers.map(p => {
-                    const score = getScore(p.paperId, criterion.id)
-                    const delta = score?.delta ?? 0
-                    return (
-                      <td key={p.paperId} className="px-3 py-2.5 text-center">
-                        <div className={`inline-flex flex-col items-center rounded-md px-2 py-1 ${cellStyle(delta)}`}>
-                          <span className="text-xs font-semibold font-mono leading-tight">
-                            {score?.instructorLevel || "—"}
-                          </span>
-                          <span className="text-xs font-mono opacity-60 leading-tight">
-                            {score?.aiLevel ?? "—"}
-                          </span>
-                        </div>
-                      </td>
-                    )
-                  })}
-                </tr>
+        <Table className="border-collapse">
+          <TableHeader>
+            <TableRow className="border-b border-border/30 bg-muted/20 hover:bg-muted/20">
+              <TableHead className="eyebrow text-left px-4 py-2.5 text-muted-foreground/50 min-w-[120px] whitespace-normal">
+                Criterion
+              </TableHead>
+              {papers.map(p => (
+                <TableHead
+                  key={p.paperId}
+                  className="eyebrow px-3 py-2.5 text-muted-foreground/50 text-center min-w-[70px]"
+                >
+                  {p.anonymizedLabel.replace('Paper #', 'P')}
+                </TableHead>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {criteria.map(criterion => (
+              <TableRow key={criterion.id} className="border-b border-border/20 last:border-0 hover:bg-muted/10">
+                <TableCell className="px-4 py-2.5 text-xs font-medium text-muted-foreground/80 whitespace-normal">{criterion.name}</TableCell>
+                {papers.map(p => {
+                  const score = getScore(p.paperId, criterion.id)
+                  const delta = score?.delta ?? 0
+                  return (
+                    <TableCell key={p.paperId} className="px-3 py-2.5 text-center">
+                      <div className={`inline-flex flex-col items-center rounded-md px-2 py-1 ${cellStyle(delta)}`}>
+                        <span className="text-xs font-semibold font-mono leading-tight">
+                          {score?.instructorLevel || "—"}
+                        </span>
+                        <span className="text-xs font-mono opacity-60 leading-tight">
+                          {score?.aiLevel ?? "—"}
+                        </span>
+                      </div>
+                    </TableCell>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
         <div className="flex gap-4 px-4 py-2.5 border-t border-border/30 bg-muted/10">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
             <div className="w-2 h-2 rounded-full bg-[color:var(--status-success)]" />Match
