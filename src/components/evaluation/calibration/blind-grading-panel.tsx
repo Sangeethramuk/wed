@@ -324,11 +324,13 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                     const isDone = (sc?.instructorLevel ?? 0) > 0
                     const isActive = i === activeCriterionIdx
                     return (
-                      <button
+                      <Button
                         key={c.id}
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setActiveCriterionIdx(i)}
-                        className={`flex-1 flex flex-col items-center gap-1 px-1 pt-1.5 pb-2.5 border-b-2 transition-all cursor-pointer bg-transparent font-sans ${
-                          isActive ? 'border-primary' : 'border-transparent hover:bg-muted/20'
+                        className={`flex-1 h-auto flex-col gap-1 border-b-2 rounded-none ${
+                          isActive ? 'border-primary' : 'border-transparent'
                         }`}
                       >
                         <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center text-[10px] font-semibold transition-all ${
@@ -343,7 +345,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         <span className={`text-[10px] font-medium text-center leading-tight max-w-[70px] ${
                           isDone ? 'text-muted-foreground' : isActive ? 'text-primary' : 'text-muted-foreground/50'
                         }`}>{c.name}</span>
-                      </button>
+                      </Button>
                     )
                   })}
                 </div>
@@ -369,17 +371,14 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                             <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-2">Your score</span>
                             <div className="flex gap-1.5">
                               {[1, 2, 3, 4, 5].map(v => (
-                                <button
+                                <Button
                                   key={v}
+                                  variant={activeScore === v ? "default" : "outline"}
+                                  size="icon-sm"
                                   onClick={() => handleLevelSelect(activeCriterion.id, v)}
-                                  className={`w-[38px] h-[38px] rounded-md border text-sm font-medium cursor-pointer transition-all font-sans ${
-                                    activeScore === v
-                                      ? 'bg-foreground border-foreground text-background shadow-sm'
-                                      : 'bg-background border-border/70 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5'
-                                  }`}
                                 >
                                   {v}
-                                </button>
+                                </Button>
                               ))}
                             </div>
                           </div>
@@ -414,9 +413,10 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
 
                       {/* Evidence accordion */}
                       <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
-                        <button
+                        <Button
+                          variant="ghost"
                           onClick={() => toggleAccordion('evidence')}
-                          className="w-full flex items-center justify-between px-3.5 py-2.5 text-[13px] font-medium text-foreground hover:bg-muted/20 transition-colors text-left gap-2 bg-transparent border-none cursor-pointer font-sans"
+                          className="w-full justify-between"
                         >
                           <div className="flex items-center gap-2">
                             <div className="w-5 h-5 rounded-[5px] bg-primary/10 flex items-center justify-center shrink-0 text-primary">
@@ -425,16 +425,16 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                             Evidence (0 linked)
                           </div>
                           <ChevronRight className={`h-4 w-4 text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen.evidence ? 'rotate-90' : ''}`} />
-                        </button>
+                        </Button>
                         {accordionOpen.evidence && (
                           <div className="border-t border-border p-3.5 space-y-2">
                             <div className="text-[12px] text-primary bg-primary/5 border border-dashed border-primary/30 rounded-md p-2.5">
                               No evidence linked yet — select text in the left panel to add evidence
                             </div>
-                            <button className="w-full flex items-center gap-1.5 text-[12px] text-primary font-medium border border-dashed border-primary/30 rounded-md px-3 py-1.5 hover:bg-primary/5 transition-all bg-transparent cursor-pointer font-sans">
+                            <Button variant="outline" size="sm" className="w-full border-dashed">
                               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                               Add evidence — select text in left panel
-                            </button>
+                            </Button>
                           </div>
                         )}
                       </div>
@@ -452,41 +452,39 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                   </div>
                 )}
                 <div className="flex items-center justify-between gap-2">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setActiveCriterionIdx(i => Math.max(0, i - 1))}
                     disabled={activeCriterionIdx === 0}
-                    className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium text-muted-foreground rounded-md hover:bg-muted/30 transition-colors disabled:opacity-30 bg-transparent border-none cursor-pointer font-sans"
                   >
                     <ChevronLeft className="h-3.5 w-3.5" /> Previous
-                  </button>
+                  </Button>
 
                   <div className="flex items-center gap-1.5">
-                    <button className="px-3 py-1.5 text-[13px] font-medium text-foreground bg-muted/40 border border-border/60 rounded-md hover:bg-muted/60 transition-colors cursor-pointer font-sans">
+                    <Button variant="outline" size="sm">
                       Save
-                    </button>
+                    </Button>
 
                     {!isLastCriterion ? (
-                      <button
+                      <Button
+                        size="sm"
                         onClick={() => setActiveCriterionIdx(i => i + 1)}
-                        className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors cursor-pointer font-sans"
                       >
                         Next criterion <ArrowRight className="h-3.5 w-3.5" />
-                      </button>
+                      </Button>
                     ) : (
                       <Tooltip>
                         <TooltipTrigger render={<span className="inline-flex" />}>
-                          <button
+                          <Button
+                            size="sm"
+                            disabled={!isGateUnlocked}
                             onClick={isGateUnlocked ? handleNext : undefined}
-                            className={`flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors font-sans ${
-                              isGateUnlocked
-                                ? 'text-primary-foreground bg-primary hover:bg-primary/90 cursor-pointer'
-                                : 'opacity-40 text-primary-foreground bg-primary cursor-not-allowed'
-                            }`}
                           >
                             {isGateUnlocked ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
-                            {isLastPaper ? 'View Delta' : 'Next Paper'}
+                            {isLastPaper ? 'View delta' : 'Next paper'}
                             <ArrowRight className="h-3.5 w-3.5" />
-                          </button>
+                          </Button>
                         </TooltipTrigger>
                         {!isGateUnlocked && (
                           <TooltipContent className="max-w-xs p-3 space-y-1 mb-2">

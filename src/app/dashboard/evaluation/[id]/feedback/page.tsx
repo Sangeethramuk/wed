@@ -30,7 +30,7 @@ function CriteriaRecapCard({ name, level, tier, tierLabel, feedbackSnippet, isEx
   const TierIcon = tier === 'perfect' ? StarIcon : tier === 'minor' ? CircleDot : tier === 'gap' ? Lightbulb : AlertTriangle;
   return (
     <div className={`rounded-[10px] border ${colors.border} ${colors.bg} overflow-hidden transition-all duration-200 hover:shadow-sm`}>
-      <button onClick={onToggle} className="w-full flex items-center justify-between px-3 py-2.5 bg-transparent border-none cursor-pointer font-sans text-left">
+      <Button variant="ghost" onClick={onToggle} className="w-full justify-between h-auto py-2.5">
         <div className="flex items-center gap-2 min-w-0">
           <div className={`w-6 h-6 rounded-md ${colors.badge} flex items-center justify-center shrink-0`}>
             <TierIcon className="w-3.5 h-3.5" />
@@ -44,7 +44,7 @@ function CriteriaRecapCard({ name, level, tier, tierLabel, feedbackSnippet, isEx
           <span className="text-[12px] font-black font-mono text-foreground">{level}<span className="text-[9px] text-muted-foreground/50">/5</span></span>
           {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground/40" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground/40" />}
         </div>
-      </button>
+      </Button>
       <AnimatePresence>
         {isExpanded && (
           <motion.div 
@@ -221,7 +221,7 @@ export default function FeedbackPage() {
       {/* Header */}
       <header className="h-16 border-b border-border bg-background flex items-center justify-between px-8 shrink-0 z-30">
         <div className="flex items-center gap-6">
-          <Button variant="ghost" size="icon" className="text-muted-foreground rounded-xl hover:bg-muted/50" onClick={() => window.history.back()}>
+          <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <div style={{ width: '1px', height: '24px' }} className="bg-border" />
@@ -242,7 +242,7 @@ export default function FeedbackPage() {
              <div className="text-[24px] font-black text-foreground leading-none font-mono">60<span className="text-[14px] text-muted-foreground/40 font-medium">/100</span></div>
              <Badge variant="outline" className="text-[9px] font-black h-4 px-1.5 bg-green-50 text-green-700 border-green-200 uppercase tracking-widest mt-1">Satisfactory</Badge>
           </div>
-          <Button variant="ghost" size="icon" className="w-10 h-10 rounded-full hover:bg-muted">✕</Button>
+          <Button variant="ghost" size="icon">✕</Button>
         </div>
       </header>
 
@@ -286,18 +286,23 @@ export default function FeedbackPage() {
           <Tabs defaultValue="feedback" value={activeTab} onValueChange={(v) => setActiveTab(v as string)} className="flex-1 flex flex-col overflow-hidden">
             <div className="bg-background flex items-center justify-center border-b border-border shrink-0 h-12">
                <div className="flex h-full">
-                  <button 
+                  {/* TODO: migrate to shadcn Tabs primitive */}
+                  <Button
+                    variant="ghost"
+                    aria-current={activeTab === 'feedback' ? 'page' : undefined}
                     onClick={() => setActiveTab('feedback')}
-                    className={`px-8 h-full text-[11px] font-bold uppercase tracking-widest flex items-center gap-2 border-b-2 transition-all ${activeTab === 'feedback' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    className="border-b-2 border-transparent aria-[current=page]:border-foreground rounded-none"
                   >
-                    <StarIcon className="w-3.5 h-3.5" /> Overall Feedback
-                  </button>
-                  <button 
+                    <StarIcon className="w-3.5 h-3.5" /> Overall feedback
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    aria-current={activeTab === 'solution' ? 'page' : undefined}
                     onClick={() => setActiveTab('solution')}
-                    className={`px-8 h-full text-[11px] font-bold uppercase tracking-widest flex items-center gap-2 border-b-2 transition-all ${activeTab === 'solution' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    className="border-b-2 border-transparent aria-[current=page]:border-foreground rounded-none"
                   >
-                    <Lightbulb className="w-3.5 h-3.5" /> Solution Direction
-                  </button>
+                    <Lightbulb className="w-3.5 h-3.5" /> Solution direction
+                  </Button>
                </div>
             </div>
 
@@ -341,8 +346,8 @@ export default function FeedbackPage() {
 
                     {/* Toolbar overlay */}
                     <div className="absolute bottom-4 right-4 flex items-center gap-2">
-                       <Button size="sm" variant="outline" className="h-8 px-3 text-[10px] font-bold rounded-lg bg-background shadow-sm hover:shadow-md transition-all gap-1.5" onClick={handleCopy}>
-                          {copying ? <CheckCircle2 className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />} {copying ? 'COPIED' : 'COPY'}
+                       <Button size="sm" variant="outline" onClick={handleCopy}>
+                          {copying ? <CheckCircle2 className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />} {copying ? 'Copied' : 'Copy'}
                        </Button>
                     </div>
                   </div>
@@ -360,8 +365,8 @@ export default function FeedbackPage() {
                              <span className="text-[9px] font-black text-green-700/80 uppercase tracking-widest">Active Sink</span>
                           </div>
                        </div>
-                       <Button variant="ghost" size="sm" className="h-7 text-[9px] font-black uppercase tracking-widest text-red-600 gap-1.5 hover:bg-red-50">
-                          <CircleDot className="w-3 h-3" /> Record Transcription
+                       <Button variant="destructive" size="sm">
+                          <CircleDot className="w-3 h-3" /> Record transcription
                        </Button>
                     </div>
 
@@ -374,12 +379,11 @@ export default function FeedbackPage() {
                        />
                        <div className="absolute right-4 bottom-4 flex items-center gap-2">
                           <span className="text-[10px] font-mono text-muted-foreground/30 px-3 py-1 bg-muted/30 rounded-full">{instructorInput.length} chars</span>
-                          <Button 
-                            className="rounded-2xl h-10 px-6 font-black uppercase tracking-widest text-[10px] gap-2 shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all" 
-                            onClick={handleMerge} 
+                          <Button
+                            onClick={handleMerge}
                             disabled={!instructorInput.trim()}
                           >
-                             Append to Summary <ArrowRight className="w-3.5 h-3.5" />
+                             Append to summary <ArrowRight className="w-3.5 h-3.5" />
                           </Button>
                        </div>
                     </div>
@@ -508,19 +512,19 @@ export default function FeedbackPage() {
 
       {/* Bottom Bar */}
       <footer className="h-20 border-t border-border bg-background flex items-center justify-between px-8 shrink-0 z-50">
-        <Button variant="ghost" size="sm" className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest gap-2 hover:bg-muted" onClick={() => window.history.back()}>
-          <ChevronLeft className="w-4 h-4" /> Criteria Desk
+        <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
+          <ChevronLeft className="w-4 h-4" /> Criteria desk
         </Button>
         <div className="flex items-center gap-6">
            <div className="hidden sm:flex flex-col items-end">
               <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-1">State: Ready for Publication</span>
               <span className="text-[10px] font-medium text-muted-foreground/60">Final draft cached for cohort scheduling</span>
            </div>
-           <Button 
-            className="h-12 px-12 text-[12px] font-black uppercase tracking-widest rounded-full gap-3 shadow-[0_10px_40px_rgba(59,130,246,0.25)] hover:shadow-[0_15px_50px_rgba(59,130,246,0.35)] hover:bg-primary/90 transition-all active:scale-[0.98]" 
+           <Button
+            size="lg"
             onClick={handleFinalSubmit}
            >
-              <Send className="w-4 h-4" /> Submit Grade & Feedback
+              <Send className="w-4 h-4" /> Submit grade & feedback
            </Button>
         </div>
       </footer>

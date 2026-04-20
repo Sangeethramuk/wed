@@ -72,7 +72,7 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
             <div className="flex items-center gap-4">
               <Link href="/dashboard/evaluation">
                 <Button variant="ghost" size="sm">
-                  <ArrowLeft /> Triage Desk
+                  <ArrowLeft /> Triage desk
                 </Button>
               </Link>
               <div className="w-px h-4 bg-border/50" />

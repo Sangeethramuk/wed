@@ -48,7 +48,7 @@ export function RubricTweak() {
         {/* Header - Flat & Lean */}
         <div className="flex items-center justify-between border-b border-border/10 pb-6 sticky top-0 z-50 bg-background/80 backdrop-blur-md -mx-4 px-4 pt-4 shadow-none">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 border border-border/20 shadow-none" onClick={prevStep}>
+            <Button variant="ghost" size="icon" onClick={prevStep}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="space-y-0">
@@ -115,14 +115,13 @@ export function RubricTweak() {
                    Grading criteria
                  </h3>
               </div>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="outline"
                 size="sm"
-                className="text-[9px] font-black uppercase tracking-widest hover:text-primary transition-all gap-2 h-8 px-4 bg-muted/5 border border-border/10 rounded-lg"
                 onClick={addCriterion}
               >
                 <Plus className="h-3.5 w-3.5" />
-                New Criterion
+                New criterion
               </Button>
            </div>
 
@@ -168,9 +167,9 @@ export function RubricTweak() {
                                   <p className="text-white/80">{CO_DEFINITIONS[crit.linkedCO] || "Standard institutional goal"}</p>
                                 </TooltipContent>
                               </Tooltip>
-                              <button onClick={() => setExpandedRow(expandedRow === crit.id ? null : crit.id)} className="text-muted-foreground/20 hover:text-primary transition-all p-0.5 shadow-none">
+                              <Button variant="ghost" size="icon-xs" onClick={() => setExpandedRow(expandedRow === crit.id ? null : crit.id)}>
                                 {expandedRow === crit.id ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                              </button>
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -193,12 +192,11 @@ export function RubricTweak() {
         </div>
 
         <div className="flex justify-end pt-10 shadow-none">
-          <Button 
-            size="lg" 
-            className="h-14 px-12 text-lg font-black tracking-tight rounded-xl shadow-none active:scale-95 transition-all bg-primary hover:bg-primary/90"
+          <Button
+            size="lg"
             onClick={nextStep}
           >
-            Check Calibration →
+            Check calibration →
           </Button>
         </div>
       </div>

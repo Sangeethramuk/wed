@@ -101,7 +101,7 @@ export default function EvaluationOnboarding() {
       >
         <Link href="/dashboard/evaluation/SWE-PH2" className="w-full max-w-sm">
           <Button size="lg" className="w-full group">
-            Initialize Session <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+            Initialize session <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Button>
         </Link>
         <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">

@@ -408,20 +408,17 @@ export default function ReEvalWorkspacePage() {
                               {ACCT_REASONS.map((r) => {
                                 const selected = acctReason === r.key
                                 return (
-                                  <button
+                                  <Button
                                     key={r.key}
+                                    variant={selected ? "default" : "outline"}
                                     onClick={() => handlePickAcct(r.key)}
-                                    className={`flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all ${
-                                      selected 
-                                        ? 'bg-primary/5 border-primary/40 text-primary' 
-                                        : 'bg-white border-border/10 text-slate-600 hover:border-border/30'
-                                    }`}
+                                    className="w-full justify-between"
                                   >
                                     <span className="text-[11px] font-bold">{r.label}</span>
-                                    <div className={`size-3.5 rounded-full border-2 flex items-center justify-center ${selected ? 'border-primary' : 'border-border/10'}`}>
-                                      {selected && <div className="size-1.5 rounded-full bg-primary" />}
+                                    <div className={`size-3.5 rounded-full border-2 flex items-center justify-center ${selected ? 'border-primary-foreground' : 'border-border/10'}`}>
+                                      {selected && <div className="size-1.5 rounded-full bg-primary-foreground" />}
                                     </div>
-                                  </button>
+                                  </Button>
                                 )
                               })}
                             </div>

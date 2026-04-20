@@ -139,7 +139,7 @@ export default function EvaluationResults() {
             onClick={() => router.push("/dashboard/evaluation")}
           >
             <ArrowLeft />
-            Back to Evaluation
+            Back to evaluation
           </Button>
           <div className="space-y-1.5">
             <div className="flex items-center gap-3 flex-wrap">
@@ -155,13 +155,12 @@ export default function EvaluationResults() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline">
-            <Download /> Export Report
+            <Download /> Export report
           </Button>
-          <Link
-            href="/dashboard/post-evaluation"
-            className="inline-flex items-center gap-2 h-10 px-6 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-[0_4px_20px_rgba(59,130,246,0.2)] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            <Sparkles className="h-4 w-4" /> Publish Outcomes
+          <Link href="/dashboard/post-evaluation">
+            <Button>
+              <Sparkles className="h-4 w-4" /> Publish outcomes
+            </Button>
           </Link>
         </div>
       </div>

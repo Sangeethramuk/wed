@@ -75,7 +75,7 @@ export default function ResultInsights() {
             onClick={() => setViewState("insights")}
           >
             <ArrowLeft />
-            Back to Insights
+            Back to insights
           </Button>
         )}
         <div className="space-y-1.5">
@@ -102,7 +102,7 @@ export default function ResultInsights() {
           subtitle="Schedule and publish evaluation outcomes for Software Engineering: Phase 2."
         >
           <Button variant="ghost" size="sm">
-            <Settings2 /> Policy Audit
+            <Settings2 /> Policy audit
           </Button>
         </PageHeader>
 
@@ -221,17 +221,18 @@ export default function ResultInsights() {
                   </div>
 
                   <Button
+                    size="lg"
                     disabled={isSyncing}
                     onClick={() => {
                       setIsSyncing(true)
                       setTimeout(() => setIsSyncing(false), 2000)
                     }}
-                    className="w-full h-16 text-lg font-black tracking-tight rounded-2xl shadow-[0_10px_40px_rgba(59,130,246,0.25)] hover:bg-primary hover:shadow-[0_15px_60px_rgba(59,130,246,0.35)] transition-all active:scale-95 bg-primary"
+                    className="w-full"
                   >
                     {isSyncing ? (
                       <><RefreshCw className="mr-3 h-5 w-5 animate-spin" /> Publishing...</>
                     ) : (
-                      'Finalize Launch'
+                      'Finalize launch'
                     )}
                   </Button>
                   <p className="text-center text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">Protocol Version v.2.4.1</p>
@@ -254,10 +255,10 @@ export default function ResultInsights() {
       >
         <div className="flex items-center gap-3">
           <Button variant="outline">
-            <Download /> Export Data
+            <Download /> Export data
           </Button>
           <Button onClick={() => setViewState("release")}>
-            <Sparkles /> Publish Outcomes
+            <Sparkles /> Publish outcomes
           </Button>
         </div>
       </PageHeader>
@@ -390,7 +391,7 @@ export default function ResultInsights() {
             <CardDescription className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Breakdown by Assessment Standard</CardDescription>
           </div>
           <div className="flex items-center gap-2">
-             <Button variant="ghost" size="sm">Filter Range</Button>
+             <Button variant="ghost" size="sm">Filter range</Button>
              <Button variant="ghost" size="icon"><Settings2 /></Button>
           </div>
         </CardHeader>
