@@ -20,6 +20,7 @@ import {
   User,
   Bot,
 } from "lucide-react"
+import { statusStyles } from "@/lib/design-tokens"
 
 export type RevisionEventType =
   | "override"
@@ -64,34 +65,35 @@ const EVENT_CONFIG: Record<
   override: {
     label: "Score Override",
     icon: AlertTriangle,
-    color: "text-amber-700",
-    bgColor: "bg-amber-50",
-    borderColor: "border-amber-200",
+    color: statusStyles.warning.text,
+    bgColor: statusStyles.warning.bg,
+    borderColor: statusStyles.warning.border,
   },
   score_confirmed: {
     label: "Score Confirmed",
     icon: CheckCircle2,
-    color: "text-green-700",
-    bgColor: "bg-green-50",
-    borderColor: "border-green-200",
+    color: statusStyles.success.text,
+    bgColor: statusStyles.success.bg,
+    borderColor: statusStyles.success.border,
   },
   evidence_mapped: {
     label: "Evidence Mapped",
     icon: Link2,
-    color: "text-blue-700",
-    bgColor: "bg-blue-50",
-    borderColor: "border-blue-200",
+    color: statusStyles.info.text,
+    bgColor: statusStyles.info.bg,
+    borderColor: statusStyles.info.border,
   },
   evidence_removed: {
     label: "Evidence Removed",
     icon: Trash2,
-    color: "text-red-700",
-    bgColor: "bg-red-50",
-    borderColor: "border-red-200",
+    color: statusStyles.error.text,
+    bgColor: statusStyles.error.bg,
+    borderColor: statusStyles.error.border,
   },
   feedback_edited: {
     label: "Feedback Edited",
     icon: MessageSquare,
+    // TODO: no purple token in statusStyles; keep literal until a palette slot is defined
     color: "text-purple-700",
     bgColor: "bg-purple-50",
     borderColor: "border-purple-200",
