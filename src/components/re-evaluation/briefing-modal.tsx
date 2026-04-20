@@ -3,14 +3,14 @@
 import { useRef, useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { STUDENTS, BRIEFINGS, verdictKind, confidenceKind, auditEventKind } from '@/lib/data/re-evaluation-data'
-import { statusStyles, confidenceStyles } from '@/lib/design-tokens'
+import { statusStyles, confidenceStyles, type StatusKey } from '@/lib/design-tokens'
 import { cn } from '@/lib/utils'
 
-const FLAG_STYLES = {
-  red:   { bg: 'rgba(239, 68, 68, 0.03)', border: 'rgba(239, 68, 68, 0.1)', text: '#EF4444', dot: '#EF4444' },
-  amber: { bg: 'rgba(245, 158, 11, 0.03)', border: 'rgba(245, 158, 11, 0.1)', text: '#B45309', dot: '#F59E0B' },
-  blue:  { bg: 'rgba(59, 130, 246, 0.03)', border: 'rgba(59, 130, 246, 0.1)', text: '#3B82F6', dot: '#3B82F6' },
-  green: { bg: 'rgba(16, 185, 129, 0.03)', border: 'rgba(16, 185, 129, 0.1)', text: '#059669', dot: '#10B981' },
+const FLAG_KINDS: Record<'red' | 'amber' | 'blue' | 'green', StatusKey> = {
+  red: 'error',
+  amber: 'warning',
+  blue: 'info',
+  green: 'success',
 }
 
 type Props = {
@@ -72,8 +72,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
     <AnimatePresence mode="wait">
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[400] flex items-center justify-center p-4 overflow-hidden"
-        style={{ background: 'rgba(15,17,27,.45)', backdropFilter: 'blur(8px)' }}
+        className="fixed inset-0 z-[400] flex items-center justify-center p-4 overflow-hidden bg-foreground/40 backdrop-blur-md"
         onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
       >
         <motion.div
@@ -81,8 +80,8 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.98, y: 8 }}
           transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-          style={{ width: 720, maxWidth: '100%', maxHeight: '92vh', boxShadow: '0 32px 64px -12px rgba(0,0,0,0.3)' }}
-          className="bg-card border border-border/10 rounded-3xl flex flex-col overflow-hidden relative"
+          style={{ width: 720, maxWidth: '100%', maxHeight: '92vh' }}
+          className="bg-card border border-border/10 rounded-3xl flex flex-col overflow-hidden relative shadow-2xl"
         >
           {/* Header */}
           <div className="px-8 pt-8 pb-4 flex-shrink-0 bg-background/20">
@@ -137,10 +136,10 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                   <span className="eyebrow text-primary/80">Intelligence Summary</span>
                 </div>
                 <div className="space-y-4 relative z-10">
-                  <p className="text-sm font-bold leading-tight text-slate-800">
+                  <p className="text-sm font-bold leading-tight text-foreground">
                     {isCredible ? "Credible dispute detected." : "Low-validity request."} {caseSummary}
                   </p>
-                  <p className="text-sm leading-relaxed font-medium text-slate-600 italic">
+                  <p className="text-sm leading-relaxed font-medium text-muted-foreground italic">
                     "{caseInsight}"
                   </p>
                 </div>
@@ -152,9 +151,9 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                <div className="eyebrow text-muted-foreground/30">Case Reconstruction</div>
                <div className="flex items-center justify-between gap-1.5 p-1.5 bg-muted/10 rounded-2xl border border-border/5">
                   {/* AI Evaluation */}
-                  <div className="flex-1 flex flex-col items-center justify-center py-2.5 px-3 rounded-xl bg-white/50 border border-white min-w-0">
+                  <div className="flex-1 flex flex-col items-center justify-center py-2.5 px-3 rounded-xl bg-background/50 border border-background min-w-0">
                     <span className="eyebrow text-muted-foreground/40 mb-1 whitespace-nowrap">AI Evaluation</span>
-                    <div className="text-lg font-black tracking-tighter text-slate-400">
+                    <div className="text-lg font-black tracking-tighter text-muted-foreground">
                       {Math.max(0, st.origScore - (st.hasOverride ? 1 : 0))}/10
                     </div>
                   </div>
@@ -164,11 +163,11 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                   </div>
 
                   {/* Manual Override */}
-                  <div className={`flex-1 flex flex-col items-center justify-center py-2.5 px-3 rounded-xl border min-w-0 ${st.hasOverride ? 'bg-amber-50/50 border-amber-200/50' : 'bg-white/30 border-dashed opacity-50'}`}>
-                    <span className={`eyebrow mb-1 whitespace-nowrap ${st.hasOverride ? 'text-amber-600' : 'text-muted-foreground/40'}`}>
+                  <div className={cn("flex-1 flex flex-col items-center justify-center py-2.5 px-3 rounded-xl border min-w-0", st.hasOverride ? cn(statusStyles.warning.bg, statusStyles.warning.border) : 'bg-background/30 border-dashed opacity-50')}>
+                    <span className={cn("eyebrow mb-1 whitespace-nowrap", st.hasOverride ? statusStyles.warning.text : 'text-muted-foreground/40')}>
                       {st.hasOverride ? 'Instructor Override' : 'No Override'}
                     </span>
-                    <div className={`text-lg font-black tracking-tighter ${st.hasOverride ? 'text-amber-600' : 'text-slate-400'}`}>
+                    <div className={cn("text-lg font-black tracking-tighter", st.hasOverride ? statusStyles.warning.text : 'text-muted-foreground')}>
                       {st.hasOverride ? `+1 pt` : '--'}
                     </div>
                   </div>
@@ -179,16 +178,16 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
 
                   {/* Final Score */}
                   <div className="flex-1 flex flex-col items-center justify-center py-2.5 px-3 rounded-xl bg-primary border border-primary shadow-lg shadow-primary/20 min-w-0">
-                    <span className="eyebrow text-white/60 mb-1 whitespace-nowrap">Released Score</span>
-                    <div className="text-lg font-black tracking-tighter text-white">
+                    <span className="eyebrow text-primary-foreground/60 mb-1 whitespace-nowrap">Released Score</span>
+                    <div className="text-lg font-black tracking-tighter text-primary-foreground">
                       {st.origScore}/10
                     </div>
                   </div>
                </div>
                {st.hasOverride && (
-                 <div className="px-4 py-3 rounded-xl bg-amber-500/[0.03] border border-amber-500/10 flex items-start gap-3">
-                   <InfoIcon className="size-4 text-amber-500 mt-0.5" />
-                   <p className="text-xs leading-relaxed text-amber-700 font-medium">
+                 <div className={cn("px-4 py-3 rounded-xl border flex items-start gap-3", statusStyles.warning.bg, statusStyles.warning.border)}>
+                   <InfoIcon className={cn("size-4 mt-0.5", statusStyles.warning.text)} />
+                   <p className={cn("text-xs leading-relaxed font-medium", statusStyles.warning.text)}>
                      Instructor previously acknowledged additional evidence on {st.critShort} but stopped at {st.origScore}/10. The student argues the adjustment was insufficient.
                    </p>
                  </div>
@@ -199,10 +198,10 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
             <div className="grid grid-cols-2 gap-6">
               <section className="space-y-4">
                 <div className="eyebrow text-muted-foreground/30">Why student appealed</div>
-                <div className="rounded-2xl p-5 bg-blue-500/[0.03] border border-blue-500/10 h-full">
-                  <div className="eyebrow text-blue-600/60 mb-2.5">Student Reasoning</div>
-                  <div className="text-sm font-medium leading-relaxed italic text-slate-700 mb-4">"{st.sv}"</div>
-                  <div className="flex items-center gap-2 pt-3 border-t border-blue-500/10">
+                <div className={cn("rounded-2xl p-5 h-full border", statusStyles.info.bg, statusStyles.info.border)}>
+                  <div className={cn("eyebrow mb-2.5 opacity-60", statusStyles.info.text)}>Student Reasoning</div>
+                  <div className="text-sm font-medium leading-relaxed italic text-foreground mb-4">"{st.sv}"</div>
+                  <div className={cn("flex items-center gap-2 pt-3 border-t", statusStyles.info.border)}>
                     <div className={cn("size-1.5 rounded-full", statusStyles[verdictKind(st.vcolor)].dot)} />
                     <span className="eyebrow text-muted-foreground/50">{st.verdict}</span>
                   </div>
@@ -211,28 +210,28 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
 
               <section className="space-y-4">
                 <div className="eyebrow text-muted-foreground/30">Actionable focus</div>
-                <div className="rounded-2xl p-5 bg-slate-900 border border-slate-800 h-full flex flex-col justify-between">
+                <div className="rounded-2xl p-5 bg-foreground border border-foreground h-full flex flex-col justify-between">
                   <div>
-                    <div className="eyebrow text-white/30 mb-3">What to check first</div>
+                    <div className="eyebrow text-background/30 mb-3">What to check first</div>
                     <ul className="space-y-3">
                       <li className="flex items-start gap-3">
                         <CheckIcon className="size-3.5 text-primary mt-0.5" />
-                        <span className="text-xs font-bold text-white/90">Verify cited lines: {st.evidence}</span>
+                        <span className="text-xs font-bold text-background/90">Verify cited lines: {st.evidence}</span>
                       </li>
                       <li className="flex items-start gap-3">
                         <CheckIcon className="size-3.5 text-primary mt-0.5" />
-                        <span className="text-xs font-bold text-white/90">Reassess {st.critShort} rubric depth</span>
+                        <span className="text-xs font-bold text-background/90">Reassess {st.critShort} rubric depth</span>
                       </li>
                       {st.isCluster && (
                         <li className="flex items-start gap-3">
                           <CheckIcon className="size-3.5 text-primary mt-0.5" />
-                          <span className="text-xs font-bold text-white/90">Check for rubric ambiguity</span>
+                          <span className="text-xs font-bold text-background/90">Check for rubric ambiguity</span>
                         </li>
                       )}
                     </ul>
                   </div>
-                  <div className="pt-4 mt-4 border-t border-white/5 flex items-center justify-between">
-                    <span className="eyebrow text-white/20">Target Decision</span>
+                  <div className="pt-4 mt-4 border-t border-background/5 flex items-center justify-between">
+                    <span className="eyebrow text-background/20">Target Decision</span>
                     <span className="text-xs font-black text-primary tracking-tighter">± {isCredible ? '1.5' : '0'} pts Est.</span>
                   </div>
                 </div>
@@ -244,11 +243,12 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
               <div className="eyebrow text-muted-foreground/30">Intelligence Signals</div>
               <div className="flex flex-col gap-2">
                 {brf.flags.map((f, i) => {
-                  const fc = FLAG_STYLES[f.type]
+                  const kind = FLAG_KINDS[f.type as keyof typeof FLAG_KINDS] ?? 'neutral'
+                  const s = statusStyles[kind]
                   return (
-                    <div key={i} className="flex items-start gap-3 px-4 py-3 rounded-xl border transition-colors" style={{ background: fc.bg, borderColor: fc.border }}>
-                      <div className="size-1.5 rounded-full flex-shrink-0 mt-1.5" style={{ background: fc.dot }} />
-                      <span className="text-xs font-bold leading-tight" style={{ color: fc.text }}>{f.text}</span>
+                    <div key={i} className={cn("flex items-start gap-3 px-4 py-3 rounded-xl border transition-colors", s.bg, s.border)}>
+                      <div className={cn("size-1.5 rounded-full flex-shrink-0 mt-1.5", s.dot)} />
+                      <span className={cn("text-xs font-bold leading-tight", s.text)}>{f.text}</span>
                     </div>
                   )
                 })}
@@ -261,7 +261,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                   <span className="eyebrow text-muted-foreground/50">AI Confidence</span>
                   <div className="flex items-center gap-1.5 mt-1">
                     <div className={cn("size-2 rounded-full", confidenceStyles[confidenceKind(st.confLabel)].dot)} />
-                    <span className="text-sm font-black tracking-tighter text-slate-800">{st.confScore}</span>
+                    <span className="text-sm font-black tracking-tighter text-foreground">{st.confScore}</span>
                   </div>
                   <span className="eyebrow text-muted-foreground/30 mt-0.5">{st.confLabel} at grading</span>
                 </div>
@@ -269,7 +269,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                 <div className="rounded-2xl p-4 bg-card/30 border border-border/10 flex flex-col justify-center">
                   <span className="eyebrow text-muted-foreground/50">Student History</span>
                   <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-sm font-black tracking-tighter text-slate-800">1st appeal</span>
+                    <span className="text-sm font-black tracking-tighter text-foreground">1st appeal</span>
                   </div>
                   <span className="eyebrow text-muted-foreground/30 mt-0.5">This Semester</span>
                 </div>
@@ -277,7 +277,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                 <div className="rounded-2xl p-4 bg-card/30 border border-border/10 flex flex-col justify-center">
                   <span className="eyebrow text-muted-foreground/50">Batch Impact</span>
                   <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-sm font-black tracking-tighter text-slate-800">{st.isCluster ? '4 cases' : 'Isolated'}</span>
+                    <span className="text-sm font-black tracking-tighter text-foreground">{st.isCluster ? '4 cases' : 'Isolated'}</span>
                   </div>
                   <span className="eyebrow text-muted-foreground/30 mt-0.5">Cluster size</span>
                 </div>
@@ -300,7 +300,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                         {i < brf.auditTrail.length - 1 && <div className="w-px flex-1 my-1 bg-border/20" />}
                       </div>
                       <div className="flex-1 -mt-1 pb-4 border-b border-border/5">
-                        <div className="text-xs font-bold text-slate-700">{entry.event}</div>
+                        <div className="text-xs font-bold text-foreground">{entry.event}</div>
                         <div className="eyebrow text-muted-foreground/30 mt-1">{entry.time}</div>
                       </div>
                     </div>
@@ -317,7 +317,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
               >
                 <div className="space-y-3 py-2">
                   {brf.gradingEvidenceLines.map((line, i) => (
-                    <p key={i} className="text-xs leading-relaxed text-slate-600 border-l-2 border-primary/10 pl-4">{line}</p>
+                    <p key={i} className="text-xs leading-relaxed text-muted-foreground border-l-2 border-primary/10 pl-4">{line}</p>
                   ))}
                 </div>
               </Accordion>
@@ -349,15 +349,15 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                 disabled={!canStart || isNavigating}
                 className={`eyebrow group/btn flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl transition-all min-w-[180px] ${
                   canStart && !isNavigating
-                    ? 'bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.25)] hover:shadow-[0_6_20px_rgba(var(--primary),0.35)] translate-y-0 active:scale-[0.98]' 
+                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 translate-y-0 active:scale-[0.98]'
                     : isNavigating
-                      ? 'bg-primary/80 text-white cursor-wait shadow-[0_4px_12px_rgba(var(--primary),0.15)]'
+                      ? 'bg-primary/80 text-primary-foreground cursor-wait shadow-lg shadow-primary/15'
                       : 'bg-muted/50 text-muted-foreground/50 border border-border/10 opacity-50 cursor-not-allowed'
                 }`}
               >
                 {isNavigating ? (
                   <>
-                    <div className="size-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    <div className="size-3 border-2 border-primary-foreground/20 border-t-primary-foreground rounded-full animate-spin" />
                     Opening Workspace...
                   </>
                 ) : (
@@ -390,7 +390,7 @@ function Accordion({
           <div className={`size-5 flex items-center justify-center ${open ? 'text-primary' : 'text-muted-foreground/30'}`}>
             {icon}
           </div>
-          <span className="eyebrow text-slate-700">{label}</span>
+          <span className="eyebrow text-foreground">{label}</span>
         </div>
         <ChevronDownIcon className={`size-4 transition-transform duration-300 text-muted-foreground/30 ${open ? 'rotate-180' : ''}`} />
       </button>
