@@ -7,6 +7,7 @@ import { useReEvalStore } from '@/lib/store/re-evaluation-store'
 import { BriefingModal } from '@/components/re-evaluation/briefing-modal'
 import { statusStyles, confidenceStyles } from '@/lib/design-tokens'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 type Decision = 'uphold' | 'adjust'
 type WorkspaceState = 'active' | 'compare' | 'submitted'
@@ -125,13 +126,15 @@ export default function ReEvalWorkspacePage() {
       {/* Institutional Topbar */}
       <div className="h-16 px-6 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-border/10 flex-shrink-0 z-50">
         <div className="flex items-center gap-6">
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleBack}
-            className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-all group"
+            className="group"
           >
             <ChevronLeftIcon className="size-3 group-hover:-translate-x-0.5 transition-transform" />
-            Re-evaluation Requests
-          </button>
+            Re-evaluation requests
+          </Button>
           
           <div className="w-px h-6 bg-border/10" />
           
@@ -151,13 +154,14 @@ export default function ReEvalWorkspacePage() {
             <span className="text-muted-foreground/20">·</span>
             <span className="text-primary/60">{st.crit}</span>
           </div>
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => setBriefingOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/[0.03] border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/[0.08] transition-all shadow-sm"
           >
             <BriefcaseIcon className="size-3.5" />
-            AI Case Briefing
-          </button>
+            AI case briefing
+          </Button>
         </div>
       </div>
 
@@ -170,26 +174,25 @@ export default function ReEvalWorkspacePage() {
               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Submission Viewer</span>
               <div className="flex bg-muted/40 p-1 rounded-xl border border-border/5">
                 {(['scan', 'ocr'] as const).map((v) => (
-                  <button
+                  <Button
                     key={v}
+                    variant={view === v ? "default" : "ghost"}
+                    size="sm"
                     onClick={() => setView(v)}
-                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                      view === v ? 'bg-white text-primary shadow-sm' : 'text-muted-foreground/60 hover:text-muted-foreground'
-                    }`}
                   >
-                    {v === 'scan' ? 'Original Scan' : 'Extracted Text'}
-                  </button>
+                    {v === 'scan' ? 'Original scan' : 'Extracted text'}
+                  </Button>
                 ))}
               </div>
             </div>
             <div className="flex items-center gap-3">
                <div className="flex items-center gap-1">
-                 <button className="size-7 flex items-center justify-center rounded-lg border border-border/10 hover:bg-white transition-colors text-muted-foreground">
+                 <Button variant="ghost" size="icon-sm">
                    <ChevronLeftIcon className="size-3.5" />
-                 </button>
-                 <button className="size-7 flex items-center justify-center rounded-lg border border-border/10 hover:bg-white transition-colors text-muted-foreground">
+                 </Button>
+                 <Button variant="ghost" size="icon-sm">
                    <ChevronLeftIcon className="size-3.5 rotate-180" />
-                 </button>
+                 </Button>
                </div>
                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Page 2 of 3</span>
             </div>
@@ -377,22 +380,18 @@ export default function ReEvalWorkspacePage() {
                                const isOrig = s === st.origScore
                                const isPicked = s === pickedScore
                                return (
-                                 <button
+                                 <Button
                                    key={s}
                                    data-orig={isOrig}
+                                   variant={isPicked ? "default" : "outline"}
+                                   size="sm"
                                    onClick={isOrig ? undefined : () => handlePickScore(s)}
                                    disabled={isOrig}
-                                   className={`flex-shrink-0 flex flex-col items-center justify-center w-8 h-10 rounded-lg transition-all relative ${
-                                     isPicked 
-                                       ? 'bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.3)] scale-110 z-10 border border-primary' 
-                                       : isOrig 
-                                         ? 'bg-slate-200 text-slate-700 cursor-not-allowed border border-slate-300 shadow-sm' 
-                                         : 'bg-white border border-slate-200 text-slate-600 hover:border-primary/40 hover:text-primary hover:bg-primary/5 shadow-sm'
-                                   }`}
+                                   className="flex-col"
                                  >
-                                   <span className={`${isOrig ? 'text-[11px]' : 'text-[13px]'} font-black`}>{s}</span>
+                                   <span>{s}</span>
                                    {isOrig && <span className="text-[6px] font-black uppercase tracking-widest text-slate-500 mt-0.5">Orig</span>}
-                                 </button>
+                                 </Button>
                                )
                              })}
                            </div>
@@ -550,13 +549,13 @@ export default function ReEvalWorkspacePage() {
                        <span className="text-primary">Standard HOD Approval</span>
                      </div>
                   </div>
-                  <button 
+                  <Button
+                    size="lg"
                     onClick={handleBack}
-                    className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-slate-900 text-white text-[12px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-900/10"
                   >
-                    Return to Triage Desk
+                    Return to triage desk
                     <ArrowRightIcon className="size-4" />
-                  </button>
+                  </Button>
                </div>
             )}
           </div>
@@ -564,28 +563,24 @@ export default function ReEvalWorkspacePage() {
           {/* Sticky Actions Bar */}
           {wsState !== 'submitted' && (
             <div className="h-20 px-8 flex items-center justify-between bg-white/60 backdrop-blur-md border-t border-border/10 flex-shrink-0 relative z-10">
-               <button
+               <Button
+                 variant="ghost"
+                 size="sm"
                  onClick={handleBack}
-                 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all"
                >
                  <XIcon className="size-3.5" />
-                 Cancel Review
-               </button>
+                 Cancel review
+               </Button>
                <div className="flex items-center gap-4">
-                  <button className="px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 border border-border/30 bg-card/50 hover:bg-white hover:border-border transition-all">
-                    Save as Draft
-                  </button>
-                  <button
+                  <Button variant="outline" size="sm">
+                    Save as draft
+                  </Button>
+                  <Button
                     onClick={wsState === 'active' ? handleSubmit : handleConfirmCompare}
                     disabled={(wsState === 'active' && !isSubmitEnabled) || (wsState === 'compare' && comparing)}
-                    className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                      (wsState === 'active' && isSubmitEnabled) || (wsState === 'compare' && !comparing)
-                        ? 'bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95'
-                        : 'bg-muted/50 text-muted-foreground/40 cursor-not-allowed opacity-50'
-                    }`}
                   >
-                    {wsState === 'active' ? 'Finalize Decision' : 'Confirm & Route'}
-                  </button>
+                    {wsState === 'active' ? 'Finalize decision' : 'Confirm & route'}
+                  </Button>
                </div>
             </div>
           )}

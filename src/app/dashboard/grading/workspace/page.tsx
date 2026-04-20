@@ -123,11 +123,12 @@ export default function WorkspacePage() {
              </div>
           </div>
 
-          <Button 
+          <Button
+            size="lg"
             onClick={() => window.location.href = '/dashboard/grading'}
-            className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-xl transition-all"
+            className="w-full"
           >
-            Return to Hub
+            Return to hub
           </Button>
         </motion.div>
       </div>
@@ -139,7 +140,7 @@ export default function WorkspacePage() {
       {/* Top Navigation Bar */}
       <header className="h-14 border-b border-slate-200 bg-white flex items-center justify-between px-6 shrink-0 z-30 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="text-slate-500 rounded-lg" onClick={() => window.history.back()}>
+          <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <div className="flex flex-col">
@@ -172,14 +173,12 @@ export default function WorkspacePage() {
               </div>
            </div>
 
-           <Button size="sm" variant="outline" className="h-9 px-4 rounded-lg font-bold text-[10px] uppercase tracking-[0.15em] border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+           <Button size="sm" variant="outline">
              Spot check
            </Button>
 
-           <Button size="sm" className={`h-9 px-6 rounded-lg font-bold text-[10px] uppercase tracking-[0.15em] transition-all hover:scale-105 active:scale-95 ${
-             isGateUnlocked ? 'bg-slate-900 text-white shadow-xl shadow-slate-200' : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200 shadow-none'
-           }`} disabled={!isGateUnlocked} onClick={phase === 'blind' ? handleReveal : handleFinalize}>
-             {phase === 'blind' ? (isGateUnlocked ? 'Reveal Comparison' : 'Inspection Required') : 'Finalize Session'}
+           <Button size="sm" disabled={!isGateUnlocked} onClick={phase === 'blind' ? handleReveal : handleFinalize}>
+             {phase === 'blind' ? (isGateUnlocked ? 'Reveal comparison' : 'Inspection required') : 'Finalize session'}
            </Button>
         </div>
       </header>
@@ -203,7 +202,7 @@ export default function WorkspacePage() {
                     <p className="text-[11px] text-slate-300 mt-0.5 font-medium">Internal deltas are exceeding 15%. Fix routing will be mandatory.</p>
                  </div>
               </div>
-              <Button variant="ghost" className="h-8 text-[10px] uppercase font-bold text-white hover:bg-slate-800" onClick={() => setShowPatternAlert(false)}>
+              <Button variant="secondary" size="sm" onClick={() => setShowPatternAlert(false)}>
                 Acknowledge
               </Button>
             </div>
@@ -218,21 +217,21 @@ export default function WorkspacePage() {
           {/* Workspace Toolbar */}
           <div className="h-11 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
              <div className="flex gap-6">
-                <Button variant="ghost" className="h-8 px-0 text-[10px] font-bold uppercase tracking-[0.2em] gap-2 text-slate-900 border-b-2 border-slate-900 rounded-none">
+                {/* TODO: migrate to shadcn Tabs primitive */}
+                <Button variant="ghost" size="sm" aria-current="page" className="border-b-2 border-transparent aria-[current=page]:border-foreground rounded-none">
                    <FileText className="w-3.5 h-3.5" /> Normal
                 </Button>
-                <Button variant="ghost" className="h-8 px-0 text-[10px] font-bold uppercase tracking-[0.2em] gap-2 text-slate-400 rounded-none">
-                   <Target className="w-3.5 h-3.5" /> OCR Trace
+                <Button variant="ghost" size="sm" className="border-b-2 border-transparent aria-[current=page]:border-foreground rounded-none">
+                   <Target className="w-3.5 h-3.5" /> OCR trace
                 </Button>
              </div>
              <div className="flex items-center gap-4">
-                <Button 
+                <Button
+                   variant={isIntegrityRevealActive ? "default" : "ghost"}
+                   size="sm"
                    onClick={() => setIsIntegrityRevealActive(!isIntegrityRevealActive)}
-                   className={`h-7 px-3 text-[9px] font-bold uppercase tracking-widest gap-2 rounded-full transition-all ${
-                     isIntegrityRevealActive ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                   }`}
                 >
-                   <Fingerprint className="w-3 h-3" /> Reveal Integrity Layers
+                   <Fingerprint className="w-3 h-3" /> Reveal integrity layers
                 </Button>
              </div>
           </div>
@@ -330,11 +329,13 @@ export default function WorkspacePage() {
                       const isDone = !!professorGrades[c.id];
                       const isActive = i === activeCriterionIdx;
                       return (
-                        <button
+                        <Button
                           key={c.id}
+                          variant="ghost"
+                          size="sm"
                           onClick={() => setActiveCriterionIdx(i)}
-                          className={`flex-1 flex flex-col items-center gap-1 px-1 pt-1.5 pb-2.5 border-b-2 transition-all cursor-pointer bg-transparent font-sans ${
-                            isActive ? 'border-primary' : 'border-transparent hover:bg-muted/20'
+                          className={`flex-1 h-auto flex-col gap-1 border-b-2 rounded-none ${
+                            isActive ? 'border-primary' : 'border-transparent'
                           }`}
                         >
                           <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center text-[10px] font-semibold transition-all ${
@@ -349,7 +350,7 @@ export default function WorkspacePage() {
                           <span className={`text-[10px] font-medium text-center leading-tight max-w-[70px] ${
                             isDone ? 'text-muted-foreground' : isActive ? 'text-primary' : 'text-muted-foreground/50'
                           }`}>{c.name}</span>
-                        </button>
+                        </Button>
                       );
                     })}
                   </div>
@@ -363,9 +364,10 @@ export default function WorkspacePage() {
                         {/* Review needed strip (shown when confidence < 0.8) */}
                         {activeCriterion.confidence < 0.8 && (
                           <div style={{ background: '#FFFAED', border: '1px solid #F0C97A', borderRadius: 6 }}>
-                            <button
+                            <Button
+                              variant="ghost"
                               onClick={() => setReviewStripOpen(s => ({ ...s, [activeCriterion.id]: !s[activeCriterion.id] }))}
-                              className="w-full flex items-center justify-between gap-2 px-3.5 py-2 bg-transparent border-none cursor-pointer font-sans text-left"
+                              className="w-full justify-between"
                             >
                               <div className="flex items-center gap-2">
                                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0, color: '#8A5A00' }}><circle cx="6.5" cy="6.5" r="6" stroke="currentColor" strokeWidth="1.2"/><path d="M6.5 4v3.5M6.5 9v.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
@@ -373,7 +375,7 @@ export default function WorkspacePage() {
                                 <span className="text-[12px]" style={{ color: '#8A5A00', opacity: 0.75 }}>— citations missing for key claims</span>
                               </div>
                               <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0, color: '#8A5A00', transform: reviewStripOpen[activeCriterion.id] ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}><path d="M2.5 4.5l4 4 4-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                            </button>
+                            </Button>
                             {reviewStripOpen[activeCriterion.id] && (
                               <ul className="text-[12px] leading-[1.7] px-9 pb-2.5 m-0" style={{ color: '#8A5A00' }}>
                                 {activeCriterion.evidence.map((ev, i) => (
@@ -405,17 +407,14 @@ export default function WorkspacePage() {
                                   <span className="text-[11px] text-muted-foreground/60">Adjust:</span>
                                   <div className="flex gap-1">
                                     {[1, 2, 3, 4, 5].map(v => (
-                                      <button
+                                      <Button
                                         key={v}
+                                        variant={professorLevel === v ? "default" : "outline"}
+                                        size="icon-sm"
                                         onClick={() => handleGradeSelection(activeCriterion.id, v)}
-                                        className={`w-[30px] h-[30px] rounded-md border text-[13px] font-medium cursor-pointer transition-all font-sans ${
-                                          professorLevel === v
-                                            ? 'bg-foreground border-foreground text-background shadow-sm'
-                                            : 'bg-background border-border/70 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5'
-                                        }`}
                                       >
                                         {v}
-                                      </button>
+                                      </Button>
                                     ))}
                                   </div>
                                 </div>
@@ -467,9 +466,10 @@ export default function WorkspacePage() {
 
                         {/* Evidence accordion */}
                         <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
-                          <button
+                          <Button
+                            variant="ghost"
                             onClick={() => toggleAccordion(`ev-${activeCriterion.id}`)}
-                            className="w-full flex items-center justify-between px-3.5 py-2.5 text-[13px] font-medium text-foreground hover:bg-muted/20 transition-colors text-left gap-2 bg-transparent border-none cursor-pointer font-sans"
+                            className="w-full justify-between"
                           >
                             <div className="flex items-center gap-2">
                               <div className="w-5 h-5 rounded-[5px] bg-primary/10 flex items-center justify-center shrink-0 text-primary">
@@ -478,7 +478,7 @@ export default function WorkspacePage() {
                               Evidence ({activeCriterion.evidence.length} linked)
                             </div>
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={`text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen[`ev-${activeCriterion.id}`] ? 'rotate-180' : ''}`}><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                          </button>
+                          </Button>
                           {accordionOpen[`ev-${activeCriterion.id}`] && (
                             <div className="border-t border-border p-3.5 space-y-2">
                               {activeCriterion.evidence.map((ev, i) => (
@@ -487,25 +487,26 @@ export default function WorkspacePage() {
                                   <div className="flex-1 min-w-0">
                                     <p className="text-[12px] leading-[1.55] text-muted-foreground italic">"{ev}"</p>
                                     <div className="flex gap-2 mt-1.5">
-                                      <button className="text-[11px] text-muted-foreground/60 hover:text-foreground bg-transparent border-none cursor-pointer font-sans p-0 transition-colors">Edit</button>
-                                      <button className="text-[11px] text-muted-foreground/60 hover:text-red-500 bg-transparent border-none cursor-pointer font-sans p-0 transition-colors">Remove</button>
+                                      <Button variant="link" size="xs" className="p-0 h-auto">Edit</Button>
+                                      <Button variant="link" size="xs" className="p-0 h-auto text-destructive">Remove</Button>
                                     </div>
                                   </div>
                                 </div>
                               ))}
-                              <button className="w-full flex items-center gap-1.5 text-[12px] text-primary font-medium border border-dashed border-primary/30 rounded-md px-3 py-1.5 hover:bg-primary/5 transition-all bg-transparent cursor-pointer font-sans mt-1">
+                              <Button variant="outline" size="sm" className="w-full border-dashed mt-1">
                                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                                 Add evidence — select text in left panel
-                              </button>
+                              </Button>
                             </div>
                           )}
                         </div>
 
                         {/* AI Reasoning accordion */}
                         <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
-                          <button
+                          <Button
+                            variant="ghost"
                             onClick={() => toggleAccordion(`ai-${activeCriterion.id}`)}
-                            className="w-full flex items-center justify-between px-3.5 py-2.5 text-[13px] font-medium text-foreground hover:bg-muted/20 transition-colors text-left gap-2 bg-transparent border-none cursor-pointer font-sans"
+                            className="w-full justify-between"
                           >
                             <div className="flex items-center gap-2">
                               <div className="w-5 h-5 rounded-[5px] flex items-center justify-center shrink-0" style={{ background: '#FEF3DC' }}>
@@ -514,7 +515,7 @@ export default function WorkspacePage() {
                               AI reasoning
                             </div>
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={`text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen[`ai-${activeCriterion.id}`] ? 'rotate-180' : ''}`}><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                          </button>
+                          </Button>
                           {accordionOpen[`ai-${activeCriterion.id}`] && (
                             <div className="border-t border-border p-3.5 space-y-2.5">
                               <p className="text-[12px] text-muted-foreground leading-[1.65]">{activeCriterion.reasoning}</p>
@@ -542,43 +543,40 @@ export default function WorkspacePage() {
                 {/* Footer */}
                 <footer className="px-4 py-3 border-t border-border bg-background shrink-0">
                   <div className="flex items-center justify-between gap-2">
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setActiveCriterionIdx(i => Math.max(0, i - 1))}
                       disabled={activeCriterionIdx === 0}
-                      className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium text-muted-foreground rounded-md hover:bg-muted/30 transition-colors disabled:opacity-30 bg-transparent border-none cursor-pointer font-sans"
                     >
                       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8 3L4 7l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       Previous
-                    </button>
+                    </Button>
 
                     <div className="flex items-center gap-1.5">
-                      <button className="px-3 py-1.5 text-[13px] font-medium text-foreground bg-muted/40 border border-border/60 rounded-md hover:bg-muted/60 transition-colors cursor-pointer font-sans">
+                      <Button variant="outline" size="sm">
                         Save
-                      </button>
+                      </Button>
 
                       {!isLastCriterion ? (
-                        <button
+                        <Button
+                          size="sm"
                           onClick={() => setActiveCriterionIdx(i => i + 1)}
-                          className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors cursor-pointer font-sans"
                         >
                           Next criterion
                           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        </button>
+                        </Button>
                       ) : (
-                        <button
+                        <Button
+                          size="sm"
                           disabled={!isGateUnlocked}
                           onClick={phase === 'blind' ? handleReveal : handleFinalize}
-                          className={`flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors font-sans ${
-                            isGateUnlocked
-                              ? 'text-primary-foreground bg-primary hover:bg-primary/90 cursor-pointer'
-                              : 'opacity-40 text-primary-foreground bg-primary cursor-not-allowed'
-                          }`}
                         >
                           {phase === 'blind' ? 'Proceed to feedback' : 'Finalize session'}
                           {remaining > 0 && (
                             <span className="text-[11px] opacity-60 ml-1">· {remaining} remaining</span>
                           )}
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -609,7 +607,7 @@ export default function WorkspacePage() {
                     Accuracy Assurance Loop (P1) has identified a divergence pattern. Your decision will correct the evaluation standard for the entire cycle.
                   </p>
                 </div>
-                <Button variant="ghost" onClick={() => setShowFixModal(false)} className="rounded-full h-12 w-12 text-slate-300 hover:text-slate-900 text-xl font-bold transition-all">✕</Button>
+                <Button variant="ghost" size="icon" onClick={() => setShowFixModal(false)}>✕</Button>
               </div>
 
               <div className="p-12 grid grid-cols-3 gap-8">
@@ -618,23 +616,24 @@ export default function WorkspacePage() {
                   { id: 'f2', title: 'Fix 2: AI Recalibration', desc: 'EXTRACTION FAILURE: The model missed key evidence in this answer structure. Send calibration signal to Module 3.', icon: Target, color: 'text-blue-500', bg: 'bg-blue-50' },
                   { id: 'f3', title: 'Fix 3: Instructor Realignment', desc: 'ACCURACY DRIFT: Potential bias or fatigue detected in grading patterns. Update your personalized baseline.', icon: Info, color: 'text-purple-500', bg: 'bg-purple-50' },
                 ].map((fix) => (
-                  <button 
+                  <Button
                     key={fix.id}
+                    variant="outline"
                     onClick={handleFinalize}
-                    className="flex flex-col p-10 rounded-[3rem] border-2 border-slate-100 hover:border-slate-900 transition-all text-left shadow-sm group relative bg-white hover:shadow-2xl hover:-translate-y-2"
+                    className="flex h-auto flex-col items-start p-10 rounded-[3rem] text-left whitespace-normal group relative"
                   >
                      <div className={`p-5 rounded-[2rem] ${fix.bg} w-fit mb-8 transition-all group-hover:scale-110 shadow-sm`}>
                         <fix.icon className={`w-10 h-10 ${fix.color}`} />
                      </div>
                      <h4 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-4">{fix.title}</h4>
                      <p className="text-[14px] text-slate-400 font-bold leading-[1.6] uppercase tracking-tighter">{fix.desc}</p>
-                     
+
                      {assignment.targetFix === fix.id && (
                        <Badge className="absolute top-8 right-10 bg-slate-900 text-white text-[9px] font-black uppercase tracking-[0.2em] px-3 h-6 animate-pulse">
                          DEMO PATH
                        </Badge>
                      )}
-                  </button>
+                  </Button>
                 ))}
               </div>
 

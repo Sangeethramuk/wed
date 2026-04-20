@@ -1371,18 +1371,21 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                   Link this text as evidence for <span className="font-bold text-blue-700">C{activeCriterion.id} — {activeCriterion.label}</span>?
                 </p>
                 <div className="flex gap-2">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setSelection(null)}
-                    className="flex-1 p-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-muted border border-border transition-all"
+                    className="flex-1"
                   >
                     No, dismiss
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    size="sm"
                     onClick={() => handleLinkOverrideEvidence(selection.text, currentPage, textSelectionMode.criterionId!)}
-                    className="flex-1 p-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-blue-600 text-white hover:bg-blue-700 transition-all"
+                    className="flex-1"
                   >
                     Yes, link it
-                  </button>
+                  </Button>
                 </div>
               </motion.div>
             )
@@ -1428,12 +1431,14 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 ))}
               </div>
               <Separator className="bg-border/50 my-1" />
-              <button 
-               onClick={() => setSelection(null)}
-               className="w-full text-center p-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelection(null)}
+                className="w-full"
               >
-                 Dismiss
-              </button>
+                Dismiss
+              </Button>
             </motion.div>
           )
         })()}
