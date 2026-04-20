@@ -336,7 +336,7 @@ export function AssignmentSpecs() {
     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-20">
         <div className="flex items-center justify-between border-b border-border/40 pb-4 sticky top-0 z-50 bg-background/80 backdrop-blur-md -mx-4 px-4 pt-4">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 border border-border/30" onClick={() => updateAssignment({ type: null })}>
+            <Button variant="ghost" size="icon" onClick={() => updateAssignment({ type: null })}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="space-y-0">
@@ -493,7 +493,7 @@ export function AssignmentSpecs() {
                     key={opt.type}
                     variant="outline"
                     size="sm"
-                    className="h-8 text-[9px] font-black uppercase tracking-widest border border-dashed border-border/40 bg-transparent hover:border-primary/40 hover:text-primary rounded-md"
+                    className="border-dashed"
                     onClick={() => addBlock(opt.type)}
                   >
                     <Plus className="h-3 w-3 mr-1" />
@@ -562,7 +562,6 @@ export function AssignmentSpecs() {
         <div className="flex justify-end pt-6">
           <Button
             size="lg"
-            className="h-14 px-12 text-lg font-black tracking-tight rounded-xl shadow-none active:scale-95 transition-all bg-primary hover:bg-primary/90"
             disabled={!canProceed}
             onClick={nextStep}
           >
@@ -618,7 +617,6 @@ function InstructionsEditor({
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-[9px] font-black uppercase tracking-widest border border-border/40 rounded-md hover:border-primary/40 hover:text-primary"
             onClick={() => onAIRewrite("clarity")}
             disabled={!hasBody}
           >
@@ -628,7 +626,6 @@ function InstructionsEditor({
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-[9px] font-black uppercase tracking-widest border border-border/40 rounded-md hover:border-primary/40 hover:text-primary"
             onClick={() => onAIRewrite("simplify")}
             disabled={!hasBody}
           >
@@ -810,14 +807,16 @@ function QuestionRow({
             </SelectContent>
           </Select>
           {question.text.trim().length > 0 && !suggestionMatches && (
-            <button
+            <Button
               type="button"
-              className="inline-flex items-center gap-1.5 px-2 h-7 rounded-md border border-dashed border-primary/30 bg-primary/[0.04] hover:bg-primary/[0.08] text-[9px] font-black uppercase tracking-widest text-primary/80 transition-colors"
+              variant="outline"
+              size="sm"
+              className="border-dashed"
               onClick={() => onUpdate({ bloomLevel: question.bloomSuggested })}
             >
               <Sparkles className="h-3 w-3" />
               AI suggests {suggestedLabel}
-            </button>
+            </Button>
           )}
         </div>
       </div>

@@ -87,29 +87,29 @@ export function LaunchLaunchpad() {
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-50">Workflows</p>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Button 
-                variant="outline" 
-                className="h-auto p-6 flex flex-col items-start gap-3 rounded-2xl border-2 border-border/40 hover:border-primary/30 hover:bg-primary/[0.02] transition-all group text-left"
+              <Button
+                variant="outline"
+                className="h-auto flex-col items-start gap-3 p-6 group text-left whitespace-normal"
               >
                 <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/10 mb-1">
                   <Database className="h-5 w-5 text-blue-500 opacity-60 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-xs font-black uppercase tracking-widest block">Sync LMS</span>
-                  <span className="text-[10px] font-bold text-muted-foreground opacity-40 leading-none">Connect to Canvas/Moodle</span>
+                  <span className="text-sm font-semibold block">Sync LMS</span>
+                  <span className="text-xs text-muted-foreground/60 leading-none">Connect to Canvas/Moodle</span>
                 </div>
               </Button>
 
-              <Button 
-                variant="outline" 
-                className="h-auto p-6 flex flex-col items-start gap-3 rounded-2xl border-2 border-border/40 hover:border-primary/30 hover:bg-primary/[0.02] transition-all group text-left"
+              <Button
+                variant="outline"
+                className="h-auto flex-col items-start gap-3 p-6 group text-left whitespace-normal"
               >
                 <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/10 mb-1">
                   <Mail className="h-5 w-5 text-primary opacity-60 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-xs font-black uppercase tracking-widest block">Dept Briefing</span>
-                  <span className="text-[10px] font-bold text-muted-foreground opacity-40 leading-none">Share blueprint with faculty</span>
+                  <span className="text-sm font-semibold block">Dept briefing</span>
+                  <span className="text-xs text-muted-foreground/60 leading-none">Share blueprint with faculty</span>
                 </div>
               </Button>
             </div>

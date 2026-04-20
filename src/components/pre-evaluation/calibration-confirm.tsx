@@ -122,7 +122,7 @@ export function CalibrationConfirm() {
           <Button variant="outline" onClick={reset}>Save as draft</Button>
           <Button size="lg" onClick={nextStep}>
             <Send />
-            Launch Session
+            Launch session
           </Button>
         </div>
       </div>

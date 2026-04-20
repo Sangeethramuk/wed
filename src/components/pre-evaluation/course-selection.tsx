@@ -67,10 +67,10 @@ export function CourseSelection() {
         {/* Compact institutional context chips */}
         <div className="space-y-6">
           <div className="flex items-center gap-2 flex-wrap">
-            <button className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border/30 bg-card/20 hover:bg-card/50 transition-all text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 hover:text-foreground/80">
-              Department: Computer Science
+            <Button variant="outline" size="sm" className="group">
+              Department: Computer science
               <ChevronDown className="h-3 w-3 opacity-40 group-hover:opacity-80" />
-            </button>
+            </Button>
           </div>
 
           <div className="space-y-3">
@@ -120,8 +120,7 @@ export function CourseSelection() {
                     </Badge>
                     <Button
                       size="sm"
-                      variant="ghost"
-                      className="text-[10px] font-black uppercase tracking-widest text-primary/70 group-hover:text-primary group-hover:bg-primary/10"
+                      variant="secondary"
                     >
                       Continue editing
                       <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
