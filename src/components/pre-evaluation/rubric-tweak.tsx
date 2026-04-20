@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Textarea } from "@/components/ui/textarea"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import {
   Plus,
   Check,
@@ -126,68 +127,71 @@ export function RubricTweak() {
            </div>
 
           <Card className="border border-border/20 overflow-hidden rounded-xl bg-card/10 backdrop-blur-sm shadow-none">
-            <div className="overflow-x-auto shadow-none">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-muted/[0.01] border-b border-border/10 shadow-none">
-                    <th className="eyebrow p-6 text-left text-muted-foreground/30 border-r border-border/10 w-96 bg-background/30 sticky left-0 z-10 backdrop-blur-md">Criteria</th>
-                    {["Exemplary", "Proficient", "Developing", "Beginning"].map((level, i) => (
-                      <th key={level} className="p-4 text-center border-r border-border/10 min-w-[200px] shadow-none">
-                        <div className="space-y-0.5">
-                          <span className={`eyebrow ${i === 0 ? 'text-primary' : 'text-muted-foreground/50'}`}>{level}</span>
-                          <span className="block text-xs font-semibold text-muted-foreground/30 tracking-tight">Grade: {i === 0 ? '100' : i === 1 ? '75' : i === 2 ? '50' : '25'}%</span>
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="shadow-none">
-                  {rubric.map((crit) => (
-                    <tr key={crit.id} className="border-b border-border/10 transition-colors hover:bg-primary/[0.01] group shadow-none">
-                      <td className="p-6 border-r border-border/10 bg-muted/[0.01] align-top space-y-3 sticky left-0 z-10 backdrop-blur-sm shadow-none w-96">
-                        <div className="flex items-start justify-between shadow-none gap-4">
-                          <div className="space-y-2 flex-1 shadow-none">
-                            <Textarea 
-                              value={crit.name}
-                              className="font-semibold text-xs text-foreground tracking-tight leading-tight border border-border/40 p-3 h-auto min-h-[60px] bg-background/50 focus-visible:ring-primary/20 shadow-none rounded-lg resize-none"
-                              placeholder="Enter criterion name..."
-                              onChange={(e) => {
-                                updateRubric(rubric.map(c => c.id === crit.id ? { ...c, name: e.target.value } : c))
-                              }}
-                            />
-                            <div className="flex items-center justify-between">
-                              <Tooltip>
-                                <TooltipTrigger className="text-xs font-semibold tracking-widest border-border/20 text-muted-foreground/60 bg-background/30 py-0 px-2 rounded-full h-4 shadow-none cursor-help">
-                                  <Badge variant="outline" className="border-none p-0 h-auto">
-                                    {crit.linkedCO}
-                                  </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent side="right" className="max-w-[200px] text-xs font-bold bg-foreground border-none p-3 rounded-lg shadow-none">
-                                  <p className="eyebrow text-primary mb-1">Linked learning goal</p>
-                                  <p className="text-primary-foreground/80">{CO_DEFINITIONS[crit.linkedCO] || "Standard institutional goal"}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                              <Button variant="ghost" size="icon-xs" onClick={() => setExpandedRow(expandedRow === crit.id ? null : crit.id)}>
-                                {expandedRow === crit.id ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                              </Button>
-                            </div>
+            {/*
+              Sticky first column relies on the DS Table primitive's own
+              <div className="overflow-x-auto"> wrapper as the scrolling
+              ancestor. No extra outer overflow wrapper here.
+            */}
+            <Table className="border-collapse">
+              <TableHeader>
+                <TableRow className="bg-muted/[0.01] border-b border-border/10 hover:bg-muted/[0.01]">
+                  <TableHead className="eyebrow p-6 text-left text-muted-foreground/30 border-r border-border/10 w-96 bg-background/30 sticky left-0 z-10 backdrop-blur-md whitespace-normal">Criteria</TableHead>
+                  {["Exemplary", "Proficient", "Developing", "Beginning"].map((level, i) => (
+                    <TableHead key={level} className="p-4 text-center border-r border-border/10 min-w-[200px] whitespace-normal h-auto">
+                      <div className="space-y-0.5">
+                        <span className={`eyebrow ${i === 0 ? 'text-primary' : 'text-muted-foreground/50'}`}>{level}</span>
+                        <span className="block text-xs font-semibold text-muted-foreground/30 tracking-tight">Grade: {i === 0 ? '100' : i === 1 ? '75' : i === 2 ? '50' : '25'}%</span>
+                      </div>
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rubric.map((crit) => (
+                  <TableRow key={crit.id} className="border-b border-border/10 hover:bg-primary/[0.01] group">
+                    <TableCell className="p-6 border-r border-border/10 bg-muted/[0.01] align-top space-y-3 sticky left-0 z-10 backdrop-blur-sm w-96 whitespace-normal">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-2 flex-1">
+                          <Textarea
+                            value={crit.name}
+                            className="font-semibold text-xs text-foreground tracking-tight leading-tight border border-border/40 p-3 h-auto min-h-[60px] bg-background/50 focus-visible:ring-primary/20 shadow-none rounded-lg resize-none"
+                            placeholder="Enter criterion name..."
+                            onChange={(e) => {
+                              updateRubric(rubric.map(c => c.id === crit.id ? { ...c, name: e.target.value } : c))
+                            }}
+                          />
+                          <div className="flex items-center justify-between">
+                            <Tooltip>
+                              <TooltipTrigger className="text-xs font-semibold tracking-widest border-border/20 text-muted-foreground/60 bg-background/30 py-0 px-2 rounded-full h-4 shadow-none cursor-help">
+                                <Badge variant="outline" className="border-none p-0 h-auto">
+                                  {crit.linkedCO}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent side="right" className="max-w-[200px] text-xs font-bold bg-foreground border-none p-3 rounded-lg shadow-none">
+                                <p className="eyebrow text-primary mb-1">Linked learning goal</p>
+                                <p className="text-primary-foreground/80">{CO_DEFINITIONS[crit.linkedCO] || "Standard institutional goal"}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Button variant="ghost" size="icon-xs" onClick={() => setExpandedRow(expandedRow === crit.id ? null : crit.id)}>
+                              {expandedRow === crit.id ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                            </Button>
                           </div>
                         </div>
-                      </td>
-                      {crit.levels.map((lvl) => (
-                        <td key={lvl.label} className="p-4 border-r border-border/10 align-top shadow-none">
-                          <Textarea 
-                            className="text-xs font-medium leading-relaxed bg-background/40 border border-border/60 focus-visible:ring-1 focus-visible:ring-primary/10 p-3 min-h-[140px] resize-none hover:bg-background/50 rounded-lg transition-all shadow-none placeholder:opacity-10"
-                            value={lvl.description}
-                            onChange={(e) => updateLevelDescription(crit.id, lvl.label, e.target.value)}
-                          />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                    </TableCell>
+                    {crit.levels.map((lvl) => (
+                      <TableCell key={lvl.label} className="p-4 border-r border-border/10 align-top whitespace-normal">
+                        <Textarea
+                          className="text-xs font-medium leading-relaxed bg-background/40 border border-border/60 focus-visible:ring-1 focus-visible:ring-primary/10 p-3 min-h-[140px] resize-none hover:bg-background/50 rounded-lg transition-all shadow-none placeholder:opacity-10"
+                          value={lvl.description}
+                          onChange={(e) => updateLevelDescription(crit.id, lvl.label, e.target.value)}
+                        />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </Card>
         </div>
 

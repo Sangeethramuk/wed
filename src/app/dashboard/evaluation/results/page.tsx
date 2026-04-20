@@ -8,7 +8,7 @@ import { useGradingStore } from "@/lib/store/grading-store"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Table, TableHeader, TableBody, TableHead, TableCell } from "@/components/ui/table"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import {
   ArrowLeft, Download, Users, TrendingUp, ShieldCheck, CheckCircle2,
   AlertTriangle, Sparkles, BarChart3, ArrowRight, FileText,
@@ -340,7 +340,7 @@ export default function EvaluationResults() {
         <CardContent className="p-0">
           <Table className="text-left">
             <TableHeader className="bg-muted/20 border-b border-border/10">
-              <tr>
+              <TableRow className="hover:bg-muted/20">
                 <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50">#</TableHead>
                 <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50">Student</TableHead>
                 <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50">Roll No.</TableHead>
@@ -353,7 +353,7 @@ export default function EvaluationResults() {
                 <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Grade</TableHead>
                 <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Status</TableHead>
                 <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Integrity</TableHead>
-              </tr>
+              </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-border/10">
               {sorted.map(({ student, scorePct, grade, submitted, flagged, levelMap }, idx) => (
