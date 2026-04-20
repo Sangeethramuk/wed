@@ -6,6 +6,7 @@ import {
   PlusCircle,
   ClipboardCheck,
   BarChart3,
+  RefreshCcw,
 } from "lucide-react"
 
 import {
@@ -37,6 +38,11 @@ const mainNavItems = [
     title: "Grading Desk",
     url: "/dashboard/evaluation",
     icon: ClipboardCheck,
+  },
+  {
+    title: "Re-evaluation",
+    url: "/dashboard/re-evaluation/triage",
+    icon: RefreshCcw,
   },
   {
     title: "Result Insights",
