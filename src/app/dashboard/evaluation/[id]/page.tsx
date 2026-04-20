@@ -1321,10 +1321,10 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               className="w-full max-w-md"
             >
-              <Card className="shadow-[0_40px_100px_-12px_rgba(0,0,0,0.2)] border-border bg-card overflow-hidden rounded-3xl">
+              <Card className="shadow-[0_40px_100px_-12px_rgba(0,0,0,0.2)] border-border bg-card overflow-hidden rounded-2xl">
                 <div className="h-2.5 w-full bg-primary shadow-[0_4px_12px_rgba(var(--primary),0.3)]" />
                 <CardContent className="p-16 text-center space-y-8">
-                  <div className="p-6 w-fit mx-auto rounded-3xl bg-accent text-primary shadow-inner">
+                  <div className="p-6 w-fit mx-auto rounded-2xl bg-accent text-primary shadow-inner">
                     <History className="h-10 w-10" />
                   </div>
                   <div className="space-y-3">

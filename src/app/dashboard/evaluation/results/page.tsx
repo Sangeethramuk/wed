@@ -113,7 +113,7 @@ export default function EvaluationResults() {
   if (!assignment) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] gap-6">
-        <div className="w-16 h-16 rounded-3xl bg-muted/30 flex items-center justify-center">
+        <div className="w-16 h-16 rounded-2xl bg-muted/30 flex items-center justify-center">
           <FileText className="w-7 h-7 text-muted-foreground/30" />
         </div>
         <div className="text-center space-y-2">

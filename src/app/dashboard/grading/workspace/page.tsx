@@ -103,7 +103,7 @@ export default function WorkspacePage() {
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-xl w-full bg-background rounded-3xl shadow-2xl p-12 text-center flex flex-col items-center"
+          className="max-w-xl w-full bg-background rounded-2xl shadow-2xl p-12 text-center flex flex-col items-center"
         >
           <div className="w-20 h-20 bg-[color:var(--status-success-bg)] rounded-full flex items-center justify-center mb-6">
             <CheckCircle2 className="w-10 h-10 text-[color:var(--status-success)]" />
@@ -287,7 +287,7 @@ export default function WorkspacePage() {
                        Conclusion: Normalization ensures that our data models are robust, efficient, and capable of supporting high-density institutional operations.
                     </p>
                     
-                    <div className="h-64 mt-20 border border-dashed border-border/50 rounded-3xl flex flex-col items-center justify-center bg-muted/30 gap-4">
+                    <div className="h-64 mt-20 border border-dashed border-border/50 rounded-2xl flex flex-col items-center justify-center bg-muted/30 gap-4">
                        <ShieldCheck className="w-8 h-8 text-muted-foreground/30" />
                        <span className="eyebrow text-muted-foreground/50">End of Document Stream</span>
                     </div>

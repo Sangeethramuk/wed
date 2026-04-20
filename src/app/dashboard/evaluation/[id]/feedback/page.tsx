@@ -374,7 +374,7 @@ export default function FeedbackPage() {
                        <textarea 
                           value={instructorInput}
                           onChange={(e) => setInstructorInput(e.target.value)}
-                          className="w-full min-h-[160px] text-sm leading-[1.75] text-foreground p-6 rounded-3xl border border-border shadow-[0_4px_20px_rgb(0,0,0,0.02)] focus:border-primary/40 focus:ring-0 bg-background transition-all placeholder:text-muted-foreground/30 placeholder:italic font-serif"
+                          className="w-full min-h-[160px] text-sm leading-[1.75] text-foreground p-6 rounded-2xl border border-border shadow-[0_4px_20px_rgb(0,0,0,0.02)] focus:border-primary/40 focus:ring-0 bg-background transition-all placeholder:text-muted-foreground/30 placeholder:italic font-serif"
                           placeholder="Dictate or type your concluding remarks, specific references to the student's process, or encouraging closing notes..."
                        />
                        <div className="absolute right-4 bottom-4 flex items-center gap-2">

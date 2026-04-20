@@ -81,7 +81,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
           exit={{ opacity: 0, scale: 0.98, y: 8 }}
           transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
           style={{ width: 720, maxWidth: '100%', maxHeight: '92vh' }}
-          className="bg-card border border-border/10 rounded-3xl flex flex-col overflow-hidden relative shadow-2xl"
+          className="bg-card border border-border/10 rounded-2xl flex flex-col overflow-hidden relative shadow-2xl"
         >
           {/* Header */}
           <div className="px-8 pt-8 pb-4 flex-shrink-0 bg-background/20">
