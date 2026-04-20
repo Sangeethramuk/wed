@@ -34,6 +34,8 @@ const mainNavItems = [
   { title: "Result Insights", url: "/dashboard/post-evaluation", icon: BarChart3 },
 ]
 
+const HIDE_WHEN_COLLAPSED = "group-data-[collapsible=icon]:hidden"
+
 function isItemActive(pathname: string, itemUrl: string) {
   if (itemUrl === "/dashboard") return pathname === "/dashboard"
   return pathname.startsWith(itemUrl)
@@ -47,11 +49,15 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-sidebar-border h-16 justify-center px-2">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
+            <SidebarMenuButton
+              size="lg"
+              render={<Link href="/dashboard" />}
+              tooltip="Symbiosis University"
+            >
               <div className="flex aspect-square size-9 items-center justify-center rounded-full bg-destructive/10 text-destructive shrink-0">
                 <span className="text-xs font-semibold">SIU</span>
               </div>
-              <div className="flex flex-col leading-tight min-w-0">
+              <div className={cn("flex flex-col leading-tight min-w-0", HIDE_WHEN_COLLAPSED)}>
                 <span className="font-semibold text-sm truncate">Symbiosis University</span>
               </div>
             </SidebarMenuButton>
@@ -77,7 +83,7 @@ export function AppSidebar() {
                       )}
                     >
                       <item.icon className="size-5" />
-                      <span className="text-sm font-medium">{item.title}</span>
+                      <span className={cn("text-sm font-medium", HIDE_WHEN_COLLAPSED)}>{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )
@@ -87,12 +93,12 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-3 gap-1">
+      <SidebarFooter className="border-t border-sidebar-border p-3 gap-1 group-data-[collapsible=icon]:p-2">
         <SidebarMenu className="gap-1">
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" tooltip="Help & Information">
               <HelpCircle className="size-5" />
-              <span className="text-sm font-medium">Help & Information</span>
+              <span className={cn("text-sm font-medium", HIDE_WHEN_COLLAPSED)}>Help & Information</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
@@ -102,11 +108,16 @@ export function AppSidebar() {
               className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
               <LogOut className="size-5" />
-              <span className="text-sm font-medium">Log out</span>
+              <span className={cn("text-sm font-medium", HIDE_WHEN_COLLAPSED)}>Log out</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <div className="flex w-full items-center justify-center pt-3 mt-1 border-t border-sidebar-border/60">
+        <div
+          className={cn(
+            "flex w-full items-center justify-center pt-3 mt-1 border-t border-sidebar-border/60",
+            HIDE_WHEN_COLLAPSED,
+          )}
+        >
           <span className="text-xs text-muted-foreground/70 tracking-wider">
             Powered by <span className="font-semibold text-foreground">EducAItors</span>
           </span>
