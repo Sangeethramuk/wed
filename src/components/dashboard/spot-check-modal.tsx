@@ -5,15 +5,15 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useGradingStore } from "@/lib/store/grading-store"
 import { X, ChevronRight, ChevronLeft, Check, AlertTriangle, CheckSquare, Info, FileText, CheckCircle2 } from "lucide-react"
 
-const PURPLE = '#5B50D6'
-const PURPLE_BG = '#EEEDFB'
-const PURPLE_BORDER = '#C4C0F0'
+import { confidenceStyles, statusStyles } from "@/lib/design-tokens"
+import { cn } from "@/lib/utils"
 
-const CONF_STYLES = {
-  high: { color: '#2D7D52', bg: '#E8F5EE' },
-  med:  { color: '#8A5A00', bg: '#FEF3DC' },
-  low:  { color: '#B93030', bg: '#FBE9E9' },
-}
+// Category-2 (violet) slot is used as the spot-check accent so re-skins
+// flow through design tokens automatically.
+const ACCENT_BG = "bg-[color:var(--category-2-bg)]"
+const ACCENT_BORDER = "border-[color:var(--category-2)]/40"
+const ACCENT_TEXT = "text-[color:var(--category-2)]"
+const ACCENT_SOLID = "bg-[color:var(--category-2)]"
 
 const OVERRIDE_REASONS = [
   'AI missed contextual evidence',
@@ -137,8 +137,7 @@ export function SpotCheckModal() {
     <AnimatePresence>
       {spotCheckActive && (
         <motion.div
-          className="fixed inset-0 z-[300] flex items-center justify-center"
-          style={{ background: 'rgba(26,25,23,.52)', backdropFilter: 'blur(5px)' }}
+          className="fixed inset-0 z-[300] flex items-center justify-center bg-foreground/50 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -157,10 +156,10 @@ export function SpotCheckModal() {
             <div className="px-5 pt-4 border-b border-border flex-shrink-0" style={{ paddingBottom: scStep >= 0 && scStep < 5 ? 0 : 16 }}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: PURPLE_BG, border: `1px solid ${PURPLE_BORDER}` }}>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <circle cx="8" cy="8" r="6.5" stroke={PURPLE} strokeWidth="1.3" />
-                      <path d="M8 5.5v3.5M8 10.5v.5" stroke={PURPLE} strokeWidth="1.4" strokeLinecap="round" />
+                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border", ACCENT_BG, ACCENT_BORDER)}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={ACCENT_TEXT}>
+                      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.3" />
+                      <path d="M8 5.5v3.5M8 10.5v.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                     </svg>
                   </div>
                   <div>
@@ -183,8 +182,8 @@ export function SpotCheckModal() {
                   <div className="flex items-center gap-2 mb-3">
                     <div className="flex-1 h-1 rounded-full overflow-hidden bg-muted">
                       <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{ width: `${(answeredCount / 5) * 100}%`, background: PURPLE }}
+                        className={cn("h-full rounded-full transition-all duration-500", ACCENT_SOLID)}
+                        style={{ width: `${(answeredCount / 5) * 100}%` }}
                       />
                     </div>
                     <span className="text-xs font-mono text-muted-foreground/70 flex-shrink-0">{answeredCount} / 5</span>
@@ -198,16 +197,17 @@ export function SpotCheckModal() {
                       return (
                         <div key={i} className="flex items-center" style={{ flex: i < 4 ? '1 1 auto' : 'none' }}>
                           <div
-                            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-all"
-                            style={{
-                              background: isOverride ? '#FEF3DC' : isDone ? PURPLE : isCurrent ? PURPLE_BG : '#F2F1EE',
-                              border: `1.5px solid ${isOverride ? '#F0C97A' : isDone ? PURPLE : isCurrent ? PURPLE : '#D0CEC7'}`,
-                              color: isOverride ? '#8A5A00' : isDone ? '#fff' : isCurrent ? PURPLE : '#9B9890',
-                            }}
+                            className={cn(
+                              "w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-all border-[1.5px]",
+                              isOverride && cn(statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text),
+                              !isOverride && isDone && cn(ACCENT_SOLID, "border-[color:var(--category-2)] text-primary-foreground"),
+                              !isOverride && !isDone && isCurrent && cn(ACCENT_BG, "border-[color:var(--category-2)]", ACCENT_TEXT),
+                              !isOverride && !isDone && !isCurrent && "bg-muted border-border text-muted-foreground",
+                            )}
                           >
                             {isOverride ? '!' : isDone ? '✓' : i + 1}
                           </div>
-                          {i < 4 && <div className="flex-1 h-px mx-1" style={{ background: '#E2E0DA' }} />}
+                          {i < 4 && <div className="flex-1 h-px mx-1 bg-border" />}
                         </div>
                       )
                     })}
@@ -223,11 +223,11 @@ export function SpotCheckModal() {
               {scStep === -1 && (
                 <div className="space-y-5">
                   {/* Alert Box */}
-                  <div className="p-4 rounded-lg bg-[#FFF9EB] border border-[#FBEAC3] flex gap-3">
-                    <AlertTriangle className="w-5 h-5 text-[#B47818] flex-shrink-0 mt-0.5" />
+                  <div className={cn("p-4 rounded-lg flex gap-3 border", statusStyles.warning.bg, statusStyles.warning.border)}>
+                    <AlertTriangle className={cn("w-5 h-5 flex-shrink-0 mt-0.5", statusStyles.warning.text)} />
                     <div>
-                      <div className="text-sm font-semibold text-[#8A5A00] mb-1">Why this appeared</div>
-                      <p className="text-xs text-[#8A5A00] leading-relaxed">
+                      <div className={cn("text-sm font-semibold mb-1", statusStyles.warning.text)}>Why this appeared</div>
+                      <p className={cn("text-xs leading-relaxed", statusStyles.warning.text)}>
                         The system noticed that grading pace in this batch was significantly faster in the second half — a common sign of fatigue. This check runs automatically to protect accuracy before grades are locked.
                       </p>
                     </div>
@@ -243,8 +243,8 @@ export function SpotCheckModal() {
                   {/* Feature Cards */}
                   <div className="space-y-2.5">
                     <div className="flex gap-4 p-4 rounded-xl border border-border bg-muted/20">
-                      <div className="w-10 h-10 rounded-lg bg-[#EEEDFB] border border-[#C4C0F0] flex items-center justify-center flex-shrink-0">
-                        <CheckSquare className="w-5 h-5 text-[#5B50D6]" />
+                      <div className={cn("w-10 h-10 rounded-lg border flex items-center justify-center flex-shrink-0", ACCENT_BG, ACCENT_BORDER)}>
+                        <CheckSquare className={cn("w-5 h-5", ACCENT_TEXT)} />
                       </div>
                       <div>
                         <div className="text-sm font-semibold mb-0.5">5 questions, ~2 minutes</div>
@@ -255,8 +255,8 @@ export function SpotCheckModal() {
                     </div>
 
                     <div className="flex gap-4 p-4 rounded-xl border border-border bg-muted/20">
-                      <div className="w-10 h-10 rounded-lg bg-[#E8F5EE] border border-[#86C9A4] flex items-center justify-center flex-shrink-0">
-                        <Info className="w-5 h-5 text-[#2D7D52]" />
+                      <div className={cn("w-10 h-10 rounded-lg border flex items-center justify-center flex-shrink-0", statusStyles.success.bg, statusStyles.success.border)}>
+                        <Info className={cn("w-5 h-5", statusStyles.success.text)} />
                       </div>
                       <div>
                         <div className="text-sm font-semibold mb-0.5">Fix mistakes in real time</div>
@@ -267,8 +267,8 @@ export function SpotCheckModal() {
                     </div>
 
                     <div className="flex gap-4 p-4 rounded-xl border border-border bg-muted/20">
-                      <div className="w-10 h-10 rounded-lg bg-[#E3F2FD] border border-[#90CAF9] flex items-center justify-center flex-shrink-0">
-                        <FileText className="w-5 h-5 text-[#1976D2]" />
+                      <div className={cn("w-10 h-10 rounded-lg border flex items-center justify-center flex-shrink-0", statusStyles.info.bg, statusStyles.info.border)}>
+                        <FileText className={cn("w-5 h-5", statusStyles.info.text)} />
                       </div>
                       <div>
                         <div className="text-sm font-semibold mb-0.5">Creates an audit trail</div>
@@ -280,7 +280,7 @@ export function SpotCheckModal() {
                   </div>
 
                   {/* Clarification Footer Card */}
-                  <div className="flex gap-3 p-4 rounded-xl border border-border bg-[#F5F5F5]">
+                  <div className="flex gap-3 p-4 rounded-xl border border-border bg-muted">
                     <CheckCircle2 className="w-4 h-4 text-muted-foreground/60 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       This isn't a sign of distrust — it's a standard professional check-in. Every session with engagement flags goes through this before grades are locked.
@@ -292,12 +292,12 @@ export function SpotCheckModal() {
               {/* QUESTION */}
               {scStep >= 0 && scStep < 5 && (() => {
                 const q = SC_QUESTIONS[scStep]
-                const conf = CONF_STYLES[q.conf]
+                const conf = confidenceStyles[q.conf]
                 return (
                   <div>
                     {/* Student strip */}
-                    <div className="flex items-center gap-2.5 p-2.5 rounded-lg mb-3.5 border" style={{ background: '#F2F1EE', borderColor: '#E2E0DA' }}>
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0" style={{ background: PURPLE_BG, border: `1px solid ${PURPLE_BORDER}`, color: PURPLE }}>
+                    <div className="flex items-center gap-2.5 p-2.5 rounded-lg mb-3.5 border border-border bg-muted">
+                      <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 border", ACCENT_BG, ACCENT_BORDER, ACCENT_TEXT)}>
                         {q.initials}
                       </div>
                       <div>
@@ -312,15 +312,15 @@ export function SpotCheckModal() {
                     <p className="text-xs text-muted-foreground leading-relaxed mb-3.5">{q.desc}</p>
 
                     {/* Score strip */}
-                    <div className="flex items-center gap-3.5 p-3 rounded-lg mb-3.5 border" style={{ background: '#F2F1EE', borderColor: '#E2E0DA' }}>
+                    <div className="flex items-center gap-3.5 p-3 rounded-lg mb-3.5 border border-border bg-muted">
                       <div>
-                        <span className="text-3xl font-semibold leading-none font-mono" style={{ color: PURPLE }}>{q.score}</span>
+                        <span className={cn("text-3xl font-semibold leading-none font-mono", ACCENT_TEXT)}>{q.score}</span>
                         <span className="text-sm text-muted-foreground/70 ml-0.5"> / {q.maxScore}</span>
                       </div>
                       <div className="w-px h-7 bg-border" />
                       <div className="flex flex-col gap-1">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold" style={{ background: conf.bg, color: conf.color }}>
-                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: conf.color }} />
+                        <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold", conf.bg, conf.text)}>
+                          <span className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", conf.dot)} />
                           {q.confLabel}
                         </span>
                         <span className="text-xs text-muted-foreground/60">{q.criterion}</span>
@@ -329,7 +329,7 @@ export function SpotCheckModal() {
 
                     {/* Evidence */}
                     <div className="text-xs font-semibold tracking-wider text-muted-foreground/60 mb-1.5">Evidence extracted by AI</div>
-                    <div className="text-xs text-muted-foreground leading-relaxed italic border-l-[3px] rounded-r-md px-3 py-2.5 mb-1" style={{ background: '#F2F1EE', borderColor: PURPLE }}>
+                    <div className={cn("text-xs text-muted-foreground leading-relaxed italic border-l-[3px] rounded-r-md px-3 py-2.5 mb-1 bg-muted", "border-l-[color:var(--category-2)]")}>
                       {q.evidence}
                     </div>
                     <div className="text-xs font-mono text-muted-foreground/60 mb-3.5">{q.evLoc}</div>
@@ -340,12 +340,12 @@ export function SpotCheckModal() {
                     {/* Override toggle button */}
                     <button
                       onClick={toggleOverride}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
-                      style={{
-                        background: overridePanelOpen ? '#F2F1EE' : '#FEF3DC',
-                        border: `1px solid ${overridePanelOpen ? '#D0CEC7' : '#F0C97A'}`,
-                        color: overridePanelOpen ? '#5C5A55' : '#8A5A00',
-                      }}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all border",
+                        overridePanelOpen
+                          ? "bg-muted border-border text-muted-foreground"
+                          : cn(statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text),
+                      )}
                     >
                       {overridePanelOpen
                         ? <><X className="w-3 h-3" /> Cancel override</>
@@ -360,8 +360,8 @@ export function SpotCheckModal() {
 
                     {/* Override panel */}
                     {overridePanelOpen && (
-                      <div className="mt-3 rounded-lg p-3.5" style={{ background: '#FFFAED', border: '1px solid #F0C97A' }}>
-                        <div className="flex items-center gap-1.5 text-xs font-semibold mb-3" style={{ color: '#8A5A00' }}>
+                      <div className={cn("mt-3 rounded-lg p-3.5 border", statusStyles.warning.bg, statusStyles.warning.border)}>
+                        <div className={cn("flex items-center gap-1.5 text-xs font-semibold mb-3", statusStyles.warning.text)}>
                           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v5M6.5 8.5v.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" /><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" strokeWidth="1.1" /></svg>
                           Override — change the score
                         </div>
@@ -378,12 +378,12 @@ export function SpotCheckModal() {
                               <button
                                 key={v}
                                 onClick={() => setPickedScore(v)}
-                                className="w-8 h-8 rounded-md text-xs font-medium transition-all"
-                                style={{
-                                  background: pickedScore === v ? '#8A5A00' : '#fff',
-                                  border: `1px solid ${pickedScore === v ? '#c07700' : '#D0CEC7'}`,
-                                  color: pickedScore === v ? '#fff' : '#5C5A55',
-                                }}
+                                className={cn(
+                                  "w-8 h-8 rounded-md text-xs font-medium transition-all border",
+                                  pickedScore === v
+                                    ? cn("bg-[color:var(--status-warning)] border-[color:var(--status-warning)] text-primary-foreground")
+                                    : "bg-background border-border text-muted-foreground",
+                                )}
                               >
                                 {v}
                               </button>
@@ -391,28 +391,28 @@ export function SpotCheckModal() {
                           </div>
                         </div>
 
-                        <div className="text-xs font-semibold tracking-wider mb-1.5" style={{ color: '#8A5A00' }}>Reason for override</div>
+                        <div className={cn("text-xs font-semibold tracking-wider mb-1.5", statusStyles.warning.text)}>Reason for override</div>
                         <div className="flex flex-col gap-1 mb-3">
                           {OVERRIDE_REASONS.map(r => (
                             <button
                               key={r}
                               onClick={() => setPickedReason(r)}
-                              className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-left transition-all"
-                              style={{
-                                background: pickedReason === r ? '#FEF3DC' : '#fff',
-                                border: `1px solid ${pickedReason === r ? '#F0C97A' : '#E2E0DA'}`,
-                                color: pickedReason === r ? '#8A5A00' : '#5C5A55',
-                                fontWeight: pickedReason === r ? 500 : 400,
-                              }}
+                              className={cn(
+                                "flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-left transition-all border",
+                                pickedReason === r
+                                  ? cn(statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text, "font-medium")
+                                  : "bg-background border-border text-muted-foreground",
+                              )}
                             >
                               <div
-                                className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0"
-                                style={{
-                                  border: `1.5px solid ${pickedReason === r ? '#8A5A00' : '#D0CEC7'}`,
-                                  background: pickedReason === r ? '#8A5A00' : 'transparent',
-                                }}
+                                className={cn(
+                                  "w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 border-[1.5px]",
+                                  pickedReason === r
+                                    ? "border-[color:var(--status-warning)] bg-[color:var(--status-warning)]"
+                                    : "border-border bg-transparent",
+                                )}
                               >
-                                {pickedReason === r && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                {pickedReason === r && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
                               </div>
                               {r}
                             </button>
@@ -420,8 +420,8 @@ export function SpotCheckModal() {
                         </div>
 
                         <textarea
-                          className="w-full text-xs px-2.5 py-2 rounded-md resize-none border focus:outline-none"
-                          style={{ background: '#fff', borderColor: '#D0CEC7', color: '#1A1917', minHeight: 50 }}
+                          className="w-full text-xs px-2.5 py-2 rounded-md resize-none border border-border bg-background text-foreground focus:outline-none"
+                          style={{ minHeight: 50 }}
                           placeholder="Optional: add a brief note to help the AI improve…"
                           rows={2}
                         />
@@ -437,9 +437,9 @@ export function SpotCheckModal() {
                 const confirmedCount = scResults.filter(r => r.status === 'confirmed').length
                 return (
                   <div>
-                    <div className="w-[50px] h-[50px] rounded-full flex items-center justify-center mb-4" style={{ background: '#E8F5EE', border: '1.5px solid #86C9A4' }}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M5 12l5 5L19 7" stroke="#2D7D52" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <div className={cn("w-[50px] h-[50px] rounded-full flex items-center justify-center mb-4 border-[1.5px]", statusStyles.success.bg, statusStyles.success.border)}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className={statusStyles.success.text}>
+                        <path d="M5 12l5 5L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
                     <div className="text-lg font-semibold tracking-tight mb-1.5">
@@ -457,26 +457,16 @@ export function SpotCheckModal() {
                       {scResults.map((r, i) => {
                         const q = SC_QUESTIONS[r.idx]
                         const isOverride = r.status === 'override'
+                        const tone = isOverride ? statusStyles.warning : statusStyles.success
                         return (
                           <div
                             key={i}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm border"
-                            style={{
-                              background: isOverride ? '#FEF3DC' : '#E8F5EE',
-                              borderColor: isOverride ? '#F0C97A' : '#86C9A4',
-                            }}
+                            className={cn("flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm border", tone.bg, tone.border)}
                           >
                             <span className="text-sm flex-shrink-0">{isOverride ? '⚠' : '✓'}</span>
                             <span className="flex-1 font-medium">{q.student}</span>
                             <span className="text-xs font-mono text-muted-foreground/70">{q.criterion}</span>
-                            <span
-                              className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                              style={{
-                                background: isOverride ? '#FEF3DC' : '#E8F5EE',
-                                border: `1px solid ${isOverride ? '#F0C97A' : '#86C9A4'}`,
-                                color: isOverride ? '#8A5A00' : '#2D7D52',
-                              }}
-                            >
+                            <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full border", tone.bg, tone.border, tone.text)}>
                               {isOverride ? `Override → ${(r as Extract<SCResult, { status: 'override' }>).newScore}/5` : 'Confirmed'}
                             </span>
                           </div>
@@ -509,8 +499,7 @@ export function SpotCheckModal() {
                 {scStep > 0 && scStep < 5 && (
                   <button
                     onClick={goBack}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium border transition-colors hover:bg-muted/50"
-                    style={{ borderColor: '#D0CEC7', color: '#5C5A55' }}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium border border-border text-muted-foreground transition-colors hover:bg-muted/50"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                     Back
@@ -519,8 +508,10 @@ export function SpotCheckModal() {
                 <button
                   onClick={goNext}
                   disabled={isNextDisabled}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{ background: scStep === 5 ? '#2D7D52' : PURPLE }}
+                  className={cn(
+                    "flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium text-primary-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+                    scStep === 5 ? "bg-[color:var(--status-success)]" : ACCENT_SOLID,
+                  )}
                 >
                   {scStep === -1 && <><span>Begin spot check</span><ChevronRight className="w-3.5 h-3.5" /></>}
                   {scStep >= 0 && scStep < 5 && overridePanelOpen && <><span>Save override & continue</span><ChevronRight className="w-3.5 h-3.5" /></>}
