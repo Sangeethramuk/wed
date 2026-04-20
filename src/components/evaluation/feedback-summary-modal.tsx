@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
+import { statusStyles } from "@/lib/design-tokens"
 import { 
   X, 
   Mic, 
@@ -58,10 +59,10 @@ export function FeedbackSummaryModal({
   const percentage = Math.round((totalScore / maxScore) * 100)
 
   const getPerformanceLevel = (pct: number) => {
-    if (pct >= 90) return { label: "Excellent", color: "text-green-600", bg: "bg-green-50" }
-    if (pct >= 75) return { label: "Good", color: "text-blue-600", bg: "bg-blue-50" }
-    if (pct >= 60) return { label: "Satisfactory", color: "text-amber-600", bg: "bg-amber-50" }
-    return { label: "Needs Improvement", color: "text-red-600", bg: "bg-red-50" }
+    if (pct >= 90) return { label: "Excellent", color: statusStyles.success.text, bg: statusStyles.success.bg }
+    if (pct >= 75) return { label: "Good", color: statusStyles.info.text, bg: statusStyles.info.bg }
+    if (pct >= 60) return { label: "Satisfactory", color: statusStyles.warning.text, bg: statusStyles.warning.bg }
+    return { label: "Needs Improvement", color: statusStyles.error.text, bg: statusStyles.error.bg }
   }
 
   const performance = getPerformanceLevel(percentage)

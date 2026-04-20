@@ -7,6 +7,8 @@ import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import { CategoryBadge } from "@/components/ui/category-badge"
+import { ColorDot } from "@/components/ui/color-dot"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   ChevronDown,
@@ -19,18 +21,6 @@ import {
   AlertCircle,
   BarChart3,
 } from "lucide-react"
-
-const DEPT_COLORS: Record<string, string> = {
-  "Computer Science": "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200/40 dark:border-blue-900/40",
-  "Information Technology": "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-200/40 dark:border-purple-900/40",
-  "Electronics": "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200/40 dark:border-emerald-900/40",
-}
-
-const DEPT_DOT: Record<string, string> = {
-  "Computer Science": "bg-blue-500",
-  "Information Technology": "bg-purple-500",
-  "Electronics": "bg-emerald-500",
-}
 
 const TYPE_BADGE: Record<string, string> = {
   Project: "bg-primary/10 text-primary border-primary/20",
@@ -187,11 +177,11 @@ function DeptGroup({ department, assignments }: { department: string; assignment
         className="w-full flex items-center gap-4 px-5 py-3.5 bg-muted/20 hover:bg-muted/40 transition-colors text-left"
       >
         <div className="flex items-center gap-2.5 flex-1">
-          <div className={`w-2 h-2 rounded-full ${DEPT_DOT[department] ?? "bg-muted-foreground"}`} />
+          <ColorDot color={{ kind: "category", value: department }} size="md" />
           <span className="eyebrow text-foreground/80">{department}</span>
-          <Badge variant="outline" className={`text-xs font-black tracking-wider border ${DEPT_COLORS[department] ?? ""}`}>
+          <CategoryBadge category={department} showDot={false} className="text-xs font-black tracking-wider">
             {assignments.length} assignment{assignments.length !== 1 ? "s" : ""}
-          </Badge>
+          </CategoryBadge>
         </div>
         <div className="eyebrow flex items-center gap-5 text-muted-foreground/40">
           <Tooltip>

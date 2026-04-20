@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useGradingStore, type InternalNote } from '@/lib/store/grading-store';
 import { motion, AnimatePresence } from 'framer-motion';
+import { statusStyles } from '@/lib/design-tokens';
 
 const CATEGORY_OPTIONS = [
   { value: 'Medical Leave', icon: AlertTriangle, label: 'Medical Leave' },
@@ -37,7 +38,7 @@ function getAvatarColor(color: string) {
 
 function getCategoryStyle(cat: string) {
   switch (cat) {
-    case 'Medical Leave': return 'bg-red-50 text-red-700 border-red-200';
+    case 'Medical Leave': return `${statusStyles.error.bg} ${statusStyles.error.text} ${statusStyles.error.border}`;
     case 'Academic Context': return 'bg-blue-50 text-blue-700 border-blue-200';
     case 'Grading Decision': return 'bg-primary/10 text-primary border-primary/20';
     case 'Conduct': return 'bg-amber-50 text-amber-700 border-amber-200';

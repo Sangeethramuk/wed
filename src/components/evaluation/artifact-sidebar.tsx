@@ -4,6 +4,7 @@ import { useState } from "react"
 import { type StudentArtifact, type ArtifactType } from "@/lib/manuscript-generator"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { artifactStyles } from "@/lib/design-tokens"
 import {
   FileText,
   Presentation,
@@ -29,25 +30,11 @@ const ARTIFACT_ICONS: Record<ArtifactType, React.ElementType> = {
   image: Image,
 }
 
-const ARTIFACT_COLORS: Record<ArtifactType, string> = {
-  pdf: "text-red-500",
-  docx: "text-blue-500",
-  pptx: "text-orange-500",
-  video: "text-purple-500",
-  link: "text-cyan-500",
-  code: "text-green-500",
-  image: "text-pink-500",
-}
+const resolveArtifactColor = (type: ArtifactType): string =>
+  artifactStyles[type as keyof typeof artifactStyles]?.text ?? "text-muted-foreground"
 
-const ARTIFACT_BG: Record<ArtifactType, string> = {
-  pdf: "bg-red-50",
-  docx: "bg-blue-50",
-  pptx: "bg-orange-50",
-  video: "bg-purple-50",
-  link: "bg-cyan-50",
-  code: "bg-green-50",
-  image: "bg-pink-50",
-}
+const resolveArtifactBg = (type: ArtifactType): string =>
+  artifactStyles[type as keyof typeof artifactStyles]?.bg ?? "bg-muted"
 
 function ArtifactPreviewDialog({
   artifact,
@@ -67,8 +54,8 @@ function ArtifactPreviewDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-sm">
-            <div className={`h-8 w-8 rounded-md ${ARTIFACT_BG[artifact.type]} flex items-center justify-center`}>
-              <Icon className={`h-4 w-4 ${ARTIFACT_COLORS[artifact.type]}`} />
+            <div className={`h-8 w-8 rounded-md ${resolveArtifactBg(artifact.type)} flex items-center justify-center`}>
+              <Icon className={`h-4 w-4 ${resolveArtifactColor(artifact.type)}`} />
             </div>
             <div>
               <div className="font-bold text-foreground">{artifact.name}</div>
@@ -246,8 +233,8 @@ export default function ArtifactSidebar({
           <div className={`p-1.5 space-y-1 ${expanded ? "" : "flex flex-col items-center"}`}>
             {artifacts.map((artifact) => {
               const Icon = ARTIFACT_ICONS[artifact.type]
-              const color = ARTIFACT_COLORS[artifact.type]
-              const bg = ARTIFACT_BG[artifact.type]
+              const color = resolveArtifactColor(artifact.type)
+              const bg = resolveArtifactBg(artifact.type)
 
               return (
                 <button
