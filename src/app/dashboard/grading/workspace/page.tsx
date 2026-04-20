@@ -147,7 +147,7 @@ export default function WorkspacePage() {
             <h2 className="eyebrow text-slate-400 font-mono leading-none mb-1">Evaluation Workspace</h2>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-slate-900">{assignment.title}</span>
-              <Badge variant="secondary" className="bg-slate-100 text-[10px] h-4 px-1.5 rounded font-mono tracking-tighter border-none">
+              <Badge variant="secondary" className="bg-slate-100 text-xs h-4 px-1.5 rounded font-mono tracking-tighter border-none">
                 {assignment.id}
               </Badge>
             </div>
@@ -168,7 +168,7 @@ export default function WorkspacePage() {
                  </div>
                  <div className="flex flex-col items-end gap-0.5">
                     <span className="eyebrow text-slate-400">Anchor Period</span>
-                    <div className="text-[10px] font-mono font-bold text-slate-600">{inspectionTime}s <span className="opacity-30">/ 3s</span></div>
+                    <div className="text-xs font-mono font-bold text-slate-600">{inspectionTime}s <span className="opacity-30">/ 3s</span></div>
                  </div>
               </div>
            </div>
@@ -199,7 +199,7 @@ export default function WorkspacePage() {
                  </div>
                  <div>
                     <h4 className="eyebrow text-amber-500">Systemic Disruption Detected</h4>
-                    <p className="text-[11px] text-slate-300 mt-0.5 font-medium">Internal deltas are exceeding 15%. Fix routing will be mandatory.</p>
+                    <p className="text-xs text-slate-300 mt-0.5 font-medium">Internal deltas are exceeding 15%. Fix routing will be mandatory.</p>
                  </div>
               </div>
               <Button variant="secondary" size="sm" onClick={() => setShowPatternAlert(false)}>
@@ -251,7 +251,7 @@ export default function WorkspacePage() {
                      </div>
                   </header>
 
-                  <div className="space-y-8 text-[18px] leading-[1.7] text-slate-700">
+                  <div className="space-y-8 text-lg leading-[1.7] text-slate-700">
                     <p className="first-letter:text-5xl first-letter:font-bold first-letter:mr-2 first-letter:float-left first-letter:text-slate-900 decoration-slate-200">
                        Normalization is a database design technique which organizes tables in a manner that reduces redundancy and dependency of data. It divides larger tables to smaller tables and links them using relationships.
                     </p>
@@ -312,8 +312,8 @@ export default function WorkspacePage() {
                 {/* Sticky nav */}
                 <nav className="bg-background border-b border-border px-4 pt-3 pb-0 shrink-0">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[13px] font-semibold text-foreground">Rubric evaluation</span>
-                    <span className="text-[11px] font-mono text-muted-foreground/60 bg-muted/40 border border-border/60 rounded-full px-2 py-0.5">
+                    <span className="text-sm font-semibold text-foreground">Rubric evaluation</span>
+                    <span className="text-xs font-mono text-muted-foreground/60 bg-muted/40 border border-border/60 rounded-full px-2 py-0.5">
                       {scoredCount} of {criteriaList.length} completed
                     </span>
                   </div>
@@ -338,7 +338,7 @@ export default function WorkspacePage() {
                             isActive ? 'border-primary' : 'border-transparent'
                           }`}
                         >
-                          <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center text-[10px] font-semibold transition-all ${
+                          <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
                             isDone
                               ? 'bg-primary border-primary text-primary-foreground'
                               : isActive
@@ -347,7 +347,7 @@ export default function WorkspacePage() {
                           }`}>
                             {isDone ? '✓' : i + 1}
                           </div>
-                          <span className={`text-[10px] font-medium text-center leading-tight max-w-[70px] ${
+                          <span className={`text-xs font-medium text-center leading-tight max-w-[70px] ${
                             isDone ? 'text-muted-foreground' : isActive ? 'text-primary' : 'text-muted-foreground/50'
                           }`}>{c.name}</span>
                         </Button>
@@ -371,13 +371,13 @@ export default function WorkspacePage() {
                             >
                               <div className="flex items-center gap-2">
                                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0, color: '#8A5A00' }}><circle cx="6.5" cy="6.5" r="6" stroke="currentColor" strokeWidth="1.2"/><path d="M6.5 4v3.5M6.5 9v.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
-                                <span className="text-[12px] font-semibold" style={{ color: '#8A5A00' }}>Review needed</span>
-                                <span className="text-[12px]" style={{ color: '#8A5A00', opacity: 0.75 }}>— citations missing for key claims</span>
+                                <span className="text-xs font-semibold" style={{ color: '#8A5A00' }}>Review needed</span>
+                                <span className="text-xs" style={{ color: '#8A5A00', opacity: 0.75 }}>— citations missing for key claims</span>
                               </div>
                               <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0, color: '#8A5A00', transform: reviewStripOpen[activeCriterion.id] ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}><path d="M2.5 4.5l4 4 4-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
                             </Button>
                             {reviewStripOpen[activeCriterion.id] && (
-                              <ul className="text-[12px] leading-[1.7] px-9 pb-2.5 m-0" style={{ color: '#8A5A00' }}>
+                              <ul className="text-xs leading-[1.7] px-9 pb-2.5 m-0" style={{ color: '#8A5A00' }}>
                                 {activeCriterion.evidence.map((ev, i) => (
                                   <li key={i}>{ev}</li>
                                 ))}
@@ -390,8 +390,8 @@ export default function WorkspacePage() {
                         <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
                           <div className="p-3.5 space-y-3.5">
                             <div>
-                              <h4 className="text-[15px] font-semibold text-foreground leading-snug">{activeCriterion.name}</h4>
-                              <p className="text-[12px] text-muted-foreground leading-relaxed mt-1">{activeCriterion.reasoning}</p>
+                              <h4 className="text-sm font-semibold text-foreground leading-snug">{activeCriterion.name}</h4>
+                              <p className="text-xs text-muted-foreground leading-relaxed mt-1">{activeCriterion.reasoning}</p>
                             </div>
 
                             {/* Score */}
@@ -399,12 +399,12 @@ export default function WorkspacePage() {
                               <span className="eyebrow font-semibold text-muted-foreground/60 block mb-2">Score</span>
                               <div className="flex items-center gap-2.5">
                                 <div className="flex items-baseline gap-0.5">
-                                  <span className="text-[32px] font-semibold leading-none tracking-tight text-foreground">{activeCriterion.level}</span>
-                                  <span className="text-[15px] text-muted-foreground/60 font-normal">/5</span>
+                                  <span className="text-3xl font-semibold leading-none tracking-tight text-foreground">{activeCriterion.level}</span>
+                                  <span className="text-sm text-muted-foreground/60 font-normal">/5</span>
                                 </div>
                                 <div className="w-px h-7 bg-border" />
                                 <div className="flex items-center gap-1.5 ml-1">
-                                  <span className="text-[11px] text-muted-foreground/60">Adjust:</span>
+                                  <span className="text-xs text-muted-foreground/60">Adjust:</span>
                                   <div className="flex gap-1">
                                     {[1, 2, 3, 4, 5].map(v => (
                                       <Button
@@ -424,14 +424,14 @@ export default function WorkspacePage() {
                             {/* Override accordion (shown when adjusted from AI) */}
                             {isOverridden && (
                               <div style={{ background: '#FFFAED', border: '1px solid #F0C97A', borderRadius: 6, padding: '12px' }}>
-                                <div className="flex items-center gap-1.5 text-[12px] font-semibold mb-2" style={{ color: '#8A5A00' }}>
+                                <div className="flex items-center gap-1.5 text-xs font-semibold mb-2" style={{ color: '#8A5A00' }}>
                                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v6M7 9.5v1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.2"/></svg>
                                   Score overridden — please provide a reason
                                 </div>
                                 <select
                                   value={overrideReasons[activeCriterion.id] ?? ''}
                                   onChange={e => setOverrideReasons(r => ({ ...r, [activeCriterion.id]: e.target.value }))}
-                                  className="w-full text-[12px] px-2.5 py-1.5 border border-border/70 rounded-md bg-background text-foreground mb-2 font-sans focus:outline-none focus:border-primary cursor-pointer"
+                                  className="w-full text-xs px-2.5 py-1.5 border border-border/70 rounded-md bg-background text-foreground mb-2 font-sans focus:outline-none focus:border-primary cursor-pointer"
                                 >
                                   <option value="" disabled>Select a reason…</option>
                                   <option>AI missed contextual nuance</option>
@@ -445,7 +445,7 @@ export default function WorkspacePage() {
                                   onChange={e => setReasonNotes(n => ({ ...n, [activeCriterion.id]: e.target.value }))}
                                   rows={2}
                                   placeholder="Optional: add a brief note explaining your override…"
-                                  className="w-full text-[12px] px-2.5 py-1.5 border border-border/70 rounded-md bg-background text-foreground font-sans resize-none focus:outline-none focus:border-primary min-h-[56px]"
+                                  className="w-full text-xs px-2.5 py-1.5 border border-border/70 rounded-md bg-background text-foreground font-sans resize-none focus:outline-none focus:border-primary min-h-[56px]"
                                 />
                               </div>
                             )}
@@ -458,7 +458,7 @@ export default function WorkspacePage() {
                                 onChange={e => setFeedbacks(f => ({ ...f, [activeCriterion.id]: e.target.value }))}
                                 rows={4}
                                 placeholder="Write feedback for this criterion…"
-                                className="w-full text-[13px] leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[90px] transition-colors"
+                                className="w-full text-sm leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[90px] transition-colors"
                               />
                             </div>
                           </div>
@@ -483,9 +483,9 @@ export default function WorkspacePage() {
                             <div className="border-t border-border p-3.5 space-y-2">
                               {activeCriterion.evidence.map((ev, i) => (
                                 <div key={i} className="flex items-start gap-2 p-2.5 bg-muted/30 border border-border rounded-md hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
-                                  <div className="w-[18px] h-[18px] rounded-full bg-primary/10 border border-primary/30 text-primary text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</div>
+                                  <div className="w-[18px] h-[18px] rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-[12px] leading-[1.55] text-muted-foreground italic">"{ev}"</p>
+                                    <p className="text-xs leading-[1.55] text-muted-foreground italic">"{ev}"</p>
                                     <div className="flex gap-2 mt-1.5">
                                       <Button variant="link" size="xs" className="p-0 h-auto">Edit</Button>
                                       <Button variant="link" size="xs" className="p-0 h-auto text-destructive">Remove</Button>
@@ -518,16 +518,16 @@ export default function WorkspacePage() {
                           </Button>
                           {accordionOpen[`ai-${activeCriterion.id}`] && (
                             <div className="border-t border-border p-3.5 space-y-2.5">
-                              <p className="text-[12px] text-muted-foreground leading-[1.65]">{activeCriterion.reasoning}</p>
+                              <p className="text-xs text-muted-foreground leading-[1.65]">{activeCriterion.reasoning}</p>
                               <div className="flex flex-wrap gap-1.5">
                                 {activeCriterion.evidence.slice(0, 2).map((ev, i) => (
-                                  <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium" style={{ background: '#E8F5EE', color: '#2D7D52' }}>
+                                  <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: '#E8F5EE', color: '#2D7D52' }}>
                                     <svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="3.5" fill="currentColor"/></svg>
                                     {ev.length > 30 ? ev.slice(0, 30) + '…' : ev}
                                   </span>
                                 ))}
                                 {isRevealed && (
-                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border border-border/60 bg-muted/30 text-muted-foreground">
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border border-border/60 bg-muted/30 text-muted-foreground">
                                     ~ Acceptable depth for level
                                   </span>
                                 )}
@@ -574,7 +574,7 @@ export default function WorkspacePage() {
                         >
                           {phase === 'blind' ? 'Proceed to feedback' : 'Finalize session'}
                           {remaining > 0 && (
-                            <span className="text-[11px] opacity-60 ml-1">· {remaining} remaining</span>
+                            <span className="text-xs opacity-60 ml-1">· {remaining} remaining</span>
                           )}
                         </Button>
                       )}
@@ -626,7 +626,7 @@ export default function WorkspacePage() {
                         <fix.icon className={`w-10 h-10 ${fix.color}`} />
                      </div>
                      <h4 className="text-xl font-black text-slate-900 tracking-tight mb-4">{fix.title}</h4>
-                     <p className="text-[14px] text-slate-400 font-bold leading-[1.6] tracking-tighter">{fix.desc}</p>
+                     <p className="text-sm text-slate-400 font-bold leading-[1.6] tracking-tighter">{fix.desc}</p>
 
                      {assignment.targetFix === fix.id && (
                        <Badge className="eyebrow absolute top-8 right-10 bg-slate-900 text-white px-3 h-6 animate-pulse">

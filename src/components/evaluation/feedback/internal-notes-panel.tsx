@@ -91,12 +91,12 @@ export function InternalNotesPanel() {
           <span className="eyebrow text-foreground/70">
             Internal Notes
           </span>
-          <Badge variant="outline" className="text-[9px] font-bold h-4 bg-amber-50 text-amber-700 border-amber-200">
+          <Badge variant="outline" className="text-xs font-bold h-4 bg-amber-50 text-amber-700 border-amber-200">
             INSTRUCTORS ONLY
           </Badge>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[9px] text-muted-foreground font-medium">
+          <span className="text-xs text-muted-foreground font-medium">
             {totalNotes} note{totalNotes !== 1 ? 's' : ''}
           </span>
           {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
@@ -124,15 +124,15 @@ export function InternalNotesPanel() {
                     <button
                       onClick={() => goToNote(currentNoteIdx - 1)}
                       disabled={currentNoteIdx === 0}
-                      className="w-5 h-5 rounded-full bg-muted/40 border border-border/60 flex items-center justify-center text-[10px] cursor-pointer disabled:opacity-30 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+                      className="w-5 h-5 rounded-full bg-muted/40 border border-border/60 flex items-center justify-center text-xs cursor-pointer disabled:opacity-30 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
                     >‹</button>
-                    <span className="text-[9px] text-muted-foreground font-mono min-w-[28px] text-center">
+                    <span className="text-xs text-muted-foreground font-mono min-w-[28px] text-center">
                       {currentNoteIdx + 1} / {totalNotes}
                     </span>
                     <button
                       onClick={() => goToNote(currentNoteIdx + 1)}
                       disabled={currentNoteIdx >= totalNotes - 1}
-                      className="w-5 h-5 rounded-full bg-muted/40 border border-border/60 flex items-center justify-center text-[10px] cursor-pointer disabled:opacity-30 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+                      className="w-5 h-5 rounded-full bg-muted/40 border border-border/60 flex items-center justify-center text-xs cursor-pointer disabled:opacity-30 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
                     >›</button>
                   </div>
                 </div>
@@ -155,23 +155,23 @@ export function InternalNotesPanel() {
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <div className={`w-6 h-6 rounded-full ${getAvatarColor(notes[currentNoteIdx].avatarColor)} flex items-center justify-center text-[8px] font-bold text-white`}>
+                        <div className={`w-6 h-6 rounded-full ${getAvatarColor(notes[currentNoteIdx].avatarColor)} flex items-center justify-center text-xs font-bold text-white`}>
                           {notes[currentNoteIdx].initials}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-[10px] font-semibold text-foreground">{notes[currentNoteIdx].author}</div>
-                          <div className="text-[9px] text-muted-foreground">{notes[currentNoteIdx].role}</div>
+                          <div className="text-xs font-semibold text-foreground">{notes[currentNoteIdx].author}</div>
+                          <div className="text-xs text-muted-foreground">{notes[currentNoteIdx].role}</div>
                         </div>
                         {notes[currentNoteIdx].isFlagged && (
-                          <Badge variant="outline" className="text-[8px] font-bold h-4 bg-amber-50 text-amber-700 border-amber-200">
+                          <Badge variant="outline" className="text-xs font-bold h-4 bg-amber-50 text-amber-700 border-amber-200">
                             Contextual
                           </Badge>
                         )}
-                        <span className="text-[9px] text-muted-foreground font-mono">
+                        <span className="text-xs text-muted-foreground font-mono">
                           {notes[currentNoteIdx].timestamp}
                         </span>
                       </div>
-                      <p className="text-[11px] text-foreground leading-[1.65]">
+                      <p className="text-xs text-foreground leading-[1.65]">
                         {notes[currentNoteIdx].text}
                       </p>
                       <Badge
@@ -207,7 +207,7 @@ export function InternalNotesPanel() {
                 <span className="eyebrow text-muted-foreground/60">
                   Add a Note
                 </span>
-                <span className="text-[9px] text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   Visible to all instructors
                 </span>
               </div>
@@ -216,7 +216,7 @@ export function InternalNotesPanel() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full text-[11px] font-medium px-3 py-1.5 rounded-full border border-border/70 bg-background text-foreground mb-2 font-sans focus:outline-none focus:border-primary cursor-pointer appearance-none"
+                className="w-full text-xs font-medium px-3 py-1.5 rounded-full border border-border/70 bg-background text-foreground mb-2 font-sans focus:outline-none focus:border-primary cursor-pointer appearance-none"
               >
                 <option value="" disabled>Select a category…</option>
                 {CATEGORY_OPTIONS.map((opt) => (
@@ -229,17 +229,17 @@ export function InternalNotesPanel() {
                 onChange={(e) => setNewNoteText(e.target.value)}
                 placeholder="Add context, observations, or decisions that other instructors should know…"
                 rows={2}
-                className="w-full text-[11px] text-foreground leading-[1.65] bg-muted/20 border border-border rounded-md p-2.5 resize-none focus:outline-none focus:border-primary font-sans min-h-[56px] transition-colors"
+                className="w-full text-xs text-foreground leading-[1.65] bg-muted/20 border border-border rounded-md p-2.5 resize-none focus:outline-none focus:border-primary font-sans min-h-[56px] transition-colors"
               />
 
               <div className="flex items-center gap-2 mt-2">
-                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Eye className="w-3 h-3" />
                   Not shown to student
                 </div>
                 <Button
                   size="sm"
-                  className="h-7 px-3.5 text-[10px] font-semibold gap-1 ml-auto"
+                  className="h-7 px-3.5 text-xs font-semibold gap-1 ml-auto"
                   onClick={handleAddNote}
                   disabled={!canAdd}
                 >

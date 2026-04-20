@@ -139,17 +139,17 @@ function EventCard({ event }: { event: RevisionEvent }) {
             </span>
             <Badge
               variant="outline"
-              className={`h-4 px-1.5 text-[8px] font-bold rounded-sm ${config.bgColor} ${config.color} ${config.borderColor} border`}
+              className={`h-4 px-1.5 text-xs font-bold rounded-sm ${config.bgColor} ${config.color} ${config.borderColor} border`}
             >
               {String(event.criterionId).toUpperCase()}
             </Badge>
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground/50">
             <Clock className="h-2.5 w-2.5" />
-            <span className="text-[9px] font-mono tabular-nums">
+            <span className="text-xs font-mono tabular-nums">
               {formatTime(event.timestamp)}
             </span>
-            <span className="text-[8px] text-muted-foreground/30">
+            <span className="text-xs text-muted-foreground/30">
               ({formatRelativeTime(event.timestamp)})
             </span>
           </div>
@@ -166,7 +166,7 @@ function EventCard({ event }: { event: RevisionEvent }) {
           </span>
         </div>
 
-        <p className="text-[10px] font-bold text-muted-foreground tracking-wider">
+        <p className="text-xs font-bold text-muted-foreground tracking-wider">
           {event.criterionLabel}
         </p>
 
@@ -185,7 +185,7 @@ function EventCard({ event }: { event: RevisionEvent }) {
                 {event.details.newScore}
               </span>
             )}
-            <span className="text-[9px] text-muted-foreground/50 ml-auto">pts</span>
+            <span className="text-xs text-muted-foreground/50 ml-auto">pts</span>
           </div>
         )}
 
@@ -263,7 +263,7 @@ export function RevisionHistorySheet({
             </div>
             <Badge
               variant="outline"
-              className="h-6 px-2 text-[9px] font-black rounded-full"
+              className="h-6 px-2 text-xs font-black rounded-full"
             >
               {events.length} {events.length === 1 ? "event" : "events"}
             </Badge>
@@ -277,7 +277,7 @@ export function RevisionHistorySheet({
                   <Badge
                     key={type}
                     variant="outline"
-                    className={`h-5 px-2 text-[8px] font-bold tracking-wider rounded-full ${config.bgColor} ${config.color} ${config.borderColor} border`}
+                    className={`h-5 px-2 text-xs font-bold tracking-wider rounded-full ${config.bgColor} ${config.color} ${config.borderColor} border`}
                   >
                     {config.label} ({count})
                   </Badge>
@@ -297,7 +297,7 @@ export function RevisionHistorySheet({
                 <p className="eyebrow text-xs text-muted-foreground/40">
                   No revisions yet
                 </p>
-                <p className="text-[10px] text-muted-foreground/30 mt-1 leading-relaxed">
+                <p className="text-xs text-muted-foreground/30 mt-1 leading-relaxed">
                   Override scores, map evidence, or edit feedback to build an audit trail
                 </p>
               </div>

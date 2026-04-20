@@ -49,7 +49,7 @@ function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterio
             <span className={`eyebrow ${c.text}`}>Your Evidence</span>
           </div>
           <p className="text-sm font-bold text-popover-foreground">{label}</p>
-          <p className="text-[10px] text-muted-foreground italic">Manually mapped by instructor</p>
+          <p className="text-xs text-muted-foreground italic">Manually mapped by instructor</p>
         </div>
       </HoverCardContent>
     </HoverCard>
@@ -152,17 +152,17 @@ function DiagramElement({
               { name: "Products", fields: ["id", "sku", "price"] },
             ].map((t) => (
               <div key={t.name} className="border border-blue-200 rounded bg-blue-50/50">
-                <div className="px-2 py-1 bg-blue-100 border-b border-blue-200 text-[10px] font-bold text-blue-800 text-center">
+                <div className="px-2 py-1 bg-blue-100 border-b border-blue-200 text-xs font-bold text-blue-800 text-center">
                   {t.name}
                 </div>
                 {t.fields.map((f) => (
-                  <div key={f} className="px-2 py-0.5 text-[9px] text-foreground/70 font-mono border-b border-blue-100 last:border-0">
+                  <div key={f} className="px-2 py-0.5 text-xs text-foreground/70 font-mono border-b border-blue-100 last:border-0">
                     {f}
                   </div>
                 ))}
               </div>
             ))}
-            <div className="col-span-3 flex justify-center gap-8 text-[9px] text-muted-foreground font-mono">
+            <div className="col-span-3 flex justify-center gap-8 text-xs text-muted-foreground font-mono">
               <span>Users ──1:N──▸ Orders</span>
               <span>Orders ──N:M──▸ Products</span>
             </div>
@@ -172,7 +172,7 @@ function DiagramElement({
           <div className="flex flex-col items-center gap-2 w-full max-w-xs">
             {["Client Request", "API Gateway", "Auth Middleware", "Controller", "Database"].map((step, i) => (
               <div key={step} className="flex flex-col items-center gap-1">
-                <div className="px-4 py-2 border border-slate-300 rounded-md bg-slate-50 text-[10px] font-bold text-foreground/80">
+                <div className="px-4 py-2 border border-slate-300 rounded-md bg-slate-50 text-xs font-bold text-foreground/80">
                   {step}
                 </div>
                 {i < 4 && <div className="w-px h-3 bg-slate-300" />}
@@ -182,19 +182,19 @@ function DiagramElement({
         )}
         {diagramType === "architecture" && (
           <div className="flex flex-col items-center gap-3 w-full">
-            <div className="px-6 py-2 border border-amber-300 rounded-md bg-amber-50 text-[10px] font-bold text-amber-800">
+            <div className="px-6 py-2 border border-amber-300 rounded-md bg-amber-50 text-xs font-bold text-amber-800">
               API Gateway
             </div>
             <div className="flex gap-4">
               {["User Svc", "Order Svc", "Notify Svc"].map((svc) => (
-                <div key={svc} className="px-3 py-2 border border-green-300 rounded-md bg-green-50 text-[9px] font-bold text-green-800">
+                <div key={svc} className="px-3 py-2 border border-green-300 rounded-md bg-green-50 text-xs font-bold text-green-800">
                   {svc}
                 </div>
               ))}
             </div>
             <div className="flex gap-4">
               {["PostgreSQL", "Redis", "Kafka"].map((db) => (
-                <div key={db} className="px-3 py-1.5 border border-purple-300 rounded bg-purple-50 text-[9px] font-mono text-purple-800">
+                <div key={db} className="px-3 py-1.5 border border-purple-300 rounded bg-purple-50 text-xs font-mono text-purple-800">
                   {db}
                 </div>
               ))}
@@ -260,7 +260,7 @@ export default function ManuscriptRenderer({
               <div key={i} className="my-4 rounded-lg overflow-hidden border border-border/40">
                 <div className="px-4 py-2 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
                   <span className="eyebrow text-slate-400">{el.language}</span>
-                  <span className="text-[9px] text-slate-500 font-mono">source</span>
+                  <span className="text-xs text-slate-500 font-mono">source</span>
                 </div>
                 <pre className="p-4 bg-slate-900 overflow-x-auto">
                   <code className="text-sm text-green-400 font-mono leading-relaxed whitespace-pre">{el.code}</code>
@@ -293,7 +293,7 @@ export default function ManuscriptRenderer({
                 </div>
                 {el.caption && (
                   <div className="px-4 py-2 bg-muted/20 border-t border-border/30">
-                    <span className="text-[9px] font-bold text-muted-foreground italic">{el.caption}</span>
+                    <span className="text-xs font-bold text-muted-foreground italic">{el.caption}</span>
                   </div>
                 )}
               </div>
@@ -330,7 +330,7 @@ export default function ManuscriptRenderer({
                   &ldquo;{el.text}&rdquo;
                 </p>
                 {el.source && (
-                  <p className="mt-2 text-[11px] font-bold text-muted-foreground/60 not-italic">
+                  <p className="mt-2 text-xs font-bold text-muted-foreground/60 not-italic">
                     — {el.source}
                   </p>
                 )}

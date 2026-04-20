@@ -85,11 +85,11 @@ export default function PreEvaluationPage() {
             {selectedCourse && courseData && (
               <div className="flex items-center gap-2 mb-3 flex-wrap">
                 <span className="eyebrow text-muted-foreground/40">IIM Bangalore</span>
-                <span className="text-muted-foreground/20 text-[9px]">·</span>
+                <span className="text-muted-foreground/20 text-xs">·</span>
                 <span className="eyebrow text-foreground/60">{courseData.name}</span>
-                <span className="text-muted-foreground/20 text-[9px]">·</span>
+                <span className="text-muted-foreground/20 text-xs">·</span>
                 <span className="eyebrow text-muted-foreground/50">{courseData.semester}</span>
-                <span className="text-muted-foreground/20 text-[9px]">·</span>
+                <span className="text-muted-foreground/20 text-xs">·</span>
                 <span className="eyebrow text-muted-foreground/40">{courseData.code}</span>
               </div>
             )}

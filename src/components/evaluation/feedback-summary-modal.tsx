@@ -148,7 +148,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                 </div>
                 <div>
                   <h2 className="text-sm font-black tracking-tight">Final Feedback Summary</h2>
-                  <p className="text-[10px] text-muted-foreground">{studentName}</p>
+                  <p className="text-xs text-muted-foreground">{studentName}</p>
                 </div>
               </div>
             </div>
@@ -159,7 +159,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                   <span className="text-2xl font-black tracking-tighter">{percentage}</span>
                   <span className="text-sm font-bold text-muted-foreground/50">/ 100</span>
                 </div>
-                <Badge className={`${performance.bg} ${performance.color} border-0 text-[9px] font-black tracking-wider`}>
+                <Badge className={`${performance.bg} ${performance.color} border-0 text-xs font-black tracking-wider`}>
                   {performance.label}
                 </Badge>
               </div>
@@ -186,11 +186,11 @@ Review the feedback for each criterion above and focus on the specific areas men
                         <div className="flex-1">
                           <h4 className="text-sm font-bold tracking-tight">{criterion.label}</h4>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-[9px] font-black">
+                            <Badge variant="outline" className="text-xs font-black">
                               {criterion.score.toFixed(1)} / {criterion.maxPoints} pts
                             </Badge>
                             {criterion.isOverridden && (
-                              <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-[8px] font-black">
+                              <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs font-black">
                                 Overridden from {criterion.aiScore}
                               </Badge>
                             )}
@@ -205,7 +205,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                           </p>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground/50">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground/50">
                           <AlertCircle className="h-3 w-3" />
                           <span>No feedback provided</span>
                         </div>
@@ -222,7 +222,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                 <h3 className="eyebrow text-muted-foreground">
                   Overall Feedback
                 </h3>
-                <p className="text-[10px] text-muted-foreground/70 mt-1">
+                <p className="text-xs text-muted-foreground/70 mt-1">
                   Provide a comprehensive summary of the student's performance
                 </p>
               </div>

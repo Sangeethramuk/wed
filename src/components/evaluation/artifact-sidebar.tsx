@@ -128,7 +128,7 @@ function ArtifactPreviewDialog({
                   <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
                   <div className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
                 </div>
-                <span className="text-[9px] text-slate-400 font-mono ml-2">{artifact.name}</span>
+                <span className="text-xs text-slate-400 font-mono ml-2">{artifact.name}</span>
               </div>
               <div className="p-6 bg-slate-900 min-h-[200px] flex items-center justify-center">
                 <div className="text-center space-y-3">
@@ -146,7 +146,7 @@ function ArtifactPreviewDialog({
                   <div key={i} className="aspect-[16/9] bg-muted/40 border border-border/50 rounded-md flex items-center justify-center">
                     <div className="text-center">
                       <Presentation className="h-4 w-4 text-muted-foreground/40 mx-auto mb-1" />
-                      <span className="text-[9px] text-muted-foreground/40">Slide {i + 1}</span>
+                      <span className="text-xs text-muted-foreground/40">Slide {i + 1}</span>
                     </div>
                   </div>
                 ))}
@@ -229,7 +229,7 @@ export default function ArtifactSidebar({
           ) : (
             <Badge
               variant="outline"
-              className="h-5 w-5 p-0 flex items-center justify-center text-[9px] font-black rounded-full mx-auto"
+              className="h-5 w-5 p-0 flex items-center justify-center text-xs font-black rounded-full mx-auto"
             >
               {totalCount}
             </Badge>
@@ -276,16 +276,16 @@ export default function ArtifactSidebar({
                   {expanded && (
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-bold text-foreground truncate">
+                        <span className="text-xs font-bold text-foreground truncate">
                           {artifact.name}
                         </span>
                         {artifact.isPrimary && (
-                          <Badge className="h-4 px-1 rounded text-[8px] font-black bg-primary text-primary-foreground shrink-0">
+                          <Badge className="h-4 px-1 rounded text-xs font-black bg-primary text-primary-foreground shrink-0">
                             PRIMARY
                           </Badge>
                         )}
                       </div>
-                      <span className="text-[9px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         {artifact.type.toUpperCase()}
                         {artifact.size ? ` • ${artifact.size}` : ""}
                       </span>

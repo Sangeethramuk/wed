@@ -109,8 +109,8 @@ export function StudentPreview() {
                     <Database className="h-4 w-4 text-blue-500 opacity-60 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <div className="space-y-0.5">
-                    <span className="text-[12px] font-semibold block">Connect to LMS</span>
-                    <span className="text-[10px] text-muted-foreground/60">Sync with Canvas or Moodle</span>
+                    <span className="text-xs font-semibold block">Connect to LMS</span>
+                    <span className="text-xs text-muted-foreground/60">Sync with Canvas or Moodle</span>
                   </div>
                 </Button>
                 <Button variant="outline" className="h-auto flex-col items-start gap-3 p-5 group text-left whitespace-normal">
@@ -118,8 +118,8 @@ export function StudentPreview() {
                     <Mail className="h-4 w-4 text-primary opacity-60 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <div className="space-y-0.5">
-                    <span className="text-[12px] font-semibold block">Share with staff</span>
-                    <span className="text-[10px] text-muted-foreground/60">Send this assignment to other teachers</span>
+                    <span className="text-xs font-semibold block">Share with staff</span>
+                    <span className="text-xs text-muted-foreground/60">Send this assignment to other teachers</span>
                   </div>
                 </Button>
               </div>
@@ -265,7 +265,7 @@ function StudentView({
             <div>
               <p className="eyebrow text-muted-foreground/40 mb-1">Deadline</p>
               <p className="text-sm font-bold">{deadlineDate}</p>
-              {deadlineTime && <p className="text-[11px] text-muted-foreground/60 font-medium">{deadlineTime}</p>}
+              {deadlineTime && <p className="text-xs text-muted-foreground/60 font-medium">{deadlineTime}</p>}
             </div>
           </div>
           <div className="flex items-start gap-3 p-4 rounded-xl bg-muted/5 border border-border/10">
@@ -308,7 +308,7 @@ function StudentView({
             <div className="rounded-xl border border-border/15 overflow-hidden divide-y divide-border/10">
               {allDeliverables.map((item, idx) => (
                 <div key={item.id} className="flex items-center gap-3 px-4 py-3 bg-muted/[0.02]">
-                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-[9px] font-black flex items-center justify-center shrink-0">{idx + 1}</span>
+                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center shrink-0">{idx + 1}</span>
                   <p className="text-sm font-semibold text-foreground">{item.name || <span className="italic opacity-40">Untitled</span>}</p>
                 </div>
               ))}
@@ -333,7 +333,7 @@ function StudentView({
                       <span className="eyebrow text-muted-foreground/40">{crit.weight}%</span>
                     </div>
                     {exemplary?.description.trim() && (
-                      <p className="text-[11px] text-muted-foreground/70 font-medium leading-relaxed">
+                      <p className="text-xs text-muted-foreground/70 font-medium leading-relaxed">
                         <span className="text-primary/60 font-black">→ </span>{exemplary.description}
                       </p>
                     )}
@@ -354,7 +354,7 @@ function StudentView({
             </div>
             <div className="flex flex-wrap gap-2">
               {rubric.map(crit => (
-                <div key={crit.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/20 bg-muted/5 text-[10px] font-bold text-foreground/70">
+                <div key={crit.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/20 bg-muted/5 text-xs font-bold text-foreground/70">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary/40" />
                   {crit.name}
                 </div>
@@ -428,7 +428,7 @@ function InstructorView({
             <div>
               <p className="eyebrow text-muted-foreground/40">Deadline</p>
               <p className="text-sm font-bold">{deadlineDate}</p>
-              {deadlineTime && <p className="text-[11px] text-muted-foreground font-medium">{deadlineTime}</p>}
+              {deadlineTime && <p className="text-xs text-muted-foreground font-medium">{deadlineTime}</p>}
             </div>
           </div>
           <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/5 border border-border/10">
@@ -463,7 +463,7 @@ function InstructorView({
                   <div className="px-5 py-4">
                     {block.body.trim()
                       ? <p className="text-sm text-foreground leading-relaxed font-medium whitespace-pre-wrap">{block.body}</p>
-                      : <p className="text-[11px] text-muted-foreground/40 font-medium italic">No instructions provided.</p>
+                      : <p className="text-xs text-muted-foreground/40 font-medium italic">No instructions provided.</p>
                     }
                   </div>
                 )}
@@ -471,11 +471,11 @@ function InstructorView({
                 {block.type === "questions" && (
                   <div className="divide-y divide-border/10">
                     {block.questions.length === 0
-                      ? <div className="px-5 py-3 text-[11px] text-muted-foreground/40 font-medium italic">No questions added.</div>
+                      ? <div className="px-5 py-3 text-xs text-muted-foreground/40 font-medium italic">No questions added.</div>
                       : block.questions.map((q, idx) => (
                         <div key={q.id} className="px-5 py-3 flex items-start justify-between gap-4">
                           <div className="space-y-1 min-w-0 flex-1">
-                            <p className="text-[12px] font-bold text-foreground leading-relaxed">
+                            <p className="text-xs font-bold text-foreground leading-relaxed">
                               <span className="text-muted-foreground/50 mr-2">Q{idx + 1}.</span>
                               {q.text || <span className="italic opacity-40">Empty question</span>}
                             </p>
@@ -493,12 +493,12 @@ function InstructorView({
                 {block.type === "deliverables" && (
                   <div className="divide-y divide-border/10">
                     {block.items.length === 0
-                      ? <div className="px-5 py-3 text-[11px] text-muted-foreground/40 font-medium italic">No deliverables defined.</div>
+                      ? <div className="px-5 py-3 text-xs text-muted-foreground/40 font-medium italic">No deliverables defined.</div>
                       : block.items.map((item) => (
                         <div key={item.id} className="px-5 py-3 flex items-center justify-between gap-4">
                           <div className="space-y-0.5 min-w-0">
-                            <p className="text-[12px] font-bold text-foreground truncate">{item.name || <span className="italic opacity-40">Untitled</span>}</p>
-                            {item.description && <p className="text-[11px] text-muted-foreground font-medium">{item.description}</p>}
+                            <p className="text-xs font-bold text-foreground truncate">{item.name || <span className="italic opacity-40">Untitled</span>}</p>
+                            {item.description && <p className="text-xs text-muted-foreground font-medium">{item.description}</p>}
                           </div>
                           <Badge variant="outline" className="eyebrow px-2 h-5 bg-muted/30 border-border/20 rounded shrink-0">{item.format}</Badge>
                         </div>
@@ -510,10 +510,10 @@ function InstructorView({
                 {block.type === "resources" && (
                   <div className="divide-y divide-border/10">
                     {block.items.length === 0
-                      ? <div className="px-5 py-3 text-[11px] text-muted-foreground/40 font-medium italic">No resources added.</div>
+                      ? <div className="px-5 py-3 text-xs text-muted-foreground/40 font-medium italic">No resources added.</div>
                       : block.items.map((item) => (
                         <div key={item.id} className="px-5 py-3 flex items-center justify-between gap-4">
-                          <p className="text-[12px] font-bold text-foreground truncate">{item.name || <span className="italic opacity-40">Untitled</span>}</p>
+                          <p className="text-xs font-bold text-foreground truncate">{item.name || <span className="italic opacity-40">Untitled</span>}</p>
                           {item.link && (
                             <a href={item.link} target="_blank" rel="noreferrer" className="eyebrow text-primary/70 hover:text-primary inline-flex items-center gap-1 shrink-0">
                               <Link2 className="h-3 w-3" />Open
@@ -535,7 +535,7 @@ function InstructorView({
             <div className="flex items-center gap-2">
               <Scale className="h-3.5 w-3.5 text-muted-foreground/40" />
               <p className="eyebrow text-muted-foreground/40">How it will be graded</p>
-              <span className="text-[9px] text-muted-foreground/30 font-medium">— applies to entire submission</span>
+              <span className="text-xs text-muted-foreground/30 font-medium">— applies to entire submission</span>
             </div>
             <div className="overflow-x-auto rounded-xl border border-border/20">
               <table className="w-full border-collapse">
@@ -551,12 +551,12 @@ function InstructorView({
                   {rubric.map(crit => (
                     <tr key={crit.id} className="border-b border-border/5">
                       <td className="p-3">
-                        <p className="text-[11px] font-bold text-foreground">{crit.name}</p>
-                        <Badge variant="outline" className="eyebrow mt-1 text-[7px] px-1 h-3 bg-primary/5 text-primary border-primary/20 rounded">{crit.linkedCO}</Badge>
-                        <p className="text-[9px] text-muted-foreground/50 font-semibold mt-0.5">{crit.weight}%</p>
+                        <p className="text-xs font-bold text-foreground">{crit.name}</p>
+                        <Badge variant="outline" className="eyebrow mt-1 text-xs px-1 h-3 bg-primary/5 text-primary border-primary/20 rounded">{crit.linkedCO}</Badge>
+                        <p className="text-xs text-muted-foreground/50 font-semibold mt-0.5">{crit.weight}%</p>
                       </td>
                       {crit.levels.map(lvl => (
-                        <td key={lvl.label} className="p-3 text-center text-[11px] text-muted-foreground font-medium">{lvl.description}</td>
+                        <td key={lvl.label} className="p-3 text-center text-xs text-muted-foreground font-medium">{lvl.description}</td>
                       ))}
                     </tr>
                   ))}

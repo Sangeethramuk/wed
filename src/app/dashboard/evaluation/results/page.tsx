@@ -236,10 +236,10 @@ export default function EvaluationResults() {
             {distribution.map((band, i) => (
               <div key={band.label} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-black text-foreground tracking-tight">{band.label}</span>
+                  <span className="text-xs font-black text-foreground tracking-tight">{band.label}</span>
                   <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-bold text-muted-foreground/40">{band.range}</span>
-                    <span className="text-[12px] font-black text-foreground tabular-nums w-5 text-right">{band.count}</span>
+                    <span className="text-xs font-bold text-muted-foreground/40">{band.range}</span>
+                    <span className="text-xs font-black text-foreground tabular-nums w-5 text-right">{band.count}</span>
                   </div>
                 </div>
                 <div className="h-9 bg-muted/20 rounded-xl overflow-hidden">
@@ -267,9 +267,9 @@ export default function EvaluationResults() {
             {criterionStats.length > 0 ? criterionStats.map((cs, i) => (
               <div key={cs.cid} className="space-y-2">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-[10px] font-bold text-foreground leading-snug">{cs.name}</span>
-                  <span className="text-[12px] font-black tabular-nums text-foreground shrink-0">
-                    {cs.avg.toFixed(1)}<span className="text-muted-foreground/30 text-[9px]">/5</span>
+                  <span className="text-xs font-bold text-foreground leading-snug">{cs.name}</span>
+                  <span className="text-xs font-black tabular-nums text-foreground shrink-0">
+                    {cs.avg.toFixed(1)}<span className="text-muted-foreground/30 text-xs">/5</span>
                   </span>
                 </div>
                 <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
@@ -298,12 +298,12 @@ export default function EvaluationResults() {
                       </span>
                     ))}
                   {Object.values(cs.tierCounts).every(v => v === 0) && (
-                    <span className="text-[8px] font-bold text-muted-foreground/40">No feedback yet</span>
+                    <span className="text-xs font-bold text-muted-foreground/40">No feedback yet</span>
                   )}
                 </div>
               </div>
             )) : (
-              <p className="text-[11px] text-muted-foreground/40 text-center py-6">No criteria data available</p>
+              <p className="text-xs text-muted-foreground/40 text-center py-6">No criteria data available</p>
             )}
           </CardContent>
         </Card>
@@ -366,7 +366,7 @@ export default function EvaluationResults() {
                   >
                     {/* # */}
                     <td className="px-6 py-5">
-                      <span className="text-[10px] font-black text-muted-foreground/25 tabular-nums">
+                      <span className="text-xs font-black text-muted-foreground/25 tabular-nums">
                         {String(idx + 1).padStart(2, "0")}
                       </span>
                     </td>
@@ -374,33 +374,33 @@ export default function EvaluationResults() {
                     {/* Student name + avatar */}
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-[9px] font-black text-muted-foreground group-hover:text-primary shrink-0">
+                        <div className="w-8 h-8 rounded-xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-black text-muted-foreground group-hover:text-primary shrink-0">
                           {student.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
                         </div>
-                        <span className="text-[12px] font-extrabold text-foreground tracking-tight whitespace-nowrap">{student.name}</span>
+                        <span className="text-xs font-extrabold text-foreground tracking-tight whitespace-nowrap">{student.name}</span>
                       </div>
                     </td>
 
                     {/* Roll */}
                     <td className="px-6 py-5">
-                      <span className="text-[10px] font-mono font-bold text-muted-foreground/50">{student.roll}</span>
+                      <span className="text-xs font-mono font-bold text-muted-foreground/50">{student.roll}</span>
                     </td>
 
                     {/* Criterion levels */}
                     {criterionIds.map(cid => (
                       <td key={cid} className="px-4 py-5 text-center">
-                        <span className="text-[11px] font-bold tabular-nums text-foreground/70">
+                        <span className="text-xs font-bold tabular-nums text-foreground/70">
                           {levelMap[cid] ?? "—"}
                         </span>
                         {levelMap[cid] !== undefined && (
-                          <span className="text-[9px] text-muted-foreground/30">/5</span>
+                          <span className="text-xs text-muted-foreground/30">/5</span>
                         )}
                       </td>
                     ))}
 
                     {/* Score % */}
                     <td className="px-6 py-5 text-center">
-                      <span className="text-[12px] font-black tabular-nums text-foreground">{scorePct}%</span>
+                      <span className="text-xs font-black tabular-nums text-foreground">{scorePct}%</span>
                     </td>
 
                     {/* Grade badge */}

@@ -102,9 +102,9 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                 </h2>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="eyebrow text-muted-foreground/40">{st.rollId}</span>
-                  <span className="text-muted-foreground/20 text-[9px]">·</span>
+                  <span className="text-muted-foreground/20 text-xs">·</span>
                   <span className="eyebrow text-muted-foreground/40">{st.assign}</span>
-                  <span className="text-muted-foreground/20 text-[9px]">·</span>
+                  <span className="text-muted-foreground/20 text-xs">·</span>
                   <span className="eyebrow text-primary/40">{st.crit}</span>
                 </div>
               </div>
@@ -137,10 +137,10 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                   <span className="eyebrow text-primary/80">Intelligence Summary</span>
                 </div>
                 <div className="space-y-4 relative z-10">
-                  <p className="text-[15px] font-bold leading-tight text-slate-800">
+                  <p className="text-sm font-bold leading-tight text-slate-800">
                     {isCredible ? "Credible dispute detected." : "Low-validity request."} {caseSummary}
                   </p>
-                  <p className="text-[13px] leading-relaxed font-medium text-slate-600 italic">
+                  <p className="text-sm leading-relaxed font-medium text-slate-600 italic">
                     "{caseInsight}"
                   </p>
                 </div>
@@ -188,7 +188,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                {st.hasOverride && (
                  <div className="px-4 py-3 rounded-xl bg-amber-500/[0.03] border border-amber-500/10 flex items-start gap-3">
                    <InfoIcon className="size-4 text-amber-500 mt-0.5" />
-                   <p className="text-[11px] leading-relaxed text-amber-700 font-medium">
+                   <p className="text-xs leading-relaxed text-amber-700 font-medium">
                      Instructor previously acknowledged additional evidence on {st.critShort} but stopped at {st.origScore}/10. The student argues the adjustment was insufficient.
                    </p>
                  </div>
@@ -201,7 +201,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                 <div className="eyebrow text-muted-foreground/30">Why student appealed</div>
                 <div className="rounded-2xl p-5 bg-blue-500/[0.03] border border-blue-500/10 h-full">
                   <div className="eyebrow text-blue-600/60 mb-2.5">Student Reasoning</div>
-                  <div className="text-[13px] font-medium leading-relaxed italic text-slate-700 mb-4">"{st.sv}"</div>
+                  <div className="text-sm font-medium leading-relaxed italic text-slate-700 mb-4">"{st.sv}"</div>
                   <div className="flex items-center gap-2 pt-3 border-t border-blue-500/10">
                     <div className={cn("size-1.5 rounded-full", statusStyles[verdictKind(st.vcolor)].dot)} />
                     <span className="eyebrow text-muted-foreground/50">{st.verdict}</span>
@@ -217,23 +217,23 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                     <ul className="space-y-3">
                       <li className="flex items-start gap-3">
                         <CheckIcon className="size-3.5 text-primary mt-0.5" />
-                        <span className="text-[12px] font-bold text-white/90">Verify cited lines: {st.evidence}</span>
+                        <span className="text-xs font-bold text-white/90">Verify cited lines: {st.evidence}</span>
                       </li>
                       <li className="flex items-start gap-3">
                         <CheckIcon className="size-3.5 text-primary mt-0.5" />
-                        <span className="text-[12px] font-bold text-white/90">Reassess {st.critShort} rubric depth</span>
+                        <span className="text-xs font-bold text-white/90">Reassess {st.critShort} rubric depth</span>
                       </li>
                       {st.isCluster && (
                         <li className="flex items-start gap-3">
                           <CheckIcon className="size-3.5 text-primary mt-0.5" />
-                          <span className="text-[12px] font-bold text-white/90">Check for rubric ambiguity</span>
+                          <span className="text-xs font-bold text-white/90">Check for rubric ambiguity</span>
                         </li>
                       )}
                     </ul>
                   </div>
                   <div className="pt-4 mt-4 border-t border-white/5 flex items-center justify-between">
                     <span className="eyebrow text-white/20">Target Decision</span>
-                    <span className="text-[11px] font-black text-primary tracking-tighter">± {isCredible ? '1.5' : '0'} pts Est.</span>
+                    <span className="text-xs font-black text-primary tracking-tighter">± {isCredible ? '1.5' : '0'} pts Est.</span>
                   </div>
                 </div>
               </section>
@@ -248,7 +248,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                   return (
                     <div key={i} className="flex items-start gap-3 px-4 py-3 rounded-xl border transition-colors" style={{ background: fc.bg, borderColor: fc.border }}>
                       <div className="size-1.5 rounded-full flex-shrink-0 mt-1.5" style={{ background: fc.dot }} />
-                      <span className="text-[12px] font-bold leading-tight" style={{ color: fc.text }}>{f.text}</span>
+                      <span className="text-xs font-bold leading-tight" style={{ color: fc.text }}>{f.text}</span>
                     </div>
                   )
                 })}
@@ -261,7 +261,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                   <span className="eyebrow text-muted-foreground/50">AI Confidence</span>
                   <div className="flex items-center gap-1.5 mt-1">
                     <div className={cn("size-2 rounded-full", confidenceStyles[confidenceKind(st.confLabel)].dot)} />
-                    <span className="text-[13px] font-black tracking-tighter text-slate-800">{st.confScore}</span>
+                    <span className="text-sm font-black tracking-tighter text-slate-800">{st.confScore}</span>
                   </div>
                   <span className="eyebrow text-muted-foreground/30 mt-0.5">{st.confLabel} at grading</span>
                 </div>
@@ -269,7 +269,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                 <div className="rounded-2xl p-4 bg-card/30 border border-border/10 flex flex-col justify-center">
                   <span className="eyebrow text-muted-foreground/50">Student History</span>
                   <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-[13px] font-black tracking-tighter text-slate-800">1st appeal</span>
+                    <span className="text-sm font-black tracking-tighter text-slate-800">1st appeal</span>
                   </div>
                   <span className="eyebrow text-muted-foreground/30 mt-0.5">This Semester</span>
                 </div>
@@ -277,7 +277,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                 <div className="rounded-2xl p-4 bg-card/30 border border-border/10 flex flex-col justify-center">
                   <span className="eyebrow text-muted-foreground/50">Batch Impact</span>
                   <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-[13px] font-black tracking-tighter text-slate-800">{st.isCluster ? '4 cases' : 'Isolated'}</span>
+                    <span className="text-sm font-black tracking-tighter text-slate-800">{st.isCluster ? '4 cases' : 'Isolated'}</span>
                   </div>
                   <span className="eyebrow text-muted-foreground/30 mt-0.5">Cluster size</span>
                 </div>
@@ -300,7 +300,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                         {i < brf.auditTrail.length - 1 && <div className="w-px flex-1 my-1 bg-border/20" />}
                       </div>
                       <div className="flex-1 -mt-1 pb-4 border-b border-border/5">
-                        <div className="text-[12px] font-bold text-slate-700">{entry.event}</div>
+                        <div className="text-xs font-bold text-slate-700">{entry.event}</div>
                         <div className="eyebrow text-muted-foreground/30 mt-1">{entry.time}</div>
                       </div>
                     </div>
@@ -317,7 +317,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
               >
                 <div className="space-y-3 py-2">
                   {brf.gradingEvidenceLines.map((line, i) => (
-                    <p key={i} className="text-[12px] leading-relaxed text-slate-600 border-l-2 border-primary/10 pl-4">{line}</p>
+                    <p key={i} className="text-xs leading-relaxed text-slate-600 border-l-2 border-primary/10 pl-4">{line}</p>
                   ))}
                 </div>
               </Accordion>

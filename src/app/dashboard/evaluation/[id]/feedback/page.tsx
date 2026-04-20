@@ -36,12 +36,12 @@ function CriteriaRecapCard({ name, level, tier, tierLabel, feedbackSnippet, isEx
             <TierIcon className="w-3.5 h-3.5" />
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-bold text-foreground truncate tracking-tight">{name}</div>
+            <div className="text-xs font-bold text-foreground truncate tracking-tight">{name}</div>
             <div className={`eyebrow ${colors.text}`}>{tierLabel}</div>
           </div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0 pl-2 border-l border-border/30 ml-2">
-          <span className="text-[12px] font-black font-mono text-foreground">{level}<span className="text-[9px] text-muted-foreground/50">/5</span></span>
+          <span className="text-xs font-black font-mono text-foreground">{level}<span className="text-xs text-muted-foreground/50">/5</span></span>
           {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground/40" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground/40" />}
         </div>
       </Button>
@@ -54,7 +54,7 @@ function CriteriaRecapCard({ name, level, tier, tierLabel, feedbackSnippet, isEx
             className="overflow-hidden"
           >
             <div className="px-3 pb-3 pt-0 border-t border-border/10 mt-1">
-              <p className="text-[10px] text-muted-foreground/80 leading-[1.6] italic mt-2">{feedbackSnippet}</p>
+              <p className="text-xs text-muted-foreground/80 leading-[1.6] italic mt-2">{feedbackSnippet}</p>
             </div>
           </motion.div>
         )}
@@ -228,18 +228,18 @@ export default function FeedbackPage() {
           <div>
             <div className="flex items-center gap-2 mb-0.5">
               <h2 className="text-lg font-bold text-foreground tracking-tight">Final Feedback Summary</h2>
-              <Badge variant="outline" className="text-[9px] h-4.5 px-1.5 rounded-sm font-mono tracking-tighter border-border bg-muted/30">STUDENT RECORD</Badge>
+              <Badge variant="outline" className="text-xs h-4.5 px-1.5 rounded-sm font-mono tracking-tighter border-border bg-muted/30">STUDENT RECORD</Badge>
             </div>
             <div className="flex items-center gap-2">
                <span className="eyebrow text-muted-foreground/60 leading-none grow-0">{activeStudent.name}</span>
                <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-               <span className="text-[10px] font-mono text-muted-foreground/50">{activeStudent.roll}</span>
+               <span className="text-xs font-mono text-muted-foreground/50">{activeStudent.roll}</span>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-end mr-2">
-             <div className="text-[24px] font-black text-foreground leading-none font-mono">60<span className="text-[14px] text-muted-foreground/40 font-medium">/100</span></div>
+             <div className="text-2xl font-black text-foreground leading-none font-mono">60<span className="text-sm text-muted-foreground/40 font-medium">/100</span></div>
              <Badge variant="outline" className="eyebrow h-4 px-1.5 bg-green-50 text-green-700 border-green-200 mt-1">Satisfactory</Badge>
           </div>
           <Button variant="ghost" size="icon">✕</Button>
@@ -252,7 +252,7 @@ export default function FeedbackPage() {
         <aside className="w-[320px] border-r border-border bg-background/50 flex flex-col shrink-0 backdrop-blur-sm">
           <div className="px-6 py-4 border-b border-border bg-background/80 flex items-center justify-between">
             <span className="eyebrow text-muted-foreground/60">Criterion Feedback Recap</span>
-            <Badge variant="secondary" className="text-[9px] font-bold h-5 px-2 bg-muted/50">{confirmedCriteria.length}</Badge>
+            <Badge variant="secondary" className="text-xs font-bold h-5 px-2 bg-muted/50">{confirmedCriteria.length}</Badge>
           </div>
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-2.5">
@@ -274,7 +274,7 @@ export default function FeedbackPage() {
               })}
               {confirmedCriteria.length === 3 && (
                 <div className="p-4 border border-dashed border-border rounded-xl bg-muted/5">
-                   <p className="text-[9px] text-muted-foreground/50 font-black text-center">Using Evaluation Benchmarks</p>
+                   <p className="text-xs text-muted-foreground/50 font-black text-center">Using Evaluation Benchmarks</p>
                 </div>
               )}
             </div>
@@ -312,14 +312,14 @@ export default function FeedbackPage() {
                 <div className="max-w-3xl mx-auto">
                   <div className="flex items-center justify-between mb-4">
                     <div className="eyebrow text-muted-foreground/40">Comprehensive Assessment Draft</div>
-                    <Badge variant={isAI ? "secondary" : "outline"} className={`text-[9px] font-bold h-5 px-2.5 rounded-full ${isAI ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                    <Badge variant={isAI ? "secondary" : "outline"} className={`text-xs font-bold h-5 px-2.5 rounded-full ${isAI ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
                        {isAI ? '✦ AI Generated' : '✎ Locally Adjusted'}
                     </Badge>
                   </div>
 
                   <div className="bg-background border border-border/60 rounded-[20px] shadow-[0_4px_24px_rgb(0,0,0,0.02)] overflow-hidden relative">
                     <div 
-                      className="p-10 text-[14px] leading-[1.85] text-foreground font-sans min-h-[500px] outline-none whitespace-pre-wrap cursor-text hover:bg-[#fdfdfd] transition-colors"
+                      className="p-10 text-sm leading-[1.85] text-foreground font-sans min-h-[500px] outline-none whitespace-pre-wrap cursor-text hover:bg-[#fdfdfd] transition-colors"
                       contentEditable
                       suppressContentEditableWarning
                       onBlur={(e) => activeStudent && updateOverallFeedbackText(activeStudent.id, e.currentTarget.innerText)}
@@ -359,7 +359,7 @@ export default function FeedbackPage() {
                  <div className="max-w-3xl mx-auto space-y-4">
                     <div className="flex items-center justify-between px-1">
                        <div className="flex items-center gap-4">
-                          <span className="eyebrow text-[12px] text-foreground">Instructor Note Workspace</span>
+                          <span className="eyebrow text-xs text-foreground">Instructor Note Workspace</span>
                           <div className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20">
                              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                              <span className="eyebrow text-green-700/80">Active Sink</span>
@@ -374,11 +374,11 @@ export default function FeedbackPage() {
                        <textarea 
                           value={instructorInput}
                           onChange={(e) => setInstructorInput(e.target.value)}
-                          className="w-full min-h-[160px] text-[15px] leading-[1.75] text-foreground p-6 rounded-3xl border border-border shadow-[0_4px_20px_rgb(0,0,0,0.02)] focus:border-primary/40 focus:ring-0 bg-background transition-all placeholder:text-muted-foreground/30 placeholder:italic font-serif"
+                          className="w-full min-h-[160px] text-sm leading-[1.75] text-foreground p-6 rounded-3xl border border-border shadow-[0_4px_20px_rgb(0,0,0,0.02)] focus:border-primary/40 focus:ring-0 bg-background transition-all placeholder:text-muted-foreground/30 placeholder:italic font-serif"
                           placeholder="Dictate or type your concluding remarks, specific references to the student's process, or encouraging closing notes..."
                        />
                        <div className="absolute right-4 bottom-4 flex items-center gap-2">
-                          <span className="text-[10px] font-mono text-muted-foreground/30 px-3 py-1 bg-muted/30 rounded-full">{instructorInput.length} chars</span>
+                          <span className="text-xs font-mono text-muted-foreground/30 px-3 py-1 bg-muted/30 rounded-full">{instructorInput.length} chars</span>
                           <Button
                             onClick={handleMerge}
                             disabled={!instructorInput.trim()}
@@ -397,7 +397,7 @@ export default function FeedbackPage() {
                 <div className="max-w-4xl mx-auto">
                   <div className="flex flex-col items-center text-center mb-10">
                      <h3 className="text-xl font-bold text-foreground tracking-tight mb-2">Priority Improvement Roadmap</h3>
-                     <p className="text-[13px] text-muted-foreground leading-relaxed max-w-lg">Targeted action plan based on identified gaps. Focus on critical items first for maximum impact on future assessments.</p>
+                     <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">Targeted action plan based on identified gaps. Focus on critical items first for maximum impact on future assessments.</p>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -411,15 +411,15 @@ export default function FeedbackPage() {
                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-white border-1.5 border-red-100 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(220,38,38,0.03)] hover:shadow-md transition-all">
                             <div className="flex items-center justify-between mb-4">
                                <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center"><AlertTriangle className="w-4 h-4 text-red-600" /></div>
-                               <span className="text-[11px] font-black font-mono text-red-700 bg-red-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
+                               <span className="text-xs font-black font-mono text-red-700 bg-red-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
                             </div>
-                            <h4 className="text-[14px] font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
+                            <h4 className="text-sm font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
                             <div className="space-y-3">
                                {step.steps.map((s: string, j: number) => (
                                  <div key={j} className="flex gap-3 group/step">
-                                    <div className="text-[10px] font-black text-red-200 mt-0.5">{j+1}.</div>
+                                    <div className="text-xs font-black text-red-200 mt-0.5">{j+1}.</div>
                                     <p 
-                                       className="text-[12px] text-muted-foreground/90 leading-[1.6] outline-none cursor-text hover:bg-red-50/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-red-100/50 focus:bg-red-50 focus:border-red-200/50"
+                                       className="text-xs text-muted-foreground/90 leading-[1.6] outline-none cursor-text hover:bg-red-50/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-red-100/50 focus:bg-red-50 focus:border-red-200/50"
                                        contentEditable
                                        suppressContentEditableWarning
                                        onBlur={(e) => updateSolutionStep(activeStudent.id, step.criterionName, j, e.currentTarget.innerText)}
@@ -449,15 +449,15 @@ export default function FeedbackPage() {
                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-white border-1.5 border-amber-100 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(217,119,6,0.03)] hover:shadow-md transition-all">
                             <div className="flex items-center justify-between mb-4">
                                <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center"><Lightbulb className="w-4 h-4 text-amber-600" /></div>
-                               <span className="text-[11px] font-black font-mono text-amber-700 bg-amber-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
+                               <span className="text-xs font-black font-mono text-amber-700 bg-amber-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
                             </div>
-                            <h4 className="text-[14px] font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
+                            <h4 className="text-sm font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
                             <div className="space-y-3">
                                {step.steps.map((s: string, j: number) => (
                                  <div key={j} className="flex gap-3 group/step">
-                                    <div className="text-[10px] font-black text-amber-200 mt-0.5">{j+1}.</div>
+                                    <div className="text-xs font-black text-amber-200 mt-0.5">{j+1}.</div>
                                     <p 
-                                       className="text-[12px] text-muted-foreground/90 leading-[1.6] outline-none cursor-text hover:bg-amber-50/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-amber-100/50 focus:bg-amber-50 focus:border-amber-200/50"
+                                       className="text-xs text-muted-foreground/90 leading-[1.6] outline-none cursor-text hover:bg-amber-50/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-amber-100/50 focus:bg-amber-50 focus:border-amber-200/50"
                                        contentEditable
                                        suppressContentEditableWarning
                                        onBlur={(e) => updateSolutionStep(activeStudent.id, step.criterionName, j, e.currentTarget.innerText)}
@@ -481,15 +481,15 @@ export default function FeedbackPage() {
                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-white border-1.5 border-green-100 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(5,150,105,0.03)] hover:shadow-md transition-all opacity-80 filter grayscale-[20%]">
                             <div className="flex items-center justify-between mb-4">
                                <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center"><StarIcon className="w-4 h-4 text-green-600" /></div>
-                               <span className="text-[11px] font-black font-mono text-green-700 bg-green-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
+                               <span className="text-xs font-black font-mono text-green-700 bg-green-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
                             </div>
-                            <h4 className="text-[14px] font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
+                            <h4 className="text-sm font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
                             <div className="space-y-3">
                                {step.steps.map((s: string, j: number) => (
                                  <div key={j} className="flex gap-3 group/step">
                                     <div className="w-1 h-1 rounded-full bg-green-200 mt-2" />
                                     <p 
-                                       className="text-[11px] text-muted-foreground/70 leading-[1.6] italic outline-none cursor-text hover:bg-green-50/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-green-100/50 focus:bg-green-50 focus:border-green-200/50"
+                                       className="text-xs text-muted-foreground/70 leading-[1.6] italic outline-none cursor-text hover:bg-green-50/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-green-100/50 focus:bg-green-50 focus:border-green-200/50"
                                        contentEditable
                                        suppressContentEditableWarning
                                        onBlur={(e) => updateSolutionStep(activeStudent.id, step.criterionName, j, e.currentTarget.innerText)}
@@ -518,7 +518,7 @@ export default function FeedbackPage() {
         <div className="flex items-center gap-6">
            <div className="hidden sm:flex flex-col items-end">
               <span className="eyebrow text-primary mb-1">State: Ready for Publication</span>
-              <span className="text-[10px] font-medium text-muted-foreground/60">Final draft cached for cohort scheduling</span>
+              <span className="text-xs font-medium text-muted-foreground/60">Final draft cached for cohort scheduling</span>
            </div>
            <Button
             size="lg"

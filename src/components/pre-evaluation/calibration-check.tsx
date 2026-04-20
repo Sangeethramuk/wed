@@ -318,7 +318,7 @@ export function CalibrationCheck() {
                   {config.details.map((d, i) => (
                     <div
                       key={i}
-                      className="flex items-center gap-2 text-[11px] text-muted-foreground/60 font-medium"
+                      className="flex items-center gap-2 text-xs text-muted-foreground/60 font-medium"
                     >
                       <div className="h-1 w-1 rounded-full bg-muted-foreground/30 shrink-0" />
                       {d}
@@ -339,7 +339,7 @@ export function CalibrationCheck() {
                 {sourcesConfig.map((src) => (
                   <div
                     key={src.label}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-bold ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold ${
                       src.active
                         ? "border-primary/20 bg-primary/5 text-primary/70"
                         : "border-border/20 bg-muted/10 text-muted-foreground/30 line-through"
@@ -393,7 +393,7 @@ export function CalibrationCheck() {
                     {MOCK_CHANGES.map((c, i) => (
                       <div key={i} className="space-y-0.5">
                         <p className="text-sm font-bold text-foreground/80">{c.item}</p>
-                        <p className="text-[11px] text-muted-foreground/50 font-medium">{c.impact}</p>
+                        <p className="text-xs text-muted-foreground/50 font-medium">{c.impact}</p>
                       </div>
                     ))}
                   </div>
@@ -463,7 +463,7 @@ export function CalibrationCheck() {
                   {nudges.map((n, i) => (
                     <p
                       key={i}
-                      className="text-[11px] text-muted-foreground/60 font-medium leading-relaxed flex items-start gap-2"
+                      className="text-xs text-muted-foreground/60 font-medium leading-relaxed flex items-start gap-2"
                     >
                       <span className="mt-1 h-1 w-1 rounded-full bg-primary/30 shrink-0" />
                       {n}
@@ -569,7 +569,7 @@ export function CalibrationCheck() {
                 Required
               </span>
             </div>
-            <p className="text-[11px] text-muted-foreground/50 font-medium">
+            <p className="text-xs text-muted-foreground/50 font-medium">
               Describe the key qualities, concepts, evidence, structure, or reasoning a strong
               submission should demonstrate.
             </p>
@@ -593,7 +593,7 @@ export function CalibrationCheck() {
                 Required
               </span>
             </div>
-            <p className="text-[11px] text-muted-foreground/50 font-medium">
+            <p className="text-xs text-muted-foreground/50 font-medium">
               What makes a response merely acceptable versus truly strong?
             </p>
             <Textarea
@@ -616,7 +616,7 @@ export function CalibrationCheck() {
                 Required
               </span>
             </div>
-            <p className="text-[11px] text-muted-foreground/50 font-medium">
+            <p className="text-xs text-muted-foreground/50 font-medium">
               List common mistakes, missing elements, or weak patterns that should reduce the score.
             </p>
             <Textarea
@@ -657,7 +657,7 @@ export function CalibrationCheck() {
                   }`}
                 >
                   <span className="text-sm font-black tracking-tight">{opt.label}</span>
-                  <span className="text-[10px] font-medium text-muted-foreground/50 mt-0.5">
+                  <span className="text-xs font-medium text-muted-foreground/50 mt-0.5">
                     {opt.sub}
                   </span>
                 </button>
@@ -800,7 +800,7 @@ export function CalibrationCheck() {
                 {AMBIGUITY_FLAGS.map((f, i) => (
                   <p
                     key={i}
-                    className="text-[11px] text-muted-foreground/60 font-medium flex items-start gap-2"
+                    className="text-xs text-muted-foreground/60 font-medium flex items-start gap-2"
                   >
                     <span className="mt-1 h-1 w-1 rounded-full bg-amber-400/40 shrink-0" />
                     {f}

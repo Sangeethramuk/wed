@@ -78,7 +78,7 @@ export function CourseSelection() {
             <p className="text-base text-muted-foreground font-medium opacity-70">Select a course to begin</p>
             <div className="flex items-center gap-2 pt-1">
               <Sparkles className="h-3.5 w-3.5 text-primary opacity-50" />
-              <p className="text-[11px] text-muted-foreground opacity-60 font-medium">
+              <p className="text-xs text-muted-foreground opacity-60 font-medium">
                 We&apos;ll help you structure, evaluate, and validate your assignment as you go.
               </p>
             </div>
@@ -160,7 +160,7 @@ export function CourseSelection() {
                     <BookOpen className="h-6 w-6" />
                   </div>
                   <CardTitle className="mt-6 text-xl font-black tracking-tight">{course.name}</CardTitle>
-                  <CardDescription className="eyebrow flex items-center gap-2 text-[12px] opacity-80 mt-1">
+                  <CardDescription className="eyebrow flex items-center gap-2 text-xs opacity-80 mt-1">
                     {course.code} <span className="opacity-40">•</span> {course.semester}
                   </CardDescription>
                 </CardHeader>

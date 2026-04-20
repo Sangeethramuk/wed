@@ -67,14 +67,14 @@ export default function ReEvaluationPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <span className="eyebrow text-muted-foreground/40">IIM Bangalore</span>
-                <span className="text-muted-foreground/20 text-[9px]">·</span>
+                <span className="text-muted-foreground/20 text-xs">·</span>
                 <span className="eyebrow text-primary/80">DSA · Batch 4</span>
-                <span className="text-muted-foreground/20 text-[9px]">·</span>
+                <span className="text-muted-foreground/20 text-xs">·</span>
                 <span className="eyebrow text-muted-foreground/40">Re-Evaluation Desk</span>
               </div>
               <h1 className="text-4xl font-black tracking-tighter secondary-text">Review Requests</h1>
               <div className="flex items-center gap-2 pt-1">
-                <p className="text-[11px] text-muted-foreground opacity-60 font-medium">
+                <p className="text-xs text-muted-foreground opacity-60 font-medium">
                   Results released Mon 9:00 AM · Appeal window closes Sunday night
                 </p>
               </div>
@@ -96,7 +96,7 @@ export default function ReEvaluationPage() {
                 <span className="eyebrow text-muted-foreground/50">{kpi.label}</span>
                 <div className="flex items-baseline gap-1.5 mt-1">
                   <span className="text-xl font-black tracking-tighter" style={{ color: kpi.accent }}>{kpi.value}</span>
-                  <span className="text-[10px] font-bold text-muted-foreground/30">{kpi.sub}</span>
+                  <span className="text-xs font-bold text-muted-foreground/30">{kpi.sub}</span>
                 </div>
               </div>
             ))}
@@ -146,7 +146,7 @@ export default function ReEvaluationPage() {
                   <div className="px-4 py-4 flex flex-col justify-center gap-1.5 flex-1">
                     <div className="flex items-center gap-3">
                       <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black flex-shrink-0"
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
                         style={{
                           background: st.isNew ? '#EFF6FF' : st.ageStatus === 'overdue' ? '#FEF2F2' : '#F8FAFC',
                           border: `1px solid ${st.isNew ? '#BFDBFE' : st.ageStatus === 'overdue' ? '#FECACA' : 'rgba(var(--border), 0.1)'}`,
@@ -157,7 +157,7 @@ export default function ReEvaluationPage() {
                       </div>
                       <div className="flex flex-col gap-1">
                         <div>
-                          <div className="text-[13px] font-black tracking-tight flex items-center gap-1.5 text-[#1E293B]">
+                          <div className="text-sm font-black tracking-tight flex items-center gap-1.5 text-[#1E293B]">
                             {st.name}
                             {st.isNew && <span className="w-1.5 h-1.5 rounded-full inline-block bg-primary" />}
                           </div>
@@ -175,7 +175,7 @@ export default function ReEvaluationPage() {
 
                 {/* Assignment · Criterion */}
                 <div className="px-4 py-4 flex flex-col justify-center gap-1.5" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
-                  <div className="text-[12px] font-black tracking-tight text-[#1E293B]">{st.assign}</div>
+                  <div className="text-xs font-black tracking-tight text-[#1E293B]">{st.assign}</div>
                   <span className="eyebrow self-start px-2 py-0.5 rounded-md bg-primary/5 text-primary border border-primary/10">
                     {st.critShort} · {st.origScore}/{st.maxScore}
                   </span>
@@ -183,7 +183,7 @@ export default function ReEvaluationPage() {
 
                 {/* Concern */}
                 <div className="px-4 py-4 flex flex-col justify-center gap-1.5" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
-                  <div className="text-[12px] font-bold text-slate-600">{st.concern}</div>
+                  <div className="text-xs font-bold text-slate-600">{st.concern}</div>
                   <span
                     className="eyebrow self-start px-1.5 py-0.5 rounded-md"
                     style={{ background: cs.bg, color: cs.text, border: `1px solid ${cs.border}` }}
@@ -195,7 +195,7 @@ export default function ReEvaluationPage() {
                 {/* Student reasoning */}
                 <div className="px-4 py-4 flex items-center" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
                   <div
-                    className="text-[11px] font-medium leading-relaxed overflow-hidden text-slate-500 italic"
+                    className="text-xs font-medium leading-relaxed overflow-hidden text-slate-500 italic"
                     style={{
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
@@ -209,7 +209,7 @@ export default function ReEvaluationPage() {
                 {/* Submitted */}
                 <div className="px-4 py-4 flex flex-col justify-center" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
                   <div
-                    className="text-[10px] font-black tracking-tighter"
+                    className="text-xs font-black tracking-tighter"
                     style={{ color: st.ageStatus === 'overdue' ? '#EF4444' : st.ageStatus === 'new' ? '#64748B' : '#92400E' }}
                   >
                     {st.ageLabel}
@@ -249,7 +249,7 @@ export default function ReEvaluationPage() {
               {/* Resolved overlay */}
               {status === 'resolved' && (
                 <div
-                  className="absolute inset-0 flex items-center px-4 gap-2.5 text-[12px] font-semibold pointer-events-none"
+                  className="absolute inset-0 flex items-center px-4 gap-2.5 text-xs font-semibold pointer-events-none"
                   style={{ background: 'rgba(240,253,244,.96)', color: '#065F46', zIndex: 5 }}
                 >
                   <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
@@ -263,7 +263,7 @@ export default function ReEvaluationPage() {
               {/* HOD overlay */}
               {status === 'hod' && (
                 <div
-                  className="absolute inset-0 flex items-center px-4 gap-2 text-[12px] font-semibold pointer-events-none"
+                  className="absolute inset-0 flex items-center px-4 gap-2 text-xs font-semibold pointer-events-none"
                   style={{ background: 'rgba(255,251,235,.95)', color: '#92400E', zIndex: 5 }}
                 >
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -272,7 +272,7 @@ export default function ReEvaluationPage() {
                   Awaiting HOD approval · Dr. R. Kumar · Student notified once HOD approves
                   <button
                     onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                    className="ml-auto pointer-events-auto px-3 py-1 rounded text-[11px] font-semibold"
+                    className="ml-auto pointer-events-auto px-3 py-1 rounded text-xs font-semibold"
                     style={{ background: '#FEF3DC', border: '1px solid #FDE68A', color: '#92400E', cursor: 'pointer', fontFamily: 'inherit' }}
                   >
                     View →

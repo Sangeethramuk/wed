@@ -244,7 +244,7 @@ export function CreationMode() {
           <div className="flex items-center justify-between rounded-xl border border-dashed border-border/40 bg-card/10 px-6 py-5">
             <div className="space-y-1">
               <p className="text-sm font-black tracking-tight">Can&apos;t find a good match?</p>
-              <p className="text-[11px] text-muted-foreground opacity-60 font-medium">
+              <p className="text-xs text-muted-foreground opacity-60 font-medium">
                 Skip the library and start a fresh assignment — we&apos;ll guide you step-by-step.
               </p>
             </div>
@@ -314,7 +314,7 @@ export function CreationMode() {
                     <ul className="space-y-1.5">
                       {previewed.sampleQuestions.map((q, i) => (
                         <li key={i} className="text-sm leading-relaxed opacity-80 flex gap-2">
-                          <span className="text-[10px] font-black text-muted-foreground opacity-50 mt-1">{String(i + 1).padStart(2, "0")}</span>
+                          <span className="text-xs font-black text-muted-foreground opacity-50 mt-1">{String(i + 1).padStart(2, "0")}</span>
                           <span>{q}</span>
                         </li>
                       ))}
@@ -353,7 +353,7 @@ export function CreationMode() {
                               </Badge>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="bg-slate-900 border-none p-2 rounded-lg max-w-[200px]">
-                              <p className="text-[9px] font-bold text-white leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
+                              <p className="text-xs font-bold text-white leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
                             </TooltipContent>
                           </Tooltip>
                         ))}
@@ -454,7 +454,7 @@ function HistoryCard({
                       </Badge>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="bg-slate-900 border-none p-2 rounded-lg max-w-[200px]">
-                      <p className="text-[9px] font-bold text-white leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
+                      <p className="text-xs font-bold text-white leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
                     </TooltipContent>
                   </Tooltip>
                 ))}

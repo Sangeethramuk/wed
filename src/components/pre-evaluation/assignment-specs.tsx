@@ -299,7 +299,7 @@ export function AssignmentSpecs() {
                 <h3 className="text-base font-black tracking-tight">Create your own type</h3>
                 <Badge variant="outline" className="eyebrow border-border/40 opacity-70">Configurable</Badge>
               </div>
-              <p className="text-[11px] text-muted-foreground opacity-70 font-medium leading-relaxed">
+              <p className="text-xs text-muted-foreground opacity-70 font-medium leading-relaxed">
                 Define your own structure blocks and evaluation approach — still wired into the rubric &amp; calibration flow, so nothing breaks.
               </p>
             </div>
@@ -310,7 +310,7 @@ export function AssignmentSpecs() {
         {/* Non-binding helper */}
         <div className="flex items-center gap-2 pt-2 text-muted-foreground/60">
           <Info className="h-3.5 w-3.5 opacity-60" />
-          <p className="text-[11px] font-medium opacity-70">
+          <p className="text-xs font-medium opacity-70">
             You can modify the structure and evaluation later — this just sets your starting template.
           </p>
         </div>
@@ -344,7 +344,7 @@ export function AssignmentSpecs() {
                 <h1 className="text-xl font-black tracking-tight secondary-text">Assignment Details</h1>
                 <Badge variant="outline" className="eyebrow bg-primary/5 text-primary border-primary/20 px-2 h-5 text-center">{assignment.type}</Badge>
               </div>
-              <p className="text-muted-foreground text-[10px] font-semibold opacity-50 tracking-wider">Build it block by block — structure only, grading comes next</p>
+              <p className="text-muted-foreground text-xs font-semibold opacity-50 tracking-wider">Build it block by block — structure only, grading comes next</p>
             </div>
           </div>
 
@@ -501,7 +501,7 @@ export function AssignmentSpecs() {
 
             <div className="flex items-start gap-2 pt-2 text-muted-foreground/60">
               <Info className="h-3.5 w-3.5 opacity-60 mt-0.5 shrink-0" />
-              <p className="text-[11px] font-medium opacity-70 leading-relaxed">
+              <p className="text-xs font-medium opacity-70 leading-relaxed">
                 Set the structure here. Rubrics and evaluation criteria come on the next step — no need to define them yet.
               </p>
             </div>
@@ -541,12 +541,12 @@ export function AssignmentSpecs() {
                         {c.ok ? <Check className="h-2.5 w-2.5" /> : <AlertTriangle className="h-2.5 w-2.5" />}
                       </div>
                       <p className={cn(
-                        "text-[11px] font-bold leading-tight",
+                        "text-xs font-bold leading-tight",
                         c.ok ? "text-foreground/70" : "text-foreground/90"
                       )}>{c.label}</p>
                     </div>
                     {c.hint && (
-                      <p className="text-[10px] font-medium text-muted-foreground/70 leading-relaxed pl-6">{c.hint}</p>
+                      <p className="text-xs font-medium text-muted-foreground/70 leading-relaxed pl-6">{c.hint}</p>
                     )}
                   </div>
                 ))}
@@ -573,7 +573,7 @@ function TypeRow({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="space-y-1">
       <span className="eyebrow text-muted-foreground opacity-50">{title}</span>
-      <p className="text-[11px] font-medium opacity-75 leading-relaxed">{items.join(" · ")}</p>
+      <p className="text-xs font-medium opacity-75 leading-relaxed">{items.join(" · ")}</p>
     </div>
   )
 }
@@ -607,7 +607,7 @@ function InstructionsEditor({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-muted-foreground/60">
           <Sparkles className="h-3 w-3 text-primary opacity-70" />
-          <span className="text-[10px] font-semibold opacity-80">AI assist</span>
+          <span className="text-xs font-semibold opacity-80">AI assist</span>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -658,7 +658,7 @@ function QuestionsEditor({
       {needsMore && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-amber-500/[0.04] border border-amber-500/15">
           <Info className="h-3 w-3 text-amber-600/80 shrink-0" />
-          <p className="text-[10px] font-semibold text-amber-700/80 leading-tight">
+          <p className="text-xs font-semibold text-amber-700/80 leading-tight">
             Add at least 3 questions for better evaluation.
           </p>
         </div>
@@ -784,17 +784,17 @@ function QuestionRow({
                 <HelpCircle className="h-3 w-3" />
               </TooltipTrigger>
               <TooltipContent className="bg-slate-900 border-none p-2 rounded-lg shadow-none max-w-[220px]">
-                <p className="text-[9px] font-bold text-white leading-relaxed">Cognitive depth for this question. We auto-suggest based on the verbs in the prompt — change it if the suggestion feels off.</p>
+                <p className="text-xs font-bold text-white leading-relaxed">Cognitive depth for this question. We auto-suggest based on the verbs in the prompt — change it if the suggestion feels off.</p>
               </TooltipContent>
             </Tooltip>
           </div>
           <Select value={question.bloomLevel} onValueChange={(val) => { if (val) onUpdate({ bloomLevel: val as BloomLevel }) }}>
-            <SelectTrigger className="h-7 w-40 font-bold text-[10px] bg-muted/10 border border-border/40 text-primary rounded-md px-2">
+            <SelectTrigger className="h-7 w-40 font-bold text-xs bg-muted/10 border border-border/40 text-primary rounded-md px-2">
               <SelectValue />
             </SelectTrigger>
             <SelectContent sideOffset={5} className="z-[105] border border-border/20 rounded-xl p-1 shadow-none">
               {BLOOM_OPTIONS.map(L => (
-                <SelectItem key={L.value} value={L.value} className="text-[11px] font-bold py-1.5 rounded-md">
+                <SelectItem key={L.value} value={L.value} className="text-xs font-bold py-1.5 rounded-md">
                   {L.label}
                 </SelectItem>
               ))}
@@ -834,7 +834,7 @@ function DeliverablesEditor({
       {items.length === 0 ? (
         <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-amber-500/[0.04] border border-amber-500/15">
           <AlertTriangle className="h-3 w-3 text-amber-600/80 shrink-0" />
-          <p className="text-[10px] font-semibold text-amber-700/80 leading-tight">
+          <p className="text-xs font-semibold text-amber-700/80 leading-tight">
             Add at least one deliverable so students know what to submit.
           </p>
         </div>
@@ -856,21 +856,21 @@ function DeliverablesEditor({
                   placeholder="Short description (optional)"
                   value={item.description}
                   onChange={(e) => onUpdate(item.id, { description: e.target.value })}
-                  className="h-7 text-[11px] font-medium bg-transparent border border-border/20 rounded-md px-2 focus-visible:ring-primary/10 placeholder:opacity-30 ml-6"
+                  className="h-7 text-xs font-medium bg-transparent border border-border/20 rounded-md px-2 focus-visible:ring-primary/10 placeholder:opacity-30 ml-6"
                 />
               </div>
               <Select value={item.format} onValueChange={(val) => { if (val) onUpdate(item.id, { format: val }) }}>
-                <SelectTrigger className="h-8 w-32 text-[10px] font-bold bg-muted/10 border border-border/40 rounded-md px-2">
+                <SelectTrigger className="h-8 w-32 text-xs font-bold bg-muted/10 border border-border/40 rounded-md px-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent sideOffset={5} className="z-[105] border border-border/20 rounded-xl p-1 shadow-none">
-                  <SelectItem value="PDF" className="text-[11px] font-bold py-1.5 rounded-md">PDF</SelectItem>
-                  <SelectItem value="Word Doc" className="text-[11px] font-bold py-1.5 rounded-md">Word Doc</SelectItem>
-                  <SelectItem value="Slides" className="text-[11px] font-bold py-1.5 rounded-md">Slides</SelectItem>
-                  <SelectItem value="Code repo" className="text-[11px] font-bold py-1.5 rounded-md">Code repo</SelectItem>
-                  <SelectItem value="Figma link" className="text-[11px] font-bold py-1.5 rounded-md">Figma link</SelectItem>
-                  <SelectItem value="Video" className="text-[11px] font-bold py-1.5 rounded-md">Video</SelectItem>
-                  <SelectItem value="Other" className="text-[11px] font-bold py-1.5 rounded-md">Other</SelectItem>
+                  <SelectItem value="PDF" className="text-xs font-bold py-1.5 rounded-md">PDF</SelectItem>
+                  <SelectItem value="Word Doc" className="text-xs font-bold py-1.5 rounded-md">Word Doc</SelectItem>
+                  <SelectItem value="Slides" className="text-xs font-bold py-1.5 rounded-md">Slides</SelectItem>
+                  <SelectItem value="Code repo" className="text-xs font-bold py-1.5 rounded-md">Code repo</SelectItem>
+                  <SelectItem value="Figma link" className="text-xs font-bold py-1.5 rounded-md">Figma link</SelectItem>
+                  <SelectItem value="Video" className="text-xs font-bold py-1.5 rounded-md">Video</SelectItem>
+                  <SelectItem value="Other" className="text-xs font-bold py-1.5 rounded-md">Other</SelectItem>
                 </SelectContent>
               </Select>
               <Button
@@ -912,7 +912,7 @@ function ResourcesEditor({
   return (
     <div className="space-y-3">
       {items.length === 0 ? (
-        <p className="text-[11px] font-medium text-muted-foreground/60 leading-relaxed">
+        <p className="text-xs font-medium text-muted-foreground/60 leading-relaxed">
           Optional — share textbook chapters, references, starter files, or anything else students should read before starting.
         </p>
       ) : (
@@ -929,7 +929,7 @@ function ResourcesEditor({
                 placeholder="Link (optional)"
                 value={item.link}
                 onChange={(e) => onUpdate(item.id, { link: e.target.value })}
-                className="h-8 text-[11px] font-medium bg-transparent border border-border/30 rounded-md px-2 focus-visible:ring-primary/10 placeholder:opacity-30"
+                className="h-8 text-xs font-medium bg-transparent border border-border/30 rounded-md px-2 focus-visible:ring-primary/10 placeholder:opacity-30"
               />
               <Button
                 variant="ghost"

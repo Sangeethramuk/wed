@@ -91,7 +91,7 @@ export function CriterionFeedbackCard({
             onChange={(e) => onEdit(e.target.value)}
             rows={5}
             placeholder="No feedback provided yet..."
-            className={`w-full text-[12px] leading-[1.75] text-foreground bg-transparent border-none p-0 resize-y focus:outline-none focus:bg-white/40 rounded-md font-medium transition-all min-h-[100px]`}
+            className={`w-full text-xs leading-[1.75] text-foreground bg-transparent border-none p-0 resize-y focus:outline-none focus:bg-white/40 rounded-md font-medium transition-all min-h-[100px]`}
           />
         </div>
       </div>

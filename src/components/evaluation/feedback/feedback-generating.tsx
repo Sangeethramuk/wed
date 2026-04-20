@@ -27,7 +27,7 @@ export function FeedbackGenerating() {
           />
         ))}
       </div>
-      <span className="text-[11px] font-medium text-muted-foreground">
+      <span className="text-xs font-medium text-muted-foreground">
         Generating feedback…
       </span>
     </motion.div>

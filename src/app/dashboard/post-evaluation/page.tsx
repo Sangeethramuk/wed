@@ -115,7 +115,7 @@ export default function ResultInsights() {
                   <CardTitle className="eyebrow text-foreground flex items-center gap-2">
                     <Activity className="w-3.5 h-3.5 text-primary" /> Batch Readiness
                   </CardTitle>
-                  <CardDescription className="text-[10px] font-bold text-muted-foreground/50 mt-1">Cohort SE-PH2 Evaluation</CardDescription>
+                  <CardDescription className="text-xs font-bold text-muted-foreground/50 mt-1">Cohort SE-PH2 Evaluation</CardDescription>
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-black text-foreground tabular-nums tracking-tighter">45<span className="text-muted-foreground/30 text-sm">/45</span></div>
@@ -136,7 +136,7 @@ export default function ResultInsights() {
                     { label: 'Integrity Alert', count: 2, color: 'text-red-600', bg: 'bg-red-500/10' },
                   ].map((stat) => (
                     <div key={stat.label} className={cn("p-4 rounded-2xl border border-border/40 flex items-center justify-between", stat.bg)}>
-                      <span className="text-[10px] font-bold text-muted-foreground/80 tracking-tight">{stat.label}</span>
+                      <span className="text-xs font-bold text-muted-foreground/80 tracking-tight">{stat.label}</span>
                       <span className={cn("text-lg font-black", stat.color)}>{stat.count}</span>
                     </div>
                   ))}
@@ -180,8 +180,8 @@ export default function ResultInsights() {
                          </div>
                          <opt.icon className={cn("w-4 h-4 opacity-20", releaseTiming === opt.key ? "text-primary opacity-60" : "text-muted-foreground")} />
                       </div>
-                      <p className="text-[13px] font-bold text-foreground/80">{opt.time}</p>
-                      <p className="text-[11px] font-medium text-muted-foreground leading-relaxed">{opt.desc}</p>
+                      <p className="text-sm font-bold text-foreground/80">{opt.time}</p>
+                      <p className="text-xs font-medium text-muted-foreground leading-relaxed">{opt.desc}</p>
                     </div>
                   </button>
                 ))}
@@ -215,7 +215,7 @@ export default function ResultInsights() {
                   </div>
 
                   <div className="p-5 rounded-2xl bg-background border border-primary/20 border-dashed">
-                      <p className="text-[11px] font-medium text-muted-foreground leading-relaxed italic">
+                      <p className="text-xs font-medium text-muted-foreground leading-relaxed italic">
                         "Publishing will notify all students in the cohort and unlock their solution direction roadmaps."
                       </p>
                   </div>
@@ -323,11 +323,11 @@ export default function ResultInsights() {
                          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </motion.div>
                       <div className="absolute -top-10 text-xs font-black text-foreground opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 px-2 py-1 bg-background border border-border/40 rounded-lg shadow-xl tabular-nums">
-                        {data.count} <span className="text-[9px] text-muted-foreground">SUBMISSIONS</span>
+                        {data.count} <span className="text-xs text-muted-foreground">SUBMISSIONS</span>
                       </div>
                     </div>
                     <div className="text-center space-y-1 pt-5 shrink-0">
-                      <p className="text-[11px] font-black text-foreground tracking-tighter tabular-nums">{data.range}</p>
+                      <p className="text-xs font-black text-foreground tracking-tighter tabular-nums">{data.range}</p>
                       <p className="eyebrow text-muted-foreground/30">{data.label}</p>
                     </div>
                   </div>
@@ -360,7 +360,7 @@ export default function ResultInsights() {
                          {gap.severity} RISK
                        </Badge>
                      </div>
-                     <p className="text-[12px] text-muted-foreground leading-relaxed font-semibold">{gap.gap}</p>
+                     <p className="text-xs text-muted-foreground leading-relaxed font-semibold">{gap.gap}</p>
                      <div className="pt-2">
                        <Button
                          variant="link"
@@ -411,7 +411,7 @@ export default function ResultInsights() {
                   <tr key={student.name} className="hover:bg-muted/5 transition-colors group">
                     <td className="px-10 py-6">
                       <div className="flex items-center gap-4">
-                         <div className="w-10 h-10 rounded-2xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-[10px] font-black text-muted-foreground group-hover:text-primary">
+                         <div className="w-10 h-10 rounded-2xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-black text-muted-foreground group-hover:text-primary">
                             {student.name.split(' ').map(n => n[0]).join('')}
                          </div>
                          <span className="font-extrabold text-foreground text-sm tracking-tight">{student.name}</span>
@@ -419,13 +419,13 @@ export default function ResultInsights() {
                     </td>
                     <td className="px-6 py-6 font-mono text-muted-foreground text-center">
                        <div className="flex items-center justify-center gap-3">
-                          <span className="text-[11px] font-bold">{student.c1}</span>
-                          <span className="text-muted-foreground/20 text-[10px]">|</span>
-                          <span className="text-[11px] font-bold">{student.c2}</span>
-                          <span className="text-muted-foreground/20 text-[10px]">|</span>
-                          <span className="text-[11px] font-bold">{student.c3}</span>
-                          <span className="text-muted-foreground/20 text-[10px]">|</span>
-                          <span className="text-[11px] font-black text-foreground">{student.total}</span>
+                          <span className="text-xs font-bold">{student.c1}</span>
+                          <span className="text-muted-foreground/20 text-xs">|</span>
+                          <span className="text-xs font-bold">{student.c2}</span>
+                          <span className="text-muted-foreground/20 text-xs">|</span>
+                          <span className="text-xs font-bold">{student.c3}</span>
+                          <span className="text-muted-foreground/20 text-xs">|</span>
+                          <span className="text-xs font-black text-foreground">{student.total}</span>
                        </div>
                     </td>
                     <td className="px-6 py-6 text-center">

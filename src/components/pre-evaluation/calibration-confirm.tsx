@@ -93,7 +93,7 @@ export function CalibrationConfirm() {
                   <p className="text-sm font-black tracking-tight secondary-text">Multiple Files (Artifacts)</p>
                 </CardContent>
               </TooltipTrigger>
-              <TooltipContent className="bg-slate-900 border-none p-2 shadow-none rounded-lg"><p className="text-[9px] font-bold text-white">Project-style submission with secondary documentation support</p></TooltipContent>
+              <TooltipContent className="bg-slate-900 border-none p-2 shadow-none rounded-lg"><p className="text-xs font-bold text-white">Project-style submission with secondary documentation support</p></TooltipContent>
             </Tooltip>
 
             <Tooltip>
@@ -103,7 +103,7 @@ export function CalibrationConfirm() {
                   <p className="text-sm font-black tracking-tight secondary-text">3 Linked CO-POs</p>
                 </CardContent>
               </TooltipTrigger>
-              <TooltipContent className="bg-slate-900 border-none p-2 shadow-none rounded-lg"><p className="text-[9px] font-bold text-white">Accreditation outcomes verified for this session</p></TooltipContent>
+              <TooltipContent className="bg-slate-900 border-none p-2 shadow-none rounded-lg"><p className="text-xs font-bold text-white">Accreditation outcomes verified for this session</p></TooltipContent>
             </Tooltip>
 
             <Tooltip>
@@ -113,7 +113,7 @@ export function CalibrationConfirm() {
                   <p className="text-sm font-black tracking-tight secondary-text">~45 Students</p>
                 </CardContent>
               </TooltipTrigger>
-              <TooltipContent className="bg-slate-900 border-none p-2 shadow-none rounded-lg"><p className="text-[9px] font-bold text-white">Based on current course enrollment</p></TooltipContent>
+              <TooltipContent className="bg-slate-900 border-none p-2 shadow-none rounded-lg"><p className="text-xs font-bold text-white">Based on current course enrollment</p></TooltipContent>
             </Tooltip>
           </div>
         </div>

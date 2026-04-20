@@ -160,13 +160,13 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
       <div className="shrink-0 bg-foreground text-background px-5 flex items-center gap-3" style={{ height: 42 }}>
         <button
           onClick={() => setCalibrationPhase(assignmentId, "delta_review")}
-          className="flex items-center gap-1.5 text-[11px] font-medium text-background/75 hover:text-background transition-colors shrink-0"
+          className="flex items-center gap-1.5 text-xs font-medium text-background/75 hover:text-background transition-colors shrink-0"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Exit review
         </button>
-        <span className="text-[12px] font-medium text-background/90">Reviewing differences</span>
-        <span className="text-[12px] font-mono bg-white/15 rounded-full px-2.5 py-[2px] shrink-0">
+        <span className="text-xs font-medium text-background/90">Reviewing differences</span>
+        <span className="text-xs font-mono bg-white/15 rounded-full px-2.5 py-[2px] shrink-0">
           {activeIdx + 1} of {totalCount}
         </span>
         <div className="flex-1 h-[3px] bg-white/20 rounded-full overflow-hidden">
@@ -175,7 +175,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
             style={{ width: `${progressPct}%` }}
           />
         </div>
-        <span className="text-[12px] font-mono text-background/75 shrink-0">
+        <span className="text-xs font-mono text-background/75 shrink-0">
           {resolvedCount} resolved
         </span>
       </div>
@@ -189,10 +189,10 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
           {/* Paper selector header */}
           <div className="shrink-0 px-5 py-2.5 border-b border-border/30 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <span className="text-[11px] font-semibold font-mono bg-muted/50 border border-border/50 rounded px-2 py-0.5 text-muted-foreground">
+              <span className="text-xs font-semibold font-mono bg-muted/50 border border-border/50 rounded px-2 py-0.5 text-muted-foreground">
                 {papers[activePaperIdx]?.anonymizedLabel ?? "Paper 1"}
               </span>
-              <span className="text-[12px] text-muted-foreground/70">
+              <span className="text-xs text-muted-foreground/70">
                 {papers.length} papers
               </span>
             </div>
@@ -201,7 +201,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                 <button
                   key={p.paperId}
                   onClick={() => setActivePaperIdx(i)}
-                  className={`w-7 h-7 rounded-lg border text-[11px] font-semibold font-mono transition-colors ${
+                  className={`w-7 h-7 rounded-lg border text-xs font-semibold font-mono transition-colors ${
                     activePaperIdx === i
                       ? "bg-foreground text-background border-foreground"
                       : "bg-muted/20 border-border/50 text-muted-foreground hover:border-border"
@@ -216,21 +216,21 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
           {/* Essay content — native scroll for reliable height */}
           <div className="flex-1 min-h-0 overflow-y-auto">
             <div className="px-12 py-9 pb-16">
-              <h1 className="text-[21px] font-bold tracking-tight leading-snug mb-1.5">
+              <h1 className="text-xl font-bold tracking-tight leading-snug mb-1.5">
                 Student Submission
               </h1>
-              <p className="text-[11px] font-mono text-muted-foreground/60 mb-7 pb-5 border-b border-border/30">
+              <p className="text-xs font-mono text-muted-foreground/60 mb-7 pb-5 border-b border-border/30">
                 {papers[activePaperIdx]?.anonymizedLabel} · Submitted for review
               </p>
               {MOCK_SECTIONS.map(sec => {
                 const isActive = sec.id === activeCriterionId
                 return (
                   <div key={sec.id} className="mb-7">
-                    <h2 className={`text-[14px] font-semibold mb-2 ${isActive ? "text-foreground" : "text-foreground/70"}`}>
+                    <h2 className={`text-sm font-semibold mb-2 ${isActive ? "text-foreground" : "text-foreground/70"}`}>
                       {sec.label}
                     </h2>
                     <p
-                      className={`text-[13.5px] leading-[1.85] rounded px-1.5 py-0.5 transition-colors ${
+                      className={`text-sm leading-[1.85] rounded px-1.5 py-0.5 transition-colors ${
                         isActive
                           ? "text-foreground bg-amber-50/70 border-b-2 border-amber-400/60"
                           : "text-muted-foreground/75"
@@ -281,20 +281,20 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                       }`}
                     >
                       {/* Number badge */}
-                      <div className={`w-[26px] h-[26px] rounded-full border text-[11px] font-bold font-mono flex items-center justify-center shrink-0 ${dc.num}`}>
+                      <div className={`w-[26px] h-[26px] rounded-full border text-xs font-bold font-mono flex items-center justify-center shrink-0 ${dc.num}`}>
                         {idx + 1}
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-semibold text-foreground truncate leading-tight">
+                        <p className="text-sm font-semibold text-foreground truncate leading-tight">
                           {criterion?.name}
                         </p>
-                        <p className="text-[11px] font-mono text-muted-foreground/70 leading-tight">
+                        <p className="text-xs font-mono text-muted-foreground/70 leading-tight">
                           {paper?.anonymizedLabel}
                         </p>
                       </div>
 
-                      <span className={`text-[12px] font-bold font-mono px-2.5 py-[3px] rounded-full shrink-0 ${dc.badge}`}>
+                      <span className={`text-xs font-bold font-mono px-2.5 py-[3px] rounded-full shrink-0 ${dc.badge}`}>
                         +{disc.delta} gap
                       </span>
 
@@ -316,14 +316,14 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                                 Your score
                               </p>
                               <div className="flex items-baseline gap-0.5">
-                                <span className="text-[24px] font-bold font-mono leading-none">
+                                <span className="text-2xl font-bold font-mono leading-none">
                                   {disc.instructorLevel}
                                 </span>
-                                <span className="text-[14px] font-normal text-muted-foreground/55">/5</span>
+                                <span className="text-sm font-normal text-muted-foreground/55">/5</span>
                               </div>
                             </div>
 
-                            <div className="flex items-center text-[11px] font-semibold text-muted-foreground/60 px-1 shrink-0">
+                            <div className="flex items-center text-xs font-semibold text-muted-foreground/60 px-1 shrink-0">
                               vs
                             </div>
 
@@ -333,10 +333,10 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                                 AI score
                               </p>
                               <div className="flex items-baseline gap-0.5">
-                                <span className="text-[24px] font-bold font-mono leading-none text-amber-600">
+                                <span className="text-2xl font-bold font-mono leading-none text-amber-600">
                                   {disc.aiLevel}
                                 </span>
-                                <span className="text-[14px] font-normal text-muted-foreground/55">/5</span>
+                                <span className="text-sm font-normal text-muted-foreground/55">/5</span>
                               </div>
                             </div>
                           </div>
@@ -344,26 +344,26 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                           {/* Action buttons */}
                           <div className="flex gap-1.5 flex-wrap mt-2.5">
                             {isResolved ? (
-                              <span className="px-3 py-1.5 text-[12px] font-medium rounded-lg bg-green-50 border border-green-200 text-green-700">
+                              <span className="px-3 py-1.5 text-xs font-medium rounded-lg bg-green-50 border border-green-200 text-green-700">
                                 ✓ Resolved — {disc.status === "accepted" ? "Accepted AI" : "Kept yours"}
                               </span>
                             ) : !isAdj ? (
                               <>
                                 <button
                                   onClick={() => handleResolve(idx, "accept")}
-                                  className="px-3 py-1.5 text-[12px] font-medium rounded-lg bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 transition-colors"
+                                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 transition-colors"
                                 >
                                   Accept AI
                                 </button>
                                 <button
                                   onClick={() => handleResolve(idx, "keep")}
-                                  className="px-3 py-1.5 text-[12px] font-medium rounded-lg bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 transition-colors"
+                                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 transition-colors"
                                 >
                                   Keep Mine
                                 </button>
                                 <button
                                   onClick={() => setAdjustMode(prev => ({ ...prev, [key]: true }))}
-                                  className="px-3 py-1.5 text-[12px] font-medium rounded-lg bg-white border border-border/60 text-muted-foreground hover:bg-muted/20 transition-colors"
+                                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-border/60 text-muted-foreground hover:bg-muted/20 transition-colors"
                                 >
                                   Adjust score
                                 </button>
@@ -382,7 +382,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                                   <button
                                     key={l}
                                     onClick={() => setAdjustLevel(prev => ({ ...prev, [key]: l }))}
-                                    className={`flex-1 h-9 rounded-lg text-[13px] font-bold border transition-colors ${
+                                    className={`flex-1 h-9 rounded-lg text-sm font-bold border transition-colors ${
                                       adjLvl === l
                                         ? "bg-foreground text-background border-foreground"
                                         : "border-border/50 text-muted-foreground hover:border-foreground/30"
@@ -398,14 +398,14 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                                     setAdjustMode(prev => ({ ...prev, [key]: false }))
                                     setAdjustLevel(prev => ({ ...prev, [key]: 0 }))
                                   }}
-                                  className="text-[11px] text-muted-foreground/65 hover:text-foreground px-2 py-1 transition-colors"
+                                  className="text-xs text-muted-foreground/65 hover:text-foreground px-2 py-1 transition-colors"
                                 >
                                   Cancel
                                 </button>
                                 <button
                                   onClick={() => adjLvl > 0 && handleResolve(idx, "adjust", adjLvl)}
                                   disabled={adjLvl === 0}
-                                  className="flex-1 py-1.5 text-[12px] font-semibold bg-foreground text-background rounded-lg disabled:opacity-40 hover:bg-foreground/90 transition-colors"
+                                  className="flex-1 py-1.5 text-xs font-semibold bg-foreground text-background rounded-lg disabled:opacity-40 hover:bg-foreground/90 transition-colors"
                                 >
                                   Confirm adjustment
                                 </button>
@@ -418,7 +418,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                         <div className="flex justify-end">
                           <button
                             onClick={() => setCompareOn(prev => ({ ...prev, [key]: !isCompare }))}
-                            className={`flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium border rounded-md transition-colors ${
+                            className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium border rounded-md transition-colors ${
                               isCompare
                                 ? "bg-blue-50 border-blue-200 text-blue-700"
                                 : "bg-white border-border/50 text-muted-foreground hover:bg-muted/10"
@@ -440,16 +440,16 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                               {/* Evidence chips from evidenceExchanges */}
                               {disc.evidenceExchanges.filter(e => e.type === "add_instructor" && e.note).map((e, i) => (
                                 <div key={e.id} className="flex items-start gap-2 bg-white border border-border/40 rounded-md px-2.5 py-1.5 mb-2">
-                                  <div className="w-4 h-4 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[9px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                                  <div className="w-4 h-4 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                                     {i + 1}
                                   </div>
-                                  <p className="text-[11.5px] leading-relaxed text-muted-foreground italic">
+                                  <p className="text-xs leading-relaxed text-muted-foreground italic">
                                     {e.note}
                                   </p>
                                 </div>
                               ))}
                               {disc.evidenceExchanges.filter(e => e.type === "add_instructor").length === 0 && (
-                                <p className="text-[11px] text-muted-foreground/60 mb-2">No evidence linked</p>
+                                <p className="text-xs text-muted-foreground/60 mb-2">No evidence linked</p>
                               )}
                               <Textarea
                                 value={fb}
@@ -464,7 +464,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                             <div className="border border-border/40 rounded-lg overflow-hidden">
                               <button
                                 onClick={() => setAiOpen(prev => ({ ...prev, [key]: !isAiOpen }))}
-                                className={`w-full flex items-center justify-between px-3 py-2.5 text-[12px] font-medium transition-colors ${
+                                className={`w-full flex items-center justify-between px-3 py-2.5 text-xs font-medium transition-colors ${
                                   isAiOpen
                                     ? "bg-amber-50 border-b border-amber-200"
                                     : "bg-muted/10 hover:bg-muted/20"
@@ -475,7 +475,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                                   <span className="text-foreground/80">View AI Perspective</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${
                                     disc.delta >= 3 ? "bg-red-50 text-red-700 border-red-200"
                                     : disc.delta >= 2 ? "bg-amber-50 text-amber-700 border-amber-200"
                                     : "bg-green-50 text-green-700 border-green-200"
@@ -490,29 +490,29 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                                   {/* AI evidence chips */}
                                   {disc.aiEvidence.length > 0 ? disc.aiEvidence.map((ev, i) => (
                                     <div key={i} className="flex items-start gap-2 bg-muted/20 border border-border/40 rounded-md px-2.5 py-1.5">
-                                      <div className="w-4 h-4 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[9px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                                      <div className="w-4 h-4 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                                         {i + 1}
                                       </div>
-                                      <p className="text-[11.5px] leading-relaxed text-muted-foreground italic">{ev}</p>
+                                      <p className="text-xs leading-relaxed text-muted-foreground italic">{ev}</p>
                                     </div>
                                   )) : (
-                                    <p className="text-[11px] text-muted-foreground/65">No AI evidence provided</p>
+                                    <p className="text-xs text-muted-foreground/65">No AI evidence provided</p>
                                   )}
                                   {/* AI reasoning */}
-                                  <p className="text-[12px] leading-relaxed text-muted-foreground">
+                                  <p className="text-xs leading-relaxed text-muted-foreground">
                                     {disc.aiReasoning}
                                   </p>
                                   {/* Signal tags */}
                                   <div className="flex flex-wrap gap-1.5">
                                     {disc.instructorLevel < disc.aiLevel ? (
                                       <>
-                                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-medium">✓ Strong AI evidence</span>
-                                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-red-50 text-red-700 font-medium">✗ You scored below AI</span>
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-medium">✓ Strong AI evidence</span>
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-700 font-medium">✗ You scored below AI</span>
                                       </>
                                     ) : (
                                       <>
-                                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-medium">✓ You scored higher</span>
-                                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-red-50 text-red-700 font-medium">✗ AI may have underweighted</span>
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-medium">✓ You scored higher</span>
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-700 font-medium">✗ AI may have underweighted</span>
                                       </>
                                     )}
                                   </div>
@@ -524,31 +524,31 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                           /* Compare split */
                           <div className="flex gap-2.5">
                             <div className="flex-1 space-y-1.5">
-                              <span className="text-[10px] font-bold tracking-wider bg-blue-50 text-blue-700 px-2 py-0.5 rounded inline-block">
+                              <span className="text-xs font-bold tracking-wider bg-blue-50 text-blue-700 px-2 py-0.5 rounded inline-block">
                                 Your evaluation
                               </span>
                               <Textarea
                                 value={fb}
                                 onChange={e => setFeedbacks(prev => ({ ...prev, [key]: e.target.value }))}
                                 placeholder="Your reasoning…"
-                                className="text-[12px] resize-none h-[96px] bg-white border-border/40 focus-visible:ring-blue-200/50"
+                                className="text-xs resize-none h-[96px] bg-white border-border/40 focus-visible:ring-blue-200/50"
                                 disabled={isResolved}
                               />
                             </div>
                             <div className="w-px bg-border/40 shrink-0" />
                             <div className="flex-1 space-y-1.5">
-                              <span className="text-[10px] font-bold tracking-wider bg-amber-50 text-amber-700 px-2 py-0.5 rounded inline-block">
+                              <span className="text-xs font-bold tracking-wider bg-amber-50 text-amber-700 px-2 py-0.5 rounded inline-block">
                                 AI evaluation
                               </span>
                               {disc.aiEvidence.map((ev, i) => (
                                 <div key={i} className="flex items-start gap-1.5 mb-1.5">
-                                  <div className="w-4 h-4 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[9px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                                  <div className="w-4 h-4 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                                     {i + 1}
                                   </div>
-                                  <p className="text-[11.5px] leading-relaxed text-muted-foreground italic">{ev}</p>
+                                  <p className="text-xs leading-relaxed text-muted-foreground italic">{ev}</p>
                                 </div>
                               ))}
-                              <p className="text-[12px] leading-relaxed text-muted-foreground">{disc.aiReasoning}</p>
+                              <p className="text-xs leading-relaxed text-muted-foreground">{disc.aiReasoning}</p>
                             </div>
                           </div>
                         )}
@@ -559,22 +559,22 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                             <button
                               onClick={() => idx > 0 && navigateTo(idx - 1)}
                               disabled={idx === 0}
-                              className="flex items-center gap-1 px-2.5 py-1 text-[12px] font-medium border border-border/50 rounded-md bg-white text-muted-foreground hover:bg-muted/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                              className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium border border-border/50 rounded-md bg-white text-muted-foreground hover:bg-muted/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
                             >
                               <ChevronLeft className="h-3.5 w-3.5" /> Previous
                             </button>
-                            <span className="text-[11px] font-mono text-muted-foreground/65">
+                            <span className="text-xs font-mono text-muted-foreground/65">
                               {idx + 1} of {totalCount}
                             </span>
                             <button
                               onClick={() => idx < totalCount - 1 && navigateTo(idx + 1)}
                               disabled={idx >= totalCount - 1}
-                              className="flex items-center gap-1 px-2.5 py-1 text-[12px] font-medium border border-border/50 rounded-md bg-white text-muted-foreground hover:bg-muted/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                              className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium border border-border/50 rounded-md bg-white text-muted-foreground hover:bg-muted/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
                             >
                               Next <ChevronRight className="h-3.5 w-3.5" />
                             </button>
                           </div>
-                          <span className="text-[11px] font-mono text-muted-foreground/65">
+                          <span className="text-xs font-mono text-muted-foreground/65">
                             {resolvedCount}/{totalCount} resolved
                           </span>
                         </div>
@@ -626,8 +626,8 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
 
               {/* Title */}
               <div className="text-center">
-                <h3 className="text-[18px] font-bold tracking-tight">Updating Calibration</h3>
-                <p className="text-[13px] text-muted-foreground mt-1 min-h-[20px] transition-all">
+                <h3 className="text-lg font-bold tracking-tight">Updating Calibration</h3>
+                <p className="text-sm text-muted-foreground mt-1 min-h-[20px] transition-all">
                   {allDone
                     ? "Calibration complete — ready to grade"
                     : "Applying your resolved scores across all papers…"}
@@ -642,7 +642,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                   return (
                     <div
                       key={step}
-                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[9px] border text-[13px] transition-all duration-300 ${
+                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[9px] border text-sm transition-all duration-300 ${
                         done
                           ? "bg-green-50 border-green-200 text-foreground/70"
                           : active
@@ -658,7 +658,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                         }`}
                       />
                       <span className="flex-1">{step}</span>
-                      {done && <span className="text-[12px] font-semibold text-green-600 ml-auto">✓</span>}
+                      {done && <span className="text-xs font-semibold text-green-600 ml-auto">✓</span>}
                     </div>
                   )
                 })}
@@ -668,7 +668,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
               <Button
                 onClick={() => completeCalibration(assignmentId)}
                 disabled={!allDone}
-                className="w-full h-[46px] rounded-[10px] bg-foreground text-background hover:bg-foreground/90 font-semibold text-[14px] disabled:opacity-35 gap-2 transition-all"
+                className="w-full h-[46px] rounded-[10px] bg-foreground text-background hover:bg-foreground/90 font-semibold text-sm disabled:opacity-35 gap-2 transition-all"
               >
                 Proceed to Grade
               </Button>

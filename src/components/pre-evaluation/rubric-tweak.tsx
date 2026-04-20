@@ -82,7 +82,7 @@ export function RubricTweak() {
                     </div>
                     <p className="eyebrow text-foreground">Learning goals linked</p>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom" className="bg-slate-900 border-none p-2"><p className="text-[9px] font-bold text-white">All criteria are linked to your course's learning goals</p></TooltipContent>
+                  <TooltipContent side="bottom" className="bg-slate-900 border-none p-2"><p className="text-xs font-bold text-white">All criteria are linked to your course's learning goals</p></TooltipContent>
                 </Tooltip>
                 
                 <Tooltip>
@@ -92,7 +92,7 @@ export function RubricTweak() {
                     </div>
                     <p className="eyebrow text-foreground">Grade levels defined</p>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom" className="bg-slate-900 border-none p-2"><p className="text-[9px] font-bold text-white">AI will use these descriptions to assist with grading</p></TooltipContent>
+                  <TooltipContent side="bottom" className="bg-slate-900 border-none p-2"><p className="text-xs font-bold text-white">AI will use these descriptions to assist with grading</p></TooltipContent>
                 </Tooltip>
               </div>
 
@@ -135,7 +135,7 @@ export function RubricTweak() {
                       <th key={level} className="p-4 text-center border-r border-border/10 min-w-[200px] shadow-none">
                         <div className="space-y-0.5">
                           <span className={`eyebrow ${i === 0 ? 'text-primary' : 'text-muted-foreground/50'}`}>{level}</span>
-                          <span className="block text-[8px] font-black text-muted-foreground/30 tracking-tighter">Grade: {i === 0 ? '100' : i === 1 ? '75' : i === 2 ? '50' : '25'}%</span>
+                          <span className="block text-xs font-black text-muted-foreground/30 tracking-tighter">Grade: {i === 0 ? '100' : i === 1 ? '75' : i === 2 ? '50' : '25'}%</span>
                         </div>
                       </th>
                     ))}
@@ -157,12 +157,12 @@ export function RubricTweak() {
                             />
                             <div className="flex items-center justify-between">
                               <Tooltip>
-                                <TooltipTrigger className="text-[8px] font-black tracking-widest border-border/20 text-muted-foreground/60 bg-background/30 py-0 px-2 rounded-full h-4 shadow-none cursor-help">
+                                <TooltipTrigger className="text-xs font-black tracking-widest border-border/20 text-muted-foreground/60 bg-background/30 py-0 px-2 rounded-full h-4 shadow-none cursor-help">
                                   <Badge variant="outline" className="border-none p-0 h-auto">
                                     {crit.linkedCO}
                                   </Badge>
                                 </TooltipTrigger>
-                                <TooltipContent side="right" className="max-w-[200px] text-[10px] font-bold bg-slate-900 border-none p-3 rounded-lg shadow-none">
+                                <TooltipContent side="right" className="max-w-[200px] text-xs font-bold bg-slate-900 border-none p-3 rounded-lg shadow-none">
                                   <p className="eyebrow text-primary mb-1">Linked learning goal</p>
                                   <p className="text-white/80">{CO_DEFINITIONS[crit.linkedCO] || "Standard institutional goal"}</p>
                                 </TooltipContent>
@@ -177,7 +177,7 @@ export function RubricTweak() {
                       {crit.levels.map((lvl) => (
                         <td key={lvl.label} className="p-4 border-r border-border/10 align-top shadow-none">
                           <Textarea 
-                            className="text-[11px] font-medium leading-relaxed bg-background/40 border border-border/60 focus-visible:ring-1 focus-visible:ring-primary/10 p-3 min-h-[140px] resize-none hover:bg-white/50 rounded-lg transition-all shadow-none placeholder:opacity-10"
+                            className="text-xs font-medium leading-relaxed bg-background/40 border border-border/60 focus-visible:ring-1 focus-visible:ring-primary/10 p-3 min-h-[140px] resize-none hover:bg-white/50 rounded-lg transition-all shadow-none placeholder:opacity-10"
                             value={lvl.description}
                             onChange={(e) => updateLevelDescription(crit.id, lvl.label, e.target.value)}
                           />

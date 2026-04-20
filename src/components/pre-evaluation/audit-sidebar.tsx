@@ -51,12 +51,12 @@ export function AuditSidebar() {
                 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-[11px] font-black tracking-tight text-foreground/60">{event.action}</h4>
+                    <h4 className="text-xs font-black tracking-tight text-foreground/60">{event.action}</h4>
                     <span className="eyebrow text-muted-foreground/30 bg-muted/20 px-1.5 py-0.5 rounded border border-border/10">{event.timestamp}</span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground/50 font-medium leading-relaxed pr-4">{event.details}</p>
+                  <p className="text-xs text-muted-foreground/50 font-medium leading-relaxed pr-4">{event.details}</p>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className={`eyebrow text-[7px] py-0 px-2 border border-border/20 bg-transparent opacity-30 rounded-full h-4`}>
+                    <Badge variant="outline" className={`eyebrow text-xs py-0 px-2 border border-border/20 bg-transparent opacity-30 rounded-full h-4`}>
                       {event.type}
                     </Badge>
                   </div>
@@ -73,7 +73,7 @@ export function AuditSidebar() {
                 <p className="eyebrow text-primary/30">
                   Secure Log
                 </p>
-                <p className="text-[9px] font-bold text-muted-foreground/30 leading-relaxed">
+                <p className="text-xs font-bold text-muted-foreground/30 leading-relaxed">
                   Record #ESU-{Date.now().toString(36).toUpperCase()} locked.
                 </p>
               </div>
