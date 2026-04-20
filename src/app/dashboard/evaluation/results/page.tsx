@@ -8,6 +8,7 @@ import { useGradingStore } from "@/lib/store/grading-store"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Table, TableHeader, TableBody, TableHead, TableCell } from "@/components/ui/table"
 import {
   ArrowLeft, Download, Users, TrendingUp, ShieldCheck, CheckCircle2,
   AlertTriangle, Sparkles, BarChart3, ArrowRight, FileText,
@@ -337,120 +338,121 @@ export default function EvaluationResults() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-muted/20 border-b border-border/10">
-                <tr>
-                  <th className="eyebrow px-6 py-4 text-muted-foreground/50">#</th>
-                  <th className="eyebrow px-6 py-4 text-muted-foreground/50">Student</th>
-                  <th className="eyebrow px-6 py-4 text-muted-foreground/50">Roll No.</th>
-                  {criterionIds.map(cid => (
-                    <th key={cid} className="eyebrow px-4 py-4 text-muted-foreground/50 text-center">
-                      {cid.toUpperCase()}
-                    </th>
-                  ))}
-                  <th className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Score</th>
-                  <th className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Grade</th>
-                  <th className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Status</th>
-                  <th className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Integrity</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/10">
-                {sorted.map(({ student, scorePct, grade, submitted, flagged, levelMap }, idx) => (
-                  <motion.tr
-                    key={student.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: Math.min(idx * 0.025, 0.5) }}
-                    className="hover:bg-muted/5 transition-colors group"
-                  >
-                    {/* # */}
-                    <td className="px-6 py-5">
-                      <span className="text-xs font-semibold text-muted-foreground/25 tabular-nums">
-                        {String(idx + 1).padStart(2, "0")}
-                      </span>
-                    </td>
-
-                    {/* Student name + avatar */}
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-semibold text-muted-foreground group-hover:text-primary shrink-0">
-                          {student.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                        </div>
-                        <span className="text-xs font-extrabold text-foreground tracking-tight whitespace-nowrap">{student.name}</span>
-                      </div>
-                    </td>
-
-                    {/* Roll */}
-                    <td className="px-6 py-5">
-                      <span className="text-xs font-mono font-bold text-muted-foreground/50">{student.roll}</span>
-                    </td>
-
-                    {/* Criterion levels */}
-                    {criterionIds.map(cid => (
-                      <td key={cid} className="px-4 py-5 text-center">
-                        <span className="text-xs font-bold tabular-nums text-foreground/70">
-                          {levelMap[cid] ?? "—"}
-                        </span>
-                        {levelMap[cid] !== undefined && (
-                          <span className="text-xs text-muted-foreground/30">/5</span>
-                        )}
-                      </td>
-                    ))}
-
-                    {/* Score % */}
-                    <td className="px-6 py-5 text-center">
-                      <span className="text-xs font-semibold tabular-nums text-foreground">{scorePct}%</span>
-                    </td>
-
-                    {/* Grade badge */}
-                    <td className="px-6 py-5 text-center">
-                      <Badge
-                        variant="outline"
-                        className={cn("eyebrow h-5 px-2 rounded-full", gradeColorClass(grade))}
-                      >
-                        {grade}
-                      </Badge>
-                    </td>
-
-                    {/* Submission status */}
-                    <td className="px-6 py-5 text-center">
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "eyebrow h-5 px-2 rounded-full",
-                          submitted
-                            ? "bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30"
-                            : "bg-muted/40 text-muted-foreground border-border/40"
-                        )}
-                      >
-                        {submitted ? "Done" : "Pending"}
-                      </Badge>
-                    </td>
-
-                    {/* Integrity */}
-                    <td className="px-6 py-5 text-center">
-                      {flagged ? (
-                        <div className="flex items-center justify-center gap-1 text-[color:var(--status-warning)]">
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                          <span className="eyebrow">{student.status}</span>
-                        </div>
-                      ) : (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[color:var(--status-success)] mx-auto" />
-                      )}
-                    </td>
-                  </motion.tr>
+          <Table className="text-left">
+            <TableHeader className="bg-muted/20 border-b border-border/10">
+              <tr>
+                <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50">#</TableHead>
+                <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50">Student</TableHead>
+                <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50">Roll No.</TableHead>
+                {criterionIds.map(cid => (
+                  <TableHead key={cid} className="eyebrow px-4 py-4 text-muted-foreground/50 text-center">
+                    {cid.toUpperCase()}
+                  </TableHead>
                 ))}
-              </tbody>
-            </table>
+                <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Score</TableHead>
+                <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Grade</TableHead>
+                <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Status</TableHead>
+                <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Integrity</TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody className="divide-y divide-border/10">
+              {sorted.map(({ student, scorePct, grade, submitted, flagged, levelMap }, idx) => (
+                // motion.tr kept native: DS TableRow isn't ref-forwarding and
+                // can't be wrapped by framer-motion's HOC; classes below mirror
+                // TableRow defaults for consistency.
+                <motion.tr
+                  key={student.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: Math.min(idx * 0.025, 0.5) }}
+                  className="hover:bg-muted/5 transition-colors group"
+                >
+                  {/* # */}
+                  <TableCell className="px-6 py-5">
+                    <span className="text-xs font-semibold text-muted-foreground/25 tabular-nums">
+                      {String(idx + 1).padStart(2, "0")}
+                    </span>
+                  </TableCell>
 
-            {sorted.length === 0 && (
-              <div className="py-20 text-center">
-                <Users className="w-8 h-8 text-muted-foreground/20 mx-auto mb-3" />
-                <p className="eyebrow text-muted-foreground/30">No student data</p>
-              </div>
-            )}
-          </div>
+                  {/* Student name + avatar */}
+                  <TableCell className="px-6 py-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-semibold text-muted-foreground group-hover:text-primary shrink-0">
+                        {student.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                      </div>
+                      <span className="text-xs font-extrabold text-foreground tracking-tight whitespace-nowrap">{student.name}</span>
+                    </div>
+                  </TableCell>
+
+                  {/* Roll */}
+                  <TableCell className="px-6 py-5">
+                    <span className="text-xs font-mono font-bold text-muted-foreground/50">{student.roll}</span>
+                  </TableCell>
+
+                  {/* Criterion levels */}
+                  {criterionIds.map(cid => (
+                    <TableCell key={cid} className="px-4 py-5 text-center">
+                      <span className="text-xs font-bold tabular-nums text-foreground/70">
+                        {levelMap[cid] ?? "—"}
+                      </span>
+                      {levelMap[cid] !== undefined && (
+                        <span className="text-xs text-muted-foreground/30">/5</span>
+                      )}
+                    </TableCell>
+                  ))}
+
+                  {/* Score % */}
+                  <TableCell className="px-6 py-5 text-center">
+                    <span className="text-xs font-semibold tabular-nums text-foreground">{scorePct}%</span>
+                  </TableCell>
+
+                  {/* Grade badge */}
+                  <TableCell className="px-6 py-5 text-center">
+                    <Badge
+                      variant="outline"
+                      className={cn("eyebrow h-5 px-2 rounded-full", gradeColorClass(grade))}
+                    >
+                      {grade}
+                    </Badge>
+                  </TableCell>
+
+                  {/* Submission status */}
+                  <TableCell className="px-6 py-5 text-center">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "eyebrow h-5 px-2 rounded-full",
+                        submitted
+                          ? "bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30"
+                          : "bg-muted/40 text-muted-foreground border-border/40"
+                      )}
+                    >
+                      {submitted ? "Done" : "Pending"}
+                    </Badge>
+                  </TableCell>
+
+                  {/* Integrity */}
+                  <TableCell className="px-6 py-5 text-center">
+                    {flagged ? (
+                      <div className="flex items-center justify-center gap-1 text-[color:var(--status-warning)]">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        <span className="eyebrow">{student.status}</span>
+                      </div>
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[color:var(--status-success)] mx-auto" />
+                    )}
+                  </TableCell>
+                </motion.tr>
+              ))}
+            </TableBody>
+          </Table>
+
+          {sorted.length === 0 && (
+            <div className="py-20 text-center">
+              <Users className="w-8 h-8 text-muted-foreground/20 mx-auto mb-3" />
+              <p className="eyebrow text-muted-foreground/30">No student data</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
