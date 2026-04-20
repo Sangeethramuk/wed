@@ -108,7 +108,7 @@ export default function ReEvaluationPage() {
           <div
             className="eyebrow grid text-muted-foreground/40 bg-muted/40 border-b border-border/50"
             style={{
-              gridTemplateColumns: '220px 180px 130px 1fr 100px 140px 140px',
+              gridTemplateColumns: '220px 180px 140px 1fr 110px 140px 160px',
             }}
           >
             {['Student', 'Assignment · Criterion', 'Concern', 'Student reasoning', 'Submitted', 'Status', 'Action'].map((h, i) => (
@@ -128,9 +128,9 @@ export default function ReEvaluationPage() {
           return (
             <div key={id} className="relative group/row border-b border-border/50">
               <div
-                className={cn("grid hover:bg-muted/20 transition-colors", st.rowBg && concern.bg)}
+                className="grid hover:bg-muted/20 transition-colors"
                 style={{
-                  gridTemplateColumns: '220px 180px 130px 1fr 100px 140px 140px',
+                  gridTemplateColumns: '220px 180px 140px 1fr 110px 140px 160px',
                   minHeight: 80,
                 }}
               >
@@ -171,7 +171,7 @@ export default function ReEvaluationPage() {
                 {/* Concern */}
                 <div className="px-4 py-4 flex flex-col justify-center gap-1.5 border-r border-border/30">
                   <div className="text-xs font-bold text-muted-foreground">{st.concern}</div>
-                  <span className={cn("eyebrow self-start px-1.5 py-0.5 rounded-md border", concern.bg, concern.text, concern.border)}>
+                  <span className={cn("eyebrow self-start whitespace-nowrap px-1.5 py-0.5 rounded-md border", concern.bg, concern.text, concern.border)}>
                     {st.concernType}
                   </span>
                 </div>
@@ -210,7 +210,7 @@ export default function ReEvaluationPage() {
                   {status === 'pending' && (
                     <button
                       onClick={() => setBriefingId(id)}
-                      className="group/btn flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-all shadow-sm"
+                      className="group/btn inline-flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                     >
                       Review now
                       <ChevronLeft className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
@@ -219,7 +219,7 @@ export default function ReEvaluationPage() {
                   {status === 'hod' && (
                     <button
                       onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                      className="text-sm font-medium px-4 py-1.5 rounded-lg text-muted-foreground border border-border bg-card/50 hover:bg-card hover:border-border transition-all"
+                      className="inline-flex items-center whitespace-nowrap text-sm font-medium px-4 py-2 rounded-lg text-muted-foreground border border-border bg-card/50 hover:bg-card hover:border-border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                     >
                       View →
                     </button>
