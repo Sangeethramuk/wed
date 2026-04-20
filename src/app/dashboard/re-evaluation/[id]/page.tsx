@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { Search, CheckCircle2, Clock, ShieldAlert } from 'lucide-react'
+import ManuscriptRenderer from '@/components/evaluation/manuscript-renderer'
+import { generateManuscript } from '@/lib/manuscript-generator'
 
 type Decision = 'uphold' | 'adjust'
 type WorkspaceState = 'active' | 'compare' | 'submitted'
@@ -39,6 +41,14 @@ export default function ReEvalWorkspacePage() {
   const studentId = params.id as string
   const { addHodPending, addResolved, getStatus } = useReEvalStore()
   const [queueSearch, setQueueSearch] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+
+  // Shared manuscript source used by the grading workspace — keeps the
+  // scan preview visually identical across grading / re-evaluation.
+  const manuscript = generateManuscript(studentId)
+  const totalPages = manuscript.pages.length
+  const pageIdx = Math.min(Math.max(currentPage, 1), totalPages) - 1
+  const pageElements = manuscript.pages[pageIdx]?.elements ?? []
 
   const st = STUDENTS[studentId]
   const aiReval = AI_REVALS[studentId]
@@ -266,82 +276,41 @@ export default function ReEvalWorkspacePage() {
             </div>
             <div className="flex items-center gap-3">
                <div className="flex items-center gap-1">
-                 <Button variant="ghost" size="icon-sm">
+                 <Button
+                   variant="ghost"
+                   size="icon-sm"
+                   disabled={currentPage <= 1}
+                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                 >
                    <ChevronLeftIcon className="size-3.5" />
                  </Button>
-                 <Button variant="ghost" size="icon-sm">
+                 <Button
+                   variant="ghost"
+                   size="icon-sm"
+                   disabled={currentPage >= totalPages}
+                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                 >
                    <ChevronLeftIcon className="size-3.5 rotate-180" />
                  </Button>
                </div>
-               <span className="eyebrow text-muted-foreground/40">Page 2 of 3</span>
+               <span className="eyebrow text-muted-foreground/40">Page {currentPage} of {totalPages}</span>
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-8" style={{ scrollbarWidth: 'thin' }}>
             {view === 'scan' ? (
-              <div className="max-w-2xl mx-auto rounded-2xl bg-background border border-border shadow-xl shadow-slate-200/50 p-10 font-serif text-sm leading-[1.8] text-foreground relative ring-1 ring-slate-900/5">
-                <div className="flex items-center justify-between mb-8 pb-4 border-b border-border/5">
-                  <div className="eyebrow text-muted-foreground/40 font-sans">
+              <div className="max-w-3xl mx-auto rounded-2xl bg-background border border-border shadow-sm p-10">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-border/50">
+                  <div className="eyebrow text-muted-foreground/60">
                     {st.rollId} · {st.name} · {st.assign}
                   </div>
-                  <div className="eyebrow text-muted-foreground/20 font-sans">
+                  <div className="eyebrow text-muted-foreground/40">
                     Submitted 1 April 2026
                   </div>
                 </div>
-                
-                <div className="eyebrow text-muted-foreground/30 mb-6 font-sans">
-                  Algorithm Design — Continued from page 1
-                </div>
-
-                <div className="space-y-1">
-                  {[
-                    [10, 'The primary sort uses merge sort with O(n log n) complexity.'],
-                    [11, 'Before entering the main sort routine, the input array is'],
-                    [12, 'validated. This covers three separate conditions that'],
-                    [13, 'represent common real-world failure modes in production'],
-                    [14, 'systems handling unsorted data streams.'],
-                  ].map(([n, t]) => (
-                    <div key={n as number} className="flex gap-6 group">
-                      <span className="w-6 text-right text-xs font-mono text-muted-foreground/20 group-hover:text-muted-foreground/40 transition-colors pt-1">{n}</span>
-                      <p className="flex-1">{t}</p>
-                    </div>
-                  ))}
-
-                  {/* Highlighted Student Evidence */}
-                  <div className="relative my-4 -mx-10 px-10 py-6 bg-[color:var(--status-warning-bg)] border-l-4 border-[color:var(--status-warning)]">
-                    <div className="eyebrow absolute -top-3 left-10 px-3 py-1 rounded-full bg-[color:var(--status-warning)] text-primary-foreground font-sans shadow-lg shadow-amber-500/20">
-                      Student Cited · {st.evidence}
-                    </div>
-                    <div className="space-y-1">
-                      {[
-                        [15, <><strong>Case 1 — Empty array:</strong> If input length is zero,</>],
-                        [16, 'the function returns −1 immediately before any sort.'],
-                        [17, <><strong>Case 2 — Single element:</strong> Array of length 1</>],
-                        [18, 'is already sorted; returned as-is.'],
-                        [19, <><strong>Case 3 — Negative values:</strong> Absolute value</>],
-                        [20, 'comparison used before sort to maintain ordering.'],
-                      ].map(([n, t]) => (
-                        <div key={n as number} className="flex gap-6">
-                          <span className="w-6 text-right text-xs font-mono text-[color:var(--status-warning)]/30 pt-1">{n}</span>
-                          <p className="flex-1">{t}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {[
-                    [21, 'All three guards execute in O(1) before the sort begins.'],
-                    [22, 'This ensures no unnecessary computation on trivially'],
-                    [23, 'solvable inputs. Follows defensive programming principles'],
-                    [24, 'from Week 4 lecture notes.'],
-                    [25, 'Full implementation is in the code block on page 3.'],
-                  ].map(([n, t]) => (
-                    <div key={n as number} className="flex gap-6 group">
-                      <span className="w-6 text-right text-xs font-mono text-muted-foreground/20 group-hover:text-muted-foreground/40 transition-colors pt-1">{n}</span>
-                      <p className="flex-1">{t}</p>
-                    </div>
-                  ))}
-                </div>
+                {/* Shared ManuscriptRenderer — identical component and
+                    visual treatment used in the grading workspace. */}
+                <ManuscriptRenderer elements={pageElements} />
               </div>
             ) : (
               <div className="max-w-2xl mx-auto rounded-2xl bg-foreground border border-border p-8 font-mono text-sm leading-relaxed text-muted-foreground/70">
