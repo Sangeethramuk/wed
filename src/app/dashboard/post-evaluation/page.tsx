@@ -72,11 +72,10 @@ export default function ResultInsights() {
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 -ml-3 text-muted-foreground hover:text-foreground group rounded-lg"
             onClick={() => setViewState("insights")}
           >
-            <ArrowLeft className="mr-2 h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Back to Insights</span>
+            <ArrowLeft />
+            Back to Insights
           </Button>
         )}
         <div className="space-y-1.5">
@@ -102,8 +101,8 @@ export default function ResultInsights() {
           title="Release Configuration" 
           subtitle="Schedule and publish evaluation outcomes for Software Engineering: Phase 2."
         >
-          <Button variant="ghost" className="h-10 px-4 text-[10px] font-black uppercase tracking-widest gap-2">
-            <Settings2 className="w-4 h-4" /> Policy Audit
+          <Button variant="ghost" size="sm">
+            <Settings2 /> Policy Audit
           </Button>
         </PageHeader>
 
@@ -254,11 +253,11 @@ export default function ResultInsights() {
         showBack={false}
       >
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="h-10 border-border/60 bg-background hover:bg-muted/40 px-5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm">
-            <Download className="mr-2.5 h-4 w-4 text-muted-foreground" /> Export Data
+          <Button variant="outline">
+            <Download /> Export Data
           </Button>
-          <Button onClick={() => setViewState("release")} className="h-10 px-8 text-[11px] font-black uppercase tracking-widest rounded-xl bg-primary hover:bg-primary/90 transition-all shadow-[0_4px_20px_rgba(59,130,246,0.2)]">
-            <Sparkles className="mr-2 h-4 w-4" /> Publish Outcomes
+          <Button onClick={() => setViewState("release")}>
+            <Sparkles /> Publish Outcomes
           </Button>
         </div>
       </PageHeader>
@@ -363,18 +362,15 @@ export default function ResultInsights() {
                      <p className="text-[12px] text-muted-foreground leading-relaxed font-semibold">{gap.gap}</p>
                      <div className="pt-2">
                        <Button
-                         variant="ghost"
+                         variant="link"
+                         size="sm"
                          disabled={activeInterventions.includes(gap.label)}
                          onClick={() => setActiveInterventions(prev => [...prev, gap.label])}
-                         className={cn(
-                           "flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all p-0 h-auto hover:bg-transparent",
-                           activeInterventions.includes(gap.label) ? "text-emerald-600" : "text-primary group-hover:gap-3"
-                         )}
                        >
                          {activeInterventions.includes(gap.label) ? (
-                           <>INTERVENTION DEPLOYED <CheckCircle2 className="h-4 w-4" /></>
+                           <>Intervention deployed <CheckCircle2 /></>
                          ) : (
-                           <>INITIATE INTERVENTION <ArrowRight className="h-4 w-4" /></>
+                           <>Initiate intervention <ArrowRight /></>
                          )}
                        </Button>
                      </div>
@@ -394,8 +390,8 @@ export default function ResultInsights() {
             <CardDescription className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Breakdown by Assessment Standard</CardDescription>
           </div>
           <div className="flex items-center gap-2">
-             <Button variant="ghost" className="h-9 px-4 text-[9px] font-black uppercase tracking-widest rounded-lg border border-border/40">Filter Range</Button>
-             <Button variant="ghost" size="icon" className="h-9 w-9 border border-border/40"><Settings2 className="w-4 h-4" /></Button>
+             <Button variant="ghost" size="sm">Filter Range</Button>
+             <Button variant="ghost" size="icon"><Settings2 /></Button>
           </div>
         </CardHeader>
         <CardContent className="p-0">

@@ -15,8 +15,8 @@ export function CalibrationConfirm() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={prevStep} className="rounded-full h-10 w-10 border border-border/20">
-            <ArrowLeft className="h-4 w-4" />
+          <Button variant="ghost" size="icon" onClick={prevStep}>
+            <ArrowLeft />
           </Button>
           <div className="space-y-1">
             <h1 className="text-3xl font-black tracking-tight secondary-text uppercase">Preparing your digital desk</h1>
@@ -78,7 +78,7 @@ export function CalibrationConfirm() {
                       <p className="text-lg font-black tracking-tight">Expert Reference Sheet</p>
                     </div>
                     <p className="text-xs font-semibold text-muted-foreground opacity-60 leading-relaxed">Upload a master answer key for the AI to synchronize immediately.</p>
-                    <Button variant="link" className="p-0 h-auto text-[10px] font-black uppercase text-primary tracking-widest mt-2 hover:no-underline group-hover:translate-x-1 transition-transform">Upload key →</Button>
+                    <Button variant="link" size="sm" className="mt-2">Upload key →</Button>
                   </div>
                 </div>
               </CardContent>
@@ -119,9 +119,9 @@ export function CalibrationConfirm() {
         </div>
 
         <div className="flex justify-end pt-10 gap-4 border-t border-border/10">
-          <Button variant="ghost" className="px-8 text-[11px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 h-14 rounded-xl transition-all" onClick={reset}>Save as draft</Button>
-          <Button size="lg" className="h-14 px-12 text-lg font-black tracking-tight rounded-xl shadow-none active:scale-95 transition-all bg-primary hover:bg-primary/90 gap-4" onClick={nextStep}>
-            <Send className="h-5 w-5" /> 
+          <Button variant="outline" onClick={reset}>Save as draft</Button>
+          <Button size="lg" onClick={nextStep}>
+            <Send />
             Launch Session
           </Button>
         </div>

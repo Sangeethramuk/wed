@@ -120,8 +120,8 @@ export default function EvaluationResults() {
           <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">No Evaluation Data</p>
           <p className="text-sm font-medium text-muted-foreground">Complete an evaluation first to see the class report.</p>
         </div>
-        <Button onClick={() => router.push("/dashboard/evaluation")} variant="outline" className="rounded-xl h-10 text-[10px] font-black uppercase tracking-widest gap-2">
-          <ArrowLeft className="w-4 h-4" /> Back to Evaluation
+        <Button onClick={() => router.push("/dashboard/evaluation")} variant="outline">
+          <ArrowLeft /> Back to Evaluation
         </Button>
       </div>
     )
@@ -137,10 +137,9 @@ export default function EvaluationResults() {
             variant="ghost"
             size="sm"
             onClick={() => router.push("/dashboard/evaluation")}
-            className="h-8 -ml-3 text-muted-foreground hover:text-foreground group rounded-lg"
           >
-            <ArrowLeft className="mr-2 h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Back to Evaluation</span>
+            <ArrowLeft />
+            Back to Evaluation
           </Button>
           <div className="space-y-1.5">
             <div className="flex items-center gap-3 flex-wrap">
@@ -155,8 +154,8 @@ export default function EvaluationResults() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="h-10 border-border/60 bg-background hover:bg-muted/40 px-5 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-sm gap-2">
-            <Download className="h-4 w-4 text-muted-foreground" /> Export Report
+          <Button variant="outline">
+            <Download /> Export Report
           </Button>
           <Link
             href="/dashboard/post-evaluation"

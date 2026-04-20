@@ -100,7 +100,7 @@ export default function EvaluationOnboarding() {
         className="pt-8 flex flex-col items-center gap-4 w-full"
       >
         <Link href="/dashboard/evaluation/SWE-PH2" className="w-full max-w-sm">
-          <Button className="w-full rounded-full py-8 text-lg font-bold shadow-2xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] group bg-primary text-primary-foreground">
+          <Button size="lg" className="w-full group">
             Initialize Session <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Button>
         </Link>

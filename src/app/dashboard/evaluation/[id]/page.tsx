@@ -584,22 +584,30 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
               
               {/* Triage Categories */}
               <div className="grid grid-cols-4 gap-1 p-1 bg-muted/50 rounded-lg border border-border/50">
-                <button 
+                <Button
+                  variant={triageFilter === 'all' ? 'default' : 'ghost'}
+                  size="sm"
                   onClick={() => setTriageFilter("all")}
-                  className={`py-1 rounded-md text-[9px] font-black uppercase transition-all ${triageFilter === 'all' ? 'bg-background text-primary shadow-sm' : 'text-muted-foreground hover:bg-background/40'}`}
-                >ALL</button>
-                <button 
+                  className="w-full"
+                >All</Button>
+                <Button
+                  variant={triageFilter === 'critical' ? 'default' : 'ghost'}
+                  size="sm"
                   onClick={() => setTriageFilter("critical")}
-                  className={`py-1 rounded-md text-[9px] font-black uppercase transition-all ${triageFilter === 'critical' ? 'bg-red-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-background/40'}`}
-                >CRIT</button>
-                <button 
+                  className="w-full"
+                >Crit</Button>
+                <Button
+                  variant={triageFilter === 'focus' ? 'default' : 'ghost'}
+                  size="sm"
                   onClick={() => setTriageFilter("focus")}
-                  className={`py-1 rounded-md text-[9px] font-black uppercase transition-all ${triageFilter === 'focus' ? 'bg-amber-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-background/40'}`}
-                >FOCUS</button>
-                <button 
+                  className="w-full"
+                >Focus</Button>
+                <Button
+                  variant={triageFilter === 'verified' ? 'default' : 'ghost'}
+                  size="sm"
                   onClick={() => setTriageFilter("verified")}
-                  className={`py-1 rounded-md text-[9px] font-black uppercase transition-all ${triageFilter === 'verified' ? 'bg-green-600 text-white shadow-sm' : 'text-muted-foreground hover:bg-background/40'}`}
-                >VERI</button>
+                  className="w-full"
+                >Veri</Button>
               </div>
 
               <div className="relative">
@@ -613,20 +621,20 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                   s => s.category === "verified" && !gradedSubmissions.includes(s.id)
                 )
                 return pendingVerified.length > 0 ? (
-                  <button
+                  <Button
                     onClick={() => {
                       setGradedSubmissions(prev => [...new Set([...prev, ...pendingVerified.map(s => s.id)])])
                     }}
-                    className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white transition-all group/bulk"
+                    className="w-full justify-between"
                   >
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Bulk Approve All</span>
+                      <span>Bulk approve all</span>
                     </div>
-                    <span className="text-[10px] font-black bg-white/20 group-hover/bulk:bg-white/30 transition-colors px-2 py-0.5 rounded-full tabular-nums">
+                    <span className="tabular-nums">
                       {pendingVerified.length}
                     </span>
-                  </button>
+                  </Button>
                 ) : (
                   <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-green-50 border border-green-200/60">
                     <CheckCircle2 className="h-3.5 w-3.5 text-green-600 shrink-0" />
@@ -769,12 +777,13 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                     <span className="text-[10px] font-black uppercase tracking-widest">
                       Select text to link as evidence for C{textSelectionMode.criterionId}
                     </span>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
                       onClick={() => setTextSelectionMode({ active: false, criterionId: null })}
-                      className="h-5 w-5 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
                     >
                       <X className="h-3 w-3" />
-                    </button>
+                    </Button>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -842,29 +851,31 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
               {/* Floating Bottom Pagination */}
               <div className="absolute bottom-10 left-1/2 -translate-x-1/2 px-6 py-2.5 rounded-full bg-secondary text-secondary-foreground shadow-2xl z-20 flex items-center gap-6 group transition-all hover:scale-105 border border-border/10 backdrop-blur-md">
-                <button 
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={() => {
                     const next = Math.max(1, currentPage - 1)
                     document.getElementById(`page-${next}`)?.scrollIntoView({ behavior: 'smooth' })
                   }}
-                  className="hover:text-primary transition-colors text-secondary-foreground/50"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                </button>
+                </Button>
                 <div className="flex items-center gap-2 text-xs font-black tracking-widest">
                   <span className="text-primary">PAGE {currentPage}</span>
                   <span className="opacity-30">/</span>
                   <span className="opacity-50">{totalPages}</span>
                 </div>
-                <button 
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={() => {
                     const next = Math.min(totalPages, currentPage + 1)
                     document.getElementById(`page-${next}`)?.scrollIntoView({ behavior: 'smooth' })
                   }}
-                  className="hover:text-primary transition-colors text-secondary-foreground/50"
                 >
                   <ChevronRight className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -903,7 +914,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                       const done = !!criterionState[p.id]?.confirmed
                       const active = idx === activeRubricCriterionIdx
                       return (
-                        <button key={p.id} onClick={() => setActiveRubricCriterionIdx(idx)} className="flex-1 flex flex-col items-center gap-1">
+                        <Button key={p.id} variant="ghost" size="sm" onClick={() => setActiveRubricCriterionIdx(idx)} className="flex-1 h-auto flex-col gap-1 py-1">
                           <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
                             done ? 'bg-foreground border-foreground' :
                             active ? 'border-purple-500 bg-white' :
@@ -912,7 +923,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                             {active && !done && <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />}
                           </div>
                           <span className={`text-[8px] font-bold transition-colors ${active ? 'text-foreground' : 'text-muted-foreground/50'}`}>C{p.id}</span>
-                        </button>
+                        </Button>
                       )
                     })}
                   </div>
@@ -922,8 +933,9 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                   <div className="p-4 space-y-3">
                     {point.status === 'REVIEW_NEEDED' && (
                       <div className="rounded-lg bg-amber-50 border border-amber-200 overflow-hidden">
-                        <button
-                          className="w-full flex items-center justify-between p-3"
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-between"
                           onClick={() => setRubricReviewStripOpen(prev => ({ ...prev, [point.id]: !prev[point.id] }))}
                         >
                           <div className="flex items-center gap-2">
@@ -931,7 +943,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                             <span className="text-[10px] font-black uppercase tracking-widest text-amber-700">Review needed</span>
                           </div>
                           <ChevronDown className={`h-3.5 w-3.5 text-amber-500 transition-transform ${rubricReviewStripOpen[point.id] ? 'rotate-180' : ''}`} />
-                        </button>
+                        </Button>
                         {rubricReviewStripOpen[point.id] && (
                           <div className="px-3 pb-3">
                             <p className="text-[10px] text-amber-700 leading-relaxed">{point.note}</p>
@@ -961,20 +973,17 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                               const isDraftSelected = isOverride && draft.proposedScore === lvl.points
                               const isCurrentConfirmed = state.confirmed && state.score === lvl.points
                               const isAiDefault = lvl.points === point.aiScore && !state.confirmed && !isOverride
+                              const selected = isDraftSelected || isCurrentConfirmed || isAiDefault
                               return (
-                                <button
+                                <Button
                                   key={lvl.val}
+                                  variant={selected ? "default" : "outline"}
+                                  size="sm"
                                   onClick={() => handleScoreLevelClick(point.id, lvl.points, point.aiScore)}
-                                  className={`flex-1 py-2 border rounded-md text-[10px] font-bold transition-all ${
-                                    isDraftSelected
-                                      ? 'bg-amber-500 text-white border-amber-500'
-                                      : isCurrentConfirmed || isAiDefault
-                                      ? 'bg-foreground text-background border-foreground'
-                                      : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground'
-                                  }`}
+                                  className="flex-1"
                                 >
                                   {lvl.points}pts
-                                </button>
+                                </Button>
                               )
                             })}
                           </div>
@@ -1014,9 +1023,9 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                       <div key={ev.id} className="flex items-start gap-2 p-2 rounded bg-white border border-blue-100 group/ev">
                                         <span className="text-[9px] font-mono font-bold text-blue-600 shrink-0">E{i + 1}</span>
                                         <p className="text-[10px] font-serif italic text-foreground/70 flex-1 leading-relaxed">&quot;{ev.text.length > 60 ? ev.text.substring(0, 60) + '...' : ev.text}&quot;</p>
-                                        <button onClick={() => handleRemoveOverrideEvidence(point.id, ev.id)} className="opacity-0 group-hover/ev:opacity-100 transition-opacity shrink-0">
+                                        <Button variant="ghost" size="icon-xs" onClick={() => handleRemoveOverrideEvidence(point.id, ev.id)} className="opacity-0 group-hover/ev:opacity-100 transition-opacity shrink-0">
                                           <X className="h-3 w-3 text-red-400 hover:text-red-600" />
-                                        </button>
+                                        </Button>
                                       </div>
                                     ))}
                                   </div>
@@ -1051,13 +1060,12 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                               </div>
                             )}
                             <div className="flex gap-2">
-                              <Button variant="ghost" size="sm" onClick={() => handleCancelOverride(point.id)}
-                                className="h-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-muted">
+                              <Button variant="outline" size="sm" onClick={() => handleCancelOverride(point.id)}>
                                 Cancel
                               </Button>
                               <Button size="sm" onClick={() => handleConfirmOverride(point.id)} disabled={!isOverrideValid}
-                                className="h-8 flex-1 text-[10px] font-black uppercase tracking-widest bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:pointer-events-none">
-                                Confirm Override
+                                className="flex-1">
+                                Confirm override
                               </Button>
                             </div>
                           </div>
@@ -1144,15 +1152,16 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                     </div>
 
                     <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden">
-                      <button
+                      <Button
+                        variant="ghost"
                         onClick={() => setRubricAccordionOpen(prev => ({ ...prev, [`evidence-${point.id}`]: !prev[`evidence-${point.id}`] }))}
-                        className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+                        className="w-full justify-between"
                       >
                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                           Evidence ({pointEvidence.length} linked)
                         </span>
                         <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${rubricAccordionOpen[`evidence-${point.id}`] ? 'rotate-180' : ''}`} />
-                      </button>
+                      </Button>
                       {rubricAccordionOpen[`evidence-${point.id}`] && (
                         <div className="px-4 pb-4 space-y-4">
                           {pointEvidence.length === 0 ? (
@@ -1165,9 +1174,11 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                               {pointEvidence.map((ev, i) => (
                                 <Tooltip key={ev.id}>
                                   <TooltipTrigger render={
-                                    <button
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
                                       onClick={() => scrollToEvidence(ev.id)}
-                                      className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-border hover:border-primary hover:bg-primary/5 transition-all active:scale-95 shadow-sm"
+                                      className="group"
                                     />
                                   }>
                                       <div className="w-1.5 h-1.5 rounded-full bg-primary group-hover:animate-pulse" />
@@ -1197,29 +1208,28 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                               ))}
                             </div>
                           )}
-                          <button 
+                          <Button
+                            variant={textSelectionMode.active && textSelectionMode.criterionId === point.id ? "default" : "outline"}
+                            size="sm"
                             onClick={() => setTextSelectionMode({ active: true, criterionId: point.id })}
-                            className={`w-full border-2 border-dashed rounded-xl p-3 text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-                              textSelectionMode.active && textSelectionMode.criterionId === point.id
-                                ? 'bg-primary border-primary text-white shadow-lg'
-                                : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground'
-                            }`}
+                            className="w-full border-dashed"
                           >
                             <LinkIcon className={`h-3.5 w-3.5 ${textSelectionMode.active && textSelectionMode.criterionId === point.id ? 'animate-bounce' : ''}`} />
-                            {textSelectionMode.active && textSelectionMode.criterionId === point.id ? 'Selecting Evidence...' : '+ Add Evidence'}
-                          </button>
+                            {textSelectionMode.active && textSelectionMode.criterionId === point.id ? 'Selecting evidence...' : '+ Add evidence'}
+                          </Button>
                         </div>
                       )}
                     </div>
 
                     <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden">
-                      <button
+                      <Button
+                        variant="ghost"
                         onClick={() => setRubricAccordionOpen(prev => ({ ...prev, [`reasoning-${point.id}`]: !prev[`reasoning-${point.id}`] }))}
-                        className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+                        className="w-full justify-between"
                       >
                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">AI reasoning</span>
                         <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${rubricAccordionOpen[`reasoning-${point.id}`] ? 'rotate-180' : ''}`} />
-                      </button>
+                      </Button>
                       {rubricAccordionOpen[`reasoning-${point.id}`] && (
                         <div className="px-4 pb-4 space-y-2">
                           <p className="text-xs font-serif italic text-muted-foreground leading-relaxed">{point.reasoning}</p>
@@ -1255,7 +1265,6 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                       size="sm"
                       disabled={activeRubricCriterionIdx === 0}
                       onClick={() => setActiveRubricCriterionIdx(i => i - 1)}
-                      className="h-9 text-[10px] font-black uppercase tracking-widest text-muted-foreground disabled:opacity-30"
                     >
                       Previous
                     </Button>
@@ -1263,7 +1272,6 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                       variant="outline"
                       size="sm"
                       onClick={() => handleScoreConfirm(point.id, state.score ?? point.aiScore)}
-                      className="h-9 text-[10px] font-black uppercase tracking-widest border-border"
                     >
                       Save
                     </Button>
@@ -1276,15 +1284,15 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                             router.push(`/dashboard/evaluation/${id}/feedback`)
                           }
                         }}
-                        className="h-9 flex-1 text-[10px] font-black uppercase tracking-widest bg-foreground text-background hover:bg-foreground/90 disabled:opacity-40 disabled:pointer-events-none"
+                        className="flex-1"
                       >
-                        {allConfirmed ? 'Overall Feedback →' : `· ${rubricPoints.length - confirmedCount} remaining`}
+                        {allConfirmed ? 'Overall feedback →' : `· ${rubricPoints.length - confirmedCount} remaining`}
                       </Button>
                     ) : (
                       <Button
                         size="sm"
                         onClick={() => setActiveRubricCriterionIdx(i => i + 1)}
-                        className="h-9 flex-1 text-[10px] font-black uppercase tracking-widest bg-foreground text-background hover:bg-foreground/90"
+                        className="flex-1"
                       >
                         Next criterion
                       </Button>
@@ -1323,7 +1331,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                     <h3 className="text-3xl font-serif italic tracking-tight text-foreground">Session Suspended</h3>
                     <p className="text-muted-foreground text-sm leading-relaxed px-4 font-medium italic">"Evaluation environment securely cached. Your current calibration metrics and annotations have been preserved in absolute state."</p>
                   </div>
-                  <Button onClick={() => setIsPaused(false)} className="w-full rounded-2xl h-14 bg-primary text-primary-foreground font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]">Resume Academic Review</Button>
+                  <Button size="lg" onClick={() => setIsPaused(false)} className="w-full">Resume academic review</Button>
                 </CardContent>
               </Card>
             </motion.div>

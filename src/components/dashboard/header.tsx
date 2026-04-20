@@ -29,23 +29,22 @@ export function DashboardHeader() {
           variant="outline"
           size="sm"
           onClick={triggerSpotCheck}
-          className="h-8 px-3 gap-1.5 text-[11px] font-semibold border-border text-foreground/70 hover:text-foreground hover:bg-accent"
         >
-          <ScanSearch className="h-3.5 w-3.5" />
+          <ScanSearch />
           Spot check
         </Button>
         <ThemeSwitcher />
         <Button variant="ghost" size="icon-sm">
-          <Search className="h-4 w-4" />
+          <Search />
         </Button>
         <Button variant="ghost" size="icon-sm">
-          <Bell className="h-4 w-4" />
+          <Bell />
         </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+              <Button variant="ghost" size="icon">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="/avatar.png" alt="User" />
                   <AvatarFallback>JD</AvatarFallback>
