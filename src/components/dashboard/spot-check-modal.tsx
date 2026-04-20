@@ -510,7 +510,7 @@ export function SpotCheckModal() {
                   disabled={isNextDisabled}
                   className={cn(
                     "flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium text-primary-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
-                    scStep === 5 ? "bg-[color:var(--status-success)]" : ACCENT_SOLID,
+                    scStep === 5 ? "bg-[color:var(--status-success)]" : "bg-primary",
                   )}
                 >
                   {scStep === -1 && <><span>Begin spot check</span><ChevronRight className="w-3.5 h-3.5" /></>}

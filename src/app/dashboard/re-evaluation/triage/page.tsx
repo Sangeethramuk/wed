@@ -229,7 +229,7 @@ export default function ReEvaluationPage() {
                   {status === 'pending' && (
                     <button
                       onClick={() => setBriefingId(id)}
-                      className="eyebrow group/btn flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-white bg-primary hover:bg-primary/90 transition-all shadow-[0_2px_10px_rgba(var(--primary),0.2)]"
+                      className="group/btn flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-all shadow-sm"
                     >
                       Review now
                       <ChevronLeft className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
@@ -238,7 +238,7 @@ export default function ReEvaluationPage() {
                   {status === 'hod' && (
                     <button
                       onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                      className="eyebrow px-4 py-1.5 rounded-lg text-muted-foreground border border-border/30 bg-card/50 hover:bg-card hover:border-border transition-all"
+                      className="text-sm font-medium px-4 py-1.5 rounded-lg text-muted-foreground border border-border bg-card/50 hover:bg-card hover:border-border transition-all"
                     >
                       View →
                     </button>
