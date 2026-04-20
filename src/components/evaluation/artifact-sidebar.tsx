@@ -68,14 +68,14 @@ function ArtifactPreviewDialog({
 
         <div className="mt-4">
           {artifact.type === "video" && (
-            <div className="aspect-video bg-slate-900 rounded-lg flex flex-col items-center justify-center gap-4 relative overflow-hidden">
+            <div className="aspect-video bg-foreground rounded-lg flex flex-col items-center justify-center gap-4 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800" />
               <div className="relative z-10 flex flex-col items-center gap-4">
-                <div className="h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 hover:bg-white/20 transition-colors cursor-pointer">
-                  <Play className="h-8 w-8 text-white ml-1" />
+                <div className="h-16 w-16 rounded-full bg-background/10 backdrop-blur-sm flex items-center justify-center border border-white/20 hover:bg-background/20 transition-colors cursor-pointer">
+                  <Play className="h-8 w-8 text-primary-foreground ml-1" />
                 </div>
-                <span className="eyebrow text-xs text-white/50">Video Preview</span>
-                <span className="text-sm font-mono text-white/70">{artifact.size}</span>
+                <span className="eyebrow text-xs text-primary-foreground/50">Video Preview</span>
+                <span className="text-sm font-mono text-primary-foreground/70">{artifact.size}</span>
               </div>
             </div>
           )}
@@ -109,18 +109,18 @@ function ArtifactPreviewDialog({
 
           {artifact.type === "code" && (
             <div className="border border-border rounded-lg overflow-hidden">
-              <div className="px-4 py-2 bg-slate-800 border-b border-slate-700 flex items-center gap-2">
+              <div className="px-4 py-2 bg-foreground border-b border-border flex items-center gap-2">
                 <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-destructive/70" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[color:var(--status-warning)]/70" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[color:var(--status-success)]/70" />
                 </div>
-                <span className="text-xs text-slate-400 font-mono ml-2">{artifact.name}</span>
+                <span className="text-xs text-muted-foreground/70 font-mono ml-2">{artifact.name}</span>
               </div>
-              <div className="p-6 bg-slate-900 min-h-[200px] flex items-center justify-center">
+              <div className="p-6 bg-foreground min-h-[200px] flex items-center justify-center">
                 <div className="text-center space-y-3">
-                  <Code2 className="h-8 w-8 text-green-400/50 mx-auto" />
-                  <p className="text-xs text-slate-400">{artifact.previewContent}</p>
+                  <Code2 className="h-8 w-8 text-[color:var(--status-success)]/50 mx-auto" />
+                  <p className="text-xs text-muted-foreground/70">{artifact.previewContent}</p>
                 </div>
               </div>
             </div>
@@ -153,7 +153,7 @@ function ArtifactPreviewDialog({
 
           {(artifact.type === "pdf" || artifact.type === "docx") && (
             <div className="border border-border rounded-lg p-6 space-y-4">
-              <div className="aspect-[3/4] bg-white shadow-inner rounded-md border border-border/30 p-8 max-h-[400px] overflow-hidden">
+              <div className="aspect-[3/4] bg-background shadow-inner rounded-md border border-border/30 p-8 max-h-[400px] overflow-hidden">
                 <div className="space-y-3">
                   <div className="h-4 bg-muted/40 rounded w-3/4" />
                   <div className="h-3 bg-muted/30 rounded w-full" />

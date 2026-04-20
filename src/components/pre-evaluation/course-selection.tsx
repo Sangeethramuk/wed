@@ -115,7 +115,7 @@ export function CourseSelection() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0 ml-4">
-                    <Badge variant="outline" className="eyebrow border-amber-500/20 text-amber-600/70 bg-amber-500/[0.04] rounded-md hidden md:inline-flex">
+                    <Badge variant="outline" className="eyebrow border-[color:var(--status-warning)]/20 text-[color:var(--status-warning)]/70 bg-[color:var(--status-warning)]/[0.04] rounded-md hidden md:inline-flex">
                       At {STEP_LABELS[draft.step]}
                     </Badge>
                     <Button
@@ -149,14 +149,14 @@ export function CourseSelection() {
                 onClick={() => handleSelect(course.name)}
               >
                 <div className="absolute top-6 right-6 z-10 flex items-center gap-1.5">
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500/5 border border-emerald-500/10">
-                    <div className="h-1 w-1 rounded-full bg-emerald-500/70" />
-                    <span className="eyebrow text-emerald-600/70">{course.status}</span>
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[color:var(--status-success)]/5 border border-[color:var(--status-success)]/10">
+                    <div className="h-1 w-1 rounded-full bg-[color:var(--status-success)]/70" />
+                    <span className="eyebrow text-[color:var(--status-success)]/70">{course.status}</span>
                   </div>
                 </div>
 
                 <CardHeader className="pb-6 pt-8 px-6">
-                  <div className="p-3 w-fit rounded-lg bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300 border border-primary/10">
+                  <div className="p-3 w-fit rounded-lg bg-primary/5 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 border border-primary/10">
                     <BookOpen className="h-6 w-6" />
                   </div>
                   <CardTitle className="mt-6 text-xl font-semibold tracking-tight">{course.name}</CardTitle>

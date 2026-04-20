@@ -25,20 +25,20 @@ import {
 const TYPE_BADGE: Record<string, string> = {
   Project: "bg-primary/10 text-primary border-primary/20",
   MCQ: "bg-muted text-muted-foreground border-border",
-  Essay: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200/40",
-  "Lab Record": "bg-teal-500/10 text-teal-700 dark:text-teal-400 border-teal-200/40",
-  "Case Study": "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200/40",
-  Viva: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-200/40",
+  Essay: "bg-[color:var(--status-warning)]/10 text-[color:var(--status-warning)] dark:text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30/40",
+  "Lab Record": "bg-[color:var(--status-info)]/10 text-[color:var(--status-info)] dark:text-[color:var(--status-info)] border-[color:var(--status-info)]/30/40",
+  "Case Study": "bg-[color:var(--category-2)]/10 text-[color:var(--category-2)] dark:text-[color:var(--category-2)] border-[color:var(--category-2)]/30/40",
+  Viva: "bg-[color:var(--category-2)]/10 text-[color:var(--category-2)] dark:text-[color:var(--category-2)] border-[color:var(--category-2)]/30/40",
 }
 
 function CalibrationBadge({ state }: { state: EvaluationAssignment["calibrationState"] }) {
   if (state === "complete") return (
-    <span className="eyebrow flex items-center gap-1 text-green-600 dark:text-green-400">
+    <span className="eyebrow flex items-center gap-1 text-[color:var(--status-success)] dark:text-[color:var(--status-success)]">
       <CheckCircle2 className="h-3 w-3" /> Calibrated
     </span>
   )
   if (state === "in_progress") return (
-    <span className="eyebrow flex items-center gap-1 text-amber-600 dark:text-amber-400 animate-pulse">
+    <span className="eyebrow flex items-center gap-1 text-[color:var(--status-warning)] dark:text-[color:var(--status-warning)] animate-pulse">
       <Zap className="h-3 w-3" /> In Progress
     </span>
   )
@@ -90,9 +90,9 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
     <div className="group flex items-center gap-4 px-5 py-4 hover:bg-muted/20 transition-colors border-b border-border/30 last:border-0">
       {/* Status dot */}
       <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-        assignment.gradingStatus === "complete" ? "bg-green-500" :
+        assignment.gradingStatus === "complete" ? "bg-[color:var(--status-success)]" :
         assignment.gradingStatus === "in_grading" ? "bg-primary animate-pulse" :
-        "bg-amber-500"
+        "bg-[color:var(--status-warning)]"
       }`} />
 
       {/* Assignment info */}
@@ -152,7 +152,7 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
           onClick={handleAction}
           className={`eyebrow w-full rounded-full h-8 transition-all group/btn ${
             !isCalibrated && assignment.gradingStatus !== "complete"
-              ? "bg-amber-500 hover:bg-amber-600 text-white border-amber-500 shadow-lg shadow-amber-500/20"
+              ? "bg-[color:var(--status-warning)] hover:bg-[color:var(--status-warning)] text-primary-foreground border-[color:var(--status-warning)] shadow-lg shadow-amber-500/20"
               : ""
           }`}
         >
@@ -191,7 +191,7 @@ function DeptGroup({ department, assignments }: { department: string; assignment
             <TooltipContent>Average calibration confidence across this department</TooltipContent>
           </Tooltip>
           {totalFlags > 0 && (
-            <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+            <span className="flex items-center gap-1.5 text-[color:var(--status-warning)] dark:text-[color:var(--status-warning)]">
               <AlertCircle className="h-3 w-3" /> {totalFlags} flag{totalFlags !== 1 ? "s" : ""}
             </span>
           )}

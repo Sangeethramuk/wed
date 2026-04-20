@@ -159,7 +159,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         onClick={() => setActiveCalibrationPaper(assignmentId, paper.paperId)}
                         className={`w-full flex items-center justify-between p-3 rounded-xl transition-all cursor-pointer text-left text-sm ${
                           isActive
-                            ? "bg-white text-foreground shadow-xl border border-border ring-1 ring-primary/20 z-10"
+                            ? "bg-background text-foreground shadow-xl border border-border ring-1 ring-primary/20 z-10"
                             : "hover:bg-accent/40 text-muted-foreground border border-transparent"
                         }`}
                       >

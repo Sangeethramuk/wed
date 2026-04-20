@@ -55,7 +55,7 @@ const TYPE_TEMPLATES: TypeTemplate[] = [
     type: "Project",
     label: "Project",
     icon: FolderKanban,
-    color: "text-blue-500",
+    color: "text-[color:var(--status-info)]",
     bestFor: ["Applying concepts", "Integrative work"],
     structure: ["Brief / scenario", "3–5 tasks", "Deliverables", "Submission format"],
     evaluation: ["Criteria-based rubric", "Depth & reasoning"],
@@ -64,7 +64,7 @@ const TYPE_TEMPLATES: TypeTemplate[] = [
     type: "Design",
     label: "Design / Figma",
     icon: Palette,
-    color: "text-purple-500",
+    color: "text-[color:var(--category-2)]",
     bestFor: ["Visual reasoning", "UX / UI craft"],
     structure: ["Design brief", "Artboards", "Process artifacts"],
     evaluation: ["Rubric on process + outcome"],
@@ -73,7 +73,7 @@ const TYPE_TEMPLATES: TypeTemplate[] = [
     type: "Lab Record",
     label: "Lab Record",
     icon: Code2,
-    color: "text-amber-500",
+    color: "text-[color:var(--status-warning)]",
     bestFor: ["Procedural mastery", "Hands-on skill"],
     structure: ["Objective", "Procedure", "Observations", "Conclusion"],
     evaluation: ["Checklist + rubric", "Execution accuracy"],
@@ -82,7 +82,7 @@ const TYPE_TEMPLATES: TypeTemplate[] = [
     type: "Essay",
     label: "Writing / Essay",
     icon: FileText,
-    color: "text-rose-500",
+    color: "text-[color:var(--category-2)]",
     bestFor: ["Analytical thinking", "Argumentation"],
     structure: ["Prompt", "Length target", "Reference guidance"],
     evaluation: ["Rubric on reasoning & clarity"],
@@ -91,7 +91,7 @@ const TYPE_TEMPLATES: TypeTemplate[] = [
     type: "Viva",
     label: "Viva / Oral",
     icon: Mic2,
-    color: "text-orange-500",
+    color: "text-[color:var(--status-warning)]",
     bestFor: ["Conceptual depth", "Oral reasoning"],
     structure: ["Question bank", "Probing follow-ups", "Score sheet"],
     evaluation: ["Rubric per question", "Depth & clarity"],
@@ -266,7 +266,7 @@ export function AssignmentSpecs() {
 
                 <CardContent className="px-5 pt-5 pb-5 flex flex-col gap-4 flex-1">
                   <div className="flex items-start gap-3">
-                    <div className="p-2.5 w-fit rounded-lg bg-muted/30 border border-border/20 group-hover:bg-primary group-hover:text-white transition-all">
+                    <div className="p-2.5 w-fit rounded-lg bg-muted/30 border border-border/20 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                       <t.icon className={cn("h-5 w-5", t.color, "group-hover:text-inherit")} />
                     </div>
                     <h3 className="text-lg tracking-tight font-semibold pt-1">{t.label}</h3>
@@ -291,7 +291,7 @@ export function AssignmentSpecs() {
           onClick={() => handleTypeSelect("Specialized")}
         >
           <CardContent className="px-6 py-5 flex items-center gap-5">
-            <div className="p-3 rounded-lg bg-muted/20 border border-border/30 text-muted-foreground group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all shrink-0">
+            <div className="p-3 rounded-lg bg-muted/20 border border-border/30 text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all shrink-0">
               <Wand2 className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0 space-y-1">
@@ -522,7 +522,7 @@ export function AssignmentSpecs() {
                   </div>
                   <span className={cn(
                     "text-2xl font-semibold tracking-tight leading-none",
-                    readyScore === 100 ? "text-emerald-600" : readyScore >= 60 ? "text-amber-500" : "text-muted-foreground/40"
+                    readyScore === 100 ? "text-[color:var(--status-success)]" : readyScore >= 60 ? "text-[color:var(--status-warning)]" : "text-muted-foreground/40"
                   )}>
                     {readyScore}%
                   </span>
@@ -535,8 +535,8 @@ export function AssignmentSpecs() {
                       <div className={cn(
                         "mt-0.5 h-4 w-4 rounded-full flex items-center justify-center shrink-0 border",
                         c.ok
-                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600/80"
-                          : "bg-amber-500/10 border-amber-500/20 text-amber-600/80"
+                          ? "bg-[color:var(--status-success)]/10 border-[color:var(--status-success)]/20 text-[color:var(--status-success)]/80"
+                          : "bg-[color:var(--status-warning)]/10 border-[color:var(--status-warning)]/20 text-[color:var(--status-warning)]/80"
                       )}>
                         {c.ok ? <Check className="h-2.5 w-2.5" /> : <AlertTriangle className="h-2.5 w-2.5" />}
                       </div>
@@ -580,10 +580,10 @@ function TypeRow({ title, items }: { title: string; items: string[] }) {
 
 function BlockIcon({ type }: { type: Block["type"] }) {
   const common = "h-4 w-4"
-  if (type === "instructions") return <FileText className={cn(common, "text-blue-500 opacity-70")} />
+  if (type === "instructions") return <FileText className={cn(common, "text-[color:var(--status-info)] opacity-70")} />
   if (type === "questions") return <FileCheck2 className={cn(common, "text-primary opacity-80")} />
-  if (type === "deliverables") return <BookOpen className={cn(common, "text-emerald-600 opacity-70")} />
-  return <Link2 className={cn(common, "text-amber-600 opacity-70")} />
+  if (type === "deliverables") return <BookOpen className={cn(common, "text-[color:var(--status-success)] opacity-70")} />
+  return <Link2 className={cn(common, "text-[color:var(--status-warning)] opacity-70")} />
 }
 
 function InstructionsEditor({
@@ -656,9 +656,9 @@ function QuestionsEditor({
   return (
     <div className="space-y-4">
       {needsMore && (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-amber-500/[0.04] border border-amber-500/15">
-          <Info className="h-3 w-3 text-amber-600/80 shrink-0" />
-          <p className="text-xs font-semibold text-amber-700/80 leading-tight">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-[color:var(--status-warning)]/[0.04] border border-[color:var(--status-warning)]/15">
+          <Info className="h-3 w-3 text-[color:var(--status-warning)]/80 shrink-0" />
+          <p className="text-xs font-semibold text-[color:var(--status-warning)]/80 leading-tight">
             Add at least 3 questions for better evaluation.
           </p>
         </div>
@@ -708,7 +708,7 @@ function QuestionsEditor({
           <span className="text-muted-foreground/50">Total</span>
           <span className={cn(
             "tabular-nums",
-            weightOff ? "text-amber-600" : "text-emerald-600"
+            weightOff ? "text-[color:var(--status-warning)]" : "text-[color:var(--status-success)]"
           )}>{total}%</span>
         </div>
       </div>
@@ -783,8 +783,8 @@ function QuestionRow({
               <TooltipTrigger className="text-muted-foreground/40 hover:text-primary">
                 <HelpCircle className="h-3 w-3" />
               </TooltipTrigger>
-              <TooltipContent className="bg-slate-900 border-none p-2 rounded-lg shadow-none max-w-[220px]">
-                <p className="text-xs font-bold text-white leading-relaxed">Cognitive depth for this question. We auto-suggest based on the verbs in the prompt — change it if the suggestion feels off.</p>
+              <TooltipContent className="bg-foreground border-none p-2 rounded-lg shadow-none max-w-[220px]">
+                <p className="text-xs font-bold text-primary-foreground leading-relaxed">Cognitive depth for this question. We auto-suggest based on the verbs in the prompt — change it if the suggestion feels off.</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -832,9 +832,9 @@ function DeliverablesEditor({
   return (
     <div className="space-y-3">
       {items.length === 0 ? (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-amber-500/[0.04] border border-amber-500/15">
-          <AlertTriangle className="h-3 w-3 text-amber-600/80 shrink-0" />
-          <p className="text-xs font-semibold text-amber-700/80 leading-tight">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-[color:var(--status-warning)]/[0.04] border border-[color:var(--status-warning)]/15">
+          <AlertTriangle className="h-3 w-3 text-[color:var(--status-warning)]/80 shrink-0" />
+          <p className="text-xs font-semibold text-[color:var(--status-warning)]/80 leading-tight">
             Add at least one deliverable so students know what to submit.
           </p>
         </div>

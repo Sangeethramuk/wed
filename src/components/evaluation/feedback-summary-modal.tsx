@@ -141,7 +141,7 @@ Review the feedback for each criterion above and focus on the specific areas men
           className="fixed inset-0 z-[100] bg-background"
         >
           {/* Header */}
-          <div className="h-16 border-b border-border bg-white flex items-center justify-between px-6">
+          <div className="h-16 border-b border-border bg-background flex items-center justify-between px-6">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -174,7 +174,7 @@ Review the feedback for each criterion above and focus on the specific areas men
           <div className="h-[calc(100vh-64px)] flex">
             {/* Left Panel - Criteria Summary */}
             <div className="w-[45%] border-r border-border bg-muted/20">
-              <div className="p-4 border-b border-border bg-white">
+              <div className="p-4 border-b border-border bg-background">
                 <h3 className="eyebrow text-muted-foreground">
                   Criterion Feedback ({criteria.length})
                 </h3>
@@ -191,7 +191,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                               {criterion.score.toFixed(1)} / {criterion.maxPoints} pts
                             </Badge>
                             {criterion.isOverridden && (
-                              <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs font-semibold">
+                              <Badge className="bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30 text-xs font-semibold">
                                 Overridden from {criterion.aiScore}
                               </Badge>
                             )}
@@ -218,7 +218,7 @@ Review the feedback for each criterion above and focus on the specific areas men
             </div>
 
             {/* Right Panel - Overall Feedback */}
-            <div className="flex-1 flex flex-col bg-white">
+            <div className="flex-1 flex flex-col bg-background">
               <div className="p-4 border-b border-border">
                 <h3 className="eyebrow text-muted-foreground">
                   Overall Feedback
@@ -241,7 +241,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="absolute bottom-4 left-4 right-4 bg-white border border-primary/20 rounded-lg p-4 shadow-lg"
+                      className="absolute bottom-4 left-4 right-4 bg-background border border-primary/20 rounded-lg p-4 shadow-lg"
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <Lightbulb className="h-4 w-4 text-primary" />
@@ -272,7 +272,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                       variant="outline"
                       size="sm"
                       onClick={isRecording ? handleStopRecording : handleStartRecording}
-                      className={`h-9 gap-2 ${isRecording ? 'bg-red-50 text-red-600 border-red-200' : ''}`}
+                      className={`h-9 gap-2 ${isRecording ? 'bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] border-[color:var(--status-error)]/30' : ''}`}
                     >
                       {isRecording ? (
                         <>

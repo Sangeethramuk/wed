@@ -103,7 +103,7 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
                 </Badge>
               )}
               <div className="eyebrow flex items-center gap-1.5 text-muted-foreground/25">
-                <CloudCheck className="h-3 w-3 text-green-500/30" />
+                <CloudCheck className="h-3 w-3 text-[color:var(--status-success)]/30" />
                 Auto-saved
               </div>
             </div>

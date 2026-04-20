@@ -12,10 +12,10 @@ export function AuditSidebar() {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case "system": return <ShieldCheck className="h-4 w-4 text-emerald-600/40" />
+      case "system": return <ShieldCheck className="h-4 w-4 text-[color:var(--status-success)]/40" />
       case "user": return <User className="h-4 w-4 text-primary/40" />
-      case "ai": return <Zap className="h-4 w-4 text-amber-500/40 fill-current" />
-      case "auditor": return <History className="h-4 w-4 text-slate-400" />
+      case "ai": return <Zap className="h-4 w-4 text-[color:var(--status-warning)]/40 fill-current" />
+      case "auditor": return <History className="h-4 w-4 text-muted-foreground/70" />
       default: return null
     }
   }

@@ -72,8 +72,8 @@ export function StudentPreview() {
             <div className="h-32 w-32 rounded-2xl bg-primary/5 border-2 border-primary/20 flex items-center justify-center relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-50 group-hover:scale-150 transition-transform duration-1000" />
               <Monitor className="h-16 w-16 text-primary group-hover:scale-110 transition-transform duration-500" />
-              <div className="absolute bottom-4 right-4 h-8 w-8 rounded-xl bg-emerald-500 flex items-center justify-center border-4 border-background shadow-lg">
-                <CheckCircle2 className="h-4 w-4 text-white" />
+              <div className="absolute bottom-4 right-4 h-8 w-8 rounded-xl bg-[color:var(--status-success)] flex items-center justify-center border-4 border-background shadow-lg">
+                <CheckCircle2 className="h-4 w-4 text-primary-foreground" />
               </div>
               <Sparkles className="absolute top-4 right-4 h-4 w-4 text-primary/40 animate-pulse" />
             </div>
@@ -90,14 +90,14 @@ export function StudentPreview() {
               <div className="flex items-center justify-between">
                 <p className="eyebrow text-muted-foreground/50">Submission link for students</p>
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-3 w-3 text-emerald-500" />
-                  <span className="eyebrow text-emerald-600/60">Verified</span>
+                  <ShieldCheck className="h-3 w-3 text-[color:var(--status-success)]" />
+                  <span className="eyebrow text-[color:var(--status-success)]/60">Verified</span>
                 </div>
               </div>
               <div className="flex gap-3">
                 <Input readOnly value={shareLink} className="h-12 bg-muted/10 border border-border/30 rounded-xl font-semibold text-sm px-5 focus-visible:ring-primary/10 tracking-tight" />
                 <Button variant="secondary" size="icon" onClick={copyToClipboard}>
-                  {copied ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <Copy className="h-5 w-5" />}
+                  {copied ? <CheckCircle2 className="h-5 w-5 text-[color:var(--status-success)]" /> : <Copy className="h-5 w-5" />}
                 </Button>
               </div>
             </div>
@@ -105,8 +105,8 @@ export function StudentPreview() {
               <p className="eyebrow text-muted-foreground/50">What&apos;s next</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Button variant="outline" className="h-auto flex-col items-start gap-3 p-5 group text-left whitespace-normal">
-                  <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/10">
-                    <Database className="h-4 w-4 text-blue-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+                  <div className="h-9 w-9 rounded-lg bg-[color:var(--status-info)]/10 flex items-center justify-center border border-[color:var(--status-info)]/10">
+                    <Database className="h-4 w-4 text-[color:var(--status-info)] opacity-60 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <div className="space-y-0.5">
                     <span className="text-xs font-semibold block">Connect to LMS</span>

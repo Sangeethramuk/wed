@@ -166,12 +166,12 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
           Exit review
         </button>
         <span className="text-xs font-medium text-background/90">Reviewing differences</span>
-        <span className="text-xs font-mono bg-white/15 rounded-full px-2.5 py-[2px] shrink-0">
+        <span className="text-xs font-mono bg-background/15 rounded-full px-2.5 py-[2px] shrink-0">
           {activeIdx + 1} of {totalCount}
         </span>
-        <div className="flex-1 h-[3px] bg-white/20 rounded-full overflow-hidden">
+        <div className="flex-1 h-[3px] bg-background/20 rounded-full overflow-hidden">
           <div
-            className="h-full bg-white rounded-full transition-[width] duration-500"
+            className="h-full bg-background rounded-full transition-[width] duration-500"
             style={{ width: `${progressPct}%` }}
           />
         </div>
@@ -184,7 +184,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
       <div className="flex-1 flex overflow-hidden">
 
         {/* ── Left: manuscript ── */}
-        <div className="w-[60%] border-r border-border/40 bg-white flex flex-col overflow-hidden">
+        <div className="w-[60%] border-r border-border/40 bg-background flex flex-col overflow-hidden">
 
           {/* Paper selector header */}
           <div className="shrink-0 px-5 py-2.5 border-b border-border/30 flex items-center justify-between">
@@ -265,7 +265,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                   <div
                     key={key}
                     ref={el => { cardRefs.current[idx] = el }}
-                    className={`bg-white border rounded-xl overflow-hidden shadow-sm transition-opacity ${
+                    className={`bg-background border rounded-xl overflow-hidden shadow-sm transition-opacity ${
                       isResolved ? "opacity-65" : "opacity-100"
                     } ${isActive ? "border-border/60" : "border-border/40"}`}
                   >
@@ -276,7 +276,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                         isResolved
                           ? "bg-[color:var(--status-success-bg)] border-transparent"
                           : isActive
-                          ? "bg-white border-border/30"
+                          ? "bg-background border-border/30"
                           : "hover:bg-muted/20 border-transparent"
                       }`}
                     >
@@ -363,7 +363,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                                 </button>
                                 <button
                                   onClick={() => setAdjustMode(prev => ({ ...prev, [key]: true }))}
-                                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-border/60 text-muted-foreground hover:bg-muted/20 transition-colors"
+                                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-background border border-border/60 text-muted-foreground hover:bg-muted/20 transition-colors"
                                 >
                                   Adjust score
                                 </button>
@@ -421,7 +421,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                             className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium border rounded-md transition-colors ${
                               isCompare
                                 ? "bg-[color:var(--status-info-bg)] border-[color:var(--status-info)]/30 text-[color:var(--status-info)]"
-                                : "bg-white border-border/50 text-muted-foreground hover:bg-muted/10"
+                                : "bg-background border-border/50 text-muted-foreground hover:bg-muted/10"
                             }`}
                           >
                             Compare Views
@@ -439,7 +439,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                               </p>
                               {/* Evidence chips from evidenceExchanges */}
                               {disc.evidenceExchanges.filter(e => e.type === "add_instructor" && e.note).map((e, i) => (
-                                <div key={e.id} className="flex items-start gap-2 bg-white border border-border/40 rounded-md px-2.5 py-1.5 mb-2">
+                                <div key={e.id} className="flex items-start gap-2 bg-background border border-border/40 rounded-md px-2.5 py-1.5 mb-2">
                                   <div className="w-4 h-4 rounded-full bg-[color:var(--status-info-bg)] border border-[color:var(--status-info)]/30 text-[color:var(--status-info)] text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                                     {i + 1}
                                   </div>
@@ -455,7 +455,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                                 value={fb}
                                 onChange={e => setFeedbacks(prev => ({ ...prev, [key]: e.target.value }))}
                                 placeholder="Your reasoning for this score…"
-                                className="text-xs resize-none h-[72px] bg-white border-border/40 focus-visible:ring-blue-200/50 mt-1"
+                                className="text-xs resize-none h-[72px] bg-background border-border/40 focus-visible:ring-blue-200/50 mt-1"
                                 disabled={isResolved}
                               />
                             </div>
@@ -486,7 +486,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                                 </div>
                               </button>
                               {isAiOpen && (
-                                <div className="p-3 space-y-2.5 bg-white">
+                                <div className="p-3 space-y-2.5 bg-background">
                                   {/* AI evidence chips */}
                                   {disc.aiEvidence.length > 0 ? disc.aiEvidence.map((ev, i) => (
                                     <div key={i} className="flex items-start gap-2 bg-muted/20 border border-border/40 rounded-md px-2.5 py-1.5">
@@ -531,7 +531,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                                 value={fb}
                                 onChange={e => setFeedbacks(prev => ({ ...prev, [key]: e.target.value }))}
                                 placeholder="Your reasoning…"
-                                className="text-xs resize-none h-[96px] bg-white border-border/40 focus-visible:ring-blue-200/50"
+                                className="text-xs resize-none h-[96px] bg-background border-border/40 focus-visible:ring-blue-200/50"
                                 disabled={isResolved}
                               />
                             </div>
@@ -559,7 +559,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                             <button
                               onClick={() => idx > 0 && navigateTo(idx - 1)}
                               disabled={idx === 0}
-                              className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium border border-border/50 rounded-md bg-white text-muted-foreground hover:bg-muted/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                              className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium border border-border/50 rounded-md bg-background text-muted-foreground hover:bg-muted/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
                             >
                               <ChevronLeft className="h-3.5 w-3.5" /> Previous
                             </button>
@@ -569,7 +569,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                             <button
                               onClick={() => idx < totalCount - 1 && navigateTo(idx + 1)}
                               disabled={idx >= totalCount - 1}
-                              className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium border border-border/50 rounded-md bg-white text-muted-foreground hover:bg-muted/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                              className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium border border-border/50 rounded-md bg-background text-muted-foreground hover:bg-muted/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
                             >
                               Next <ChevronRight className="h-3.5 w-3.5" />
                             </button>
@@ -601,7 +601,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.97, y: 16 }}
               transition={{ type: "spring", stiffness: 280, damping: 26 }}
-              className="bg-white border border-border/40 rounded-[20px] shadow-2xl px-10 py-9 w-[400px] flex flex-col items-center gap-5"
+              className="bg-background border border-border/40 rounded-[20px] shadow-2xl px-10 py-9 w-[400px] flex flex-col items-center gap-5"
             >
               {/* Icon */}
               <div className="relative w-14 h-14 flex items-center justify-center">

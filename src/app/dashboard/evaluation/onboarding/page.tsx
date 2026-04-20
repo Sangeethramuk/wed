@@ -24,21 +24,21 @@ export default function EvaluationOnboarding() {
       title: "Anonymized Protocol",
       description: "Student identities are masked during initial triage to ensure impartial and objective assessment metrics.",
       icon: EyeOff,
-      color: "bg-blue-500/10 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+      color: "bg-[color:var(--status-info)]/10 text-[color:var(--status-info)] dark:bg-muted dark:text-[color:var(--status-info)]",
       points: ["Initial Blind Triage", "Anonymized Metadata", "Reveal for Oversight"]
     },
     {
       title: "Assessment Assistance",
       description: "AI-curated annotations highlight pattern alignment, semantic errors, and rubric deviations.",
       icon: Activity,
-      color: "bg-purple-500/10 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400",
+      color: "bg-[color:var(--category-2)]/10 text-[color:var(--category-2)] dark:bg-muted dark:text-[color:var(--category-2)]",
       points: ["Annotation Pre-mapping", "Pattern Recognition", "Rubric Alignment"]
     },
     {
       title: "Integrity Verification",
       description: "Academic honesty safeguards are active, scanning for cross-submission anomalies.",
       icon: ShieldCheck,
-      color: "bg-amber-500/10 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
+      color: "bg-[color:var(--status-warning)]/10 text-[color:var(--status-warning)] dark:bg-muted dark:text-[color:var(--status-warning)]",
       points: ["Authorship Analysis", "Correlation Flags", "Protocol P1 Validation"]
     }
   ]

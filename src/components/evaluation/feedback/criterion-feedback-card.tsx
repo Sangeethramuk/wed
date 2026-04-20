@@ -31,10 +31,10 @@ interface CriterionFeedbackCardProps {
 
 function getTierStyles(tier: FeedbackTier) {
   switch (tier) {
-    case 'perfect': return { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', icon: Star };
-    case 'minor': return { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', icon: CircleDot };
-    case 'gap': return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', icon: Lightbulb };
-    case 'major': return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', icon: AlertTriangle };
+    case 'perfect': return { bg: 'bg-[color:var(--status-success-bg)]', border: 'border-[color:var(--status-success)]/30', text: 'text-[color:var(--status-success)]', icon: Star };
+    case 'minor': return { bg: 'bg-[color:var(--status-info-bg)]', border: 'border-[color:var(--status-info)]/30', text: 'text-[color:var(--status-info)]', icon: CircleDot };
+    case 'gap': return { bg: 'bg-[color:var(--status-warning-bg)]', border: 'border-[color:var(--status-warning)]/30', text: 'text-[color:var(--status-warning)]', icon: Lightbulb };
+    case 'major': return { bg: 'bg-[color:var(--status-error-bg)]', border: 'border-[color:var(--status-error)]/30', text: 'text-[color:var(--status-error)]', icon: AlertTriangle };
   }
 }
 
@@ -91,7 +91,7 @@ export function CriterionFeedbackCard({
             onChange={(e) => onEdit(e.target.value)}
             rows={5}
             placeholder="No feedback provided yet..."
-            className={`w-full text-xs leading-[1.75] text-foreground bg-transparent border-none p-0 resize-y focus:outline-none focus:bg-white/40 rounded-md font-medium transition-all min-h-[100px]`}
+            className={`w-full text-xs leading-[1.75] text-foreground bg-transparent border-none p-0 resize-y focus:outline-none focus:bg-background/40 rounded-md font-medium transition-all min-h-[100px]`}
           />
         </div>
       </div>
@@ -113,7 +113,7 @@ export function CriterionFeedbackCard({
           <Button
             variant="ghost"
             size="sm"
-            className="eyebrow h-8 px-4 bg-green-50 text-green-700 border border-green-200 gap-1.5 ml-auto cursor-default hover:bg-green-50 rounded-full"
+            className="eyebrow h-8 px-4 bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border border-[color:var(--status-success)]/30 gap-1.5 ml-auto cursor-default hover:bg-[color:var(--status-success-bg)] rounded-full"
           >
             <CheckCircle2 className="w-3.5 h-3.5" /> Finalized
           </Button>

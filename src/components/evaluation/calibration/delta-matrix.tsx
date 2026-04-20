@@ -32,9 +32,9 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
     scores.find(s => s.paperId === paperId && s.criterionId === criterionId)
 
   const cellStyle = (delta: number) => {
-    if (delta === 0) return "bg-green-50 text-green-700"
-    if (delta === 1) return "bg-amber-50 text-amber-700"
-    return "bg-red-50 text-red-700"
+    if (delta === 0) return "bg-[color:var(--status-success-bg)] text-[color:var(--status-success)]"
+    if (delta === 1) return "bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)]"
+    return "bg-[color:var(--status-error-bg)] text-[color:var(--status-error)]"
   }
 
   const deltaIndicator = (delta: number) =>
@@ -42,13 +42,13 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
 
   const deltaBadgeClass = (delta: number) =>
     delta >= 3
-      ? "bg-red-50 text-red-700 border-red-200"
-      : "bg-amber-50 text-amber-700 border-amber-200"
+      ? "bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] border-[color:var(--status-error)]/30"
+      : "bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30"
 
   const deltaNumClass = (delta: number) =>
     delta >= 3
-      ? "bg-red-100 text-red-700 border-red-200"
-      : "bg-amber-100 text-amber-700 border-amber-200"
+      ? "bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] border-[color:var(--status-error)]/30"
+      : "bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30"
 
   const handleStart = () => {
     if (isCalibrated) {
@@ -62,25 +62,25 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-5 animate-in fade-in duration-500">
 
       {/* Header card */}
-      <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-sm space-y-4">
+      <div className="bg-background border border-border/60 rounded-2xl p-5 shadow-sm space-y-4">
         <h2 className="text-lg font-bold tracking-tight">Review &amp; Align Your Scores</h2>
 
         {discrepancies.length > 0 ? (
-          <div className="flex items-start gap-3 bg-red-50 border border-red-200/70 rounded-xl px-4 py-3">
-            <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 bg-[color:var(--status-error-bg)] border border-[color:var(--status-error)]/30/70 rounded-xl px-4 py-3">
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-red-700">
+              <p className="text-sm font-semibold text-[color:var(--status-error)]">
                 Your grading differs from AI on {discrepancies.length} items
               </p>
-              <p className="text-xs text-red-500/80">
+              <p className="text-xs text-destructive/80">
                 Start with the most impactful differences — sorted by score gap
               </p>
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3 bg-green-50 border border-green-200/70 rounded-xl px-4 py-3">
-            <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
-            <p className="text-sm font-semibold text-green-700">
+          <div className="flex items-center gap-3 bg-[color:var(--status-success-bg)] border border-[color:var(--status-success)]/30/70 rounded-xl px-4 py-3">
+            <CheckCircle2 className="h-4 w-4 text-[color:var(--status-success)] shrink-0" />
+            <p className="text-sm font-semibold text-[color:var(--status-success)]">
               Your grading aligns with the AI baseline — ready to proceed
             </p>
           </div>
@@ -100,7 +100,7 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
 
       {/* Discrepancy list sorted by gap */}
       {discrepancies.length > 0 && (
-        <div className="bg-white border border-border/60 rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-background border border-border/60 rounded-xl overflow-hidden shadow-sm">
           <div className="px-4 py-2.5 border-b border-border/40">
             <span className="eyebrow text-muted-foreground/60">
               Discrepancy items · sorted by gap
@@ -138,7 +138,7 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
       )}
 
       {/* Score matrix */}
-      <div className="bg-white border border-border/60 rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-background border border-border/60 rounded-xl overflow-hidden shadow-sm">
         <div className="px-4 py-2.5 border-b border-border/40 flex items-center justify-between">
           <span className="eyebrow text-muted-foreground/60">Score matrix</span>
           <span className="text-xs font-mono text-muted-foreground/40">yours / AI</span>
@@ -187,13 +187,13 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
         </div>
         <div className="flex gap-4 px-4 py-2.5 border-t border-border/30 bg-muted/10">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
-            <div className="w-2 h-2 rounded-full bg-green-500" />Match
+            <div className="w-2 h-2 rounded-full bg-[color:var(--status-success)]" />Match
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
-            <div className="w-2 h-2 rounded-full bg-amber-500" />±1 gap
+            <div className="w-2 h-2 rounded-full bg-[color:var(--status-warning)]" />±1 gap
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
-            <div className="w-2 h-2 rounded-full bg-red-500" />±2+ gap
+            <div className="w-2 h-2 rounded-full bg-destructive" />±2+ gap
           </div>
         </div>
       </div>

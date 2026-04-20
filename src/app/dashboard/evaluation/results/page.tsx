@@ -27,17 +27,17 @@ function getGrade(pct: number): string {
 }
 
 function gradeColorClass(grade: string): string {
-  if (grade.startsWith("A")) return "bg-green-50 text-green-700 border-green-200"
-  if (grade.startsWith("B")) return "bg-blue-50 text-blue-700 border-blue-200"
-  if (grade.startsWith("C")) return "bg-amber-50 text-amber-700 border-amber-200"
-  return "bg-red-50 text-red-700 border-red-200"
+  if (grade.startsWith("A")) return "bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30"
+  if (grade.startsWith("B")) return "bg-[color:var(--status-info-bg)] text-[color:var(--status-info)] border-[color:var(--status-info)]/30"
+  if (grade.startsWith("C")) return "bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30"
+  return "bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] border-[color:var(--status-error)]/30"
 }
 
 function barColor(pct: number): string {
   if (pct >= 80) return "bg-primary"
   if (pct >= 60) return "bg-primary/70"
-  if (pct >= 40) return "bg-amber-400"
-  return "bg-red-400"
+  if (pct >= 40) return "bg-[color:var(--status-warning)]"
+  return "bg-destructive"
 }
 
 // ── Grade distribution bands ──────────────────────────────────────────────────
@@ -45,8 +45,8 @@ function barColor(pct: number): string {
 const BANDS = [
   { label: "A+ / A", range: "80 – 100", min: 80, max: 101, color: "bg-primary" },
   { label: "B+ / B", range: "60 – 79",  min: 60, max: 80,  color: "bg-primary/70" },
-  { label: "C+ / C", range: "40 – 59",  min: 40, max: 60,  color: "bg-amber-400" },
-  { label: "F",      range: "< 40",     min: 0,  max: 40,  color: "bg-red-400" },
+  { label: "C+ / C", range: "40 – 59",  min: 40, max: 60,  color: "bg-[color:var(--status-warning)]" },
+  { label: "F",      range: "< 40",     min: 0,  max: 40,  color: "bg-destructive" },
 ]
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -144,7 +144,7 @@ export default function EvaluationResults() {
           <div className="space-y-1.5">
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-3xl font-semibold tracking-tight text-foreground">Class Report</h1>
-              <Badge variant="outline" className="eyebrow h-5 px-2 bg-green-50 text-green-700 border-green-200 rounded-full">
+              <Badge variant="outline" className="eyebrow h-5 px-2 bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30 rounded-full">
                 Evaluation Complete
               </Badge>
             </div>
@@ -206,10 +206,10 @@ export default function EvaluationResults() {
           >
             <div className="flex items-start justify-between mb-3">
               <span className="eyebrow text-muted-foreground/40">{stat.label}</span>
-              <stat.icon className={cn("h-4 w-4 opacity-60", stat.highlight ? "text-amber-500" : "text-primary")} />
+              <stat.icon className={cn("h-4 w-4 opacity-60", stat.highlight ? "text-[color:var(--status-warning)]" : "text-primary")} />
             </div>
             <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{stat.value}</div>
-            <div className={cn("eyebrow mt-1", stat.highlight ? "text-amber-600" : "text-muted-foreground/50")}>
+            <div className={cn("eyebrow mt-1", stat.highlight ? "text-[color:var(--status-warning)]" : "text-muted-foreground/50")}>
               {stat.sub}
             </div>
           </motion.div>
@@ -288,10 +288,10 @@ export default function EvaluationResults() {
                         key={tier}
                         className={cn(
                           "eyebrow px-1.5 py-0.5 rounded-sm",
-                          tier === "perfect" ? "bg-green-50 text-green-700" :
-                          tier === "minor"   ? "bg-blue-50 text-blue-700" :
-                          tier === "gap"     ? "bg-amber-50 text-amber-700" :
-                                              "bg-red-50 text-red-700"
+                          tier === "perfect" ? "bg-[color:var(--status-success-bg)] text-[color:var(--status-success)]" :
+                          tier === "minor"   ? "bg-[color:var(--status-info-bg)] text-[color:var(--status-info)]" :
+                          tier === "gap"     ? "bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)]" :
+                                              "bg-[color:var(--status-error-bg)] text-[color:var(--status-error)]"
                         )}
                       >
                         {n} {tier}
@@ -420,7 +420,7 @@ export default function EvaluationResults() {
                         className={cn(
                           "eyebrow h-5 px-2 rounded-full",
                           submitted
-                            ? "bg-green-50 text-green-700 border-green-200"
+                            ? "bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30"
                             : "bg-muted/40 text-muted-foreground border-border/40"
                         )}
                       >
@@ -431,12 +431,12 @@ export default function EvaluationResults() {
                     {/* Integrity */}
                     <td className="px-6 py-5 text-center">
                       {flagged ? (
-                        <div className="flex items-center justify-center gap-1 text-amber-600">
+                        <div className="flex items-center justify-center gap-1 text-[color:var(--status-warning)]">
                           <AlertTriangle className="w-3.5 h-3.5" />
                           <span className="eyebrow">{student.status}</span>
                         </div>
                       ) : (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-green-500 mx-auto" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[color:var(--status-success)] mx-auto" />
                       )}
                     </td>
                   </motion.tr>

@@ -77,22 +77,22 @@ export function RubricTweak() {
               <div className="flex items-center gap-6 border-r border-border/10 pr-6">
                 <Tooltip>
                   <TooltipTrigger className="flex gap-2 items-center cursor-help group">
-                    <div className="h-6 w-6 rounded-md bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                    <div className="h-6 w-6 rounded-md bg-[color:var(--status-success)]/10 flex items-center justify-center shrink-0 border border-[color:var(--status-success)]/20 group-hover:bg-[color:var(--status-success)] group-hover:text-primary-foreground transition-all">
                       <Check className="h-3.5 w-3.5" />
                     </div>
                     <p className="eyebrow text-foreground">Learning goals linked</p>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom" className="bg-slate-900 border-none p-2"><p className="text-xs font-bold text-white">All criteria are linked to your course's learning goals</p></TooltipContent>
+                  <TooltipContent side="bottom" className="bg-foreground border-none p-2"><p className="text-xs font-bold text-primary-foreground">All criteria are linked to your course's learning goals</p></TooltipContent>
                 </Tooltip>
                 
                 <Tooltip>
                   <TooltipTrigger className="flex gap-2 items-center cursor-help group">
-                    <div className="h-6 w-6 rounded-md bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                    <div className="h-6 w-6 rounded-md bg-[color:var(--status-success)]/10 flex items-center justify-center shrink-0 border border-[color:var(--status-success)]/20 group-hover:bg-[color:var(--status-success)] group-hover:text-primary-foreground transition-all">
                       <Check className="h-3.5 w-3.5" />
                     </div>
                     <p className="eyebrow text-foreground">Grade levels defined</p>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom" className="bg-slate-900 border-none p-2"><p className="text-xs font-bold text-white">AI will use these descriptions to assist with grading</p></TooltipContent>
+                  <TooltipContent side="bottom" className="bg-foreground border-none p-2"><p className="text-xs font-bold text-primary-foreground">AI will use these descriptions to assist with grading</p></TooltipContent>
                 </Tooltip>
               </div>
 
@@ -162,9 +162,9 @@ export function RubricTweak() {
                                     {crit.linkedCO}
                                   </Badge>
                                 </TooltipTrigger>
-                                <TooltipContent side="right" className="max-w-[200px] text-xs font-bold bg-slate-900 border-none p-3 rounded-lg shadow-none">
+                                <TooltipContent side="right" className="max-w-[200px] text-xs font-bold bg-foreground border-none p-3 rounded-lg shadow-none">
                                   <p className="eyebrow text-primary mb-1">Linked learning goal</p>
-                                  <p className="text-white/80">{CO_DEFINITIONS[crit.linkedCO] || "Standard institutional goal"}</p>
+                                  <p className="text-primary-foreground/80">{CO_DEFINITIONS[crit.linkedCO] || "Standard institutional goal"}</p>
                                 </TooltipContent>
                               </Tooltip>
                               <Button variant="ghost" size="icon-xs" onClick={() => setExpandedRow(expandedRow === crit.id ? null : crit.id)}>
@@ -177,7 +177,7 @@ export function RubricTweak() {
                       {crit.levels.map((lvl) => (
                         <td key={lvl.label} className="p-4 border-r border-border/10 align-top shadow-none">
                           <Textarea 
-                            className="text-xs font-medium leading-relaxed bg-background/40 border border-border/60 focus-visible:ring-1 focus-visible:ring-primary/10 p-3 min-h-[140px] resize-none hover:bg-white/50 rounded-lg transition-all shadow-none placeholder:opacity-10"
+                            className="text-xs font-medium leading-relaxed bg-background/40 border border-border/60 focus-visible:ring-1 focus-visible:ring-primary/10 p-3 min-h-[140px] resize-none hover:bg-background/50 rounded-lg transition-all shadow-none placeholder:opacity-10"
                             value={lvl.description}
                             onChange={(e) => updateLevelDescription(crit.id, lvl.label, e.target.value)}
                           />

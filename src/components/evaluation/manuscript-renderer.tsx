@@ -54,7 +54,7 @@ function ConfidenceBars({ confidence }: { confidence: number }) {
       {[1, 2, 3].map((i) => (
         <div
           key={i}
-          className={`w-4 h-1.5 rounded-sm ${i <= filled ? "bg-green-500" : "bg-border"}`}
+          className={`w-4 h-1.5 rounded-sm ${i <= filled ? "bg-[color:var(--status-success)]" : "bg-border"}`}
         />
       ))}
     </div>
@@ -68,7 +68,7 @@ function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterio
     <HoverCard>
       <HoverCardTrigger
         id={id}
-        className={`bg-amber-100/90 border-b-2 border-amber-400 border-dashed px-1 rounded cursor-pointer hover:bg-amber-200/80 transition-colors scroll-mt-20`}
+        className={`bg-[color:var(--status-warning-bg)]/90 border-b-2 border-[color:var(--status-warning)] border-dashed px-1 rounded cursor-pointer hover:bg-[color:var(--status-warning-bg)]/80 transition-colors scroll-mt-20`}
       >
         {text}
       </HoverCardTrigger>
@@ -173,7 +173,7 @@ function DiagramElement({
           {label}
         </span>
       </div>
-      <div className="p-6 bg-white min-h-[200px] flex items-center justify-center">
+      <div className="p-6 bg-background min-h-[200px] flex items-center justify-center">
         {diagramType === "er" && (
           <div className="grid grid-cols-3 gap-4 w-full max-w-sm">
             {[
@@ -181,12 +181,12 @@ function DiagramElement({
               { name: "Orders", fields: ["id", "user_id", "total"] },
               { name: "Products", fields: ["id", "sku", "price"] },
             ].map((t) => (
-              <div key={t.name} className="border border-blue-200 rounded bg-blue-50/50">
-                <div className="px-2 py-1 bg-blue-100 border-b border-blue-200 text-xs font-bold text-blue-800 text-center">
+              <div key={t.name} className="border border-[color:var(--status-info)]/30 rounded bg-[color:var(--status-info-bg)]/50">
+                <div className="px-2 py-1 bg-[color:var(--status-info-bg)] border-b border-[color:var(--status-info)]/30 text-xs font-bold text-[color:var(--status-info)] text-center">
                   {t.name}
                 </div>
                 {t.fields.map((f) => (
-                  <div key={f} className="px-2 py-0.5 text-xs text-foreground/70 font-mono border-b border-blue-100 last:border-0">
+                  <div key={f} className="px-2 py-0.5 text-xs text-foreground/70 font-mono border-b border-[color:var(--status-info)]/30 last:border-0">
                     {f}
                   </div>
                 ))}
@@ -202,29 +202,29 @@ function DiagramElement({
           <div className="flex flex-col items-center gap-2 w-full max-w-xs">
             {["Client Request", "API Gateway", "Auth Middleware", "Controller", "Database"].map((step, i) => (
               <div key={step} className="flex flex-col items-center gap-1">
-                <div className="px-4 py-2 border border-slate-300 rounded-md bg-slate-50 text-xs font-bold text-foreground/80">
+                <div className="px-4 py-2 border border-border rounded-md bg-muted/40 text-xs font-bold text-foreground/80">
                   {step}
                 </div>
-                {i < 4 && <div className="w-px h-3 bg-slate-300" />}
+                {i < 4 && <div className="w-px h-3 bg-muted" />}
               </div>
             ))}
           </div>
         )}
         {diagramType === "architecture" && (
           <div className="flex flex-col items-center gap-3 w-full">
-            <div className="px-6 py-2 border border-amber-300 rounded-md bg-amber-50 text-xs font-bold text-amber-800">
+            <div className="px-6 py-2 border border-[color:var(--status-warning)]/30 rounded-md bg-[color:var(--status-warning-bg)] text-xs font-bold text-[color:var(--status-warning)]">
               API Gateway
             </div>
             <div className="flex gap-4">
               {["User Svc", "Order Svc", "Notify Svc"].map((svc) => (
-                <div key={svc} className="px-3 py-2 border border-green-300 rounded-md bg-green-50 text-xs font-bold text-green-800">
+                <div key={svc} className="px-3 py-2 border border-[color:var(--status-success)]/30 rounded-md bg-[color:var(--status-success-bg)] text-xs font-bold text-[color:var(--status-success)]">
                   {svc}
                 </div>
               ))}
             </div>
             <div className="flex gap-4">
               {["PostgreSQL", "Redis", "Kafka"].map((db) => (
-                <div key={db} className="px-3 py-1.5 border border-purple-300 rounded bg-purple-50 text-xs font-mono text-purple-800">
+                <div key={db} className="px-3 py-1.5 border border-[color:var(--category-2)]/30 rounded bg-[color:var(--category-2-bg)] text-xs font-mono text-[color:var(--category-2)]">
                   {db}
                 </div>
               ))}
@@ -288,12 +288,12 @@ export default function ManuscriptRenderer({
           case "code":
             return (
               <div key={i} className="my-4 rounded-lg overflow-hidden border border-border/40">
-                <div className="px-4 py-2 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
-                  <span className="eyebrow text-slate-400">{el.language}</span>
-                  <span className="text-xs text-slate-500 font-mono">source</span>
+                <div className="px-4 py-2 bg-foreground border-b border-border flex items-center justify-between">
+                  <span className="eyebrow text-muted-foreground/70">{el.language}</span>
+                  <span className="text-xs text-muted-foreground font-mono">source</span>
                 </div>
-                <pre className="p-4 bg-slate-900 overflow-x-auto">
-                  <code className="text-sm text-green-400 font-mono leading-relaxed whitespace-pre">{el.code}</code>
+                <pre className="p-4 bg-foreground overflow-x-auto">
+                  <code className="text-sm text-[color:var(--status-success)] font-mono leading-relaxed whitespace-pre">{el.code}</code>
                 </pre>
               </div>
             )

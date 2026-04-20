@@ -76,7 +76,7 @@ export default function PreEvaluationPage() {
               
               <div className="flex items-center gap-6">
                 <div className="eyebrow flex items-center gap-2 text-muted-foreground/30">
-                    <CloudCheck className="h-3.5 w-3.5 text-green-500/40" />
+                    <CloudCheck className="h-3.5 w-3.5 text-[color:var(--status-success)]/40" />
                     <span>Auto-saved at {lastSaved}</span>
                 </div>
                 <AuditSidebar />

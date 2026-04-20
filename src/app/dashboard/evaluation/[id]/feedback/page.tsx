@@ -240,7 +240,7 @@ export default function FeedbackPage() {
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-end mr-2">
              <div className="text-2xl font-semibold text-foreground leading-none font-mono">60<span className="text-sm text-muted-foreground/40 font-medium">/100</span></div>
-             <Badge variant="outline" className="eyebrow h-4 px-1.5 bg-green-50 text-green-700 border-green-200 mt-1">Satisfactory</Badge>
+             <Badge variant="outline" className="eyebrow h-4 px-1.5 bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30 mt-1">Satisfactory</Badge>
           </div>
           <Button variant="ghost" size="icon">✕</Button>
         </div>
@@ -312,7 +312,7 @@ export default function FeedbackPage() {
                 <div className="max-w-3xl mx-auto">
                   <div className="flex items-center justify-between mb-4">
                     <div className="eyebrow text-muted-foreground/40">Comprehensive Assessment Draft</div>
-                    <Badge variant={isAI ? "secondary" : "outline"} className={`text-xs font-bold h-5 px-2.5 rounded-full ${isAI ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                    <Badge variant={isAI ? "secondary" : "outline"} className={`text-xs font-bold h-5 px-2.5 rounded-full ${isAI ? 'bg-[color:var(--category-2-bg)] text-[color:var(--category-2)] border-[color:var(--category-2)]/30' : 'bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30'}`}>
                        {isAI ? '✦ AI Generated' : '✎ Locally Adjusted'}
                     </Badge>
                   </div>
@@ -347,7 +347,7 @@ export default function FeedbackPage() {
                     {/* Toolbar overlay */}
                     <div className="absolute bottom-4 right-4 flex items-center gap-2">
                        <Button size="sm" variant="outline" onClick={handleCopy}>
-                          {copying ? <CheckCircle2 className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />} {copying ? 'Copied' : 'Copy'}
+                          {copying ? <CheckCircle2 className="w-3.5 h-3.5 text-[color:var(--status-success)]" /> : <Copy className="w-3.5 h-3.5" />} {copying ? 'Copied' : 'Copy'}
                        </Button>
                     </div>
                   </div>
@@ -360,9 +360,9 @@ export default function FeedbackPage() {
                     <div className="flex items-center justify-between px-1">
                        <div className="flex items-center gap-4">
                           <span className="eyebrow text-xs text-foreground">Instructor Note Workspace</span>
-                          <div className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20">
-                             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                             <span className="eyebrow text-green-700/80">Active Sink</span>
+                          <div className="flex items-center gap-1.5 px-3 py-1 bg-[color:var(--status-success)]/10 rounded-full border border-[color:var(--status-success)]/20">
+                             <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--status-success)] animate-pulse" />
+                             <span className="eyebrow text-[color:var(--status-success)]/80">Active Sink</span>
                           </div>
                        </div>
                        <Button variant="destructive" size="sm">
@@ -404,22 +404,22 @@ export default function FeedbackPage() {
                     {/* CRITICAL Column */}
                     <div className="space-y-4">
                        <div className="flex items-center gap-2 px-1">
-                          <div className="w-2 h-6 bg-red-500 rounded-full" />
+                          <div className="w-2 h-6 bg-destructive rounded-full" />
                           <span className="eyebrow text-foreground">Priority 1 · Critical</span>
                        </div>
                        {displaySolutionSteps.filter(s => s.priority === 'critical').map((step, i) => (
-                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-white border-1.5 border-red-100 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(220,38,38,0.03)] hover:shadow-md transition-all">
+                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-background border-1.5 border-[color:var(--status-error)]/30 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(220,38,38,0.03)] hover:shadow-md transition-all">
                             <div className="flex items-center justify-between mb-4">
-                               <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center"><AlertTriangle className="w-4 h-4 text-red-600" /></div>
-                               <span className="text-xs font-semibold font-mono text-red-700 bg-red-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
+                               <div className="w-8 h-8 rounded-lg bg-[color:var(--status-error-bg)] flex items-center justify-center"><AlertTriangle className="w-4 h-4 text-[color:var(--status-error)]" /></div>
+                               <span className="text-xs font-semibold font-mono text-[color:var(--status-error)] bg-[color:var(--status-error-bg)] px-2 rounded-full h-5 flex items-center">{step.score}</span>
                             </div>
                             <h4 className="text-sm font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
                             <div className="space-y-3">
                                {step.steps.map((s: string, j: number) => (
                                  <div key={j} className="flex gap-3 group/step">
-                                    <div className="text-xs font-semibold text-red-200 mt-0.5">{j+1}.</div>
+                                    <div className="text-xs font-semibold text-[color:var(--status-error)] mt-0.5">{j+1}.</div>
                                     <p 
-                                       className="text-xs text-muted-foreground/90 leading-[1.6] outline-none cursor-text hover:bg-red-50/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-red-100/50 focus:bg-red-50 focus:border-red-200/50"
+                                       className="text-xs text-muted-foreground/90 leading-[1.6] outline-none cursor-text hover:bg-[color:var(--status-error-bg)]/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-[color:var(--status-error)]/50 focus:bg-[color:var(--status-error-bg)] focus:border-[color:var(--status-error)]/50"
                                        contentEditable
                                        suppressContentEditableWarning
                                        onBlur={(e) => updateSolutionStep(activeStudent.id, step.criterionName, j, e.currentTarget.innerText)}
@@ -442,22 +442,22 @@ export default function FeedbackPage() {
                     {/* IMPORTANT Column */}
                     <div className="space-y-4">
                        <div className="flex items-center gap-2 px-1">
-                          <div className="w-2 h-6 bg-amber-500 rounded-full" />
+                          <div className="w-2 h-6 bg-[color:var(--status-warning)] rounded-full" />
                           <span className="eyebrow text-foreground">Priority 2 · Important</span>
                        </div>
                        {displaySolutionSteps.filter(s => s.priority === 'important').map((step, i) => (
-                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-white border-1.5 border-amber-100 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(217,119,6,0.03)] hover:shadow-md transition-all">
+                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-background border-1.5 border-[color:var(--status-warning)]/30 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(217,119,6,0.03)] hover:shadow-md transition-all">
                             <div className="flex items-center justify-between mb-4">
-                               <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center"><Lightbulb className="w-4 h-4 text-amber-600" /></div>
-                               <span className="text-xs font-semibold font-mono text-amber-700 bg-amber-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
+                               <div className="w-8 h-8 rounded-lg bg-[color:var(--status-warning-bg)] flex items-center justify-center"><Lightbulb className="w-4 h-4 text-[color:var(--status-warning)]" /></div>
+                               <span className="text-xs font-semibold font-mono text-[color:var(--status-warning)] bg-[color:var(--status-warning-bg)] px-2 rounded-full h-5 flex items-center">{step.score}</span>
                             </div>
                             <h4 className="text-sm font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
                             <div className="space-y-3">
                                {step.steps.map((s: string, j: number) => (
                                  <div key={j} className="flex gap-3 group/step">
-                                    <div className="text-xs font-semibold text-amber-200 mt-0.5">{j+1}.</div>
+                                    <div className="text-xs font-semibold text-[color:var(--status-warning)] mt-0.5">{j+1}.</div>
                                     <p 
-                                       className="text-xs text-muted-foreground/90 leading-[1.6] outline-none cursor-text hover:bg-amber-50/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-amber-100/50 focus:bg-amber-50 focus:border-amber-200/50"
+                                       className="text-xs text-muted-foreground/90 leading-[1.6] outline-none cursor-text hover:bg-[color:var(--status-warning-bg)]/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-[color:var(--status-warning)]/50 focus:bg-[color:var(--status-warning-bg)] focus:border-[color:var(--status-warning)]/50"
                                        contentEditable
                                        suppressContentEditableWarning
                                        onBlur={(e) => updateSolutionStep(activeStudent.id, step.criterionName, j, e.currentTarget.innerText)}
@@ -474,22 +474,22 @@ export default function FeedbackPage() {
                     {/* MAINTAIN Column */}
                     <div className="space-y-4">
                        <div className="flex items-center gap-2 px-1">
-                          <div className="w-2 h-6 bg-green-500 rounded-full" />
+                          <div className="w-2 h-6 bg-[color:var(--status-success)] rounded-full" />
                           <span className="eyebrow text-foreground">Maintain · Well Done</span>
                        </div>
                        {displaySolutionSteps.filter(s => s.priority === 'maintain').map((step, i) => (
-                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-white border-1.5 border-green-100 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(5,150,105,0.03)] hover:shadow-md transition-all opacity-80 filter grayscale-[20%]">
+                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-background border-1.5 border-[color:var(--status-success)]/30 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(5,150,105,0.03)] hover:shadow-md transition-all opacity-80 filter grayscale-[20%]">
                             <div className="flex items-center justify-between mb-4">
-                               <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center"><StarIcon className="w-4 h-4 text-green-600" /></div>
-                               <span className="text-xs font-semibold font-mono text-green-700 bg-green-50 px-2 rounded-full h-5 flex items-center">{step.score}</span>
+                               <div className="w-8 h-8 rounded-lg bg-[color:var(--status-success-bg)] flex items-center justify-center"><StarIcon className="w-4 h-4 text-[color:var(--status-success)]" /></div>
+                               <span className="text-xs font-semibold font-mono text-[color:var(--status-success)] bg-[color:var(--status-success-bg)] px-2 rounded-full h-5 flex items-center">{step.score}</span>
                             </div>
                             <h4 className="text-sm font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
                             <div className="space-y-3">
                                {step.steps.map((s: string, j: number) => (
                                  <div key={j} className="flex gap-3 group/step">
-                                    <div className="w-1 h-1 rounded-full bg-green-200 mt-2" />
+                                    <div className="w-1 h-1 rounded-full bg-[color:var(--status-success-bg)] mt-2" />
                                     <p 
-                                       className="text-xs text-muted-foreground/70 leading-[1.6] italic outline-none cursor-text hover:bg-green-50/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-green-100/50 focus:bg-green-50 focus:border-green-200/50"
+                                       className="text-xs text-muted-foreground/70 leading-[1.6] italic outline-none cursor-text hover:bg-[color:var(--status-success-bg)]/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-[color:var(--status-success)]/50 focus:bg-[color:var(--status-success-bg)] focus:border-[color:var(--status-success)]/50"
                                        contentEditable
                                        suppressContentEditableWarning
                                        onBlur={(e) => updateSolutionStep(activeStudent.id, step.criterionName, j, e.currentTarget.innerText)}

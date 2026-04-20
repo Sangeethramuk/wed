@@ -38,8 +38,8 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 const strengthClasses: Record<COStrength, string> = {
-  Strong: "border-emerald-500/30 text-emerald-600/80 bg-emerald-500/[0.04]",
-  Moderate: "border-amber-500/30 text-amber-600/80 bg-amber-500/[0.04]",
+  Strong: "border-[color:var(--status-success)]/30 text-[color:var(--status-success)]/80 bg-[color:var(--status-success)]/[0.04]",
+  Moderate: "border-[color:var(--status-warning)]/30 text-[color:var(--status-warning)]/80 bg-[color:var(--status-warning)]/[0.04]",
   Weak: "border-muted-foreground/20 text-muted-foreground/60 bg-muted/20",
 }
 
@@ -101,7 +101,7 @@ export function CreationMode() {
           >
             <CardHeader className="pb-2">
               <div className="mb-4">
-                <div className="p-3 w-fit rounded-full bg-primary/5 text-primary border border-primary/10 group-hover:bg-primary group-hover:text-white transition-all">
+                <div className="p-3 w-fit rounded-full bg-primary/5 text-primary border border-primary/10 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                   <History className="h-6 w-6" />
                 </div>
               </div>
@@ -137,7 +137,7 @@ export function CreationMode() {
             </div>
             <CardHeader className="pb-2">
               <div className="mb-4">
-                <div className="p-3 w-fit rounded-full bg-primary text-white shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
+                <div className="p-3 w-fit rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
                   <Sparkles className="h-6 w-6" />
                 </div>
               </div>
@@ -167,7 +167,7 @@ export function CreationMode() {
           >
             <CardHeader className="pb-2">
               <div className="mb-4">
-                <div className="p-3 w-fit rounded-full bg-primary/5 text-primary border border-primary/10 group-hover:bg-primary group-hover:text-white transition-all">
+                <div className="p-3 w-fit rounded-full bg-primary/5 text-primary border border-primary/10 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                   <PlusCircle className="h-6 w-6" />
                 </div>
               </div>
@@ -330,7 +330,7 @@ export function CreationMode() {
                     <ul className="space-y-1.5">
                       {previewed.rubricSummary.map((r, i) => (
                         <li key={i} className="text-sm leading-relaxed opacity-80 flex items-center gap-2">
-                          <CheckCircle2 className="h-3 w-3 text-emerald-600/70 shrink-0" />
+                          <CheckCircle2 className="h-3 w-3 text-[color:var(--status-success)]/70 shrink-0" />
                           <span>{r}</span>
                         </li>
                       ))}
@@ -352,8 +352,8 @@ export function CreationMode() {
                                 {a.co} · {a.strength}
                               </Badge>
                             </TooltipTrigger>
-                            <TooltipContent side="top" className="bg-slate-900 border-none p-2 rounded-lg max-w-[200px]">
-                              <p className="text-xs font-bold text-white leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
+                            <TooltipContent side="top" className="bg-foreground border-none p-2 rounded-lg max-w-[200px]">
+                              <p className="text-xs font-bold text-primary-foreground leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
                             </TooltipContent>
                           </Tooltip>
                         ))}
@@ -422,7 +422,7 @@ function HistoryCard({
             {hist.lastUsed}
           </span>
           <span className="eyebrow text-muted-foreground opacity-40 flex items-center gap-1.5">
-            <Star className="size-3 text-amber-500/60" />
+            <Star className="size-3 text-[color:var(--status-warning)]/60" />
             {hist.avgScore}% avg
           </span>
         </div>
@@ -453,8 +453,8 @@ function HistoryCard({
                         {a.co} · {a.strength}
                       </Badge>
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="bg-slate-900 border-none p-2 rounded-lg max-w-[200px]">
-                      <p className="text-xs font-bold text-white leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
+                    <TooltipContent side="top" className="bg-foreground border-none p-2 rounded-lg max-w-[200px]">
+                      <p className="text-xs font-bold text-primary-foreground leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
                     </TooltipContent>
                   </Tooltip>
                 ))}
@@ -509,7 +509,7 @@ function HistoryCard({
 
 function CompletenessPill({ ok, label }: { ok: boolean; label: string }) {
   return (
-    <div className={`eyebrow flex items-center gap-1.5 ${ok ? "text-emerald-600/70" : "text-muted-foreground/40"}`}>
+    <div className={`eyebrow flex items-center gap-1.5 ${ok ? "text-[color:var(--status-success)]/70" : "text-muted-foreground/40"}`}>
       <CheckCircle2 className={`h-3 w-3 ${ok ? "" : "opacity-30"}`} />
       <span>{label}</span>
     </div>

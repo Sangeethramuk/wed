@@ -94,9 +94,9 @@ const EVENT_CONFIG: Record<
     label: "Feedback Edited",
     icon: MessageSquare,
     // TODO: no purple token in statusStyles; keep literal until a palette slot is defined
-    color: "text-purple-700",
-    bgColor: "bg-purple-50",
-    borderColor: "border-purple-200",
+    color: "text-[color:var(--category-2)]",
+    bgColor: "bg-[color:var(--category-2-bg)]",
+    borderColor: "border-[color:var(--category-2)]/30",
   },
 }
 
@@ -192,7 +192,7 @@ function EventCard({ event }: { event: RevisionEvent }) {
         )}
 
         {event.type === "override" && event.details.reasoning && (
-          <div className="py-1.5 px-3 rounded-md bg-amber-50/50 border border-amber-100 text-xs italic text-amber-800/70 leading-relaxed">
+          <div className="py-1.5 px-3 rounded-md bg-[color:var(--status-warning-bg)]/50 border border-[color:var(--status-warning)]/30 text-xs italic text-[color:var(--status-warning)]/70 leading-relaxed">
             {event.details.reasoning}
           </div>
         )}
@@ -202,8 +202,8 @@ function EventCard({ event }: { event: RevisionEvent }) {
             <div
               className={`py-1.5 px-3 rounded-md border text-xs italic leading-relaxed ${
                 event.type === "evidence_mapped"
-                  ? "bg-blue-50/50 border-blue-100 text-blue-800/70"
-                  : "bg-red-50/50 border-red-100 text-red-800/70"
+                  ? "bg-[color:var(--status-info-bg)]/50 border-[color:var(--status-info)]/30 text-[color:var(--status-info)]/70"
+                  : "bg-[color:var(--status-error-bg)]/50 border-[color:var(--status-error)]/30 text-[color:var(--status-error)]/70"
               }`}
             >
               &ldquo;{event.details.evidenceText.length > 120
@@ -213,7 +213,7 @@ function EventCard({ event }: { event: RevisionEvent }) {
           )}
 
         {event.type === "feedback_edited" && event.details.feedbackSnippet && (
-          <div className="py-1.5 px-3 rounded-md bg-purple-50/50 border border-purple-100 text-xs italic text-purple-800/70 leading-relaxed">
+          <div className="py-1.5 px-3 rounded-md bg-[color:var(--category-2-bg)]/50 border border-[color:var(--category-2)]/30 text-xs italic text-[color:var(--category-2)]/70 leading-relaxed">
             {event.details.feedbackSnippet.length > 150
               ? event.details.feedbackSnippet.slice(0, 150) + "..."
               : event.details.feedbackSnippet}
