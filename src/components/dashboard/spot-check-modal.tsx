@@ -234,7 +234,7 @@ export function SpotCheckModal() {
                   </div>
 
                   <div>
-                    <div className="text-[11px] font-bold text-muted-foreground/60 tracking-wider uppercase mb-2">WHAT IS A MANDATORY SPOT CHECK?</div>
+                    <div className="text-[11px] font-bold text-muted-foreground/60 tracking-wider mb-2">WHAT IS A MANDATORY SPOT CHECK?</div>
                     <p className="text-[14px] text-foreground leading-relaxed">
                       Think of it as your session's <span className="font-bold">final quality gate</span> — a 2-minute safety net that catches accidental "speed-grading" before any grade reaches a student.
                     </p>
@@ -307,7 +307,7 @@ export function SpotCheckModal() {
                     </div>
 
                     {/* Criterion */}
-                    <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-0.5">Criterion {q.critNum} of 5</div>
+                    <div className="text-[11px] font-semibold tracking-wider text-muted-foreground/60 mb-0.5">Criterion {q.critNum} of 5</div>
                     <div className="text-[15px] font-semibold mb-0.5">{q.criterion}</div>
                     <p className="text-[12px] text-muted-foreground leading-relaxed mb-3.5">{q.desc}</p>
 
@@ -328,7 +328,7 @@ export function SpotCheckModal() {
                     </div>
 
                     {/* Evidence */}
-                    <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-1.5">Evidence extracted by AI</div>
+                    <div className="text-[11px] font-semibold tracking-wider text-muted-foreground/60 mb-1.5">Evidence extracted by AI</div>
                     <div className="text-[12px] text-muted-foreground leading-relaxed italic border-l-[3px] rounded-r-md px-3 py-2.5 mb-1" style={{ background: '#F2F1EE', borderColor: PURPLE }}>
                       {q.evidence}
                     </div>
@@ -391,7 +391,7 @@ export function SpotCheckModal() {
                           </div>
                         </div>
 
-                        <div className="text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#8A5A00' }}>Reason for override</div>
+                        <div className="text-[11px] font-semibold tracking-wider mb-1.5" style={{ color: '#8A5A00' }}>Reason for override</div>
                         <div className="flex flex-col gap-1 mb-3">
                           {OVERRIDE_REASONS.map(r => (
                             <button

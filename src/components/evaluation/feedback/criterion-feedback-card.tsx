@@ -70,7 +70,7 @@ export function CriterionFeedbackCard({
       className="space-y-2 pt-2"
     >
       {/* Section label */}
-      <span className="text-[9px] font-black tracking-[0.15em] uppercase text-foreground/40 block px-0.5">
+      <span className="eyebrow text-foreground/40 block px-0.5">
         Detailed Feedback
       </span>
 
@@ -78,7 +78,7 @@ export function CriterionFeedbackCard({
       <div className={`rounded-[10px] border-[1.5px] ${styles.border} ${styles.bg} overflow-hidden shadow-sm`}>
         {/* Tier label */}
         <div className={`px-3.5 pt-3 pb-0 flex items-center justify-between`}>
-          <span className={`text-[8px] font-black tracking-[0.1em] uppercase ${styles.text} flex items-center gap-1.5`}>
+          <span className={`eyebrow ${styles.text} flex items-center gap-1.5`}>
             <TierIcon className="w-3.5 h-3.5" />
             {tierLabel}
           </span>
@@ -101,7 +101,7 @@ export function CriterionFeedbackCard({
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 px-2.5 text-[9px] font-black tracking-widest uppercase text-muted-foreground/60 gap-1.5 hover:text-primary transition-colors"
+          className="eyebrow h-8 px-2.5 text-muted-foreground/60 gap-1.5 hover:text-primary transition-colors"
           onClick={onRegenerate}
           disabled={regenCount >= 2}
         >
@@ -113,14 +113,14 @@ export function CriterionFeedbackCard({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 px-4 text-[10px] font-black tracking-widest uppercase bg-green-50 text-green-700 border border-green-200 gap-1.5 ml-auto cursor-default hover:bg-green-50 rounded-full"
+            className="eyebrow h-8 px-4 bg-green-50 text-green-700 border border-green-200 gap-1.5 ml-auto cursor-default hover:bg-green-50 rounded-full"
           >
             <CheckCircle2 className="w-3.5 h-3.5" /> Finalized
           </Button>
         ) : (
           <Button
             size="sm"
-            className="h-8 px-5 text-[10px] font-black tracking-widest uppercase bg-primary text-primary-foreground gap-1.5 ml-auto shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all rounded-full"
+            className="eyebrow h-8 px-5 bg-primary text-primary-foreground gap-1.5 ml-auto shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all rounded-full"
             onClick={onApprove}
           >
             <CheckCircle2 className="w-3.5 h-3.5" /> Confirm

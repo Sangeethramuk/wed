@@ -24,7 +24,7 @@ export function StatsHeader({ total, pendingCalibration, inGrading, complete }: 
         <Card key={stat.label} className={`p-6 border ${stat.bg} transition-all hover:shadow-sm`}>
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">{stat.label}</p>
+              <p className="eyebrow text-muted-foreground/60">{stat.label}</p>
               <p className={`text-4xl font-black tracking-tighter tabular-nums ${stat.color}`}>{stat.value}</p>
             </div>
             <stat.icon className={`h-5 w-5 mt-1 ${stat.color} opacity-40`} />

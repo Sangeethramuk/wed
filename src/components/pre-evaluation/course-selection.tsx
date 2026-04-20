@@ -90,7 +90,7 @@ export function CourseSelection() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Clock className="h-3.5 w-3.5 text-primary opacity-70" />
-              <h2 className="text-[10px] font-black uppercase tracking-widest text-primary/80">Continue where you left off</h2>
+              <h2 className="eyebrow text-primary/80">Continue where you left off</h2>
             </div>
             <div className="flex flex-col gap-3">
               {MOCK_DRAFTS.map((draft) => (
@@ -105,7 +105,7 @@ export function CourseSelection() {
                     </div>
                     <div className="min-w-0 space-y-1">
                       <p className="text-sm font-black tracking-tight truncate">{draft.title}</p>
-                      <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground opacity-60">
+                      <div className="eyebrow flex items-center gap-2 text-muted-foreground opacity-60">
                         <span>{draft.course}</span>
                         <span className="opacity-40">•</span>
                         <span>{draft.semester}</span>
@@ -115,7 +115,7 @@ export function CourseSelection() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0 ml-4">
-                    <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-amber-500/20 text-amber-600/70 bg-amber-500/[0.04] rounded-md hidden md:inline-flex">
+                    <Badge variant="outline" className="eyebrow border-amber-500/20 text-amber-600/70 bg-amber-500/[0.04] rounded-md hidden md:inline-flex">
                       At {STEP_LABELS[draft.step]}
                     </Badge>
                     <Button
@@ -136,7 +136,7 @@ export function CourseSelection() {
         <div className="space-y-5">
           <div className="flex items-center gap-2">
             <Plus className="h-3.5 w-3.5 text-muted-foreground opacity-40" />
-            <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+            <h2 className="eyebrow text-muted-foreground opacity-60">
               {hasDrafts ? "Or start a new assignment" : "Choose a course"}
             </h2>
           </div>
@@ -151,7 +151,7 @@ export function CourseSelection() {
                 <div className="absolute top-6 right-6 z-10 flex items-center gap-1.5">
                   <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500/5 border border-emerald-500/10">
                     <div className="h-1 w-1 rounded-full bg-emerald-500/70" />
-                    <span className="text-[8px] font-black uppercase tracking-widest text-emerald-600/70">{course.status}</span>
+                    <span className="eyebrow text-emerald-600/70">{course.status}</span>
                   </div>
                 </div>
 
@@ -160,7 +160,7 @@ export function CourseSelection() {
                     <BookOpen className="h-6 w-6" />
                   </div>
                   <CardTitle className="mt-6 text-xl font-black tracking-tight">{course.name}</CardTitle>
-                  <CardDescription className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-widest opacity-80 mt-1">
+                  <CardDescription className="eyebrow flex items-center gap-2 text-[12px] opacity-80 mt-1">
                     {course.code} <span className="opacity-40">•</span> {course.semester}
                   </CardDescription>
                 </CardHeader>
@@ -168,13 +168,13 @@ export function CourseSelection() {
                 <CardContent className="px-6 pb-8 flex-1 flex flex-col justify-end">
                   <div className="grid grid-cols-2 gap-4 pt-6 border-t border-border/10">
                     <div className="space-y-1">
-                      <span className="text-[8px] uppercase font-black tracking-widest text-muted-foreground opacity-30">Assignments</span>
+                      <span className="eyebrow text-muted-foreground opacity-30">Assignments</span>
                       <div className="flex items-center gap-1.5 text-xs font-black">
                         <span>{course.assignmentCount} Created</span>
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <span className="text-[8px] uppercase font-black tracking-widest text-muted-foreground opacity-30">Last Created</span>
+                      <span className="eyebrow text-muted-foreground opacity-30">Last Created</span>
                       <div className="flex items-center gap-1.5 text-xs font-black text-muted-foreground">
                         <Clock className="h-3 w-3 opacity-50" />
                         <span>{course.lastAssignment}</span>

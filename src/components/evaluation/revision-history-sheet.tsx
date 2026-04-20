@@ -134,7 +134,7 @@ function EventCard({ event }: { event: RevisionEvent }) {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className={`text-[10px] font-black uppercase tracking-widest ${config.color}`}>
+            <span className={`eyebrow ${config.color}`}>
               {config.label}
             </span>
             <Badge
@@ -161,12 +161,12 @@ function EventCard({ event }: { event: RevisionEvent }) {
           ) : (
             <Bot className="h-3 w-3 text-muted-foreground/60" />
           )}
-          <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">
+          <span className="eyebrow text-muted-foreground/60">
             {event.actor === "instructor" ? "Instructor" : "AI System"}
           </span>
         </div>
 
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+        <p className="text-[10px] font-bold text-muted-foreground tracking-wider">
           {event.criterionLabel}
         </p>
 
@@ -253,10 +253,10 @@ export function RevisionHistorySheet({
                 <Clock className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <SheetTitle className="text-sm font-black uppercase tracking-widest">
+                <SheetTitle className="eyebrow text-sm">
                   Revision History
                 </SheetTitle>
-                <SheetDescription className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/60">
+                <SheetDescription className="eyebrow text-muted-foreground/60">
                   Audit trail for {studentName}
                 </SheetDescription>
               </div>
@@ -277,7 +277,7 @@ export function RevisionHistorySheet({
                   <Badge
                     key={type}
                     variant="outline"
-                    className={`h-5 px-2 text-[8px] font-bold uppercase tracking-wider rounded-full ${config.bgColor} ${config.color} ${config.borderColor} border`}
+                    className={`h-5 px-2 text-[8px] font-bold tracking-wider rounded-full ${config.bgColor} ${config.color} ${config.borderColor} border`}
                   >
                     {config.label} ({count})
                   </Badge>
@@ -294,7 +294,7 @@ export function RevisionHistorySheet({
                 <Clock className="h-8 w-8 text-muted-foreground/20" />
               </div>
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/40">
+                <p className="eyebrow text-xs text-muted-foreground/40">
                   No revisions yet
                 </p>
                 <p className="text-[10px] text-muted-foreground/30 mt-1 leading-relaxed">
@@ -317,7 +317,7 @@ export function RevisionHistorySheet({
 
         {events.length > 0 && (
           <div className="p-4 border-t border-border bg-muted/10">
-            <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40">
+            <div className="eyebrow flex items-center justify-between text-muted-foreground/40">
               <span>
                 First event at{" "}
                 {sortedEvents[sortedEvents.length - 1]?.timestamp.toLocaleTimeString(

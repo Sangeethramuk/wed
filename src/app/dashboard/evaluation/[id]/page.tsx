@@ -72,7 +72,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
       <div className="flex items-center justify-center h-[60vh]">
         <div className="text-center space-y-2">
           <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Redirecting to calibration…</p>
+          <p className="eyebrow text-muted-foreground/40">Redirecting to calibration…</p>
         </div>
       </div>
     )
@@ -541,12 +541,12 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
       >
         <div className={`absolute inset-0 transition-all duration-300 pointer-events-none z-10 ${textSelectionMode.active ? 'ring-4 ring-blue-500/20 ring-inset bg-blue-500/[0.02]' : ''}`} />
         <div className="absolute top-8 left-8 flex flex-col items-start gap-1">
-          <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary/40 group-hover/page:text-primary transition-colors">Digital Manuscript</span>
-          <span className="text-[10px] font-black uppercase tracking-widest text-[#E6E1D6] group-hover/page:text-slate-400 transition-colors">Folio {index} / {totalPages}</span>
+          <span className="eyebrow text-primary/40 group-hover/page:text-primary transition-colors">Digital Manuscript</span>
+          <span className="eyebrow text-[#E6E1D6] group-hover/page:text-slate-400 transition-colors">Folio {index} / {totalPages}</span>
         </div>
 
         {question && (
-             <div className="absolute top-8 right-8 text-[9px] font-black text-amber-500/40 uppercase tracking-widest flex items-center gap-2 group-hover/page:text-amber-500 transition-colors">
+             <div className="eyebrow absolute top-8 right-8 text-amber-500/40 flex items-center gap-2 group-hover/page:text-amber-500 transition-colors">
                 <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 {question.id}
              </div>
@@ -568,7 +568,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
           <div className="flex flex-col h-full border-r border-border">
              <div className="p-4 border-b border-border space-y-4">
                <div className="flex items-center justify-between">
-                 <h2 className="font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground/80">Triage Sidebar</h2>
+                 <h2 className="eyebrow text-muted-foreground/80">Triage Sidebar</h2>
                  <div className="flex flex-col items-end gap-1">
                    <Badge variant="outline" className="rounded-full bg-background border-border text-[10px] font-black">
                      {gradedSubmissions.length} / {allSubmissions.length} Completed
@@ -638,7 +638,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 ) : (
                   <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-green-50 border border-green-200/60">
                     <CheckCircle2 className="h-3.5 w-3.5 text-green-600 shrink-0" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-green-700">All Verified Approved</span>
+                    <span className="eyebrow text-green-700">All Verified Approved</span>
                   </div>
                 )
               })()}
@@ -670,9 +670,9 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                sub.category === 'focus' ? 'bg-amber-500' : 'bg-green-500'
                            }`} />
                          )}
-                         <span className={`font-bold tracking-tight text-[11px] uppercase tracking-widest ${selectedSubmission === sub.id ? 'text-primary' : 'text-foreground/70'} ${gradedSubmissions.includes(sub.id) ? 'line-through opacity-60' : ''}`}>{sub.name}</span>
+                         <span className={`eyebrow tracking-tight ${selectedSubmission === sub.id ? 'text-primary' : 'text-foreground/70'} ${gradedSubmissions.includes(sub.id) ? 'line-through opacity-60' : ''}`}>{sub.name}</span>
                          {selectedSubmission === sub.id && !gradedSubmissions.includes(sub.id) && <Sparkles className="h-2.5 w-2.5 text-primary" />}
-                         {gradedSubmissions.includes(sub.id) && <span className="text-[8px] font-black text-green-600 uppercase tracking-widest">Done</span>}
+                         {gradedSubmissions.includes(sub.id) && <span className="eyebrow text-green-600">Done</span>}
                        </div>
                        <div className="flex items-center gap-2 ml-3.5">
                          <span className="text-[9px] font-black text-muted-foreground/40 tabular-nums">{sub.code}</span>
@@ -681,7 +681,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                              <span className="text-[10px] opacity-40">•</span>
                              <Tooltip>
                                  <TooltipTrigger>
-                                     <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-sm ${
+                                     <span className={`eyebrow px-1.5 py-0.5 rounded-sm ${
                                          (Object.values(sub.checkpoints).filter(Boolean).length) <= 2 ? 'bg-red-50 text-red-600' :
                                          (Object.values(sub.checkpoints).filter(Boolean).length) <= 4 ? 'bg-amber-50 text-amber-600' :
                                          'bg-primary/5 text-primary'
@@ -693,7 +693,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                     side="right"
                                     className="bg-popover text-popover-foreground border border-border shadow-xl p-3 space-y-2 min-w-[140px]"
                                   >
-                                      <div className="text-[10px] font-black uppercase tracking-widest text-popover-foreground/70 border-b border-border/50 pb-1.5 mb-1.5">
+                                      <div className="eyebrow text-popover-foreground/70 border-b border-border/50 pb-1.5 mb-1.5">
                                           Checkpoints
                                       </div>
                                       <div className="space-y-1">
@@ -735,8 +735,8 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="flex flex-col">
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60 mb-0.5">Authoring Identity</span>
-                    <h2 className="text-sm font-black tracking-tight text-foreground uppercase">{currentStudent?.name || "Evaluating..."}</h2>
+                    <span className="eyebrow text-primary/60 mb-0.5">Authoring Identity</span>
+                    <h2 className="text-sm font-black tracking-tight text-foreground">{currentStudent?.name || "Evaluating..."}</h2>
                   </div>
                 </div>
                 
@@ -774,7 +774,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                     className="absolute top-0 left-0 right-0 z-30 bg-blue-600 text-white p-2 flex items-center justify-center gap-3"
                   >
                     <LinkIcon className="h-3.5 w-3.5" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">
+                    <span className="eyebrow">
                       Select text to link as evidence for C{textSelectionMode.criterionId}
                     </span>
                     <Button
@@ -843,7 +843,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                   <div className="h-60 shrink-0 w-full flex items-center justify-center opacity-20 hover:opacity-100 transition-opacity">
                       <div className="flex flex-col items-center gap-4">
                         <CheckCircle2 className="h-12 w-12 text-primary" />
-                        <span className="text-xs font-black uppercase tracking-[0.5em]">Manuscript Verified</span>
+                        <span className="eyebrow text-xs">Manuscript Verified</span>
                       </div>
                   </div>
                 </div>
@@ -940,7 +940,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                         >
                           <div className="flex items-center gap-2">
                             <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-700">Review needed</span>
+                            <span className="eyebrow text-amber-700">Review needed</span>
                           </div>
                           <ChevronDown className={`h-3.5 w-3.5 text-amber-500 transition-transform ${rubricReviewStripOpen[point.id] ? 'rotate-180' : ''}`} />
                         </Button>
@@ -961,7 +961,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
                         <div className="space-y-2">
                           <div className="flex items-center gap-3">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Score</span>
+                            <span className="eyebrow text-muted-foreground">Score</span>
                             <div className="flex items-baseline gap-1">
                               <span className="text-2xl font-black text-foreground tabular-nums">{(state.score ?? point.aiScore).toFixed(1)}</span>
                               <span className="text-sm text-muted-foreground">/{point.maxPoints}</span>
@@ -1037,7 +1037,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                             )}
                             <div className="space-y-1">
                               <div className="flex items-center justify-between">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Explain your override</span>
+                                <span className="eyebrow text-muted-foreground">Explain your override</span>
                                 <span className={`text-[9px] font-mono ${draft.reasoning.length >= 20 ? 'text-green-600' : 'text-amber-500'}`}>{draft.reasoning.length}/20</span>
                               </div>
                               <textarea
@@ -1157,7 +1157,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                         onClick={() => setRubricAccordionOpen(prev => ({ ...prev, [`evidence-${point.id}`]: !prev[`evidence-${point.id}`] }))}
                         className="w-full justify-between"
                       >
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        <span className="eyebrow text-muted-foreground">
                           Evidence ({pointEvidence.length} linked)
                         </span>
                         <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${rubricAccordionOpen[`evidence-${point.id}`] ? 'rotate-180' : ''}`} />
@@ -1166,7 +1166,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                         <div className="px-4 pb-4 space-y-4">
                           {pointEvidence.length === 0 ? (
                             <div className="border-2 border-dashed border-purple-200 rounded-lg p-6 text-center bg-purple-50/30">
-                              <p className="text-[10px] text-purple-400 font-bold leading-relaxed uppercase tracking-widest">No evidence linked yet</p>
+                              <p className="eyebrow text-purple-400 leading-relaxed">No evidence linked yet</p>
                               <p className="text-[9px] text-purple-300 italic mt-1">Select text in the manuscript to map it here</p>
                             </div>
                           ) : (
@@ -1182,7 +1182,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                     />
                                   }>
                                       <div className="w-1.5 h-1.5 rounded-full bg-primary group-hover:animate-pulse" />
-                                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">
+                                      <span className="eyebrow text-muted-foreground group-hover:text-primary transition-colors">
                                         Evidence #{i+1}
                                       </span>
                                       <div 
@@ -1198,7 +1198,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                   </TooltipTrigger>
                                   <TooltipContent side="bottom" className="max-w-xs p-3 z-[100] bg-popover text-popover-foreground border border-border shadow-xl">
                                     <div className="space-y-1">
-                                      <span className="text-[9px] font-black uppercase tracking-widest text-primary/60">Source Text</span>
+                                      <span className="eyebrow text-primary/60">Source Text</span>
                                       <p className="text-[11px] font-serif italic leading-relaxed">
                                         &ldquo;{ev.text || "No text available"}&rdquo;
                                       </p>
@@ -1227,7 +1227,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                         onClick={() => setRubricAccordionOpen(prev => ({ ...prev, [`reasoning-${point.id}`]: !prev[`reasoning-${point.id}`] }))}
                         className="w-full justify-between"
                       >
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">AI reasoning</span>
+                        <span className="eyebrow text-muted-foreground">AI reasoning</span>
                         <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${rubricAccordionOpen[`reasoning-${point.id}`] ? 'rotate-180' : ''}`} />
                       </Button>
                       {rubricAccordionOpen[`reasoning-${point.id}`] && (
@@ -1251,7 +1251,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 <div className="p-4 border-t border-border bg-background shrink-0 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Total</p>
+                      <p className="eyebrow text-muted-foreground">Total</p>
                       <div className="flex items-baseline gap-1">
                         <span className="text-xl font-black tracking-tighter text-foreground tabular-nums">{Math.round((currentTotalScore / totalMaxPoints) * 100)}</span>
                         <span className="text-xs text-muted-foreground font-bold">/ 100</span>
@@ -1358,7 +1358,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <LinkIcon className="h-3.5 w-3.5 text-blue-600" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-700">Link to C{activeCriterion.id}</span>
+                    <span className="eyebrow text-blue-700">Link to C{activeCriterion.id}</span>
                   </div>
                   <span className="text-[9px] font-black text-blue-400 tabular-nums">Folio {currentPage}</span>
                 </div>
@@ -1402,7 +1402,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
               <div className="flex items-center justify-between px-2 pb-2 border-b border-border/80 mb-1">
                 <div className="flex items-center gap-2">
                     <LinkIcon className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Link Evidence</span>
+                    <span className="eyebrow text-muted-foreground">Link Evidence</span>
                 </div>
                 <span className="text-[9px] font-black text-primary/40 tabular-nums">Folio {currentPage}</span>
               </div>
@@ -1426,7 +1426,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                         <span className="text-[11px] font-black tracking-tight text-foreground group-hover/btn:text-primary transition-colors">{point.label}</span>
                         <ArrowUpRight className="h-3 w-3 opacity-0 group-hover/btn:opacity-100 transition-all text-primary" />
                     </div>
-                    <span className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-[0.2em]">Criterion {point.id}</span>
+                    <span className="eyebrow text-muted-foreground/50">Criterion {point.id}</span>
                   </div>
                 ))}
               </div>

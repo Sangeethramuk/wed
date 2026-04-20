@@ -89,8 +89,8 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border p-4">
         <div className="flex w-full items-center justify-center">
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-            Powered by <span className="font-semibold normal-case text-foreground">EducAItors</span>
+          <span className="text-[10px] text-muted-foreground font-medium tracking-wider">
+            Powered by <span className="font-semibold text-foreground">EducAItors</span>
           </span>
         </div>
       </SidebarFooter>

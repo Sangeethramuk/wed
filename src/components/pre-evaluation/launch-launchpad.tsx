@@ -51,7 +51,7 @@ export function LaunchLaunchpad() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-4xl font-black tracking-tight secondary-text uppercase">Your digital desk is ready</h1>
+          <h1 className="text-4xl font-black tracking-tight secondary-text">Your digital desk is ready</h1>
           <p className="text-muted-foreground font-semibold text-base opacity-70">Setting up grading patterns... Success! Your students can now submit their work.</p>
         </div>
       </div>
@@ -61,10 +61,10 @@ export function LaunchLaunchpad() {
           {/* Shareable Link Area */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-50">Student submission link</p>
+              <p className="eyebrow text-muted-foreground opacity-50">Student submission link</p>
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-3 w-3 text-emerald-500" />
-                <span className="text-[9px] font-bold text-emerald-600/60 uppercase tracking-widest">Protocol P1 Verified</span>
+                <span className="eyebrow text-emerald-600/60">Protocol P1 Verified</span>
               </div>
             </div>
             <div className="flex gap-3">
@@ -84,7 +84,7 @@ export function LaunchLaunchpad() {
           </div>
 
           <div className="space-y-6">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-50">Workflows</p>
+            <p className="eyebrow text-muted-foreground opacity-50">Workflows</p>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Button

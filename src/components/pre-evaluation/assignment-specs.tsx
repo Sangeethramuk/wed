@@ -257,7 +257,7 @@ export function AssignmentSpecs() {
               >
                 {isRecommended && (
                   <div className="absolute top-4 right-4 z-10">
-                    <Badge className="text-[8px] font-black uppercase tracking-widest bg-primary text-primary-foreground border-0 rounded-full px-2 py-0.5 gap-1">
+                    <Badge className="eyebrow bg-primary text-primary-foreground border-0 rounded-full px-2 py-0.5 gap-1">
                       <Star className="h-2.5 w-2.5" />
                       Commonly used
                     </Badge>
@@ -297,7 +297,7 @@ export function AssignmentSpecs() {
             <div className="flex-1 min-w-0 space-y-1">
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-black tracking-tight">Create your own type</h3>
-                <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-border/40 opacity-70">Configurable</Badge>
+                <Badge variant="outline" className="eyebrow border-border/40 opacity-70">Configurable</Badge>
               </div>
               <p className="text-[11px] text-muted-foreground opacity-70 font-medium leading-relaxed">
                 Define your own structure blocks and evaluation approach — still wired into the rubric &amp; calibration flow, so nothing breaks.
@@ -342,15 +342,15 @@ export function AssignmentSpecs() {
             <div className="space-y-0">
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-black tracking-tight secondary-text">Assignment Details</h1>
-                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 uppercase font-black text-[9px] tracking-widest px-2 h-5 text-center">{assignment.type}</Badge>
+                <Badge variant="outline" className="eyebrow bg-primary/5 text-primary border-primary/20 px-2 h-5 text-center">{assignment.type}</Badge>
               </div>
-              <p className="text-muted-foreground text-[10px] font-semibold opacity-50 uppercase tracking-wider">Build it block by block — structure only, grading comes next</p>
+              <p className="text-muted-foreground text-[10px] font-semibold opacity-50 tracking-wider">Build it block by block — structure only, grading comes next</p>
             </div>
           </div>
 
           <div className="flex items-center gap-8">
              <div className="text-right space-y-1">
-                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-50">Late Submissions</p>
+                <p className="eyebrow text-muted-foreground opacity-50">Late Submissions</p>
                 <Select value={assignment.latePolicy} onValueChange={(val) => updateAssignment({ latePolicy: val ?? undefined })}>
                   <SelectTrigger className="font-bold text-xs h-10 bg-background/50 border-2 border-border/40 rounded-lg px-4 hover:bg-muted/20 shadow-none transition-colors w-48">
                     <SelectValue />
@@ -363,7 +363,7 @@ export function AssignmentSpecs() {
                 </Select>
              </div>
              <div className="text-right space-y-1">
-                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-50">Deadline</p>
+                <p className="eyebrow text-muted-foreground opacity-50">Deadline</p>
                 <DateTimePicker
                   date={assignment.deadline}
                   setDate={(d) => updateAssignment({ deadline: d })}
@@ -377,7 +377,7 @@ export function AssignmentSpecs() {
             <Card className="border border-border/30 rounded-xl bg-card/10 backdrop-blur-sm shadow-none">
               <CardContent className="pt-6 pb-6 px-6 space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-50">Assignment title</Label>
+                  <Label className="eyebrow text-muted-foreground opacity-50">Assignment title</Label>
                   <Input
                     placeholder="Give your assignment a name — e.g. MVC Architecture Implementation"
                     className="text-lg font-black h-11 border border-border/60 bg-muted/10 px-4 focus-visible:ring-primary/10 rounded-lg placeholder:opacity-30 tracking-tight"
@@ -398,7 +398,7 @@ export function AssignmentSpecs() {
                   <Input
                     value={block.title}
                     onChange={(e) => updateBlock(block.id, { title: e.target.value } as Partial<Block>)}
-                    className="h-7 bg-transparent border-none text-[11px] font-black uppercase tracking-widest text-foreground/80 px-0 focus-visible:ring-0 flex-1"
+                    className="eyebrow h-7 bg-transparent border-none text-foreground/80 px-0 focus-visible:ring-0 flex-1"
                   />
                   <div className="flex items-center gap-0.5">
                     <Button
@@ -483,7 +483,7 @@ export function AssignmentSpecs() {
 
             {availableToAdd.length > 0 && (
               <div className="flex items-center gap-2 pt-2">
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">Add block</span>
+                <span className="eyebrow text-muted-foreground opacity-40">Add block</span>
                 {availableToAdd.map((opt) => (
                   <Button
                     key={opt.type}
@@ -516,8 +516,8 @@ export function AssignmentSpecs() {
                       <ShieldCheck className="h-4 w-4" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-primary/80 leading-tight">Assignment Health</p>
-                      <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40 leading-tight">{readyScore}% ready</p>
+                      <p className="eyebrow text-primary/80 leading-tight">Assignment Health</p>
+                      <p className="eyebrow text-muted-foreground opacity-40 leading-tight">{readyScore}% ready</p>
                     </div>
                   </div>
                   <span className={cn(
@@ -572,7 +572,7 @@ export function AssignmentSpecs() {
 function TypeRow({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="space-y-1">
-      <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-50">{title}</span>
+      <span className="eyebrow text-muted-foreground opacity-50">{title}</span>
       <p className="text-[11px] font-medium opacity-75 leading-relaxed">{items.join(" · ")}</p>
     </div>
   )
@@ -704,7 +704,7 @@ function QuestionsEditor({
             Add suggested question
           </Button>
         </div>
-        <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest">
+        <div className="eyebrow flex items-center gap-1.5">
           <span className="text-muted-foreground/50">Total</span>
           <span className={cn(
             "tabular-nums",
@@ -742,9 +742,9 @@ function QuestionRow({
   return (
     <div className="group relative rounded-lg border border-border/30 bg-background/40 hover:border-primary/20 transition-all">
       <div className="flex items-center justify-between px-4 pt-3 pb-1">
-        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Question {index}</span>
+        <span className="eyebrow text-muted-foreground/60">Question {index}</span>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
+          <div className="eyebrow flex items-center gap-1 text-muted-foreground/50">
             <span>Weight</span>
             <Input
               type="number"
@@ -778,7 +778,7 @@ function QuestionRow({
         />
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Bloom&apos;s level</Label>
+            <Label className="eyebrow text-muted-foreground/50">Bloom&apos;s level</Label>
             <Tooltip>
               <TooltipTrigger className="text-muted-foreground/40 hover:text-primary">
                 <HelpCircle className="h-3 w-3" />
@@ -844,7 +844,7 @@ function DeliverablesEditor({
             <div key={item.id} className="group grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-2 items-start rounded-lg border border-border/30 bg-background/40 px-3 py-2.5 hover:border-primary/20 transition-all">
               <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 shrink-0">#{idx + 1}</span>
+                  <span className="eyebrow text-muted-foreground/60 shrink-0">#{idx + 1}</span>
                   <Input
                     placeholder="Deliverable name — e.g. Design document, Source code, Test report"
                     value={item.name}

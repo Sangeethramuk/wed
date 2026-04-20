@@ -72,7 +72,7 @@ function ArtifactPreviewDialog({
             </div>
             <div>
               <div className="font-bold text-foreground">{artifact.name}</div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <div className="eyebrow text-muted-foreground">
                 {artifact.type.toUpperCase()} {artifact.size && `• ${artifact.size}`}
               </div>
             </div>
@@ -87,7 +87,7 @@ function ArtifactPreviewDialog({
                 <div className="h-16 w-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 hover:bg-white/20 transition-colors cursor-pointer">
                   <Play className="h-8 w-8 text-white ml-1" />
                 </div>
-                <span className="text-xs font-bold text-white/50 uppercase tracking-widest">Video Preview</span>
+                <span className="eyebrow text-xs text-white/50">Video Preview</span>
                 <span className="text-sm font-mono text-white/70">{artifact.size}</span>
               </div>
             </div>
@@ -222,7 +222,7 @@ export default function ArtifactSidebar({
         <div className="p-2 border-b border-border flex items-center justify-between">
           {expanded ? (
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground truncate">
+              <span className="eyebrow text-muted-foreground truncate">
                 {totalCount} Artifact{totalCount !== 1 ? "s" : ""}
               </span>
             </div>

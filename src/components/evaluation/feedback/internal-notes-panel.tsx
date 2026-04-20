@@ -88,7 +88,7 @@ export function InternalNotesPanel() {
       >
         <div className="flex items-center gap-2">
           <Lock className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-[10px] font-bold tracking-[0.07em] uppercase text-foreground/70">
+          <span className="eyebrow text-foreground/70">
             Internal Notes
           </span>
           <Badge variant="outline" className="text-[9px] font-bold h-4 bg-amber-50 text-amber-700 border-amber-200">
@@ -117,7 +117,7 @@ export function InternalNotesPanel() {
               <div className="px-4 pt-2">
                 {/* Nav */}
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[9px] font-bold tracking-[0.08em] uppercase text-muted-foreground/60">
+                  <span className="eyebrow text-muted-foreground/60">
                     Shared by instructors
                   </span>
                   <div className="flex items-center gap-1.5">
@@ -176,7 +176,7 @@ export function InternalNotesPanel() {
                       </p>
                       <Badge
                         variant="outline"
-                        className={`text-[8px] font-bold tracking-[0.06em] uppercase h-4 mt-2 ${getCategoryStyle(notes[currentNoteIdx].category)}`}
+                        className={`eyebrow h-4 mt-2 ${getCategoryStyle(notes[currentNoteIdx].category)}`}
                       >
                         {notes[currentNoteIdx].category}
                       </Badge>
@@ -204,7 +204,7 @@ export function InternalNotesPanel() {
             {/* Add new note */}
             <div className="px-4 pb-3 pt-1">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[9px] font-bold tracking-[0.08em] uppercase text-muted-foreground/60">
+                <span className="eyebrow text-muted-foreground/60">
                   Add a Note
                 </span>
                 <span className="text-[9px] text-muted-foreground">

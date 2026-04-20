@@ -46,7 +46,7 @@ function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterio
         <div className="space-y-2">
           <div className={`inline-flex items-center gap-2 px-2 py-1 ${c.badge} rounded-md`}>
             <div className={`w-2 h-2 rounded-full ${c.dot}`} />
-            <span className={`text-[9px] font-black uppercase tracking-widest ${c.text}`}>Your Evidence</span>
+            <span className={`eyebrow ${c.text}`}>Your Evidence</span>
           </div>
           <p className="text-sm font-bold text-popover-foreground">{label}</p>
           <p className="text-[10px] text-muted-foreground italic">Manually mapped by instructor</p>
@@ -107,7 +107,7 @@ function HighlightedSpan({
         <div className="space-y-3">
           <div className={`inline-flex items-center gap-2 px-2 py-1 ${c.badge} rounded-md`}>
             <div className={`w-2 h-2 rounded-full ${c.dot}`} />
-            <span className={`text-[9px] font-black uppercase tracking-widest ${c.text}`}>
+            <span className={`eyebrow ${c.text}`}>
               Evidence
             </span>
           </div>
@@ -118,7 +118,7 @@ function HighlightedSpan({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[9px] font-black uppercase tracking-widest text-popover-foreground/50">
+            <span className="eyebrow text-popover-foreground/50">
               AI Confidence
             </span>
             <ConfidenceBars confidence={confidence} />
@@ -139,7 +139,7 @@ function DiagramElement({
   return (
     <div className="my-6 border border-border/60 rounded-lg overflow-hidden">
       <div className="px-4 py-2 bg-muted/30 border-b border-border/40">
-        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+        <span className="eyebrow text-muted-foreground">
           {label}
         </span>
       </div>
@@ -259,7 +259,7 @@ export default function ManuscriptRenderer({
             return (
               <div key={i} className="my-4 rounded-lg overflow-hidden border border-border/40">
                 <div className="px-4 py-2 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">{el.language}</span>
+                  <span className="eyebrow text-slate-400">{el.language}</span>
                   <span className="text-[9px] text-slate-500 font-mono">source</span>
                 </div>
                 <pre className="p-4 bg-slate-900 overflow-x-auto">
@@ -276,7 +276,7 @@ export default function ManuscriptRenderer({
                     <thead>
                       <tr className="bg-muted/40 border-b border-border/50">
                         {el.headers.map((h, hi) => (
-                          <th key={hi} className="px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">{h}</th>
+                          <th key={hi} className="eyebrow px-4 py-2.5 text-muted-foreground">{h}</th>
                         ))}
                       </tr>
                     </thead>

@@ -117,7 +117,7 @@ export default function EvaluationResults() {
           <FileText className="w-7 h-7 text-muted-foreground/30" />
         </div>
         <div className="text-center space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">No Evaluation Data</p>
+          <p className="eyebrow text-muted-foreground/40">No Evaluation Data</p>
           <p className="text-sm font-medium text-muted-foreground">Complete an evaluation first to see the class report.</p>
         </div>
         <Button onClick={() => router.push("/dashboard/evaluation")} variant="outline">
@@ -144,7 +144,7 @@ export default function EvaluationResults() {
           <div className="space-y-1.5">
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-3xl font-black tracking-tight text-foreground">Class Report</h1>
-              <Badge variant="outline" className="h-5 px-2 bg-green-50 text-green-700 border-green-200 text-[9px] font-black uppercase tracking-widest rounded-full">
+              <Badge variant="outline" className="eyebrow h-5 px-2 bg-green-50 text-green-700 border-green-200 rounded-full">
                 Evaluation Complete
               </Badge>
             </div>
@@ -205,11 +205,11 @@ export default function EvaluationResults() {
             className="p-6 bg-background border border-border/40 rounded-[24px] shadow-[0_4px_20px_rgb(0,0,0,0.02)]"
           >
             <div className="flex items-start justify-between mb-3">
-              <span className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/40">{stat.label}</span>
+              <span className="eyebrow text-muted-foreground/40">{stat.label}</span>
               <stat.icon className={cn("h-4 w-4 opacity-60", stat.highlight ? "text-amber-500" : "text-primary")} />
             </div>
             <div className="text-3xl font-black tracking-tighter tabular-nums text-foreground">{stat.value}</div>
-            <div className={cn("text-[10px] font-bold uppercase tracking-widest mt-1", stat.highlight ? "text-amber-600" : "text-muted-foreground/50")}>
+            <div className={cn("eyebrow mt-1", stat.highlight ? "text-amber-600" : "text-muted-foreground/50")}>
               {stat.sub}
             </div>
           </motion.div>
@@ -224,11 +224,11 @@ export default function EvaluationResults() {
           <CardHeader className="p-8 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg font-extrabold tracking-tight">Grade Distribution</CardTitle>
-              <CardDescription className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mt-1">
+              <CardDescription className="eyebrow text-muted-foreground/40 mt-1">
                 Cohort Performance Spread
               </CardDescription>
             </div>
-            <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-border/30 rounded-full">
+            <Badge variant="outline" className="eyebrow border-border/30 rounded-full">
               {students.length} Total
             </Badge>
           </CardHeader>
@@ -236,7 +236,7 @@ export default function EvaluationResults() {
             {distribution.map((band, i) => (
               <div key={band.label} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-black text-foreground uppercase tracking-tight">{band.label}</span>
+                  <span className="text-[11px] font-black text-foreground tracking-tight">{band.label}</span>
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] font-bold text-muted-foreground/40">{band.range}</span>
                     <span className="text-[12px] font-black text-foreground tabular-nums w-5 text-right">{band.count}</span>
@@ -259,7 +259,7 @@ export default function EvaluationResults() {
         <Card className="border-border/40 rounded-[28px] overflow-hidden bg-background shadow-[0_4px_24px_rgb(0,0,0,0.02)]">
           <CardHeader className="p-8 border-b border-border/10 bg-muted/5">
             <CardTitle className="text-lg font-extrabold tracking-tight">Criterion Averages</CardTitle>
-            <CardDescription className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mt-1">
+            <CardDescription className="eyebrow text-muted-foreground/40 mt-1">
               Per Standard · Out of 5
             </CardDescription>
           </CardHeader>
@@ -287,7 +287,7 @@ export default function EvaluationResults() {
                       <span
                         key={tier}
                         className={cn(
-                          "text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-sm",
+                          "eyebrow px-1.5 py-0.5 rounded-sm",
                           tier === "perfect" ? "bg-green-50 text-green-700" :
                           tier === "minor"   ? "bg-blue-50 text-blue-700" :
                           tier === "gap"     ? "bg-amber-50 text-amber-700" :
@@ -314,12 +314,12 @@ export default function EvaluationResults() {
         <CardHeader className="p-8 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between flex-wrap gap-4">
           <div>
             <CardTitle className="text-lg font-extrabold tracking-tight">Full Cohort Roster</CardTitle>
-            <CardDescription className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mt-1">
+            <CardDescription className="eyebrow text-muted-foreground/40 mt-1">
               {students.length} Students · {submittedCount} Submitted
             </CardDescription>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mr-1">Sort</span>
+            <span className="eyebrow text-muted-foreground/40 mr-1">Sort</span>
             {(["score", "name", "grade"] as const).map(s => (
               <Button
                 key={s}
@@ -327,7 +327,7 @@ export default function EvaluationResults() {
                 variant={sortBy === s ? "default" : "ghost"}
                 onClick={() => setSortBy(s)}
                 className={cn(
-                  "h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg",
+                  "eyebrow h-7 px-3 rounded-lg",
                   sortBy !== s && "border border-border/40"
                 )}
               >
@@ -341,18 +341,18 @@ export default function EvaluationResults() {
             <table className="w-full text-sm text-left">
               <thead className="bg-muted/20 border-b border-border/10">
                 <tr>
-                  <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-muted-foreground/50">#</th>
-                  <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-muted-foreground/50">Student</th>
-                  <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-muted-foreground/50">Roll No.</th>
+                  <th className="eyebrow px-6 py-4 text-muted-foreground/50">#</th>
+                  <th className="eyebrow px-6 py-4 text-muted-foreground/50">Student</th>
+                  <th className="eyebrow px-6 py-4 text-muted-foreground/50">Roll No.</th>
                   {criterionIds.map(cid => (
-                    <th key={cid} className="px-4 py-4 font-black uppercase tracking-widest text-[9px] text-muted-foreground/50 text-center">
+                    <th key={cid} className="eyebrow px-4 py-4 text-muted-foreground/50 text-center">
                       {cid.toUpperCase()}
                     </th>
                   ))}
-                  <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-muted-foreground/50 text-center">Score</th>
-                  <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-muted-foreground/50 text-center">Grade</th>
-                  <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-muted-foreground/50 text-center">Status</th>
-                  <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-muted-foreground/50 text-center">Integrity</th>
+                  <th className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Score</th>
+                  <th className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Grade</th>
+                  <th className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Status</th>
+                  <th className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Integrity</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/10">
@@ -407,7 +407,7 @@ export default function EvaluationResults() {
                     <td className="px-6 py-5 text-center">
                       <Badge
                         variant="outline"
-                        className={cn("h-5 px-2 text-[9px] font-black uppercase tracking-widest rounded-full", gradeColorClass(grade))}
+                        className={cn("eyebrow h-5 px-2 rounded-full", gradeColorClass(grade))}
                       >
                         {grade}
                       </Badge>
@@ -418,7 +418,7 @@ export default function EvaluationResults() {
                       <Badge
                         variant="outline"
                         className={cn(
-                          "h-5 px-2 text-[8px] font-black uppercase tracking-widest rounded-full",
+                          "eyebrow h-5 px-2 rounded-full",
                           submitted
                             ? "bg-green-50 text-green-700 border-green-200"
                             : "bg-muted/40 text-muted-foreground border-border/40"
@@ -433,7 +433,7 @@ export default function EvaluationResults() {
                       {flagged ? (
                         <div className="flex items-center justify-center gap-1 text-amber-600">
                           <AlertTriangle className="w-3.5 h-3.5" />
-                          <span className="text-[9px] font-black uppercase tracking-widest">{student.status}</span>
+                          <span className="eyebrow">{student.status}</span>
                         </div>
                       ) : (
                         <CheckCircle2 className="w-3.5 h-3.5 text-green-500 mx-auto" />
@@ -447,7 +447,7 @@ export default function EvaluationResults() {
             {sorted.length === 0 && (
               <div className="py-20 text-center">
                 <Users className="w-8 h-8 text-muted-foreground/20 mx-auto mb-3" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">No student data</p>
+                <p className="eyebrow text-muted-foreground/30">No student data</p>
               </div>
             )}
           </div>
@@ -456,12 +456,12 @@ export default function EvaluationResults() {
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between pt-2 pb-12">
-        <p className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-[0.35em]">
+        <p className="eyebrow text-muted-foreground/30">
           EducAItors · Evaluation Complete · {assignment.title}
         </p>
         <Link
           href="/dashboard/post-evaluation"
-          className="inline-flex items-center gap-2 h-9 px-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground rounded-xl transition-colors"
+          className="eyebrow inline-flex items-center gap-2 h-9 px-3 text-muted-foreground hover:text-foreground rounded-xl transition-colors"
         >
           Full Insights <ArrowRight className="w-3.5 h-3.5" />
         </Link>

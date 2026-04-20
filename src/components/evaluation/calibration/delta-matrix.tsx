@@ -102,7 +102,7 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
       {discrepancies.length > 0 && (
         <div className="bg-white border border-border/60 rounded-xl overflow-hidden shadow-sm">
           <div className="px-4 py-2.5 border-b border-border/40">
-            <span className="text-[11px] font-black uppercase tracking-[0.12em] text-muted-foreground/60">
+            <span className="eyebrow text-muted-foreground/60">
               Discrepancy items · sorted by gap
             </span>
           </div>
@@ -140,20 +140,20 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
       {/* Score matrix */}
       <div className="bg-white border border-border/60 rounded-xl overflow-hidden shadow-sm">
         <div className="px-4 py-2.5 border-b border-border/40 flex items-center justify-between">
-          <span className="text-[11px] font-black uppercase tracking-[0.12em] text-muted-foreground/60">Score matrix</span>
+          <span className="eyebrow text-muted-foreground/60">Score matrix</span>
           <span className="text-[11px] font-mono text-muted-foreground/40">yours / AI</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-border/30 bg-muted/20">
-                <th className="text-left px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-muted-foreground/50 min-w-[120px]">
+                <th className="eyebrow text-left px-4 py-2.5 text-muted-foreground/50 min-w-[120px]">
                   Criterion
                 </th>
                 {papers.map(p => (
                   <th
                     key={p.paperId}
-                    className="px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 text-center min-w-[70px]"
+                    className="eyebrow px-3 py-2.5 text-muted-foreground/50 text-center min-w-[70px]"
                   >
                     {p.anonymizedLabel.replace('Paper #', 'P')}
                   </th>

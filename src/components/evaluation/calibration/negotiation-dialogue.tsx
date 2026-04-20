@@ -312,7 +312,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                           <div className="flex items-stretch gap-2.5">
                             {/* Your score */}
                             <div className="flex-1 bg-muted/30 border border-border/50 rounded-lg px-3 py-2.5">
-                              <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/70 mb-1">
+                              <p className="eyebrow font-semibold text-muted-foreground/70 mb-1">
                                 Your score
                               </p>
                               <div className="flex items-baseline gap-0.5">
@@ -329,7 +329,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
 
                             {/* AI score */}
                             <div className="flex-1 bg-muted/10 border border-border/40 rounded-lg px-3 py-2.5">
-                              <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-foreground/70 mb-1">
+                              <p className="eyebrow font-semibold text-muted-foreground/70 mb-1">
                                 AI score
                               </p>
                               <div className="flex items-baseline gap-0.5">
@@ -374,7 +374,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                           {/* Inline score adjuster */}
                           {isAdj && !isResolved && (
                             <div className="mt-2.5 space-y-2">
-                              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/70">
+                              <p className="eyebrow text-muted-foreground/70">
                                 Select adjusted score
                               </p>
                               <div className="flex gap-1.5">
@@ -433,7 +433,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                           <>
                             {/* Your evaluation */}
                             <div className="bg-blue-50/50 border border-blue-200/70 rounded-lg p-3">
-                              <p className="text-[10px] font-bold uppercase tracking-[0.06em] text-blue-700 mb-2 flex items-center gap-1.5">
+                              <p className="eyebrow text-blue-700 mb-2 flex items-center gap-1.5">
                                 <User className="h-3 w-3" />
                                 Your evaluation
                               </p>
@@ -524,7 +524,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                           /* Compare split */
                           <div className="flex gap-2.5">
                             <div className="flex-1 space-y-1.5">
-                              <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 px-2 py-0.5 rounded inline-block">
+                              <span className="text-[10px] font-bold tracking-wider bg-blue-50 text-blue-700 px-2 py-0.5 rounded inline-block">
                                 Your evaluation
                               </span>
                               <Textarea
@@ -537,7 +537,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                             </div>
                             <div className="w-px bg-border/40 shrink-0" />
                             <div className="flex-1 space-y-1.5">
-                              <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 px-2 py-0.5 rounded inline-block">
+                              <span className="text-[10px] font-bold tracking-wider bg-amber-50 text-amber-700 px-2 py-0.5 rounded inline-block">
                                 AI evaluation
                               </span>
                               {disc.aiEvidence.map((ev, i) => (

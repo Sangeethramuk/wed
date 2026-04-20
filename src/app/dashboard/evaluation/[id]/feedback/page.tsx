@@ -36,8 +36,8 @@ function CriteriaRecapCard({ name, level, tier, tierLabel, feedbackSnippet, isEx
             <TierIcon className="w-3.5 h-3.5" />
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-bold text-foreground truncate uppercase tracking-tight">{name}</div>
-            <div className={`text-[9px] font-black uppercase tracking-[0.08em] ${colors.text}`}>{tierLabel}</div>
+            <div className="text-[11px] font-bold text-foreground truncate tracking-tight">{name}</div>
+            <div className={`eyebrow ${colors.text}`}>{tierLabel}</div>
           </div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0 pl-2 border-l border-border/30 ml-2">
@@ -168,7 +168,7 @@ export default function FeedbackPage() {
       <div className="flex items-center justify-center h-screen bg-background">
         <div className="text-center space-y-4">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Restoring Student Record…</p>
+          <p className="eyebrow text-muted-foreground/40">Restoring Student Record…</p>
         </div>
       </div>
     );
@@ -231,7 +231,7 @@ export default function FeedbackPage() {
               <Badge variant="outline" className="text-[9px] h-4.5 px-1.5 rounded-sm font-mono tracking-tighter border-border bg-muted/30">STUDENT RECORD</Badge>
             </div>
             <div className="flex items-center gap-2">
-               <span className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest leading-none grow-0">{activeStudent.name}</span>
+               <span className="eyebrow text-muted-foreground/60 leading-none grow-0">{activeStudent.name}</span>
                <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
                <span className="text-[10px] font-mono text-muted-foreground/50">{activeStudent.roll}</span>
             </div>
@@ -240,7 +240,7 @@ export default function FeedbackPage() {
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-end mr-2">
              <div className="text-[24px] font-black text-foreground leading-none font-mono">60<span className="text-[14px] text-muted-foreground/40 font-medium">/100</span></div>
-             <Badge variant="outline" className="text-[9px] font-black h-4 px-1.5 bg-green-50 text-green-700 border-green-200 uppercase tracking-widest mt-1">Satisfactory</Badge>
+             <Badge variant="outline" className="eyebrow h-4 px-1.5 bg-green-50 text-green-700 border-green-200 mt-1">Satisfactory</Badge>
           </div>
           <Button variant="ghost" size="icon">✕</Button>
         </div>
@@ -251,7 +251,7 @@ export default function FeedbackPage() {
         {/* Left: Criteria Recap */}
         <aside className="w-[320px] border-r border-border bg-background/50 flex flex-col shrink-0 backdrop-blur-sm">
           <div className="px-6 py-4 border-b border-border bg-background/80 flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60">Criterion Feedback Recap</span>
+            <span className="eyebrow text-muted-foreground/60">Criterion Feedback Recap</span>
             <Badge variant="secondary" className="text-[9px] font-bold h-5 px-2 bg-muted/50">{confirmedCriteria.length}</Badge>
           </div>
           <ScrollArea className="flex-1 p-4">
@@ -274,7 +274,7 @@ export default function FeedbackPage() {
               })}
               {confirmedCriteria.length === 3 && (
                 <div className="p-4 border border-dashed border-border rounded-xl bg-muted/5">
-                   <p className="text-[9px] text-muted-foreground/50 uppercase font-black text-center">Using Evaluation Benchmarks</p>
+                   <p className="text-[9px] text-muted-foreground/50 font-black text-center">Using Evaluation Benchmarks</p>
                 </div>
               )}
             </div>
@@ -311,7 +311,7 @@ export default function FeedbackPage() {
               <ScrollArea className="flex-1 px-8 pt-8 pb-4">
                 <div className="max-w-3xl mx-auto">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Comprehensive Assessment Draft</div>
+                    <div className="eyebrow text-muted-foreground/40">Comprehensive Assessment Draft</div>
                     <Badge variant={isAI ? "secondary" : "outline"} className={`text-[9px] font-bold h-5 px-2.5 rounded-full ${isAI ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
                        {isAI ? '✦ AI Generated' : '✎ Locally Adjusted'}
                     </Badge>
@@ -331,7 +331,7 @@ export default function FeedbackPage() {
                           <div key={i} className="mb-6 last:mb-0">
                             {isTitle ? (
                               <>
-                                <div className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-foreground mb-3 flex items-center gap-2">
+                                <div className="eyebrow font-extrabold text-foreground mb-3 flex items-center gap-2">
                                    <div className="w-2 h-2 rounded-full bg-primary/20" /> {title.replace(/\*\*/g, '')}
                                 </div>
                                 <div className="text-muted-foreground/90 pl-4 border-l-2 border-border/40 ml-1">{rest.join('\n')}</div>
@@ -359,10 +359,10 @@ export default function FeedbackPage() {
                  <div className="max-w-3xl mx-auto space-y-4">
                     <div className="flex items-center justify-between px-1">
                        <div className="flex items-center gap-4">
-                          <span className="text-[12px] font-black uppercase tracking-[0.2em] text-foreground">Instructor Note Workspace</span>
+                          <span className="eyebrow text-[12px] text-foreground">Instructor Note Workspace</span>
                           <div className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20">
                              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                             <span className="text-[9px] font-black text-green-700/80 uppercase tracking-widest">Active Sink</span>
+                             <span className="eyebrow text-green-700/80">Active Sink</span>
                           </div>
                        </div>
                        <Button variant="destructive" size="sm">
@@ -405,7 +405,7 @@ export default function FeedbackPage() {
                     <div className="space-y-4">
                        <div className="flex items-center gap-2 px-1">
                           <div className="w-2 h-6 bg-red-500 rounded-full" />
-                          <span className="text-[11px] font-black uppercase tracking-widest text-foreground">Priority 1 · Critical</span>
+                          <span className="eyebrow text-foreground">Priority 1 · Critical</span>
                        </div>
                        {displaySolutionSteps.filter(s => s.priority === 'critical').map((step, i) => (
                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-white border-1.5 border-red-100 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(220,38,38,0.03)] hover:shadow-md transition-all">
@@ -434,7 +434,7 @@ export default function FeedbackPage() {
                        {displaySolutionSteps.filter(s => s.priority === 'critical').length === 0 && (
                          <div className="bg-muted/10 border-1.5 border-dashed border-border rounded-[20px] p-8 text-center">
                             <CheckCircle2 className="w-8 h-8 text-muted-foreground/20 mx-auto mb-2" />
-                            <p className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest">No Critical Gaps</p>
+                            <p className="eyebrow text-muted-foreground/30">No Critical Gaps</p>
                          </div>
                        )}
                     </div>
@@ -443,7 +443,7 @@ export default function FeedbackPage() {
                     <div className="space-y-4">
                        <div className="flex items-center gap-2 px-1">
                           <div className="w-2 h-6 bg-amber-500 rounded-full" />
-                          <span className="text-[11px] font-black uppercase tracking-widest text-foreground">Priority 2 · Important</span>
+                          <span className="eyebrow text-foreground">Priority 2 · Important</span>
                        </div>
                        {displaySolutionSteps.filter(s => s.priority === 'important').map((step, i) => (
                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-white border-1.5 border-amber-100 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(217,119,6,0.03)] hover:shadow-md transition-all">
@@ -475,7 +475,7 @@ export default function FeedbackPage() {
                     <div className="space-y-4">
                        <div className="flex items-center gap-2 px-1">
                           <div className="w-2 h-6 bg-green-500 rounded-full" />
-                          <span className="text-[11px] font-black uppercase tracking-widest text-foreground">Maintain · Well Done</span>
+                          <span className="eyebrow text-foreground">Maintain · Well Done</span>
                        </div>
                        {displaySolutionSteps.filter(s => s.priority === 'maintain').map((step, i) => (
                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-white border-1.5 border-green-100 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(5,150,105,0.03)] hover:shadow-md transition-all opacity-80 filter grayscale-[20%]">
@@ -517,7 +517,7 @@ export default function FeedbackPage() {
         </Button>
         <div className="flex items-center gap-6">
            <div className="hidden sm:flex flex-col items-end">
-              <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-1">State: Ready for Publication</span>
+              <span className="eyebrow text-primary mb-1">State: Ready for Publication</span>
               <span className="text-[10px] font-medium text-muted-foreground/60">Final draft cached for cohort scheduling</span>
            </div>
            <Button

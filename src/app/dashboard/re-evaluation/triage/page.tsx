@@ -56,7 +56,7 @@ export default function ReEvaluationPage() {
           <div className="flex items-center gap-4 mb-4">
             <button
               onClick={() => router.push('/dashboard/re-evaluation')}
-              className="group flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 hover:text-primary transition-all"
+              className="eyebrow group flex items-center gap-1.5 text-muted-foreground/40 hover:text-primary transition-all"
             >
               <ChevronLeft className="size-3 group-hover:-translate-x-0.5 transition-transform" />
               Back to Assignments
@@ -66,11 +66,11 @@ export default function ReEvaluationPage() {
           <div className="flex items-start justify-between mb-8">
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">IIM Bangalore</span>
+                <span className="eyebrow text-muted-foreground/40">IIM Bangalore</span>
                 <span className="text-muted-foreground/20 text-[9px]">·</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary/80">DSA · Batch 4</span>
+                <span className="eyebrow text-primary/80">DSA · Batch 4</span>
                 <span className="text-muted-foreground/20 text-[9px]">·</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Re-Evaluation Desk</span>
+                <span className="eyebrow text-muted-foreground/40">Re-Evaluation Desk</span>
               </div>
               <h1 className="text-4xl font-black tracking-tighter secondary-text">Review Requests</h1>
               <div className="flex items-center gap-2 pt-1">
@@ -82,7 +82,7 @@ export default function ReEvaluationPage() {
             
             <div className="flex flex-col items-end gap-3">
               <button
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/30 bg-card/50 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-card hover:border-border transition-all"
+                className="eyebrow flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/30 bg-card/50 text-muted-foreground hover:bg-card hover:border-border transition-all"
               >
                 <Download className="size-3" />
                 Download Record
@@ -93,7 +93,7 @@ export default function ReEvaluationPage() {
           <div className="grid grid-cols-4 gap-3">
             {GLOBAL_KPIS.map((kpi, i) => (
               <div key={i} className="group px-4 py-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-all flex flex-col justify-center">
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">{kpi.label}</span>
+                <span className="eyebrow text-muted-foreground/50">{kpi.label}</span>
                 <div className="flex items-baseline gap-1.5 mt-1">
                   <span className="text-xl font-black tracking-tighter" style={{ color: kpi.accent }}>{kpi.value}</span>
                   <span className="text-[10px] font-bold text-muted-foreground/30">{kpi.sub}</span>
@@ -112,7 +112,7 @@ export default function ReEvaluationPage() {
         <div className="rounded-2xl border border-border/10 bg-card/10 backdrop-blur-sm overflow-hidden">
           {/* Header */}
           <div
-            className="grid text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40"
+            className="eyebrow grid text-muted-foreground/40"
             style={{
               gridTemplateColumns: '220px 180px 130px 1fr 100px 140px 140px',
               background: 'rgba(var(--muted), 0.05)',
@@ -161,10 +161,10 @@ export default function ReEvaluationPage() {
                             {st.name}
                             {st.isNew && <span className="w-1.5 h-1.5 rounded-full inline-block bg-primary" />}
                           </div>
-                          <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">{st.rollId}</div>
+                          <div className="eyebrow text-muted-foreground/40">{st.rollId}</div>
                         </div>
                         {st.isCluster && (
-                          <span className="self-start text-[8px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-amber-500/5 text-amber-600 border border-amber-500/10 w-fit">
+                          <span className="eyebrow self-start px-2 py-0.5 rounded-md bg-amber-500/5 text-amber-600 border border-amber-500/10 w-fit">
                             C2 cluster
                           </span>
                         )}
@@ -176,7 +176,7 @@ export default function ReEvaluationPage() {
                 {/* Assignment · Criterion */}
                 <div className="px-4 py-4 flex flex-col justify-center gap-1.5" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
                   <div className="text-[12px] font-black tracking-tight text-[#1E293B]">{st.assign}</div>
-                  <span className="self-start text-[9px] font-black px-2 py-0.5 rounded-md bg-primary/5 text-primary border border-primary/10 uppercase tracking-widest">
+                  <span className="eyebrow self-start px-2 py-0.5 rounded-md bg-primary/5 text-primary border border-primary/10">
                     {st.critShort} · {st.origScore}/{st.maxScore}
                   </span>
                 </div>
@@ -185,7 +185,7 @@ export default function ReEvaluationPage() {
                 <div className="px-4 py-4 flex flex-col justify-center gap-1.5" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
                   <div className="text-[12px] font-bold text-slate-600">{st.concern}</div>
                   <span
-                    className="self-start text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-widest"
+                    className="eyebrow self-start px-1.5 py-0.5 rounded-md"
                     style={{ background: cs.bg, color: cs.text, border: `1px solid ${cs.border}` }}
                   >
                     {st.concernType}
@@ -214,7 +214,7 @@ export default function ReEvaluationPage() {
                   >
                     {st.ageLabel}
                   </div>
-                  <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/30">
+                  <div className="eyebrow text-muted-foreground/30">
                     {st.ageStatus === 'overdue' ? 'Overdue' : st.ageStatus === 'new' ? 'New' : 'Pending'}
                   </div>
                 </div>
@@ -229,7 +229,7 @@ export default function ReEvaluationPage() {
                   {status === 'pending' && (
                     <button
                       onClick={() => setBriefingId(id)}
-                      className="group/btn flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white bg-primary hover:bg-primary/90 transition-all shadow-[0_2px_10px_rgba(var(--primary),0.2)]"
+                      className="eyebrow group/btn flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-white bg-primary hover:bg-primary/90 transition-all shadow-[0_2px_10px_rgba(var(--primary),0.2)]"
                     >
                       Review now
                       <ChevronLeft className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
@@ -238,7 +238,7 @@ export default function ReEvaluationPage() {
                   {status === 'hod' && (
                     <button
                       onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                      className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-muted-foreground border border-border/30 bg-card/50 hover:bg-card hover:border-border transition-all"
+                      className="eyebrow px-4 py-1.5 rounded-lg text-muted-foreground border border-border/30 bg-card/50 hover:bg-card hover:border-border transition-all"
                     >
                       View →
                     </button>
@@ -304,34 +304,34 @@ export default function ReEvaluationPage() {
 function StatusPill({ status, ageStatus }: { status: 'pending' | 'hod' | 'resolved'; ageStatus: string }) {
   if (status === 'resolved') {
     return (
-      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-emerald-500/5 text-emerald-600 border border-emerald-500/10">
+      <span className="eyebrow px-2 py-0.5 rounded-md bg-emerald-500/5 text-emerald-600 border border-emerald-500/10">
         Resolved
       </span>
     )
   }
   if (status === 'hod') {
     return (
-      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-amber-500/5 text-amber-600 border border-amber-500/10">
+      <span className="eyebrow px-2 py-0.5 rounded-md bg-amber-500/5 text-amber-600 border border-amber-500/10">
         Awaiting HOD
       </span>
     )
   }
   if (ageStatus === 'overdue') {
     return (
-      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-red-500 text-white">
+      <span className="eyebrow px-2 py-0.5 rounded-md bg-red-500 text-white">
         Overdue
       </span>
     )
   }
   if (ageStatus === 'new') {
     return (
-      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-blue-500/5 text-blue-600 border border-blue-500/10">
+      <span className="eyebrow px-2 py-0.5 rounded-md bg-blue-500/5 text-blue-600 border border-blue-500/10">
         New
       </span>
     )
   }
   return (
-    <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-slate-500/5 text-slate-500 border border-slate-500/10">
+    <span className="eyebrow px-2 py-0.5 rounded-md bg-slate-500/5 text-slate-500 border border-slate-500/10">
       Pending
     </span>
   )

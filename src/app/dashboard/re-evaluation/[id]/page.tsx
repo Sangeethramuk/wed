@@ -141,7 +141,7 @@ export default function ReEvalWorkspacePage() {
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-black tracking-tighter text-slate-800 flex items-center gap-2">
               {st.name}
-              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-2 py-0.5 bg-muted/50 rounded-md">
+              <span className="eyebrow text-muted-foreground/40 px-2 py-0.5 bg-muted/50 rounded-md">
                 {st.rollId}
               </span>
             </h1>
@@ -149,7 +149,7 @@ export default function ReEvalWorkspacePage() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground/40 pr-4 border-r border-border/10">
+          <div className="eyebrow flex items-center gap-2 text-muted-foreground/40 pr-4 border-r border-border/10">
             <span>{st.assign}</span>
             <span className="text-muted-foreground/20">·</span>
             <span className="text-primary/60">{st.crit}</span>
@@ -171,7 +171,7 @@ export default function ReEvalWorkspacePage() {
         <div className="flex-1 flex flex-col bg-slate-50/80 overflow-hidden relative">
           <div className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white shadow-sm z-10 flex-shrink-0">
             <div className="flex items-center gap-4">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Submission Viewer</span>
+              <span className="eyebrow text-muted-foreground/40">Submission Viewer</span>
               <div className="flex bg-muted/40 p-1 rounded-xl border border-border/5">
                 {(['scan', 'ocr'] as const).map((v) => (
                   <Button
@@ -194,7 +194,7 @@ export default function ReEvalWorkspacePage() {
                    <ChevronLeftIcon className="size-3.5 rotate-180" />
                  </Button>
                </div>
-               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Page 2 of 3</span>
+               <span className="eyebrow text-muted-foreground/40">Page 2 of 3</span>
             </div>
           </div>
 
@@ -202,15 +202,15 @@ export default function ReEvalWorkspacePage() {
             {view === 'scan' ? (
               <div className="max-w-2xl mx-auto rounded-2xl bg-white border border-slate-200 shadow-xl shadow-slate-200/50 p-10 font-serif text-[14px] leading-[1.8] text-slate-800 relative ring-1 ring-slate-900/5">
                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-border/5">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 font-sans">
+                  <div className="eyebrow text-muted-foreground/40 font-sans">
                     {st.rollId} · {st.name} · {st.assign}
                   </div>
-                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/20 font-sans">
+                  <div className="eyebrow text-muted-foreground/20 font-sans">
                     Submitted 1 April 2026
                   </div>
                 </div>
                 
-                <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/30 mb-6 font-sans">
+                <div className="eyebrow text-muted-foreground/30 mb-6 font-sans">
                   Algorithm Design — Continued from page 1
                 </div>
 
@@ -230,7 +230,7 @@ export default function ReEvalWorkspacePage() {
 
                   {/* Highlighted Student Evidence */}
                   <div className="relative my-4 -mx-10 px-10 py-6 bg-amber-50 border-l-4 border-amber-500">
-                    <div className="absolute -top-3 left-10 px-3 py-1 rounded-full bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest font-sans shadow-lg shadow-amber-500/20">
+                    <div className="eyebrow absolute -top-3 left-10 px-3 py-1 rounded-full bg-amber-500 text-white font-sans shadow-lg shadow-amber-500/20">
                       Student Cited · {st.evidence}
                     </div>
                     <div className="space-y-1">
@@ -291,18 +291,18 @@ export default function ReEvalWorkspacePage() {
           <div className="flex border-b border-slate-200 bg-white shadow-sm flex-shrink-0 relative z-20">
             <KPIBlock label="Original Score" className="flex-[0.9] border-r border-slate-200/60">
               <div className={cn("text-lg font-black tracking-tighter", statusStyles[ageStatusKind(st.ageStatus)].text)}>{st.origScore}<span className="text-muted-foreground/30 font-bold ml-1">/ {st.maxScore}</span></div>
-              <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">{st.critShort}</div>
+              <div className="eyebrow text-muted-foreground/40 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">{st.critShort}</div>
             </KPIBlock>
             <KPIBlock label="Evidence Used" className="flex-[1.4] border-r border-slate-200/60">
               <div className="text-[10px] font-bold text-slate-600 leading-tight line-clamp-2">"{st.gradingEvidence}"</div>
-              <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1">At Grading</div>
+              <div className="eyebrow text-muted-foreground/40 mt-1">At Grading</div>
             </KPIBlock>
             <KPIBlock label="Confidence" className="flex-[0.9]">
               <div className="flex items-center gap-1.5">
                 <div className={cn("size-2 rounded-full", confidenceStyles[confidenceKind(st.confLabel)].dot)} />
                 <span className="text-[13px] font-black tracking-tighter text-slate-800">{st.confScore}</span>
               </div>
-              <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1 whitespace-nowrap">{st.hasOverride ? 'Prior Override' : 'System Default'}</div>
+              <div className="eyebrow text-muted-foreground/40 mt-1 whitespace-nowrap">{st.hasOverride ? 'Prior Override' : 'System Default'}</div>
             </KPIBlock>
           </div>
 
@@ -311,19 +311,19 @@ export default function ReEvalWorkspacePage() {
               <>
                 {/* Section: Student Dispute */}
                 <section className="space-y-3">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Intelligence Layer</div>
+                  <div className="eyebrow text-muted-foreground/40">Intelligence Layer</div>
                   <div className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
                     <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
                       <div className="flex items-center justify-between">
-                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Disputed Reasoning</span>
-                         <span className="px-2 py-0.5 rounded bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest">
+                         <span className="eyebrow text-muted-foreground/50">Disputed Reasoning</span>
+                         <span className="eyebrow px-2 py-0.5 rounded bg-primary/5 text-primary">
                            {st.evidence}
                          </span>
                       </div>
                     </div>
                     <div className="p-5 space-y-4">
                       <div className="relative rounded-xl p-4 bg-primary/[0.03] border border-primary/10">
-                        <div className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-primary text-white text-[8px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">
+                        <div className="eyebrow absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-primary text-white shadow-lg shadow-primary/20">
                           Student Perspective
                         </div>
                         <p className="text-[13px] font-medium leading-relaxed italic text-slate-700">
@@ -341,8 +341,8 @@ export default function ReEvalWorkspacePage() {
                 {/* Section: Your Decision */}
                 <section className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Action Hub</div>
-                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/30">Decision Workspace</span>
+                    <div className="eyebrow text-muted-foreground/40">Action Hub</div>
+                    <span className="eyebrow text-muted-foreground/30">Decision Workspace</span>
                   </div>
 
                   <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-2 space-y-2">
@@ -373,7 +373,7 @@ export default function ReEvalWorkspacePage() {
                            </p>
                         </div>
                         <div className="flex flex-col items-center p-4 rounded-xl bg-slate-50 border border-slate-200 overflow-hidden relative shadow-inner mx-1">
-                           <span className="text-[9px] font-black uppercase tracking-widest text-primary/60 mb-3">Proposed New Score</span>
+                           <span className="eyebrow text-primary/60 mb-3">Proposed New Score</span>
                            
                            <div className="w-full flex justify-center gap-1.5">
                              {Array.from({ length: st.maxScore + 1 }, (_, i) => i).map((s) => {
@@ -390,7 +390,7 @@ export default function ReEvalWorkspacePage() {
                                    className="flex-col"
                                  >
                                    <span>{s}</span>
-                                   {isOrig && <span className="text-[6px] font-black uppercase tracking-widest text-slate-500 mt-0.5">Orig</span>}
+                                   {isOrig && <span className="eyebrow text-[6px] text-slate-500 mt-0.5">Orig</span>}
                                  </Button>
                                )
                              })}
@@ -400,7 +400,7 @@ export default function ReEvalWorkspacePage() {
                         {/* Rationale Logic */}
                         {pickedScore !== null && (
                           <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <div className="text-[10px] font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
+                            <div className="eyebrow text-primary/60 flex items-center gap-2">
                               <ZapIcon className="size-3" />
                               Why is this score changing?
                             </div>
@@ -432,11 +432,11 @@ export default function ReEvalWorkspacePage() {
                 {/* Section: Rationale */}
                 <section className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Official Record</div>
+                    <div className="eyebrow text-muted-foreground/40">Official Record</div>
                   </div>
                   <div className="rounded-2xl bg-white border-2 border-primary/20 shadow-sm p-5 space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-slate-800">
+                      <div className="eyebrow flex items-center gap-2 text-slate-800">
                         <EditIcon className="size-3.5" />
                         Decision Rationale
                         <span className="px-1.5 py-0.5 rounded bg-red-500 text-white text-[8px] font-black tracking-[0.1em]">REQUIRED</span>
@@ -456,7 +456,7 @@ export default function ReEvalWorkspacePage() {
                           style={{ width: `${reasonPct}%` }}
                         />
                       </div>
-                      <span className={`text-[9px] font-black uppercase tracking-widest whitespace-nowrap ${reasonLen >= REASON_MIN ? 'text-emerald-600' : 'text-muted-foreground/40'}`}>
+                      <span className={`eyebrow whitespace-nowrap ${reasonLen >= REASON_MIN ? 'text-emerald-600' : 'text-muted-foreground/40'}`}>
                         {reasonLen < REASON_MIN ? `${REASON_MIN - reasonLen} more needed` : 'Ready to submit'}
                       </span>
                     </div>
@@ -500,7 +500,7 @@ export default function ReEvalWorkspacePage() {
                 {!comparing && (
                   <div className="rounded-2xl border border-border/10 bg-white overflow-hidden shadow-sm">
                     <div className="px-5 py-4 bg-slate-50/50 border-b border-border/5">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Next Actions & Routing</span>
+                      <span className="eyebrow text-muted-foreground/40">Next Actions & Routing</span>
                     </div>
                     <div className="p-5 space-y-4">
                        {[
@@ -511,7 +511,7 @@ export default function ReEvalWorkspacePage() {
                          <div key={item.n} className="flex gap-4 group">
                            <div className="size-6 rounded-lg bg-muted flex items-center justify-center text-[10px] font-black text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">{item.n}</div>
                            <div className="flex-1 -mt-0.5">
-                             <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 mb-0.5">{item.label}</div>
+                             <div className="eyebrow text-muted-foreground/30 mb-0.5">{item.label}</div>
                              <div className="text-[12px] font-bold text-slate-700">{item.val}</div>
                            </div>
                          </div>
@@ -605,7 +605,7 @@ export default function ReEvalWorkspacePage() {
 function KPIBlock({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={`flex flex-col gap-1 p-4 bg-white ${className || ''}`}>
-      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/30">{label}</span>
+      <span className="eyebrow text-muted-foreground/30">{label}</span>
       {children}
     </div>
   )
@@ -628,7 +628,7 @@ function DecisionOption({ active, variant, label, desc, onClick, children }: { a
                {active && <div className="size-2 rounded-full bg-white" />}
             </div>
             <div className="flex flex-col">
-               <span className="text-[12px] font-black uppercase tracking-widest">{label}</span>
+               <span className="eyebrow text-[12px]">{label}</span>
                <span className={`text-[10px] font-medium opacity-70 ${active ? '' : 'text-muted-foreground'}`}>{desc}</span>
             </div>
          </div>
@@ -647,7 +647,7 @@ function CompareCard({ label, score, reason, variant }: { label: string; score: 
   const isPrimary = variant === 'primary'
   return (
     <div className={`rounded-2xl p-5 border ${isPrimary ? 'bg-primary/5 border-primary/20' : 'bg-slate-50 border-border/10'}`}>
-       <span className={`text-[9px] font-black uppercase tracking-widest ${isPrimary ? 'text-primary' : 'text-muted-foreground/40'}`}>{label}</span>
+       <span className={`eyebrow ${isPrimary ? 'text-primary' : 'text-muted-foreground/40'}`}>{label}</span>
        <div className={`text-2xl font-black tracking-tighter my-1 ${isPrimary ? 'text-primary' : 'text-slate-800'}`}>{score}<span className="text-muted-foreground/30 font-bold ml-1 text-base">/ 10</span></div>
        <p className="text-[11px] font-medium text-slate-500 leading-snug line-clamp-2">{reason}</p>
     </div>

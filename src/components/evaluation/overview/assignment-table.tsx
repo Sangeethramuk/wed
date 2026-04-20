@@ -43,17 +43,17 @@ const TYPE_BADGE: Record<string, string> = {
 
 function CalibrationBadge({ state }: { state: EvaluationAssignment["calibrationState"] }) {
   if (state === "complete") return (
-    <span className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-green-600 dark:text-green-400">
+    <span className="eyebrow flex items-center gap-1 text-green-600 dark:text-green-400">
       <CheckCircle2 className="h-3 w-3" /> Calibrated
     </span>
   )
   if (state === "in_progress") return (
-    <span className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 animate-pulse">
+    <span className="eyebrow flex items-center gap-1 text-amber-600 dark:text-amber-400 animate-pulse">
       <Zap className="h-3 w-3" /> In Progress
     </span>
   )
   return (
-    <span className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-muted-foreground/50">
+    <span className="eyebrow flex items-center gap-1 text-muted-foreground/50">
       <Clock className="h-3 w-3" /> Not Started
     </span>
   )
@@ -109,11 +109,11 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="text-sm font-bold text-foreground truncate">{assignment.title}</span>
-          <Badge variant="outline" className={`text-[8px] font-black uppercase tracking-wider shrink-0 ${TYPE_BADGE[assignment.assignmentType] ?? ""}`}>
+          <Badge variant="outline" className={`text-[8px] font-black tracking-wider shrink-0 ${TYPE_BADGE[assignment.assignmentType] ?? ""}`}>
             {assignment.assignmentType}
           </Badge>
         </div>
-        <div className="flex items-center gap-3 text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest">
+        <div className="eyebrow flex items-center gap-3 text-muted-foreground/50">
           <span>{assignment.courseCode}</span>
           <span>·</span>
           <span>{assignment.semester}</span>
@@ -125,7 +125,7 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
       {/* Papers count */}
       <div className="w-16 text-right shrink-0">
         <p className="text-sm font-black tabular-nums text-foreground">{assignment.totalSubmissions}</p>
-        <p className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-wider">Papers</p>
+        <p className="text-[8px] font-bold text-muted-foreground/40 tracking-wider">Papers</p>
       </div>
 
       {/* Flags */}
@@ -160,7 +160,7 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
           size="sm"
           variant={actionVariant()}
           onClick={handleAction}
-          className={`w-full rounded-full h-8 text-[9px] font-black uppercase tracking-widest transition-all group/btn ${
+          className={`eyebrow w-full rounded-full h-8 transition-all group/btn ${
             !isCalibrated && assignment.gradingStatus !== "complete"
               ? "bg-amber-500 hover:bg-amber-600 text-white border-amber-500 shadow-lg shadow-amber-500/20"
               : ""
@@ -188,12 +188,12 @@ function DeptGroup({ department, assignments }: { department: string; assignment
       >
         <div className="flex items-center gap-2.5 flex-1">
           <div className={`w-2 h-2 rounded-full ${DEPT_DOT[department] ?? "bg-muted-foreground"}`} />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/80">{department}</span>
-          <Badge variant="outline" className={`text-[8px] font-black uppercase tracking-wider border ${DEPT_COLORS[department] ?? ""}`}>
+          <span className="eyebrow text-foreground/80">{department}</span>
+          <Badge variant="outline" className={`text-[8px] font-black tracking-wider border ${DEPT_COLORS[department] ?? ""}`}>
             {assignments.length} assignment{assignments.length !== 1 ? "s" : ""}
           </Badge>
         </div>
-        <div className="flex items-center gap-5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">
+        <div className="eyebrow flex items-center gap-5 text-muted-foreground/40">
           <Tooltip>
             <TooltipTrigger render={<span className="flex items-center gap-1.5 cursor-help" />}>
               <BarChart3 className="h-3 w-3" /> Avg Cal: {avgCal}%
@@ -213,10 +213,10 @@ function DeptGroup({ department, assignments }: { department: string; assignment
       {open && (
         <div className="flex items-center gap-4 px-5 py-2 bg-muted/5 border-t border-border/20 border-b border-border/20">
           <div className="w-1.5 shrink-0" />
-          <div className="flex-1 text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">Assignment</div>
-          <div className="w-16 text-right text-[8px] font-black uppercase tracking-widest text-muted-foreground/30 shrink-0">Papers</div>
-          <div className="w-14 text-center text-[8px] font-black uppercase tracking-widest text-muted-foreground/30 shrink-0">Flags</div>
-          <div className="w-24 text-right text-[8px] font-black uppercase tracking-widest text-muted-foreground/30 shrink-0">Progress</div>
+          <div className="eyebrow flex-1 text-muted-foreground/30">Assignment</div>
+          <div className="eyebrow w-16 text-right text-muted-foreground/30 shrink-0">Papers</div>
+          <div className="eyebrow w-14 text-center text-muted-foreground/30 shrink-0">Flags</div>
+          <div className="eyebrow w-24 text-right text-muted-foreground/30 shrink-0">Progress</div>
           <div className="w-36 shrink-0" />
         </div>
       )}
@@ -236,7 +236,7 @@ export function AssignmentTable() {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center space-y-3">
         <AlertCircle className="h-8 w-8 text-muted-foreground/20" />
-        <p className="text-sm font-bold text-muted-foreground/40 uppercase tracking-widest">No assignments match current filters</p>
+        <p className="eyebrow text-sm text-muted-foreground/40">No assignments match current filters</p>
       </div>
     )
   }

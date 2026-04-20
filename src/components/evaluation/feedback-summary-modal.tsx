@@ -159,7 +159,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                   <span className="text-2xl font-black tracking-tighter">{percentage}</span>
                   <span className="text-sm font-bold text-muted-foreground/50">/ 100</span>
                 </div>
-                <Badge className={`${performance.bg} ${performance.color} border-0 text-[9px] font-black uppercase tracking-wider`}>
+                <Badge className={`${performance.bg} ${performance.color} border-0 text-[9px] font-black tracking-wider`}>
                   {performance.label}
                 </Badge>
               </div>
@@ -174,7 +174,7 @@ Review the feedback for each criterion above and focus on the specific areas men
             {/* Left Panel - Criteria Summary */}
             <div className="w-[45%] border-r border-border bg-muted/20">
               <div className="p-4 border-b border-border bg-white">
-                <h3 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                <h3 className="eyebrow text-muted-foreground">
                   Criterion Feedback ({criteria.length})
                 </h3>
               </div>
@@ -219,7 +219,7 @@ Review the feedback for each criterion above and focus on the specific areas men
             {/* Right Panel - Overall Feedback */}
             <div className="flex-1 flex flex-col bg-white">
               <div className="p-4 border-b border-border">
-                <h3 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                <h3 className="eyebrow text-muted-foreground">
                   Overall Feedback
                 </h3>
                 <p className="text-[10px] text-muted-foreground/70 mt-1">
@@ -244,7 +244,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <Lightbulb className="h-4 w-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-primary">AI Suggestions</span>
+                        <span className="eyebrow text-primary">AI Suggestions</span>
                       </div>
                       <ul className="space-y-1.5">
                         {suggestions.map((suggestion, idx) => (
@@ -276,12 +276,12 @@ Review the feedback for each criterion above and focus on the specific areas men
                       {isRecording ? (
                         <>
                           <MicOff className="h-4 w-4" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">Stop Recording</span>
+                          <span className="eyebrow">Stop Recording</span>
                         </>
                       ) : (
                         <>
                           <Mic className="h-4 w-4" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">Record</span>
+                          <span className="eyebrow">Record</span>
                         </>
                       )}
                     </Button>
@@ -296,12 +296,12 @@ Review the feedback for each criterion above and focus on the specific areas men
                       {isStructuring ? (
                         <>
                           <div className="h-3 w-3 border border-primary border-t-transparent rounded-full animate-spin" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">Structuring...</span>
+                          <span className="eyebrow">Structuring...</span>
                         </>
                       ) : (
                         <>
                           <Sparkles className="h-4 w-4" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">AI Structure</span>
+                          <span className="eyebrow">AI Structure</span>
                         </>
                       )}
                     </Button>
@@ -313,7 +313,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                       className="h-9 gap-2"
                     >
                       <Lightbulb className="h-4 w-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Get Suggestions</span>
+                      <span className="eyebrow">Get Suggestions</span>
                     </Button>
                   </div>
 
@@ -323,7 +323,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                     className="h-9 px-6 gap-2"
                   >
                     <Send className="h-4 w-4" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Submit Feedback</span>
+                    <span className="eyebrow">Submit Feedback</span>
                   </Button>
                 </div>
               </div>

@@ -132,7 +132,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
             <div className="flex flex-col h-full border-r border-border">
               <div className="p-4 border-b border-border space-y-4 shrink-0">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground/80">
+                  <h2 className="eyebrow text-muted-foreground/80">
                     Blind Queue
                   </h2>
                   <Badge variant="outline" className="rounded-full bg-background border-border text-[9px]">
@@ -166,10 +166,10 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         <div className="flex items-center gap-2.5 flex-1 min-w-0">
                           <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${catConfig.dot} ${isActive ? 'shadow-[0_0_8px_rgba(var(--primary),0.4)]' : ''}`} />
                           <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className={`font-bold tracking-tight text-[11px] uppercase tracking-widest truncate ${isActive ? "text-primary" : "text-foreground/70"}`}>
+                            <span className={`eyebrow tracking-tight truncate ${isActive ? "text-primary" : "text-foreground/70"}`}>
                               {paper.anonymizedLabel}
                             </span>
-                            <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest tabular-nums">
+                            <span className="eyebrow text-muted-foreground/40 tabular-nums">
                               Paper {idx + 1}
                             </span>
                           </div>
@@ -194,22 +194,22 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60 mb-0.5">
+                      <span className="eyebrow text-primary/60 mb-0.5">
                         Blind Manuscript
                       </span>
-                      <h2 className="text-sm font-black tracking-tight text-foreground uppercase">
+                      <h2 className="text-sm font-black tracking-tight text-foreground">
                         {currentPaper.anonymizedLabel}
                       </h2>
                     </div>
                     <Separator orientation="vertical" className="h-6 bg-border mx-2" />
-                    <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
+                    <span className="eyebrow text-muted-foreground/40">
                       Paper {currentPaperIndex + 1} of {papers.length}
                     </span>
                   </div>
 
                   {/* Engagement gates strip */}
                   <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3 px-5 py-2 bg-accent/40 rounded-full border border-border/50 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 transition-all cursor-default">
+                    <div className="eyebrow flex items-center gap-3 px-5 py-2 bg-accent/40 rounded-full border border-border/50 text-muted-foreground/60 transition-all cursor-default">
                       <Tooltip>
                         <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${hasScrolledToBottom ? "text-green-500" : ""}`} />}>
                           {hasScrolledToBottom ? <CheckCircle2 className="h-3 w-3" /> : "○"} Read
@@ -246,8 +246,8 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                   style={{ width: "100%", maxWidth: "800px", minHeight: "100%" }}
                 >
                   <div className="absolute top-8 left-8 flex flex-col items-start gap-1">
-                    <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary/40 group-hover/page:text-primary transition-colors">Blind Calibration</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[#E6E1D6] group-hover/page:text-slate-400 transition-colors">Digital Manuscript</span>
+                    <span className="eyebrow text-primary/40 group-hover/page:text-primary transition-colors">Blind Calibration</span>
+                    <span className="eyebrow text-[#E6E1D6] group-hover/page:text-slate-400 transition-colors">Digital Manuscript</span>
                   </div>
 
                   <div className="p-16 lg:p-24 h-full font-serif overflow-hidden flex-1">
@@ -263,7 +263,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         {criteria.map((criterion, idx) => (
                           <div key={criterion.id} className="space-y-6">
                             <h2 className="text-xl font-bold italic border-l-2 border-amber-500 pl-4 tracking-tight text-slate-800 flex items-center gap-3">
-                              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-500/80 not-italic shrink-0">
+                              <span className="eyebrow text-amber-500/80 not-italic shrink-0">
                                 {criterion.id.toUpperCase()}
                               </span>
                               {criterion.name}
@@ -285,7 +285,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         <div className="pt-20 pb-8 shrink-0 w-full flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity">
                             <div className="flex flex-col items-center gap-4">
                               <CheckCircle2 className="h-10 w-10 text-primary" />
-                              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground">End of Submission</span>
+                              <span className="eyebrow text-muted-foreground">End of Submission</span>
                             </div>
                         </div>
                       )}
@@ -368,7 +368,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
 
                           {/* Score */}
                           <div>
-                            <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-2">Your score</span>
+                            <span className="eyebrow font-semibold text-muted-foreground/60 block mb-2">Your score</span>
                             <div className="flex gap-1.5">
                               {[1, 2, 3, 4, 5].map(v => (
                                 <Button
@@ -386,7 +386,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                           {/* Reason (shown once score is selected) */}
                           {activeScore > 0 && (
                             <div>
-                              <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-1.5">Reason for this score</span>
+                              <span className="eyebrow font-semibold text-muted-foreground/60 block mb-1.5">Reason for this score</span>
                               <textarea
                                 value={reasons[activeCriterion.id] ?? ''}
                                 onChange={e => setReasons(r => ({ ...r, [activeCriterion.id]: e.target.value }))}
@@ -399,7 +399,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
 
                           {/* Feedback */}
                           <div>
-                            <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-1.5">Feedback</span>
+                            <span className="eyebrow font-semibold text-muted-foreground/60 block mb-1.5">Feedback</span>
                             <textarea
                               value={feedbacks[activeCriterion.id] ?? ''}
                               onChange={e => setFeedbacks(f => ({ ...f, [activeCriterion.id]: e.target.value }))}
@@ -446,7 +446,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
               {/* Footer */}
               <div className="px-4 py-3 border-t border-border bg-background shrink-0 space-y-2">
                 {isLastCriterion && (
-                  <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 pb-1">
+                  <div className="eyebrow flex items-center justify-between text-muted-foreground/40 pb-1">
                     <span>Paper {currentPaperIndex + 1} of {papers.length}</span>
                     <span>{totalGradedPapers} complete</span>
                   </div>
@@ -488,7 +488,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         </TooltipTrigger>
                         {!isGateUnlocked && (
                           <TooltipContent className="max-w-xs p-3 space-y-1 mb-2">
-                            <p className="font-bold text-xs uppercase tracking-widest text-primary">Protocol Gate Locked</p>
+                            <p className="eyebrow text-xs text-primary">Protocol Gate Locked</p>
                             <p className="text-[11px] italic text-muted-foreground">
                               Scroll the manuscript, spend 3s reviewing, and score all {criteria.length} criteria.
                             </p>

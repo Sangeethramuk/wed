@@ -81,7 +81,7 @@ export default function ResultInsights() {
         <div className="space-y-1.5">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-black tracking-tight text-foreground">{title}</h1>
-            <Badge variant="outline" className="h-5 px-2 bg-primary/5 text-primary border-primary/20 text-[9px] font-black uppercase tracking-widest rounded-full">
+            <Badge variant="outline" className="eyebrow h-5 px-2 bg-primary/5 text-primary border-primary/20 rounded-full">
               PROTOCOL P1
             </Badge>
           </div>
@@ -112,14 +112,14 @@ export default function ResultInsights() {
             <Card className="border-border/60 shadow-[0_4px_20px_rgb(0,0,0,0.02)] rounded-[24px] overflow-hidden bg-background">
               <CardHeader className="p-8 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-[11px] font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+                  <CardTitle className="eyebrow text-foreground flex items-center gap-2">
                     <Activity className="w-3.5 h-3.5 text-primary" /> Batch Readiness
                   </CardTitle>
-                  <CardDescription className="text-[10px] uppercase font-bold text-muted-foreground/50 mt-1">Cohort SE-PH2 Evaluation</CardDescription>
+                  <CardDescription className="text-[10px] font-bold text-muted-foreground/50 mt-1">Cohort SE-PH2 Evaluation</CardDescription>
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-black text-foreground tabular-nums tracking-tighter">45<span className="text-muted-foreground/30 text-sm">/45</span></div>
-                  <div className="text-[9px] font-black text-green-600 uppercase tracking-widest">100% Processed</div>
+                  <div className="eyebrow text-green-600">100% Processed</div>
                 </div>
               </CardHeader>
               <CardContent className="p-8 space-y-8">
@@ -136,7 +136,7 @@ export default function ResultInsights() {
                     { label: 'Integrity Alert', count: 2, color: 'text-red-600', bg: 'bg-red-500/10' },
                   ].map((stat) => (
                     <div key={stat.label} className={cn("p-4 rounded-2xl border border-border/40 flex items-center justify-between", stat.bg)}>
-                      <span className="text-[10px] font-bold text-muted-foreground/80 uppercase tracking-tight">{stat.label}</span>
+                      <span className="text-[10px] font-bold text-muted-foreground/80 tracking-tight">{stat.label}</span>
                       <span className={cn("text-lg font-black", stat.color)}>{stat.count}</span>
                     </div>
                   ))}
@@ -148,7 +148,7 @@ export default function ResultInsights() {
             <div className="space-y-6">
               <div className="flex items-center gap-3 px-2">
                  <Clock className="w-4 h-4 text-primary" />
-                 <span className="text-[11px] font-black uppercase tracking-[0.2em] text-foreground">Launch Scheduling</span>
+                 <span className="eyebrow text-foreground">Launch Scheduling</span>
               </div>
               <div className="grid gap-4">
                 {[
@@ -176,7 +176,7 @@ export default function ResultInsights() {
                       <div className="flex items-center justify-between">
                          <div className="flex items-center gap-3">
                             <span className={cn("text-sm font-black tracking-tight", releaseTiming === opt.key ? "text-primary" : "text-foreground")}>{opt.title}</span>
-                            {opt.badge && <Badge variant="outline" className="h-4 px-1.5 text-[8px] font-black bg-emerald-500/10 text-emerald-700 border-green-200 uppercase tracking-widest rounded-sm">{opt.badge}</Badge>}
+                            {opt.badge && <Badge variant="outline" className="eyebrow h-4 px-1.5 bg-emerald-500/10 text-emerald-700 border-green-200 rounded-sm">{opt.badge}</Badge>}
                          </div>
                          <opt.icon className={cn("w-4 h-4 opacity-20", releaseTiming === opt.key ? "text-primary opacity-60" : "text-muted-foreground")} />
                       </div>
@@ -194,21 +194,21 @@ export default function ResultInsights() {
             <div className="sticky top-8">
               <Card className="border-primary/20 shadow-[0_20px_50px_rgba(59,130,246,0.08)] rounded-[24px] overflow-hidden bg-primary/5">
                 <CardHeader className="p-8 border-b border-primary/10">
-                   <CardTitle className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Finalize Batch</CardTitle>
+                   <CardTitle className="eyebrow text-primary">Finalize Batch</CardTitle>
                 </CardHeader>
                 <CardContent className="p-8 space-y-8">
                   <div className="space-y-6">
                     <div className="flex gap-4">
                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><Users className="w-5 h-5 text-primary" /></div>
                        <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">Target Cohort</p>
+                          <p className="eyebrow text-muted-foreground/60 mb-1">Target Cohort</p>
                           <p className="text-sm font-bold text-foreground">45 Evaluated Students</p>
                        </div>
                     </div>
                     <div className="flex gap-4">
                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><ShieldCheck className="w-5 h-5 text-primary" /></div>
                        <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">Audit Status</p>
+                          <p className="eyebrow text-muted-foreground/60 mb-1">Audit Status</p>
                           <p className="text-sm font-bold text-foreground">Verified & Immutable</p>
                        </div>
                     </div>
@@ -235,7 +235,7 @@ export default function ResultInsights() {
                       'Finalize launch'
                     )}
                   </Button>
-                  <p className="text-center text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">Protocol Version v.2.4.1</p>
+                  <p className="eyebrow text-center text-muted-foreground/40">Protocol Version v.2.4.1</p>
                 </CardContent>
               </Card>
             </div>
@@ -273,7 +273,7 @@ export default function ResultInsights() {
         ].map((stat) => (
           <motion.div whileHover={{ y: -4 }} key={stat.label} className="p-7 bg-background border border-border/40 rounded-[28px] shadow-[0_4px_24px_rgb(0,0,0,0.02)] transition-all">
             <div className="flex items-start justify-between mb-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/40">{stat.label}</span>
+              <span className="eyebrow text-muted-foreground/40">{stat.label}</span>
               <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center">
                  <stat.icon className="h-5 w-5 text-primary opacity-60" />
               </div>
@@ -283,7 +283,7 @@ export default function ResultInsights() {
                 {stat.value}<span className="text-sm font-bold text-muted-foreground/40 ml-1.5">{stat.unit}</span>
               </div>
               <div className={cn(
-                "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest",
+                "eyebrow flex items-center gap-1.5",
                 stat.trend === 'up' ? 'text-green-600' : 'text-muted-foreground/60'
               )}>
                 {stat.trend === 'up' && <ArrowUpRight className="w-3.5 h-3.5" />} {stat.sub}
@@ -299,9 +299,9 @@ export default function ResultInsights() {
           <CardHeader className="p-10 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-xl font-extrabold tracking-tight text-foreground">Performance Distribution</CardTitle>
-              <CardDescription className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mt-1">Cohort Frequency Mapping</CardDescription>
+              <CardDescription className="eyebrow text-muted-foreground/40 mt-1">Cohort Frequency Mapping</CardDescription>
             </div>
-            <Badge variant="outline" className="border-border/30 px-3 h-6 text-[9px] font-bold tracking-widest uppercase bg-background shadow-sm rounded-full">P1 Calibrated</Badge>
+            <Badge variant="outline" className="eyebrow border-border/30 px-3 h-6 bg-background shadow-sm rounded-full">P1 Calibrated</Badge>
           </CardHeader>
           <CardContent className="p-10">
             <div className="flex items-end gap-5 h-72">
@@ -328,7 +328,7 @@ export default function ResultInsights() {
                     </div>
                     <div className="text-center space-y-1 pt-5 shrink-0">
                       <p className="text-[11px] font-black text-foreground tracking-tighter tabular-nums">{data.range}</p>
-                      <p className="text-[8px] font-black text-muted-foreground/30 uppercase tracking-[0.2em]">{data.label}</p>
+                      <p className="eyebrow text-muted-foreground/30">{data.label}</p>
                     </div>
                   </div>
                 )
@@ -342,7 +342,7 @@ export default function ResultInsights() {
           <CardHeader className="p-10 border-b border-border/10 bg-muted/5">
             <div className="flex items-center gap-2 text-primary mb-1">
               <Sparkles className="h-4 w-4 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">Smart Interventions</span>
+              <span className="eyebrow text-muted-foreground/50">Smart Interventions</span>
             </div>
             <CardTitle className="text-xl font-extrabold tracking-tight text-foreground leading-tight">Identified Logic Gaps</CardTitle>
           </CardHeader>
@@ -352,9 +352,9 @@ export default function ResultInsights() {
                  {commonGaps.map((gap) => (
                    <div key={gap.label} className="p-8 space-y-3 hover:bg-muted/10 transition-colors group">
                      <div className="flex items-center justify-between">
-                       <span className="text-[11px] font-black text-foreground uppercase tracking-widest">{gap.label}</span>
+                       <span className="eyebrow text-foreground">{gap.label}</span>
                        <Badge variant="outline" className={cn(
-                         "h-5 text-[8px] font-black uppercase tracking-widest rounded-sm",
+                         "eyebrow h-5 rounded-sm",
                          gap.severity === 'high' ? 'bg-amber-500/10 text-amber-600 border-amber-200' : 'bg-muted/50 text-muted-foreground border-border/40'
                        )}>
                          {gap.severity} RISK
@@ -388,7 +388,7 @@ export default function ResultInsights() {
         <CardHeader className="p-10 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
           <div className="space-y-1">
             <CardTitle className="text-xl font-extrabold tracking-tight text-foreground">Cohort Roster</CardTitle>
-            <CardDescription className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Breakdown by Assessment Standard</CardDescription>
+            <CardDescription className="eyebrow text-muted-foreground/40">Breakdown by Assessment Standard</CardDescription>
           </div>
           <div className="flex items-center gap-2">
              <Button variant="ghost" size="sm">Filter range</Button>
@@ -400,10 +400,10 @@ export default function ResultInsights() {
             <table className="w-full text-sm text-left">
               <thead className="bg-muted/20 border-b border-border/10">
                 <tr>
-                  <th className="px-10 py-5 font-black uppercase tracking-widest text-[10px] text-muted-foreground/50">Student Identity</th>
-                  <th className="px-6 py-5 font-black uppercase tracking-widest text-[10px] text-muted-foreground/50 text-center">Score Matrix</th>
-                  <th className="px-6 py-5 font-black uppercase tracking-widest text-[10px] text-muted-foreground/50 text-center">Protocol Status</th>
-                  <th className="px-10 py-5 font-black uppercase tracking-widest text-[10px] text-muted-foreground/50 text-right">Evaluation Grade</th>
+                  <th className="eyebrow px-10 py-5 text-muted-foreground/50">Student Identity</th>
+                  <th className="eyebrow px-6 py-5 text-muted-foreground/50 text-center">Score Matrix</th>
+                  <th className="eyebrow px-6 py-5 text-muted-foreground/50 text-center">Protocol Status</th>
+                  <th className="eyebrow px-10 py-5 text-muted-foreground/50 text-right">Evaluation Grade</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/10">
@@ -430,7 +430,7 @@ export default function ResultInsights() {
                     </td>
                     <td className="px-6 py-6 text-center">
                        <Badge variant="outline" className={cn(
-                         "h-5 px-2 text-[8px] font-black uppercase tracking-widest rounded-full",
+                         "eyebrow h-5 px-2 rounded-full",
                          student.status === 'Published' ? 'bg-green-500/5 text-green-700 border-green-200' :
                          student.status === 'Ready' ? 'bg-primary/5 text-primary border-primary/20' :
                          'bg-amber-500/5 text-amber-700 border-amber-200'
@@ -459,7 +459,7 @@ export default function ResultInsights() {
       
       {/* Footer Audit Message */}
       <div className="text-center pb-12">
-         <p className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-[0.4em]">End of Transcript · EducAItors AI Protocol Verified</p>
+         <p className="eyebrow text-muted-foreground/30">End of Transcript · EducAItors AI Protocol Verified</p>
       </div>
     </div>
   )
