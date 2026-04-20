@@ -74,6 +74,21 @@ export const confidenceStyles = {
 
 export type ConfidenceKey = keyof typeof confidenceStyles;
 
+/**
+ * Rubric criterion colors. Mirror the 6 category slots 1:1 so criteria
+ * share the same palette as departments — no extra CSS vars needed.
+ */
+export const criterionStyles = {
+  c1: token("--category-1", "--category-1-bg"),
+  c2: token("--category-2", "--category-2-bg"),
+  c3: token("--category-3", "--category-3-bg"),
+  c4: token("--category-4", "--category-4-bg"),
+  c5: token("--category-5", "--category-5-bg"),
+  c6: token("--category-6", "--category-6-bg"),
+} as const satisfies Record<string, StylePair>;
+
+export type CriterionKey = keyof typeof criterionStyles;
+
 export const artifactStyles = {
   pdf: statusStyles.error,
   docx: statusStyles.info,
