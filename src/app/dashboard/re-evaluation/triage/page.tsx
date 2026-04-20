@@ -6,6 +6,7 @@ import { ChevronLeft, Download } from 'lucide-react'
 import { STUDENTS, STUDENT_ORDER, ageStatusKind } from '@/lib/data/re-evaluation-data'
 import { useReEvalStore } from '@/lib/store/re-evaluation-store'
 import { BriefingModal } from '@/components/re-evaluation/briefing-modal'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { statusStyles, type StatusKey } from '@/lib/design-tokens'
 import { cn } from '@/lib/utils'
 
@@ -102,167 +103,169 @@ export default function ReEvaluationPage() {
       {/* Main Content Sections */}
       <div className="max-w-6xl mx-auto w-full pb-20 px-4 pt-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
         
-        {/* Table Container */}
-        <div className="rounded-2xl border border-border/10 bg-card/10 backdrop-blur-sm overflow-hidden">
-          {/* Header */}
-          <div
-            className="eyebrow grid text-muted-foreground/40 bg-muted/40 border-b border-border/50"
-            style={{
-              gridTemplateColumns: '220px 180px 140px 1fr 110px 140px 160px',
-            }}
-          >
-            {['Student', 'Assignment · Criterion', 'Concern', 'Student reasoning', 'Submitted', 'Status', 'Action'].map((h, i) => (
-              <div key={i} className="px-4 py-4">{h}</div>
-            ))}
-          </div>
+        {/* Table — DS primitive. Borders: only row-level (border-b via
+            TableRow); no vertical cell dividers. Container uses the full
+            border token (not /10) for DS-consistent visibility. */}
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <Table className="text-left">
+            <TableHeader className="bg-muted/40">
+              <TableRow className="hover:bg-muted/40">
+                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 260 }}>Student</TableHead>
+                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 180 }}>Assignment · Criterion</TableHead>
+                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 150 }}>Concern</TableHead>
+                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto">Student reasoning</TableHead>
+                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 110 }}>Submitted</TableHead>
+                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 140 }}>Status</TableHead>
+                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto text-center" style={{ width: 170 }}>Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {orderedStudents.map((id) => {
+                const st = STUDENTS[id]
+                const status = getStatus(id)
+                const concernKind = CONCERN_KINDS[st.concernVariant as keyof typeof CONCERN_KINDS] ?? 'neutral'
+                const concern = statusStyles[concernKind]
+                const avatarKind: StatusKey = st.isNew ? 'info' : st.ageStatus === 'overdue' ? 'error' : 'neutral'
+                const avatar = statusStyles[avatarKind]
 
-        {/* Rows */}
-        {orderedStudents.map((id) => {
-          const st = STUDENTS[id]
-          const status = getStatus(id)
-          const concernKind = CONCERN_KINDS[st.concernVariant as keyof typeof CONCERN_KINDS] ?? 'neutral'
-          const concern = statusStyles[concernKind]
-          const avatarKind: StatusKey = st.isNew ? 'info' : st.ageStatus === 'overdue' ? 'error' : 'neutral'
-          const avatar = statusStyles[avatarKind]
-
-          return (
-            <div key={id} className="relative group/row border-b border-border/50">
-              <div
-                className="grid hover:bg-muted/20 transition-colors"
-                style={{
-                  gridTemplateColumns: '220px 180px 140px 1fr 110px 140px 160px',
-                  minHeight: 80,
-                }}
-              >
-                {/* Student */}
-                <div className="flex items-stretch p-0 border-r border-border/30">
-                  <div className={cn("w-1 flex-shrink-0 self-stretch", statusStyles[ageStatusKind(st.ageStatus)].dot)} />
-                  <div className="px-4 py-4 flex flex-col justify-center gap-1.5 flex-1">
-                    <div className="flex items-center gap-3">
-                      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 border", avatar.bg, avatar.border, avatar.text)}>
-                        {st.name.split(' ').map((n) => n[0]).join('')}
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <div>
-                          <div className="text-sm font-semibold tracking-tight flex items-center gap-1.5 text-foreground">
-                            {st.name}
-                            {st.isNew && <span className="w-1.5 h-1.5 rounded-full inline-block bg-primary" />}
-                          </div>
-                          <div className="eyebrow text-muted-foreground/40">{st.rollId}</div>
+                // Resolved / HOD rows: single full-width banner cell
+                // replacing the 7 data columns (same UX as the old
+                // absolute-positioned overlay, now semantically correct
+                // as a colSpan TableCell).
+                if (status === 'resolved') {
+                  return (
+                    <TableRow key={id} className="group/row">
+                      <TableCell colSpan={7} className={cn("px-4 py-4 text-xs font-semibold", statusStyles.success.bg, statusStyles.success.text)}>
+                        <div className="flex items-center gap-2.5">
+                          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                            <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5" />
+                            <path d="M6 10l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          Resolved · Student notified
                         </div>
-                        {st.isCluster && (
-                          <span className={cn("eyebrow self-start px-2 py-0.5 rounded-md border w-fit", statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text)}>
-                            C2 cluster
-                          </span>
-                        )}
+                      </TableCell>
+                    </TableRow>
+                  )
+                }
+
+                if (status === 'hod') {
+                  return (
+                    <TableRow key={id} className="group/row">
+                      <TableCell colSpan={7} className={cn("px-4 py-4 text-xs font-semibold", statusStyles.warning.bg, statusStyles.warning.text)}>
+                        <div className="flex items-center gap-2">
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                            <path d="M8 2l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                          </svg>
+                          Awaiting HOD approval · Dr. R. Kumar · Student notified once HOD approves
+                          <button
+                            onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
+                            className={cn("ml-auto inline-flex items-center whitespace-nowrap px-3 py-1.5 rounded-md text-xs font-semibold border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--status-warning)]/30", statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text)}
+                          >
+                            View →
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                }
+
+                return (
+                  <TableRow key={id} className="group/row hover:bg-muted/20">
+                    {/* Student */}
+                    <TableCell className="p-0 align-middle whitespace-normal">
+                      <div className="flex items-stretch">
+                        <div className={cn("w-1 flex-shrink-0 self-stretch", statusStyles[ageStatusKind(st.ageStatus)].dot)} />
+                        <div className="px-4 py-4 flex-1 flex flex-col gap-1.5">
+                          <div className="flex items-center gap-3">
+                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 border", avatar.bg, avatar.border, avatar.text)}>
+                              {st.name.split(' ').map((n) => n[0]).join('')}
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <div>
+                                <div className="text-sm font-semibold tracking-tight flex items-center gap-1.5 text-foreground">
+                                  {st.name}
+                                  {st.isNew && <span className="w-1.5 h-1.5 rounded-full inline-block bg-primary" />}
+                                </div>
+                                <div className="eyebrow text-muted-foreground/60">{st.rollId}</div>
+                              </div>
+                              {st.isCluster && (
+                                <span className={cn("eyebrow self-start whitespace-nowrap px-2 py-0.5 rounded-md border w-fit", statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text)}>
+                                  C2 cluster
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
+                    </TableCell>
 
-                {/* Assignment · Criterion */}
-                <div className="px-4 py-4 flex flex-col justify-center gap-1.5 border-r border-border/30">
-                  <div className="text-xs font-semibold tracking-tight text-foreground">{st.assign}</div>
-                  <span className="eyebrow self-start px-2 py-0.5 rounded-md bg-primary/5 text-primary border border-primary/10">
-                    {st.critShort} · {st.origScore}/{st.maxScore}
-                  </span>
-                </div>
+                    {/* Assignment · Criterion */}
+                    <TableCell className="px-4 py-4 align-middle whitespace-normal">
+                      <div className="flex flex-col gap-1.5">
+                        <div className="text-xs font-semibold tracking-tight text-foreground">{st.assign}</div>
+                        <span className="eyebrow self-start whitespace-nowrap px-2 py-0.5 rounded-md bg-primary/5 text-primary border border-primary/10">
+                          {st.critShort} · {st.origScore}/{st.maxScore}
+                        </span>
+                      </div>
+                    </TableCell>
 
-                {/* Concern */}
-                <div className="px-4 py-4 flex flex-col justify-center gap-1.5 border-r border-border/30">
-                  <div className="text-xs font-bold text-muted-foreground">{st.concern}</div>
-                  <span className={cn("eyebrow self-start whitespace-nowrap px-1.5 py-0.5 rounded-md border", concern.bg, concern.text, concern.border)}>
-                    {st.concernType}
-                  </span>
-                </div>
+                    {/* Concern */}
+                    <TableCell className="px-4 py-4 align-middle whitespace-normal">
+                      <div className="flex flex-col gap-1.5">
+                        <div className="text-xs font-bold text-muted-foreground">{st.concern}</div>
+                        <span className={cn("eyebrow self-start whitespace-nowrap px-1.5 py-0.5 rounded-md border", concern.bg, concern.text, concern.border)}>
+                          {st.concernType}
+                        </span>
+                      </div>
+                    </TableCell>
 
-                {/* Student reasoning */}
-                <div className="px-4 py-4 flex items-center border-r border-border/30">
-                  <div
-                    className="text-xs font-medium leading-relaxed overflow-hidden text-muted-foreground italic"
-                    style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical' as const,
-                    }}
-                  >
-                    "{st.sv}"
-                  </div>
-                </div>
+                    {/* Student reasoning */}
+                    <TableCell className="px-4 py-4 align-middle whitespace-normal">
+                      <div
+                        className="text-xs font-medium leading-relaxed overflow-hidden text-muted-foreground italic"
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical' as const,
+                        }}
+                      >
+                        "{st.sv}"
+                      </div>
+                    </TableCell>
 
-                {/* Submitted */}
-                <div className="px-4 py-4 flex flex-col justify-center border-r border-border/30">
-                  <div className={cn("text-xs font-semibold tracking-tight", statusStyles[st.ageStatus === 'overdue' ? 'error' : st.ageStatus === 'new' ? 'neutral' : 'warning'].text)}>
-                    {st.ageLabel}
-                  </div>
-                  <div className="eyebrow text-muted-foreground/30">
-                    {st.ageStatus === 'overdue' ? 'Overdue' : st.ageStatus === 'new' ? 'New' : 'Pending'}
-                  </div>
-                </div>
+                    {/* Submitted */}
+                    <TableCell className="px-4 py-4 align-middle whitespace-normal">
+                      <div className="flex flex-col">
+                        <div className={cn("text-xs font-semibold tracking-tight", statusStyles[st.ageStatus === 'overdue' ? 'error' : st.ageStatus === 'new' ? 'neutral' : 'warning'].text)}>
+                          {st.ageLabel}
+                        </div>
+                        <div className="eyebrow text-muted-foreground/60">
+                          {st.ageStatus === 'overdue' ? 'Overdue' : st.ageStatus === 'new' ? 'New' : 'Pending'}
+                        </div>
+                      </div>
+                    </TableCell>
 
-                {/* Status */}
-                <div className="px-4 py-4 flex items-center border-r border-border/30">
-                  <StatusPill status={status} ageStatus={st.ageStatus} />
-                </div>
+                    {/* Status */}
+                    <TableCell className="px-4 py-4 align-middle">
+                      <StatusPill status={status} ageStatus={st.ageStatus} />
+                    </TableCell>
 
-                {/* Action */}
-                <div className="px-4 py-4 flex items-center justify-center">
-                  {status === 'pending' && (
-                    <button
-                      onClick={() => setBriefingId(id)}
-                      className="group/btn inline-flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-                    >
-                      Review now
-                      <ChevronLeft className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
-                    </button>
-                  )}
-                  {status === 'hod' && (
-                    <button
-                      onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                      className="inline-flex items-center whitespace-nowrap text-sm font-medium px-4 py-2 rounded-lg text-muted-foreground border border-border bg-card/50 hover:bg-card hover:border-border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-                    >
-                      View →
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Resolved overlay */}
-              {status === 'resolved' && (
-                <div
-                  className={cn("absolute inset-0 flex items-center px-4 gap-2.5 text-xs font-semibold pointer-events-none", statusStyles.success.bg, statusStyles.success.text)}
-                  style={{ zIndex: 5 }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className={statusStyles.success.text}>
-                    <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M6 10l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  Resolved · Student notified
-                </div>
-              )}
-
-              {/* HOD overlay */}
-              {status === 'hod' && (
-                <div
-                  className={cn("absolute inset-0 flex items-center px-4 gap-2 text-xs font-semibold pointer-events-none", statusStyles.warning.bg, statusStyles.warning.text)}
-                  style={{ zIndex: 5 }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className={statusStyles.warning.text}>
-                    <path d="M8 2l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-                  </svg>
-                  Awaiting HOD approval · Dr. R. Kumar · Student notified once HOD approves
-                  <button
-                    onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                    className={cn("ml-auto pointer-events-auto px-3 py-1 rounded text-xs font-semibold cursor-pointer border", statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text)}
-                  >
-                    View →
-                  </button>
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
+                    {/* Action */}
+                    <TableCell className="px-4 py-4 align-middle text-center">
+                      <button
+                        onClick={() => setBriefingId(id)}
+                        className="group/btn inline-flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                      >
+                        Review now
+                        <ChevronLeft className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </div>
 
       {/* Briefing modal */}
       {briefingId && (
