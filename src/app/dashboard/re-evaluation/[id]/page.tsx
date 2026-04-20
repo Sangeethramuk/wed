@@ -439,7 +439,7 @@ export default function ReEvalWorkspacePage() {
                       <div className="eyebrow flex items-center gap-2 text-slate-800">
                         <EditIcon className="size-3.5" />
                         Decision Rationale
-                        <span className="px-1.5 py-0.5 rounded bg-red-500 text-white text-xs font-black tracking-[0.1em]">REQUIRED</span>
+                        <span className="px-1.5 py-0.5 rounded bg-red-500 text-white text-xs font-black tracking-widest">REQUIRED</span>
                       </div>
                       <span className="text-xs font-black tracking-widest text-muted-foreground/30">{reasonLen} / 500</span>
                     </div>
