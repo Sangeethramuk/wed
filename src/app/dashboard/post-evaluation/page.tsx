@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import {
   BarChart3,
   Users,
@@ -396,64 +397,62 @@ export default function ResultInsights() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-muted/20 border-b border-border/10">
-                <tr>
-                  <th className="eyebrow px-10 py-5 text-muted-foreground/50">Student Identity</th>
-                  <th className="eyebrow px-6 py-5 text-muted-foreground/50 text-center">Score Matrix</th>
-                  <th className="eyebrow px-6 py-5 text-muted-foreground/50 text-center">Protocol Status</th>
-                  <th className="eyebrow px-10 py-5 text-muted-foreground/50 text-right">Evaluation Grade</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/10">
-                {rosterData.map((student) => (
-                  <tr key={student.name} className="hover:bg-muted/5 transition-colors group">
-                    <td className="px-10 py-6">
-                      <div className="flex items-center gap-4">
-                         <div className="w-10 h-10 rounded-2xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-semibold text-muted-foreground group-hover:text-primary">
-                            {student.name.split(' ').map(n => n[0]).join('')}
-                         </div>
-                         <span className="font-extrabold text-foreground text-sm tracking-tight">{student.name}</span>
+          <Table className="text-left">
+            <TableHeader className="bg-muted/20 border-b border-border/10">
+              <TableRow>
+                <TableHead className="eyebrow px-10 py-5 text-muted-foreground/50">Student Identity</TableHead>
+                <TableHead className="eyebrow px-6 py-5 text-muted-foreground/50 text-center">Score Matrix</TableHead>
+                <TableHead className="eyebrow px-6 py-5 text-muted-foreground/50 text-center">Protocol Status</TableHead>
+                <TableHead className="eyebrow px-10 py-5 text-muted-foreground/50 text-right">Evaluation Grade</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className="divide-y divide-border/10">
+              {rosterData.map((student) => (
+                <TableRow key={student.name} className="hover:bg-muted/5 group">
+                  <TableCell className="px-10 py-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-2xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-semibold text-muted-foreground group-hover:text-primary">
+                        {student.name.split(' ').map(n => n[0]).join('')}
                       </div>
-                    </td>
-                    <td className="px-6 py-6 font-mono text-muted-foreground text-center">
-                       <div className="flex items-center justify-center gap-3">
-                          <span className="text-xs font-bold">{student.c1}</span>
-                          <span className="text-muted-foreground/20 text-xs">|</span>
-                          <span className="text-xs font-bold">{student.c2}</span>
-                          <span className="text-muted-foreground/20 text-xs">|</span>
-                          <span className="text-xs font-bold">{student.c3}</span>
-                          <span className="text-muted-foreground/20 text-xs">|</span>
-                          <span className="text-xs font-semibold text-foreground">{student.total}</span>
-                       </div>
-                    </td>
-                    <td className="px-6 py-6 text-center">
-                       <Badge variant="outline" className={cn(
-                         "eyebrow h-5 px-2 rounded-full",
-                         student.status === 'Published' ? 'bg-[color:var(--status-success)]/5 text-[color:var(--status-success)] border-[color:var(--status-success)]/30' :
-                         student.status === 'Ready' ? 'bg-primary/5 text-primary border-primary/20' :
-                         'bg-[color:var(--status-warning)]/5 text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30'
-                       )}>
-                          {student.status}
-                       </Badge>
-                    </td>
-                    <td className="px-10 py-6 text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        <span className="text-xl font-semibold tabular-nums tracking-tight text-foreground">{student.grade}</span>
-                        <div className={cn(
-                          "w-1.5 h-6 rounded-full",
-                          student.grade.includes('A') ? 'bg-primary' :
-                          student.grade.includes('B') ? 'bg-[color:var(--status-success)]' :
-                          'bg-[color:var(--status-warning)]'
-                        )} />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      <span className="font-extrabold text-foreground text-sm tracking-tight">{student.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-6 font-mono text-muted-foreground text-center">
+                    <div className="flex items-center justify-center gap-3">
+                      <span className="text-xs font-bold">{student.c1}</span>
+                      <span className="text-muted-foreground/20 text-xs">|</span>
+                      <span className="text-xs font-bold">{student.c2}</span>
+                      <span className="text-muted-foreground/20 text-xs">|</span>
+                      <span className="text-xs font-bold">{student.c3}</span>
+                      <span className="text-muted-foreground/20 text-xs">|</span>
+                      <span className="text-xs font-semibold text-foreground">{student.total}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-6 text-center">
+                    <Badge variant="outline" className={cn(
+                      "eyebrow h-5 px-2 rounded-full",
+                      student.status === 'Published' ? 'bg-[color:var(--status-success)]/5 text-[color:var(--status-success)] border-[color:var(--status-success)]/30' :
+                      student.status === 'Ready' ? 'bg-primary/5 text-primary border-primary/20' :
+                      'bg-[color:var(--status-warning)]/5 text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30'
+                    )}>
+                      {student.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="px-10 py-6 text-right">
+                    <div className="flex items-center justify-end gap-3">
+                      <span className="text-xl font-semibold tabular-nums tracking-tight text-foreground">{student.grade}</span>
+                      <div className={cn(
+                        "w-1.5 h-6 rounded-full",
+                        student.grade.includes('A') ? 'bg-primary' :
+                        student.grade.includes('B') ? 'bg-[color:var(--status-success)]' :
+                        'bg-[color:var(--status-warning)]'
+                      )} />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
       
