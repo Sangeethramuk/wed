@@ -228,9 +228,9 @@ export function AssignmentSpecs() {
     return (
       <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-10">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={prevStep} className="gap-2 px-3 text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" size="sm" onClick={prevStep}>
             <ArrowLeft className="h-4 w-4" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Back to strategy</span>
+            Back to strategy
           </Button>
         </div>
 
@@ -403,8 +403,7 @@ export function AssignmentSpecs() {
                   <div className="flex items-center gap-0.5">
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 rounded-md text-muted-foreground/40 hover:text-foreground"
+                      size="icon-sm"
                       onClick={() => reorderBlock(block.id, "up")}
                       disabled={isFirst(block.id)}
                     >
@@ -412,8 +411,7 @@ export function AssignmentSpecs() {
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 rounded-md text-muted-foreground/40 hover:text-foreground"
+                      size="icon-sm"
                       onClick={() => reorderBlock(block.id, "down")}
                       disabled={isLast(block.id)}
                     >
@@ -421,8 +419,7 @@ export function AssignmentSpecs() {
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 rounded-md text-muted-foreground/40 hover:text-foreground"
+                      size="icon-sm"
                       onClick={() => toggleCollapsed(block.id)}
                     >
                       {isCollapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
@@ -430,8 +427,7 @@ export function AssignmentSpecs() {
                     {canRemove && (
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 rounded-md text-muted-foreground/40 hover:text-destructive"
+                        size="icon-sm"
                         onClick={() => removeBlock(block.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -685,7 +681,7 @@ function QuestionsEditor({
           <Button
             variant="outline"
             size="sm"
-            className="h-8 text-[9px] font-black uppercase tracking-widest border border-dashed border-border/40 bg-transparent hover:border-primary/40 hover:text-primary rounded-md"
+            className="border-dashed"
             onClick={onAdd}
           >
             <Plus className="h-3 w-3 mr-1" />
@@ -694,7 +690,6 @@ function QuestionsEditor({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 hover:text-primary rounded-md"
             onClick={onImport}
           >
             <Download className="h-3 w-3 mr-1" />
@@ -703,7 +698,6 @@ function QuestionsEditor({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 hover:text-primary rounded-md"
             onClick={onSuggest}
           >
             <Sparkles className="h-3 w-3 mr-1" />
@@ -767,8 +761,8 @@ function QuestionRow({
           </div>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-6 w-6 rounded-md text-muted-foreground/30 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+            size="icon-xs"
+            className="opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={onRemove}
           >
             <X className="h-3 w-3" />
@@ -881,8 +875,8 @@ function DeliverablesEditor({
               </Select>
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-md text-muted-foreground/30 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                size="icon-sm"
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => onRemove(item.id)}
               >
                 <X className="h-3 w-3" />
@@ -894,7 +888,7 @@ function DeliverablesEditor({
       <Button
         variant="outline"
         size="sm"
-        className="h-8 text-[9px] font-black uppercase tracking-widest border border-dashed border-border/40 bg-transparent hover:border-primary/40 hover:text-primary rounded-md"
+        className="border-dashed"
         onClick={onAdd}
       >
         <Plus className="h-3 w-3 mr-1" />
@@ -939,8 +933,8 @@ function ResourcesEditor({
               />
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-md text-muted-foreground/30 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                size="icon-sm"
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => onRemove(item.id)}
               >
                 <X className="h-3 w-3" />
@@ -952,7 +946,7 @@ function ResourcesEditor({
       <Button
         variant="outline"
         size="sm"
-        className="h-8 text-[9px] font-black uppercase tracking-widest border border-dashed border-border/40 bg-transparent hover:border-primary/40 hover:text-primary rounded-md"
+        className="border-dashed"
         onClick={onAdd}
       >
         <Plus className="h-3 w-3 mr-1" />
