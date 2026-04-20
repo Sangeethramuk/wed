@@ -46,13 +46,14 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border h-16 justify-center px-2">
+      <SidebarHeader className="border-b border-sidebar-border h-16 justify-center px-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:items-center">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
               render={<Link href="/dashboard" />}
               tooltip="Symbiosis University"
+              className="group-data-[collapsible=icon]:justify-center"
             >
               <div className="flex aspect-square size-9 items-center justify-center rounded-full bg-destructive/10 text-destructive shrink-0">
                 <span className="text-xs font-semibold">SIU</span>
@@ -65,20 +66,21 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="pt-4">
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu className="gap-1">
+      <SidebarContent className="pt-4 group-data-[collapsible=icon]:pt-3">
+        <SidebarGroup className="group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:items-center">
+          <SidebarGroupContent className="group-data-[collapsible=icon]:w-full">
+            <SidebarMenu className="gap-1 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:items-center">
               {mainNavItems.map((item) => {
                 const active = isItemActive(pathname, item.url)
                 return (
-                  <SidebarMenuItem key={item.title}>
+                  <SidebarMenuItem key={item.title} className="group-data-[collapsible=icon]:w-auto">
                     <SidebarMenuButton
                       size="lg"
                       isActive={active}
                       render={<Link href={item.url} />}
                       tooltip={item.title}
                       className={cn(
+                        "group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center",
                         active && "bg-primary/10 text-primary data-active:bg-primary/10 data-active:text-primary hover:bg-primary/15 hover:text-primary",
                       )}
                     >
@@ -93,19 +95,23 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-3 gap-1 group-data-[collapsible=icon]:p-2">
-        <SidebarMenu className="gap-1">
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" tooltip="Help & Information">
+      <SidebarFooter className="border-t border-sidebar-border p-3 gap-1 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:items-center">
+        <SidebarMenu className="gap-1 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:items-center">
+          <SidebarMenuItem className="group-data-[collapsible=icon]:w-auto">
+            <SidebarMenuButton
+              size="lg"
+              tooltip="Help & Information"
+              className="group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center"
+            >
               <HelpCircle className="size-5" />
               <span className={cn("text-sm font-medium", HIDE_WHEN_COLLAPSED)}>Help & Information</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          <SidebarMenuItem>
+          <SidebarMenuItem className="group-data-[collapsible=icon]:w-auto">
             <SidebarMenuButton
               size="lg"
               tooltip="Log out"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center"
             >
               <LogOut className="size-5" />
               <span className={cn("text-sm font-medium", HIDE_WHEN_COLLAPSED)}>Log out</span>
