@@ -2,7 +2,9 @@
 
 import { useRef, useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { STUDENTS, BRIEFINGS } from '@/lib/data/re-evaluation-data'
+import { STUDENTS, BRIEFINGS, verdictKind, confidenceKind, auditEventKind } from '@/lib/data/re-evaluation-data'
+import { statusStyles, confidenceStyles } from '@/lib/design-tokens'
+import { cn } from '@/lib/utils'
 
 const FLAG_STYLES = {
   red:   { bg: 'rgba(239, 68, 68, 0.03)', border: 'rgba(239, 68, 68, 0.1)', text: '#EF4444', dot: '#EF4444' },
@@ -201,7 +203,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                   <div className="text-[9px] font-black uppercase tracking-widest text-blue-600/60 mb-2.5">Student Reasoning</div>
                   <div className="text-[13px] font-medium leading-relaxed italic text-slate-700 mb-4">"{st.sv}"</div>
                   <div className="flex items-center gap-2 pt-3 border-t border-blue-500/10">
-                    <div className="size-1.5 rounded-full" style={{ background: st.vcolor }} />
+                    <div className={cn("size-1.5 rounded-full", statusStyles[verdictKind(st.vcolor)].dot)} />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">{st.verdict}</span>
                   </div>
                 </div>
@@ -258,7 +260,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                 <div className="rounded-2xl p-4 bg-card/30 border border-border/10 flex flex-col justify-center">
                   <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">AI Confidence</span>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <div className="size-2 rounded-full" style={{ background: st.confColor }} />
+                    <div className={cn("size-2 rounded-full", confidenceStyles[confidenceKind(st.confLabel)].dot)} />
                     <span className="text-[13px] font-black tracking-tighter text-slate-800">{st.confScore}</span>
                   </div>
                   <span className="text-[9px] font-bold text-muted-foreground/30 mt-0.5 uppercase tracking-widest">{st.confLabel} at grading</span>
@@ -294,7 +296,7 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                   {brf.auditTrail.map((entry, i) => (
                     <div key={i} className="flex gap-4 group/item">
                       <div className="flex flex-col items-center">
-                        <div className="size-2 rounded-full ring-4 ring-muted/5 group-hover/item:ring-primary/10 transition-all" style={{ background: entry.color }} />
+                        <div className={cn("size-2 rounded-full ring-4 ring-muted/5 group-hover/item:ring-primary/10 transition-all", statusStyles[auditEventKind(entry.color)].dot)} />
                         {i < brf.auditTrail.length - 1 && <div className="w-px flex-1 my-1 bg-border/20" />}
                       </div>
                       <div className="flex-1 -mt-1 pb-4 border-b border-border/5">

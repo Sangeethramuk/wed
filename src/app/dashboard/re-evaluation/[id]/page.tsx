@@ -2,9 +2,11 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { STUDENTS, AI_REVALS } from '@/lib/data/re-evaluation-data'
+import { STUDENTS, AI_REVALS, ageStatusKind, confidenceKind } from '@/lib/data/re-evaluation-data'
 import { useReEvalStore } from '@/lib/store/re-evaluation-store'
 import { BriefingModal } from '@/components/re-evaluation/briefing-modal'
+import { statusStyles, confidenceStyles } from '@/lib/design-tokens'
+import { cn } from '@/lib/utils'
 
 type Decision = 'uphold' | 'adjust'
 type WorkspaceState = 'active' | 'compare' | 'submitted'
@@ -285,7 +287,7 @@ export default function ReEvalWorkspacePage() {
           {/* Intelligence Header: KPI Strip */}
           <div className="flex border-b border-slate-200 bg-white shadow-sm flex-shrink-0 relative z-20">
             <KPIBlock label="Original Score" className="flex-[0.9] border-r border-slate-200/60">
-              <div className="text-lg font-black tracking-tighter" style={{ color: st.accentColor }}>{st.origScore}<span className="text-muted-foreground/30 font-bold ml-1">/ {st.maxScore}</span></div>
+              <div className={cn("text-lg font-black tracking-tighter", statusStyles[ageStatusKind(st.ageStatus)].text)}>{st.origScore}<span className="text-muted-foreground/30 font-bold ml-1">/ {st.maxScore}</span></div>
               <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">{st.critShort}</div>
             </KPIBlock>
             <KPIBlock label="Evidence Used" className="flex-[1.4] border-r border-slate-200/60">
@@ -294,7 +296,7 @@ export default function ReEvalWorkspacePage() {
             </KPIBlock>
             <KPIBlock label="Confidence" className="flex-[0.9]">
               <div className="flex items-center gap-1.5">
-                <div className="size-2 rounded-full" style={{ background: st.confColor }} />
+                <div className={cn("size-2 rounded-full", confidenceStyles[confidenceKind(st.confLabel)].dot)} />
                 <span className="text-[13px] font-black tracking-tighter text-slate-800">{st.confScore}</span>
               </div>
               <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1 whitespace-nowrap">{st.hasOverride ? 'Prior Override' : 'System Default'}</div>

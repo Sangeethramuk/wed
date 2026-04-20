@@ -43,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-theme="violet-light" suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
         <ThemeProvider>
           <TooltipProvider>{children}</TooltipProvider>

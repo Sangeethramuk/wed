@@ -3,9 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, Download } from 'lucide-react'
-import { STUDENTS, STUDENT_ORDER } from '@/lib/data/re-evaluation-data'
+import { STUDENTS, STUDENT_ORDER, ageStatusKind } from '@/lib/data/re-evaluation-data'
 import { useReEvalStore } from '@/lib/store/re-evaluation-store'
 import { BriefingModal } from '@/components/re-evaluation/briefing-modal'
+import { statusStyles } from '@/lib/design-tokens'
+import { cn } from '@/lib/utils'
 
 const TOTAL = 7
 const INITIAL_RESOLVED = 12
@@ -140,7 +142,7 @@ export default function ReEvaluationPage() {
               >
                 {/* Student */}
                 <div className="flex items-stretch p-0" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
-                  <div className="w-1 flex-shrink-0 self-stretch" style={{ background: st.accentColor }} />
+                  <div className={cn("w-1 flex-shrink-0 self-stretch", statusStyles[ageStatusKind(st.ageStatus)].dot)} />
                   <div className="px-4 py-4 flex flex-col justify-center gap-1.5 flex-1">
                     <div className="flex items-center gap-3">
                       <div
