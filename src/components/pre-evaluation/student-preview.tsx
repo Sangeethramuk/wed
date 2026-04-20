@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import {
   ArrowLeft,
   Clock,
@@ -537,31 +538,31 @@ function InstructorView({
               <p className="eyebrow text-muted-foreground/40">How it will be graded</p>
               <span className="text-xs text-muted-foreground/30 font-medium">— applies to entire submission</span>
             </div>
-            <div className="overflow-x-auto rounded-xl border border-border/20">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b border-border/10 bg-muted/5">
-                    <th className="eyebrow p-3 text-left text-muted-foreground/30 w-48">Criterion</th>
+            <div className="rounded-xl border border-border/20 overflow-hidden">
+              <Table className="border-collapse">
+                <TableHeader>
+                  <TableRow className="border-b border-border/10 bg-muted/5 hover:bg-muted/5">
+                    <TableHead className="eyebrow p-3 text-left text-muted-foreground/30 w-48 whitespace-normal">Criterion</TableHead>
                     {rubric[0].levels.map(lvl => (
-                      <th key={lvl.label} className="eyebrow p-3 text-center text-muted-foreground/30 min-w-[120px]">{lvl.label}</th>
+                      <TableHead key={lvl.label} className="eyebrow p-3 text-center text-muted-foreground/30 min-w-[120px]">{lvl.label}</TableHead>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {rubric.map(crit => (
-                    <tr key={crit.id} className="border-b border-border/5">
-                      <td className="p-3">
+                    <TableRow key={crit.id} className="border-b border-border/5 hover:bg-muted/10">
+                      <TableCell className="p-3 whitespace-normal align-top">
                         <p className="text-xs font-bold text-foreground">{crit.name}</p>
                         <Badge variant="outline" className="eyebrow mt-1 text-xs px-1 h-3 bg-primary/5 text-primary border-primary/20 rounded">{crit.linkedCO}</Badge>
                         <p className="text-xs text-muted-foreground/50 font-semibold mt-0.5">{crit.weight}%</p>
-                      </td>
+                      </TableCell>
                       {crit.levels.map(lvl => (
-                        <td key={lvl.label} className="p-3 text-center text-xs text-muted-foreground font-medium">{lvl.description}</td>
+                        <TableCell key={lvl.label} className="p-3 text-center text-xs text-muted-foreground font-medium whitespace-normal align-top">{lvl.description}</TableCell>
                       ))}
-                    </tr>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           </div>
         )}
