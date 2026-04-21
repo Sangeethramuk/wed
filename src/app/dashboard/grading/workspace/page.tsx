@@ -140,7 +140,7 @@ export default function WorkspacePage() {
   return (
     <div className="flex flex-col h-screen bg-muted/30 overflow-hidden font-sans select-none">
       {/* Top Navigation Bar */}
-      <header className="h-14 border-b border-border bg-card flex items-center justify-between px-6 shrink-0 z-30 shadow-sm">
+      <header className="h-16 border-b border-border bg-card flex items-center justify-between px-6 shrink-0 z-30">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
             <ChevronLeft className="w-5 h-5" />

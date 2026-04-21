@@ -46,7 +46,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border h-16 justify-center px-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:items-center">
+      <SidebarHeader className="border-b border-sidebar-border h-16 justify-center px-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:items-center">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -66,8 +66,8 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="pt-4 group-data-[collapsible=icon]:pt-3">
-        <SidebarGroup className="group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:items-center">
+      <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3">
+        <SidebarGroup className="p-0 group-data-[collapsible=icon]:items-center">
           <SidebarGroupContent className="group-data-[collapsible=icon]:w-full">
             <SidebarMenu className="gap-1 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:items-center">
               {mainNavItems.map((item) => {
@@ -95,7 +95,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-3 gap-1 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:items-center">
+      <SidebarFooter className="border-t border-sidebar-border px-3 py-4 gap-1 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-3 group-data-[collapsible=icon]:items-center">
         <SidebarMenu className="gap-1 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:items-center">
           <SidebarMenuItem className="group-data-[collapsible=icon]:w-auto">
             <SidebarMenuButton
