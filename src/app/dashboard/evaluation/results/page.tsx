@@ -222,7 +222,7 @@ export default function EvaluationResults() {
 
         {/* Grade distribution — horizontal bars */}
         <Card className="lg:col-span-2 border-border/40 rounded-[28px] overflow-hidden bg-background shadow-[0_4px_24px_rgb(0,0,0,0.02)]">
-          <CardHeader className="p-8 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
+          <CardHeader className="p-6 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg font-extrabold tracking-tight">Grade Distribution</CardTitle>
               <CardDescription className="eyebrow text-muted-foreground/40 mt-1">
@@ -233,7 +233,7 @@ export default function EvaluationResults() {
               {students.length} Total
             </Badge>
           </CardHeader>
-          <CardContent className="p-8 space-y-5">
+          <CardContent className="p-6 space-y-5">
             {distribution.map((band, i) => (
               <div key={band.label} className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -258,13 +258,13 @@ export default function EvaluationResults() {
 
         {/* Per-criterion averages */}
         <Card className="border-border/40 rounded-[28px] overflow-hidden bg-background shadow-[0_4px_24px_rgb(0,0,0,0.02)]">
-          <CardHeader className="p-8 border-b border-border/10 bg-muted/5">
+          <CardHeader className="p-6 border-b border-border/10 bg-muted/5">
             <CardTitle className="text-lg font-extrabold tracking-tight">Criterion Averages</CardTitle>
             <CardDescription className="eyebrow text-muted-foreground/40 mt-1">
               Per Standard · Out of 5
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-8 space-y-6">
+          <CardContent className="p-6 space-y-6">
             {criterionStats.length > 0 ? criterionStats.map((cs, i) => (
               <div key={cs.cid} className="space-y-2">
                 <div className="flex items-start justify-between gap-2">
@@ -312,7 +312,7 @@ export default function EvaluationResults() {
 
       {/* ── Full cohort roster ───────────────────────────────────────────────── */}
       <Card className="border-border/40 rounded-[28px] overflow-hidden bg-background shadow-[0_4px_24px_rgb(0,0,0,0.02)]">
-        <CardHeader className="p-8 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between flex-wrap gap-4">
+        <CardHeader className="p-6 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between flex-wrap gap-4">
           <div>
             <CardTitle className="text-lg font-extrabold tracking-tight">Full Cohort Roster</CardTitle>
             <CardDescription className="eyebrow text-muted-foreground/40 mt-1">

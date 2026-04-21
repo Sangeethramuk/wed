@@ -668,7 +668,7 @@ export function CalibrationCheck() {
           {/* Analysis progress */}
           {isAnalyzing && (
             <Card className="border border-primary/10 bg-primary/[0.03] rounded-xl shadow-none">
-              <CardContent className="p-5 space-y-3">
+              <CardContent className="p-6 space-y-3">
                 <div className="flex items-center gap-2">
                   <Zap className="h-3.5 w-3.5 text-primary/50 animate-pulse" />
                   <p className="eyebrow text-primary/60">

@@ -86,7 +86,7 @@ export function StudentPreview() {
         </div>
 
         <Card className="border border-border/20 rounded-2xl overflow-hidden bg-card">
-          <CardContent className="p-8 space-y-8">
+          <CardContent className="p-6 space-y-8">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <p className="eyebrow text-muted-foreground/50">Submission link for students</p>

@@ -111,7 +111,7 @@ export default function ResultInsights() {
           <div className="lg:col-span-2 space-y-10">
             {/* Batch Status Card */}
             <Card className="border-border/60 shadow-[0_4px_20px_rgb(0,0,0,0.02)] rounded-[24px] overflow-hidden bg-background">
-              <CardHeader className="p-8 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
+              <CardHeader className="p-6 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="eyebrow text-foreground flex items-center gap-2">
                     <Activity className="w-3.5 h-3.5 text-primary" /> Batch Readiness
@@ -123,7 +123,7 @@ export default function ResultInsights() {
                   <div className="eyebrow text-[color:var(--status-success)]">100% Processed</div>
                 </div>
               </CardHeader>
-              <CardContent className="p-8 space-y-8">
+              <CardContent className="p-6 space-y-8">
                 <div className="relative pt-2">
                   <Progress value={100} className="h-3 rounded-full bg-muted/30" />
                   <div className="absolute top-0 left-0 w-full h-3 bg-primary/10 blur-md rounded-full -z-10" />
@@ -194,10 +194,10 @@ export default function ResultInsights() {
           <aside className="space-y-6">
             <div className="sticky top-8">
               <Card className="border-primary/20 shadow-[0_20px_50px_rgba(59,130,246,0.08)] rounded-[24px] overflow-hidden bg-primary/5">
-                <CardHeader className="p-8 border-b border-primary/10">
+                <CardHeader className="p-6 border-b border-primary/10">
                    <CardTitle className="eyebrow text-primary">Finalize Batch</CardTitle>
                 </CardHeader>
-                <CardContent className="p-8 space-y-8">
+                <CardContent className="p-6 space-y-8">
                   <div className="space-y-6">
                     <div className="flex gap-4">
                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><Users className="w-5 h-5 text-primary" /></div>
