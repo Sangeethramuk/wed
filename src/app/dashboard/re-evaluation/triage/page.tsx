@@ -6,22 +6,17 @@ import { ChevronLeft, Download } from 'lucide-react'
 import { STUDENTS, STUDENT_ORDER, ageStatusKind } from '@/lib/data/re-evaluation-data'
 import { useReEvalStore } from '@/lib/store/re-evaluation-store'
 import { BriefingModal } from '@/components/re-evaluation/briefing-modal'
-import { statusStyles } from '@/lib/design-tokens'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import { statusStyles, type StatusKey } from '@/lib/design-tokens'
 import { cn } from '@/lib/utils'
 
 const TOTAL = 7
 const INITIAL_RESOLVED = 12
 
-const CONCERN_STYLES = {
-  red:    { bg: '#FEF2F2', border: '#FECACA', text: '#EF4444' },
-  orange: { bg: '#FFF7ED', border: '#FED7AA', text: '#92400E' },
-  blue:   { bg: '#EFF6FF', border: '#BFDBFE', text: '#3B82F6' },
-}
-
-const STATUS_STYLES = {
-  overdue: { bg: '#EF4444', color: '#fff', label: 'Overdue' },
-  pending: { bg: '#F1F5F9', color: '#94A3B8', label: 'Pending', border: '#CBD5E1' },
-  new:     { bg: '#ECFDF5', color: '#065F46', label: 'New', border: '#A7F3D0' },
+const CONCERN_KINDS: Record<'red' | 'orange' | 'blue', StatusKey> = {
+  red: 'error',
+  orange: 'warning',
+  blue: 'info',
 }
 
 export default function ReEvaluationPage() {
@@ -35,11 +30,11 @@ export default function ReEvaluationPage() {
   const done = resolvedIds.length + hodPendingIds.length
   const progressPct = Math.round((done / TOTAL) * 100)
 
-  const GLOBAL_KPIS = [
-    { label: 'Pending', value: pending, sub: 'Awaiting your response', accent: '#EF4444' },
-    { label: 'Due Today', value: 2, sub: 'Over 48 hrs — respond', accent: '#F59E0B' },
-    { label: 'Awaiting HOD', value: hodCount, sub: 'Institutional review', accent: '#FBBF24' },
-    { label: 'Resolved', value: resolved, sub: 'This batch total', accent: '#10B981' },
+  const GLOBAL_KPIS: Array<{ label: string; value: number; sub: string; tone: StatusKey }> = [
+    { label: 'Pending', value: pending, sub: 'Awaiting your response', tone: 'error' },
+    { label: 'Due Today', value: 2, sub: 'Over 48 hrs — respond', tone: 'warning' },
+    { label: 'Awaiting HOD', value: hodCount, sub: 'Institutional review', tone: 'warning' },
+    { label: 'Resolved', value: resolved, sub: 'This batch total', tone: 'success' },
   ]
 
   const orderedStudents = [
@@ -49,7 +44,7 @@ export default function ReEvaluationPage() {
   ]
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-8rem)] relative bg-[#F8FAFC]/30">
+    <div className="flex flex-col min-h-[calc(100vh-8rem)] relative bg-muted/20">
       {/* Header Section — Sticky with blur matching Pre-evaluation */}
       <div className="sticky top-0 z-50 bg-background/60 backdrop-blur-md pt-6 pb-6 border-b border-border/10">
         <div className="max-w-6xl mx-auto w-full px-4">
@@ -72,7 +67,7 @@ export default function ReEvaluationPage() {
                 <span className="text-muted-foreground/20 text-xs">·</span>
                 <span className="eyebrow text-muted-foreground/40">Re-Evaluation Desk</span>
               </div>
-              <h1 className="text-4xl font-black tracking-tighter secondary-text">Review Requests</h1>
+              <h1 className="text-4xl font-semibold tracking-tight secondary-text">Review Requests</h1>
               <div className="flex items-center gap-2 pt-1">
                 <p className="text-xs text-muted-foreground opacity-60 font-medium">
                   Results released Mon 9:00 AM · Appeal window closes Sunday night
@@ -95,7 +90,7 @@ export default function ReEvaluationPage() {
               <div key={i} className="group px-4 py-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-all flex flex-col justify-center">
                 <span className="eyebrow text-muted-foreground/50">{kpi.label}</span>
                 <div className="flex items-baseline gap-1.5 mt-1">
-                  <span className="text-xl font-black tracking-tighter" style={{ color: kpi.accent }}>{kpi.value}</span>
+                  <span className={cn("text-xl font-semibold tracking-tight", statusStyles[kpi.tone].text)}>{kpi.value}</span>
                   <span className="text-xs font-bold text-muted-foreground/30">{kpi.sub}</span>
                 </div>
               </div>
@@ -108,181 +103,169 @@ export default function ReEvaluationPage() {
       {/* Main Content Sections */}
       <div className="max-w-6xl mx-auto w-full pb-20 px-4 pt-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
         
-        {/* Table Container */}
-        <div className="rounded-2xl border border-border/10 bg-card/10 backdrop-blur-sm overflow-hidden">
-          {/* Header */}
-          <div
-            className="eyebrow grid text-muted-foreground/40"
-            style={{
-              gridTemplateColumns: '220px 180px 130px 1fr 100px 140px 140px',
-              background: 'rgba(var(--muted), 0.05)',
-              borderBottom: '1px solid rgba(var(--border), 0.1)',
-            }}
-          >
-            {['Student', 'Assignment · Criterion', 'Concern', 'Student reasoning', 'Submitted', 'Status', 'Action'].map((h, i) => (
-              <div key={i} className="px-4 py-4">{h}</div>
-            ))}
-          </div>
+        {/* Table — DS primitive. Borders: only row-level (border-b via
+            TableRow); no vertical cell dividers. Container uses the full
+            border token (not /10) for DS-consistent visibility. */}
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <Table className="text-left">
+            <TableHeader className="bg-muted/40">
+              <TableRow className="hover:bg-muted/40">
+                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 260 }}>Student</TableHead>
+                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 180 }}>Assignment · Criterion</TableHead>
+                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 150 }}>Concern</TableHead>
+                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto">Student reasoning</TableHead>
+                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 110 }}>Submitted</TableHead>
+                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 140 }}>Status</TableHead>
+                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto text-center" style={{ width: 170 }}>Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {orderedStudents.map((id) => {
+                const st = STUDENTS[id]
+                const status = getStatus(id)
+                const concernKind = CONCERN_KINDS[st.concernVariant as keyof typeof CONCERN_KINDS] ?? 'neutral'
+                const concern = statusStyles[concernKind]
+                const avatarKind: StatusKey = st.isNew ? 'info' : st.ageStatus === 'overdue' ? 'error' : 'neutral'
+                const avatar = statusStyles[avatarKind]
 
-        {/* Rows */}
-        {orderedStudents.map((id) => {
-          const st = STUDENTS[id]
-          const status = getStatus(id)
-          const cs = CONCERN_STYLES[st.concernVariant]
+                // Resolved / HOD rows: single full-width banner cell
+                // replacing the 7 data columns (same UX as the old
+                // absolute-positioned overlay, now semantically correct
+                // as a colSpan TableCell).
+                if (status === 'resolved') {
+                  return (
+                    <TableRow key={id} className="group/row">
+                      <TableCell colSpan={7} className={cn("px-4 py-4 text-xs font-semibold", statusStyles.success.bg, statusStyles.success.text)}>
+                        <div className="flex items-center gap-2.5">
+                          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                            <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5" />
+                            <path d="M6 10l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          Resolved · Student notified
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                }
 
-          return (
-            <div key={id} className="relative group/row" style={{ borderBottom: '1px solid rgba(var(--border), 0.1)' }}>
-              <div
-                className="grid hover:bg-muted/5 transition-colors"
-                style={{
-                  gridTemplateColumns: '220px 180px 130px 1fr 100px 140px 140px',
-                  minHeight: 80,
-                  background: st.rowBg ?? 'transparent',
-                }}
-              >
-                {/* Student */}
-                <div className="flex items-stretch p-0" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
-                  <div className={cn("w-1 flex-shrink-0 self-stretch", statusStyles[ageStatusKind(st.ageStatus)].dot)} />
-                  <div className="px-4 py-4 flex flex-col justify-center gap-1.5 flex-1">
-                    <div className="flex items-center gap-3">
+                if (status === 'hod') {
+                  return (
+                    <TableRow key={id} className="group/row">
+                      <TableCell colSpan={7} className={cn("px-4 py-4 text-xs font-semibold", statusStyles.warning.bg, statusStyles.warning.text)}>
+                        <div className="flex items-center gap-2">
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                            <path d="M8 2l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                          </svg>
+                          Awaiting HOD approval · Dr. R. Kumar · Student notified once HOD approves
+                          <button
+                            onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
+                            className={cn("ml-auto inline-flex items-center whitespace-nowrap px-3 py-1.5 rounded-md text-xs font-semibold border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--status-warning)]/30", statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text)}
+                          >
+                            View →
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                }
+
+                return (
+                  <TableRow key={id} className="group/row hover:bg-muted/20">
+                    {/* Student */}
+                    <TableCell className="p-0 align-middle whitespace-normal">
+                      <div className="flex items-stretch">
+                        <div className={cn("w-1 flex-shrink-0 self-stretch", statusStyles[ageStatusKind(st.ageStatus)].dot)} />
+                        <div className="px-4 py-4 flex-1 flex flex-col gap-1.5">
+                          <div className="flex items-center gap-3">
+                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 border", avatar.bg, avatar.border, avatar.text)}>
+                              {st.name.split(' ').map((n) => n[0]).join('')}
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <div>
+                                <div className="text-sm font-semibold tracking-tight flex items-center gap-1.5 text-foreground">
+                                  {st.name}
+                                  {st.isNew && <span className="w-1.5 h-1.5 rounded-full inline-block bg-primary" />}
+                                </div>
+                                <div className="eyebrow text-muted-foreground/60">{st.rollId}</div>
+                              </div>
+                              {st.isCluster && (
+                                <span className={cn("eyebrow self-start whitespace-nowrap px-2 py-0.5 rounded-md border w-fit", statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text)}>
+                                  C2 cluster
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+
+                    {/* Assignment · Criterion */}
+                    <TableCell className="px-4 py-4 align-middle whitespace-normal">
+                      <div className="flex flex-col gap-1.5">
+                        <div className="text-xs font-semibold tracking-tight text-foreground">{st.assign}</div>
+                        <span className="eyebrow self-start whitespace-nowrap px-2 py-0.5 rounded-md bg-primary/5 text-primary border border-primary/10">
+                          {st.critShort} · {st.origScore}/{st.maxScore}
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    {/* Concern */}
+                    <TableCell className="px-4 py-4 align-middle whitespace-normal">
+                      <div className="flex flex-col gap-1.5">
+                        <div className="text-xs font-bold text-muted-foreground">{st.concern}</div>
+                        <span className={cn("eyebrow self-start whitespace-nowrap px-1.5 py-0.5 rounded-md border", concern.bg, concern.text, concern.border)}>
+                          {st.concernType}
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    {/* Student reasoning */}
+                    <TableCell className="px-4 py-4 align-middle whitespace-normal">
                       <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
+                        className="text-xs font-medium leading-relaxed overflow-hidden text-muted-foreground italic"
                         style={{
-                          background: st.isNew ? '#EFF6FF' : st.ageStatus === 'overdue' ? '#FEF2F2' : '#F8FAFC',
-                          border: `1px solid ${st.isNew ? '#BFDBFE' : st.ageStatus === 'overdue' ? '#FECACA' : 'rgba(var(--border), 0.1)'}`,
-                          color: st.isNew ? '#3B82F6' : st.ageStatus === 'overdue' ? '#EF4444' : '#64748B',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical' as const,
                         }}
                       >
-                        {st.name.split(' ').map((n) => n[0]).join('')}
+                        "{st.sv}"
                       </div>
-                      <div className="flex flex-col gap-1">
-                        <div>
-                          <div className="text-sm font-black tracking-tight flex items-center gap-1.5 text-[#1E293B]">
-                            {st.name}
-                            {st.isNew && <span className="w-1.5 h-1.5 rounded-full inline-block bg-primary" />}
-                          </div>
-                          <div className="eyebrow text-muted-foreground/40">{st.rollId}</div>
+                    </TableCell>
+
+                    {/* Submitted */}
+                    <TableCell className="px-4 py-4 align-middle whitespace-normal">
+                      <div className="flex flex-col">
+                        <div className={cn("text-xs font-semibold tracking-tight", statusStyles[st.ageStatus === 'overdue' ? 'error' : st.ageStatus === 'new' ? 'neutral' : 'warning'].text)}>
+                          {st.ageLabel}
                         </div>
-                        {st.isCluster && (
-                          <span className="eyebrow self-start px-2 py-0.5 rounded-md bg-amber-500/5 text-amber-600 border border-amber-500/10 w-fit">
-                            C2 cluster
-                          </span>
-                        )}
+                        <div className="eyebrow text-muted-foreground/60">
+                          {st.ageStatus === 'overdue' ? 'Overdue' : st.ageStatus === 'new' ? 'New' : 'Pending'}
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
+                    </TableCell>
 
-                {/* Assignment · Criterion */}
-                <div className="px-4 py-4 flex flex-col justify-center gap-1.5" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
-                  <div className="text-xs font-black tracking-tight text-[#1E293B]">{st.assign}</div>
-                  <span className="eyebrow self-start px-2 py-0.5 rounded-md bg-primary/5 text-primary border border-primary/10">
-                    {st.critShort} · {st.origScore}/{st.maxScore}
-                  </span>
-                </div>
+                    {/* Status */}
+                    <TableCell className="px-4 py-4 align-middle">
+                      <StatusPill status={status} ageStatus={st.ageStatus} />
+                    </TableCell>
 
-                {/* Concern */}
-                <div className="px-4 py-4 flex flex-col justify-center gap-1.5" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
-                  <div className="text-xs font-bold text-slate-600">{st.concern}</div>
-                  <span
-                    className="eyebrow self-start px-1.5 py-0.5 rounded-md"
-                    style={{ background: cs.bg, color: cs.text, border: `1px solid ${cs.border}` }}
-                  >
-                    {st.concernType}
-                  </span>
-                </div>
-
-                {/* Student reasoning */}
-                <div className="px-4 py-4 flex items-center" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
-                  <div
-                    className="text-xs font-medium leading-relaxed overflow-hidden text-slate-500 italic"
-                    style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical' as const,
-                    }}
-                  >
-                    "{st.sv}"
-                  </div>
-                </div>
-
-                {/* Submitted */}
-                <div className="px-4 py-4 flex flex-col justify-center" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
-                  <div
-                    className="text-xs font-black tracking-tighter"
-                    style={{ color: st.ageStatus === 'overdue' ? '#EF4444' : st.ageStatus === 'new' ? '#64748B' : '#92400E' }}
-                  >
-                    {st.ageLabel}
-                  </div>
-                  <div className="eyebrow text-muted-foreground/30">
-                    {st.ageStatus === 'overdue' ? 'Overdue' : st.ageStatus === 'new' ? 'New' : 'Pending'}
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div className="px-4 py-4 flex items-center" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
-                  <StatusPill status={status} ageStatus={st.ageStatus} />
-                </div>
-
-                {/* Action */}
-                <div className="px-4 py-4 flex items-center justify-center">
-                  {status === 'pending' && (
-                    <button
-                      onClick={() => setBriefingId(id)}
-                      className="eyebrow group/btn flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-white bg-primary hover:bg-primary/90 transition-all shadow-[0_2px_10px_rgba(var(--primary),0.2)]"
-                    >
-                      Review now
-                      <ChevronLeft className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
-                    </button>
-                  )}
-                  {status === 'hod' && (
-                    <button
-                      onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                      className="eyebrow px-4 py-1.5 rounded-lg text-muted-foreground border border-border/30 bg-card/50 hover:bg-card hover:border-border transition-all"
-                    >
-                      View →
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Resolved overlay */}
-              {status === 'resolved' && (
-                <div
-                  className="absolute inset-0 flex items-center px-4 gap-2.5 text-xs font-semibold pointer-events-none"
-                  style={{ background: 'rgba(240,253,244,.96)', color: '#065F46', zIndex: 5 }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                    <circle cx="10" cy="10" r="9" stroke="#10B981" strokeWidth="1.5" />
-                    <path d="M6 10l3 3 5-5" stroke="#10B981" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  Resolved · Student notified
-                </div>
-              )}
-
-              {/* HOD overlay */}
-              {status === 'hod' && (
-                <div
-                  className="absolute inset-0 flex items-center px-4 gap-2 text-xs font-semibold pointer-events-none"
-                  style={{ background: 'rgba(255,251,235,.95)', color: '#92400E', zIndex: 5 }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M8 2l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="#F59E0B" strokeWidth="1.3" strokeLinejoin="round" />
-                  </svg>
-                  Awaiting HOD approval · Dr. R. Kumar · Student notified once HOD approves
-                  <button
-                    onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                    className="ml-auto pointer-events-auto px-3 py-1 rounded text-xs font-semibold"
-                    style={{ background: '#FEF3DC', border: '1px solid #FDE68A', color: '#92400E', cursor: 'pointer', fontFamily: 'inherit' }}
-                  >
-                    View →
-                  </button>
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
+                    {/* Action */}
+                    <TableCell className="px-4 py-4 align-middle text-center">
+                      <button
+                        onClick={() => setBriefingId(id)}
+                        className="group/btn inline-flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                      >
+                        Review now
+                        <ChevronLeft className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </div>
 
       {/* Briefing modal */}
       {briefingId && (
@@ -303,36 +286,30 @@ export default function ReEvaluationPage() {
 
 function StatusPill({ status, ageStatus }: { status: 'pending' | 'hod' | 'resolved'; ageStatus: string }) {
   if (status === 'resolved') {
+    const s = statusStyles.success
     return (
-      <span className="eyebrow px-2 py-0.5 rounded-md bg-emerald-500/5 text-emerald-600 border border-emerald-500/10">
-        Resolved
-      </span>
+      <span className={cn("eyebrow px-2 py-0.5 rounded-md border", s.bg, s.text, s.border)}>Resolved</span>
     )
   }
   if (status === 'hod') {
+    const s = statusStyles.warning
     return (
-      <span className="eyebrow px-2 py-0.5 rounded-md bg-amber-500/5 text-amber-600 border border-amber-500/10">
-        Awaiting HOD
-      </span>
+      <span className={cn("eyebrow px-2 py-0.5 rounded-md border", s.bg, s.text, s.border)}>Awaiting HOD</span>
     )
   }
   if (ageStatus === 'overdue') {
     return (
-      <span className="eyebrow px-2 py-0.5 rounded-md bg-red-500 text-white">
-        Overdue
-      </span>
+      <span className="eyebrow px-2 py-0.5 rounded-md bg-destructive text-destructive-foreground">Overdue</span>
     )
   }
   if (ageStatus === 'new') {
+    const s = statusStyles.info
     return (
-      <span className="eyebrow px-2 py-0.5 rounded-md bg-blue-500/5 text-blue-600 border border-blue-500/10">
-        New
-      </span>
+      <span className={cn("eyebrow px-2 py-0.5 rounded-md border", s.bg, s.text, s.border)}>New</span>
     )
   }
+  const s = statusStyles.neutral
   return (
-    <span className="eyebrow px-2 py-0.5 rounded-md bg-slate-500/5 text-slate-500 border border-slate-500/10">
-      Pending
-    </span>
+    <span className={cn("eyebrow px-2 py-0.5 rounded-md border", s.bg, s.text, s.border)}>Pending</span>
   )
 }

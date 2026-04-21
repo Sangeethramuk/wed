@@ -38,8 +38,8 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 const strengthClasses: Record<COStrength, string> = {
-  Strong: "border-emerald-500/30 text-emerald-600/80 bg-emerald-500/[0.04]",
-  Moderate: "border-amber-500/30 text-amber-600/80 bg-amber-500/[0.04]",
+  Strong: "border-[color:var(--status-success)]/30 text-[color:var(--status-success)]/80 bg-[color:var(--status-success)]/[0.04]",
+  Moderate: "border-[color:var(--status-warning)]/30 text-[color:var(--status-warning)]/80 bg-[color:var(--status-warning)]/[0.04]",
   Weak: "border-muted-foreground/20 text-muted-foreground/60 bg-muted/20",
 }
 
@@ -82,7 +82,7 @@ export function CreationMode() {
       </div>
 
       <div className="space-y-1">
-        <h1 className="text-4xl font-black tracking-tighter secondary-text">
+        <h1 className="text-4xl font-semibold tracking-tight secondary-text">
           {showHistoryList ? "Pick an assignment to adapt" : "How would you like to start?"}
         </h1>
         <p className="eyebrow text-base text-muted-foreground font-medium opacity-70 border-b border-border/10 pb-6">
@@ -101,11 +101,11 @@ export function CreationMode() {
           >
             <CardHeader className="pb-2">
               <div className="mb-4">
-                <div className="p-3 w-fit rounded-full bg-primary/5 text-primary border border-primary/10 group-hover:bg-primary group-hover:text-white transition-all">
+                <div className="p-3 w-fit rounded-full bg-primary/5 text-primary border border-primary/10 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                   <History className="h-6 w-6" />
                 </div>
               </div>
-              <CardTitle className="text-2xl font-black tracking-tight">Use an existing assignment</CardTitle>
+              <CardTitle className="text-2xl font-semibold tracking-tight">Use an existing assignment</CardTitle>
               <CardDescription className="text-sm font-medium leading-relaxed mt-3 opacity-70">
                 We&apos;ll show relevant assignments you can adapt — fastest way to get started.
               </CardDescription>
@@ -137,11 +137,11 @@ export function CreationMode() {
             </div>
             <CardHeader className="pb-2">
               <div className="mb-4">
-                <div className="p-3 w-fit rounded-full bg-primary text-white shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
+                <div className="p-3 w-fit rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
                   <Sparkles className="h-6 w-6" />
                 </div>
               </div>
-              <CardTitle className="text-2xl font-black tracking-tight">Start with suggestions</CardTitle>
+              <CardTitle className="text-2xl font-semibold tracking-tight">Start with suggestions</CardTitle>
               <CardDescription className="text-sm font-medium leading-relaxed mt-3 opacity-80">
                 We&apos;ll suggest the best assignment formats for this course — based on outcomes and past usage.
               </CardDescription>
@@ -167,11 +167,11 @@ export function CreationMode() {
           >
             <CardHeader className="pb-2">
               <div className="mb-4">
-                <div className="p-3 w-fit rounded-full bg-primary/5 text-primary border border-primary/10 group-hover:bg-primary group-hover:text-white transition-all">
+                <div className="p-3 w-fit rounded-full bg-primary/5 text-primary border border-primary/10 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                   <PlusCircle className="h-6 w-6" />
                 </div>
               </div>
-              <CardTitle className="text-2xl font-black tracking-tight">Create from scratch</CardTitle>
+              <CardTitle className="text-2xl font-semibold tracking-tight">Create from scratch</CardTitle>
               <CardDescription className="text-sm font-medium leading-relaxed mt-3 opacity-70">
                 We&apos;ll guide you step-by-step as you build — full control over every detail.
               </CardDescription>
@@ -243,7 +243,7 @@ export function CreationMode() {
           {/* Fallback */}
           <div className="flex items-center justify-between rounded-xl border border-dashed border-border/40 bg-card/10 px-6 py-5">
             <div className="space-y-1">
-              <p className="text-sm font-black tracking-tight">Can&apos;t find a good match?</p>
+              <p className="text-sm font-semibold tracking-tight">Can&apos;t find a good match?</p>
               <p className="text-xs text-muted-foreground opacity-60 font-medium">
                 Skip the library and start a fresh assignment — we&apos;ll guide you step-by-step.
               </p>
@@ -279,7 +279,7 @@ export function CreationMode() {
                     {previewed.lastUsed}
                   </span>
                 </div>
-                <SheetTitle className="text-xl font-black tracking-tight mt-2">
+                <SheetTitle className="text-xl font-semibold tracking-tight mt-2">
                   {previewed.title}
                 </SheetTitle>
                 <SheetDescription className="eyebrow opacity-60">
@@ -314,7 +314,7 @@ export function CreationMode() {
                     <ul className="space-y-1.5">
                       {previewed.sampleQuestions.map((q, i) => (
                         <li key={i} className="text-sm leading-relaxed opacity-80 flex gap-2">
-                          <span className="text-xs font-black text-muted-foreground opacity-50 mt-1">{String(i + 1).padStart(2, "0")}</span>
+                          <span className="text-xs font-semibold text-muted-foreground opacity-50 mt-1">{String(i + 1).padStart(2, "0")}</span>
                           <span>{q}</span>
                         </li>
                       ))}
@@ -330,7 +330,7 @@ export function CreationMode() {
                     <ul className="space-y-1.5">
                       {previewed.rubricSummary.map((r, i) => (
                         <li key={i} className="text-sm leading-relaxed opacity-80 flex items-center gap-2">
-                          <CheckCircle2 className="h-3 w-3 text-emerald-600/70 shrink-0" />
+                          <CheckCircle2 className="h-3 w-3 text-[color:var(--status-success)]/70 shrink-0" />
                           <span>{r}</span>
                         </li>
                       ))}
@@ -352,8 +352,8 @@ export function CreationMode() {
                                 {a.co} · {a.strength}
                               </Badge>
                             </TooltipTrigger>
-                            <TooltipContent side="top" className="bg-slate-900 border-none p-2 rounded-lg max-w-[200px]">
-                              <p className="text-xs font-bold text-white leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
+                            <TooltipContent side="top" className="bg-foreground border-none p-2 rounded-lg max-w-[200px]">
+                              <p className="text-xs font-bold text-primary-foreground leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
                             </TooltipContent>
                           </Tooltip>
                         ))}
@@ -422,11 +422,11 @@ function HistoryCard({
             {hist.lastUsed}
           </span>
           <span className="eyebrow text-muted-foreground opacity-40 flex items-center gap-1.5">
-            <Star className="size-3 text-amber-500/60" />
+            <Star className="size-3 text-[color:var(--status-warning)]/60" />
             {hist.avgScore}% avg
           </span>
         </div>
-        <CardTitle className="mt-3 text-lg font-black tracking-tight line-clamp-2">
+        <CardTitle className="mt-3 text-lg font-semibold tracking-tight line-clamp-2">
           {hist.title}
         </CardTitle>
         <CardDescription className="eyebrow opacity-60 mt-1">
@@ -453,8 +453,8 @@ function HistoryCard({
                         {a.co} · {a.strength}
                       </Badge>
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="bg-slate-900 border-none p-2 rounded-lg max-w-[200px]">
-                      <p className="text-xs font-bold text-white leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
+                    <TooltipContent side="top" className="bg-foreground border-none p-2 rounded-lg max-w-[200px]">
+                      <p className="text-xs font-bold text-primary-foreground leading-snug">{CO_DEFINITIONS[a.co] ?? a.co}</p>
                     </TooltipContent>
                   </Tooltip>
                 ))}
@@ -509,7 +509,7 @@ function HistoryCard({
 
 function CompletenessPill({ ok, label }: { ok: boolean; label: string }) {
   return (
-    <div className={`eyebrow flex items-center gap-1.5 ${ok ? "text-emerald-600/70" : "text-muted-foreground/40"}`}>
+    <div className={`eyebrow flex items-center gap-1.5 ${ok ? "text-[color:var(--status-success)]/70" : "text-muted-foreground/40"}`}>
       <CheckCircle2 className={`h-3 w-3 ${ok ? "" : "opacity-30"}`} />
       <span>{label}</span>
     </div>

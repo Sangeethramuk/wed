@@ -38,8 +38,8 @@ const STATUS_CONFIG: Record<
 > = {
   pre_calibrated: {
     badge: "Pre-calibrated",
-    badgeClass: "border-emerald-500/20 text-emerald-700/80 bg-emerald-500/[0.05]",
-    dotClass: "bg-emerald-500",
+    badgeClass: "border-[color:var(--status-success)]/20 text-[color:var(--status-success)]/80 bg-[color:var(--status-success)]/[0.05]",
+    dotClass: "bg-[color:var(--status-success)]",
     title: "This assignment is already calibrated",
     explanation:
       "This version closely matches a previously evaluated assignment, so existing calibration can be reused.",
@@ -51,8 +51,8 @@ const STATUS_CONFIG: Record<
   },
   review_recommended: {
     badge: "Review recommended",
-    badgeClass: "border-amber-500/20 text-amber-700/80 bg-amber-500/[0.05]",
-    dotClass: "bg-amber-500",
+    badgeClass: "border-[color:var(--status-warning)]/20 text-[color:var(--status-warning)]/80 bg-[color:var(--status-warning)]/[0.05]",
+    dotClass: "bg-[color:var(--status-warning)]",
     title: "Calibration review recommended",
     explanation: "We found changes that may slightly affect how responses are judged.",
     details: [
@@ -76,8 +76,8 @@ const STATUS_CONFIG: Record<
   },
   limited: {
     badge: "Limited calibration",
-    badgeClass: "border-orange-500/20 text-orange-700/80 bg-orange-500/[0.05]",
-    dotClass: "bg-orange-500",
+    badgeClass: "border-[color:var(--status-warning)]/20 text-[color:var(--status-warning)]/80 bg-[color:var(--status-warning)]/[0.05]",
+    dotClass: "bg-[color:var(--status-warning)]",
     title: "Calibration is incomplete",
     explanation:
       "This assignment can proceed, but evaluation reliability may be lower until more guidance is provided.",
@@ -256,11 +256,11 @@ export function CalibrationCheck() {
 
   const confidence =
     calState === "pre_calibrated"
-      ? { label: "High confidence", colorClass: "text-emerald-600" }
+      ? { label: "High confidence", colorClass: "text-[color:var(--status-success)]" }
       : calState === "review_recommended"
-      ? { label: "Moderate confidence", colorClass: "text-amber-600" }
+      ? { label: "Moderate confidence", colorClass: "text-[color:var(--status-warning)]" }
       : calState === "limited"
-      ? { label: "Low confidence", colorClass: "text-orange-600" }
+      ? { label: "Low confidence", colorClass: "text-[color:var(--status-warning)]" }
       : { label: "Moderate confidence", colorClass: "text-primary" }
 
   return (
@@ -276,7 +276,7 @@ export function CalibrationCheck() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-black tracking-tight secondary-text">Calibration</h1>
+          <h1 className="text-2xl font-semibold tracking-tight secondary-text">Calibration</h1>
           <p className="eyebrow font-semibold text-muted-foreground/40">
             Evaluation readiness check
           </p>
@@ -298,7 +298,7 @@ export function CalibrationCheck() {
                   {config.badge}
                 </Badge>
                 <div>
-                  <h2 className="text-lg font-black tracking-tight">{config.title}</h2>
+                  <h2 className="text-lg font-semibold tracking-tight">{config.title}</h2>
                   <p className="text-sm text-muted-foreground/70 font-medium mt-1">{config.explanation}</p>
                 </div>
               </div>
@@ -359,11 +359,11 @@ export function CalibrationCheck() {
 
           {/* Block 3: Conditional content */}
           {calState === "pre_calibrated" && (
-            <Card className="border border-emerald-500/10 bg-emerald-500/[0.03] rounded-xl shadow-none">
+            <Card className="border border-[color:var(--status-success)]/10 bg-[color:var(--status-success)]/[0.03] rounded-xl shadow-none">
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600/60" />
-                  <p className="eyebrow text-emerald-700/60">
+                  <CheckCircle2 className="h-4 w-4 text-[color:var(--status-success)]/60" />
+                  <p className="eyebrow text-[color:var(--status-success)]/60">
                     What we learned previously
                   </p>
                 </div>
@@ -373,7 +373,7 @@ export function CalibrationCheck() {
                       key={i}
                       className="text-sm text-muted-foreground/70 font-medium flex items-start gap-2"
                     >
-                      <span className="mt-1.5 h-1 w-1 rounded-full bg-emerald-500/50 shrink-0" />
+                      <span className="mt-1.5 h-1 w-1 rounded-full bg-[color:var(--status-success)]/50 shrink-0" />
                       {l}
                     </p>
                   ))}
@@ -384,9 +384,9 @@ export function CalibrationCheck() {
 
           {calState === "review_recommended" && (
             <div className="space-y-4">
-              <Card className="border border-amber-500/10 bg-amber-500/[0.03] rounded-xl shadow-none">
+              <Card className="border border-[color:var(--status-warning)]/10 bg-[color:var(--status-warning)]/[0.03] rounded-xl shadow-none">
                 <CardContent className="p-6 space-y-4">
-                  <p className="eyebrow text-amber-600/60">
+                  <p className="eyebrow text-[color:var(--status-warning)]/60">
                     Detected changes
                   </p>
                   <div className="space-y-3">
@@ -427,9 +427,9 @@ export function CalibrationCheck() {
           )}
 
           {calState === "limited" && (
-            <Card className="border border-orange-500/10 bg-orange-500/[0.03] rounded-xl shadow-none">
+            <Card className="border border-[color:var(--status-warning)]/10 bg-[color:var(--status-warning)]/[0.03] rounded-xl shadow-none">
               <CardContent className="p-6 space-y-3">
-                <p className="eyebrow text-orange-600/60">
+                <p className="eyebrow text-[color:var(--status-warning)]/60">
                   Issues detected
                 </p>
                 <div className="space-y-2">
@@ -438,7 +438,7 @@ export function CalibrationCheck() {
                       key={i}
                       className="flex items-start gap-2 text-sm text-muted-foreground/70 font-medium"
                     >
-                      <AlertCircle className="h-3.5 w-3.5 text-orange-500/50 mt-0.5 shrink-0" />
+                      <AlertCircle className="h-3.5 w-3.5 text-[color:var(--status-warning)]/50 mt-0.5 shrink-0" />
                       {issue}
                     </div>
                   ))}
@@ -488,7 +488,7 @@ export function CalibrationCheck() {
                 </Button>
                 <Button
                   size="lg"
-                  className="h-12 px-10 font-black tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90"
+                  className="h-12 px-10 font-semibold tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90"
                   onClick={handleConfirm}
                   disabled={confirming}
                 >
@@ -508,7 +508,7 @@ export function CalibrationCheck() {
                 </Button>
                 <Button
                   size="lg"
-                  className="h-12 px-10 font-black tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90"
+                  className="h-12 px-10 font-semibold tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90"
                   onClick={handleGoToForm}
                 >
                   Review and update →
@@ -518,7 +518,7 @@ export function CalibrationCheck() {
             {calState === "calibration_needed" && (
               <Button
                 size="lg"
-                className="h-12 px-10 font-black tracking-tight rounded-xl shadow-none ml-auto bg-primary hover:bg-primary/90"
+                className="h-12 px-10 font-semibold tracking-tight rounded-xl shadow-none ml-auto bg-primary hover:bg-primary/90"
                 onClick={handleGoToForm}
               >
                 Start calibration →
@@ -537,7 +537,7 @@ export function CalibrationCheck() {
                 </Button>
                 <Button
                   size="lg"
-                  className="h-12 px-10 font-black tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90"
+                  className="h-12 px-10 font-semibold tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90"
                   onClick={handleGoToForm}
                 >
                   Improve guidance →
@@ -552,7 +552,7 @@ export function CalibrationCheck() {
       {phase === "form" && (
         <div className="space-y-6">
           <div className="space-y-1">
-            <h2 className="text-xl font-black tracking-tight">Answer guidance</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Answer guidance</h2>
             <p className="text-sm text-muted-foreground/60 font-medium">
               Describe how this assignment should be evaluated. Your guidance helps the system
               support consistent grading.
@@ -656,7 +656,7 @@ export function CalibrationCheck() {
                       : "border-border/20 bg-card/20 hover:border-border/40"
                   }`}
                 >
-                  <span className="text-sm font-black tracking-tight">{opt.label}</span>
+                  <span className="text-sm font-semibold tracking-tight">{opt.label}</span>
                   <span className="text-xs font-medium text-muted-foreground/50 mt-0.5">
                     {opt.sub}
                   </span>
@@ -692,7 +692,7 @@ export function CalibrationCheck() {
             </Button>
             <Button
               size="lg"
-              className="h-12 px-10 font-black tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90 disabled:opacity-40"
+              className="h-12 px-10 font-semibold tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90 disabled:opacity-40"
               onClick={handleGenerateSummary}
               disabled={!isFormValid || isAnalyzing}
             >
@@ -706,7 +706,7 @@ export function CalibrationCheck() {
       {phase === "summary" && (
         <div className="space-y-5">
           <div className="space-y-1">
-            <h2 className="text-xl font-black tracking-tight">Calibration summary</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Calibration summary</h2>
             <p className="text-sm text-muted-foreground/60 font-medium">
               Here is how the system will interpret this assignment during evaluation.
             </p>
@@ -773,8 +773,8 @@ export function CalibrationCheck() {
                           variant="outline"
                           className={`eyebrow rounded-full ${
                             status === "aligned"
-                              ? "border-emerald-500/20 text-emerald-600/70 bg-emerald-500/5"
-                              : "border-amber-500/20 text-amber-600/70 bg-amber-500/5"
+                              ? "border-[color:var(--status-success)]/20 text-[color:var(--status-success)]/70 bg-[color:var(--status-success)]/5"
+                              : "border-[color:var(--status-warning)]/20 text-[color:var(--status-warning)]/70 bg-[color:var(--status-warning)]/5"
                           }`}
                         >
                           {status === "aligned" ? "Aligned" : "Partially ambiguous"}
@@ -788,11 +788,11 @@ export function CalibrationCheck() {
           </Card>
 
           {/* Ambiguity flags */}
-          <Card className="border border-amber-500/10 bg-amber-500/[0.02] rounded-xl shadow-none">
+          <Card className="border border-[color:var(--status-warning)]/10 bg-[color:var(--status-warning)]/[0.02] rounded-xl shadow-none">
             <CardContent className="p-6 space-y-3">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-500/50" />
-                <p className="eyebrow text-amber-600/50">
+                <AlertTriangle className="h-3.5 w-3.5 text-[color:var(--status-warning)]/50" />
+                <p className="eyebrow text-[color:var(--status-warning)]/50">
                   Ambiguity flags
                 </p>
               </div>
@@ -802,7 +802,7 @@ export function CalibrationCheck() {
                     key={i}
                     className="text-xs text-muted-foreground/60 font-medium flex items-start gap-2"
                   >
-                    <span className="mt-1 h-1 w-1 rounded-full bg-amber-400/40 shrink-0" />
+                    <span className="mt-1 h-1 w-1 rounded-full bg-[color:var(--status-warning)]/40 shrink-0" />
                     {f}
                   </p>
                 ))}
@@ -831,7 +831,7 @@ export function CalibrationCheck() {
             </Button>
             <Button
               size="lg"
-              className="h-12 px-10 font-black tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90 disabled:opacity-50"
+              className="h-12 px-10 font-semibold tracking-tight rounded-xl shadow-none bg-primary hover:bg-primary/90 disabled:opacity-50"
               onClick={handleConfirm}
               disabled={confirming}
             >

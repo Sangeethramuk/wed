@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import {
   ArrowLeft,
   Clock,
@@ -69,17 +70,17 @@ export function StudentPreview() {
       <div className="max-w-2xl mx-auto py-20 space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-500">
         <div className="text-center space-y-6">
           <div className="relative inline-flex mb-4">
-            <div className="h-32 w-32 rounded-3xl bg-primary/5 border-2 border-primary/20 flex items-center justify-center relative overflow-hidden group">
+            <div className="h-32 w-32 rounded-2xl bg-primary/5 border-2 border-primary/20 flex items-center justify-center relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-50 group-hover:scale-150 transition-transform duration-1000" />
               <Monitor className="h-16 w-16 text-primary group-hover:scale-110 transition-transform duration-500" />
-              <div className="absolute bottom-4 right-4 h-8 w-8 rounded-xl bg-emerald-500 flex items-center justify-center border-4 border-background shadow-lg">
-                <CheckCircle2 className="h-4 w-4 text-white" />
+              <div className="absolute bottom-4 right-4 h-8 w-8 rounded-xl bg-[color:var(--status-success)] flex items-center justify-center border-4 border-background shadow-lg">
+                <CheckCircle2 className="h-4 w-4 text-primary-foreground" />
               </div>
               <Sparkles className="absolute top-4 right-4 h-4 w-4 text-primary/40 animate-pulse" />
             </div>
           </div>
           <div className="space-y-2">
-            <h1 className="text-4xl font-black tracking-tight secondary-text">Your assignment is live!</h1>
+            <h1 className="text-4xl font-semibold tracking-tight secondary-text">Your assignment is live!</h1>
             <p className="text-muted-foreground font-semibold text-base opacity-70">Your students can now submit their work.</p>
           </div>
         </div>
@@ -90,14 +91,14 @@ export function StudentPreview() {
               <div className="flex items-center justify-between">
                 <p className="eyebrow text-muted-foreground/50">Submission link for students</p>
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-3 w-3 text-emerald-500" />
-                  <span className="eyebrow text-emerald-600/60">Verified</span>
+                  <ShieldCheck className="h-3 w-3 text-[color:var(--status-success)]" />
+                  <span className="eyebrow text-[color:var(--status-success)]/60">Verified</span>
                 </div>
               </div>
               <div className="flex gap-3">
-                <Input readOnly value={shareLink} className="h-12 bg-muted/10 border border-border/30 rounded-xl font-black text-sm px-5 focus-visible:ring-primary/10 tracking-tight" />
+                <Input readOnly value={shareLink} className="h-12 bg-muted/10 border border-border/30 rounded-xl font-semibold text-sm px-5 focus-visible:ring-primary/10 tracking-tight" />
                 <Button variant="secondary" size="icon" onClick={copyToClipboard}>
-                  {copied ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <Copy className="h-5 w-5" />}
+                  {copied ? <CheckCircle2 className="h-5 w-5 text-[color:var(--status-success)]" /> : <Copy className="h-5 w-5" />}
                 </Button>
               </div>
             </div>
@@ -105,8 +106,8 @@ export function StudentPreview() {
               <p className="eyebrow text-muted-foreground/50">What&apos;s next</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Button variant="outline" className="h-auto flex-col items-start gap-3 p-5 group text-left whitespace-normal">
-                  <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/10">
-                    <Database className="h-4 w-4 text-blue-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+                  <div className="h-9 w-9 rounded-lg bg-[color:var(--status-info)]/10 flex items-center justify-center border border-[color:var(--status-info)]/10">
+                    <Database className="h-4 w-4 text-[color:var(--status-info)] opacity-60 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <div className="space-y-0.5">
                     <span className="text-xs font-semibold block">Connect to LMS</span>
@@ -151,7 +152,7 @@ export function StudentPreview() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-black tracking-tight secondary-text">Preview & Publish</h1>
+            <h1 className="text-2xl font-semibold tracking-tight secondary-text">Preview & Publish</h1>
             <p className="eyebrow font-semibold text-muted-foreground/40">Review before publishing</p>
           </div>
         </div>
@@ -242,7 +243,7 @@ function StudentView({
         <p className="eyebrow text-muted-foreground/40">
           {assignment.institution.name}
         </p>
-        <h2 className="text-2xl font-black tracking-tight">
+        <h2 className="text-2xl font-semibold tracking-tight">
           {assignment.title || "Untitled Assignment"}
         </h2>
         {assignment.type && (
@@ -308,7 +309,7 @@ function StudentView({
             <div className="rounded-xl border border-border/15 overflow-hidden divide-y divide-border/10">
               {allDeliverables.map((item, idx) => (
                 <div key={item.id} className="flex items-center gap-3 px-4 py-3 bg-muted/[0.02]">
-                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center shrink-0">{idx + 1}</span>
+                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center shrink-0">{idx + 1}</span>
                   <p className="text-sm font-semibold text-foreground">{item.name || <span className="italic opacity-40">Untitled</span>}</p>
                 </div>
               ))}
@@ -329,12 +330,12 @@ function StudentView({
                 return (
                   <div key={crit.id} className="px-4 py-3.5 bg-muted/[0.02] space-y-1">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-black text-foreground">{crit.name}</p>
+                      <p className="text-sm font-semibold text-foreground">{crit.name}</p>
                       <span className="eyebrow text-muted-foreground/40">{crit.weight}%</span>
                     </div>
                     {exemplary?.description.trim() && (
                       <p className="text-xs text-muted-foreground/70 font-medium leading-relaxed">
-                        <span className="text-primary/60 font-black">→ </span>{exemplary.description}
+                        <span className="text-primary/60 font-semibold">→ </span>{exemplary.description}
                       </p>
                     )}
                   </div>
@@ -405,7 +406,7 @@ function InstructorView({
             {assignment.institution.name} — {assignment.institution.dept}
           </p>
         </div>
-        <h2 className="text-2xl font-black tracking-tight secondary-text">{assignment.title || "Untitled Assignment"}</h2>
+        <h2 className="text-2xl font-semibold tracking-tight secondary-text">{assignment.title || "Untitled Assignment"}</h2>
         {assignment.type && (
           <Badge variant="outline" className="eyebrow mt-3 bg-primary/5 text-primary border-primary/20 px-2 h-5 rounded-full">{assignment.type}</Badge>
         )}
@@ -456,7 +457,7 @@ function InstructorView({
               <Card key={block.id} className="border border-border/20 rounded-lg overflow-hidden shadow-none">
                 <div className="px-5 py-3 bg-muted/5 border-b border-border/10 flex items-center gap-2">
                   <Icon className="h-3.5 w-3.5 text-primary/70" />
-                  <p className="text-xs font-black text-foreground tracking-tight">{block.title}</p>
+                  <p className="text-xs font-semibold text-foreground tracking-tight">{block.title}</p>
                 </div>
 
                 {block.type === "instructions" && (
@@ -483,7 +484,7 @@ function InstructorView({
                               {q.bloomLevel}
                             </Badge>
                           </div>
-                          <span className="text-sm font-black text-foreground tabular-nums shrink-0">{q.weight}%</span>
+                          <span className="text-sm font-semibold text-foreground tabular-nums shrink-0">{q.weight}%</span>
                         </div>
                       ))
                     }
@@ -537,31 +538,31 @@ function InstructorView({
               <p className="eyebrow text-muted-foreground/40">How it will be graded</p>
               <span className="text-xs text-muted-foreground/30 font-medium">— applies to entire submission</span>
             </div>
-            <div className="overflow-x-auto rounded-xl border border-border/20">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b border-border/10 bg-muted/5">
-                    <th className="eyebrow p-3 text-left text-muted-foreground/30 w-48">Criterion</th>
+            <div className="rounded-xl border border-border/20 overflow-hidden">
+              <Table className="border-collapse">
+                <TableHeader>
+                  <TableRow className="border-b border-border/10 bg-muted/5 hover:bg-muted/5">
+                    <TableHead className="eyebrow p-3 text-left text-muted-foreground/30 w-48 whitespace-normal">Criterion</TableHead>
                     {rubric[0].levels.map(lvl => (
-                      <th key={lvl.label} className="eyebrow p-3 text-center text-muted-foreground/30 min-w-[120px]">{lvl.label}</th>
+                      <TableHead key={lvl.label} className="eyebrow p-3 text-center text-muted-foreground/30 min-w-[120px]">{lvl.label}</TableHead>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {rubric.map(crit => (
-                    <tr key={crit.id} className="border-b border-border/5">
-                      <td className="p-3">
+                    <TableRow key={crit.id} className="border-b border-border/5 hover:bg-muted/10">
+                      <TableCell className="p-3 whitespace-normal align-top">
                         <p className="text-xs font-bold text-foreground">{crit.name}</p>
                         <Badge variant="outline" className="eyebrow mt-1 text-xs px-1 h-3 bg-primary/5 text-primary border-primary/20 rounded">{crit.linkedCO}</Badge>
                         <p className="text-xs text-muted-foreground/50 font-semibold mt-0.5">{crit.weight}%</p>
-                      </td>
+                      </TableCell>
                       {crit.levels.map(lvl => (
-                        <td key={lvl.label} className="p-3 text-center text-xs text-muted-foreground font-medium">{lvl.description}</td>
+                        <TableCell key={lvl.label} className="p-3 text-center text-xs text-muted-foreground font-medium whitespace-normal align-top">{lvl.description}</TableCell>
                       ))}
-                    </tr>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           </div>
         )}

@@ -20,7 +20,7 @@ const eslintConfig = defineConfig([
     ],
     rules: {
       "no-restricted-syntax": [
-        "warn",
+        "error",
         {
           selector: "Literal[value=/text-\\[\\d+px\\]/]",
           message:

@@ -90,7 +90,7 @@ export default function DashboardPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-blue-500" />
+                  <span className="w-2 h-2 rounded-full bg-[color:var(--status-info)]" />
                   Software Engineering - Phase 2
                 </div>
                 <span className="text-muted-foreground">24/45 Graded</span>
@@ -105,14 +105,14 @@ export default function DashboardPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-green-500" />
+                  <span className="w-2 h-2 rounded-full bg-[color:var(--status-success)]" />
                   Database Systems - Quiz 1
                 </div>
                 <span className="text-muted-foreground">42/42 Graded</span>
               </div>
               <Progress value={100} className="h-2" />
               <div className="flex justify-between text-xs font-bold tracking-wider text-muted-foreground">
-                <span className="flex items-center gap-1 text-green-600 dark:text-green-400"><CheckCircle2 className="h-3 w-3" /> Completed</span>
+                <span className="flex items-center gap-1 text-[color:var(--status-success)] dark:text-[color:var(--status-success)]"><CheckCircle2 className="h-3 w-3" /> Completed</span>
                 <Link href="/dashboard/post-evaluation" className="text-primary hover:underline">View Results →</Link>
               </div>
             </div>
@@ -127,7 +127,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex gap-4 p-3 rounded-lg border bg-muted/30">
-                <div className="p-2 h-fit rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                <div className="p-2 h-fit rounded-full bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] dark:bg-muted dark:text-[color:var(--status-warning)]">
                   <GraduationCap className="h-4 w-4" />
                 </div>
                 <div className="space-y-1">
@@ -136,7 +136,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="flex gap-4 p-3 rounded-lg border bg-muted/30">
-                <div className="p-2 h-fit rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                <div className="p-2 h-fit rounded-full bg-[color:var(--status-info-bg)] text-[color:var(--status-info)] dark:bg-muted dark:text-[color:var(--status-info)]">
                   <ClipboardCheck className="h-4 w-4" />
                 </div>
                 <div className="space-y-1">

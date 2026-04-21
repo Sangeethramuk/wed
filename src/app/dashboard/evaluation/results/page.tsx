@@ -8,6 +8,7 @@ import { useGradingStore } from "@/lib/store/grading-store"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import {
   ArrowLeft, Download, Users, TrendingUp, ShieldCheck, CheckCircle2,
   AlertTriangle, Sparkles, BarChart3, ArrowRight, FileText,
@@ -27,17 +28,17 @@ function getGrade(pct: number): string {
 }
 
 function gradeColorClass(grade: string): string {
-  if (grade.startsWith("A")) return "bg-green-50 text-green-700 border-green-200"
-  if (grade.startsWith("B")) return "bg-blue-50 text-blue-700 border-blue-200"
-  if (grade.startsWith("C")) return "bg-amber-50 text-amber-700 border-amber-200"
-  return "bg-red-50 text-red-700 border-red-200"
+  if (grade.startsWith("A")) return "bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30"
+  if (grade.startsWith("B")) return "bg-[color:var(--status-info-bg)] text-[color:var(--status-info)] border-[color:var(--status-info)]/30"
+  if (grade.startsWith("C")) return "bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30"
+  return "bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] border-[color:var(--status-error)]/30"
 }
 
 function barColor(pct: number): string {
   if (pct >= 80) return "bg-primary"
   if (pct >= 60) return "bg-primary/70"
-  if (pct >= 40) return "bg-amber-400"
-  return "bg-red-400"
+  if (pct >= 40) return "bg-[color:var(--status-warning)]"
+  return "bg-destructive"
 }
 
 // ── Grade distribution bands ──────────────────────────────────────────────────
@@ -45,8 +46,8 @@ function barColor(pct: number): string {
 const BANDS = [
   { label: "A+ / A", range: "80 – 100", min: 80, max: 101, color: "bg-primary" },
   { label: "B+ / B", range: "60 – 79",  min: 60, max: 80,  color: "bg-primary/70" },
-  { label: "C+ / C", range: "40 – 59",  min: 40, max: 60,  color: "bg-amber-400" },
-  { label: "F",      range: "< 40",     min: 0,  max: 40,  color: "bg-red-400" },
+  { label: "C+ / C", range: "40 – 59",  min: 40, max: 60,  color: "bg-[color:var(--status-warning)]" },
+  { label: "F",      range: "< 40",     min: 0,  max: 40,  color: "bg-destructive" },
 ]
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -113,7 +114,7 @@ export default function EvaluationResults() {
   if (!assignment) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] gap-6">
-        <div className="w-16 h-16 rounded-3xl bg-muted/30 flex items-center justify-center">
+        <div className="w-16 h-16 rounded-2xl bg-muted/30 flex items-center justify-center">
           <FileText className="w-7 h-7 text-muted-foreground/30" />
         </div>
         <div className="text-center space-y-2">
@@ -143,8 +144,8 @@ export default function EvaluationResults() {
           </Button>
           <div className="space-y-1.5">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-3xl font-black tracking-tight text-foreground">Class Report</h1>
-              <Badge variant="outline" className="eyebrow h-5 px-2 bg-green-50 text-green-700 border-green-200 rounded-full">
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">Class Report</h1>
+              <Badge variant="outline" className="eyebrow h-5 px-2 bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30 rounded-full">
                 Evaluation Complete
               </Badge>
             </div>
@@ -206,10 +207,10 @@ export default function EvaluationResults() {
           >
             <div className="flex items-start justify-between mb-3">
               <span className="eyebrow text-muted-foreground/40">{stat.label}</span>
-              <stat.icon className={cn("h-4 w-4 opacity-60", stat.highlight ? "text-amber-500" : "text-primary")} />
+              <stat.icon className={cn("h-4 w-4 opacity-60", stat.highlight ? "text-[color:var(--status-warning)]" : "text-primary")} />
             </div>
-            <div className="text-3xl font-black tracking-tighter tabular-nums text-foreground">{stat.value}</div>
-            <div className={cn("eyebrow mt-1", stat.highlight ? "text-amber-600" : "text-muted-foreground/50")}>
+            <div className="text-3xl font-semibold tracking-tight tabular-nums text-foreground">{stat.value}</div>
+            <div className={cn("eyebrow mt-1", stat.highlight ? "text-[color:var(--status-warning)]" : "text-muted-foreground/50")}>
               {stat.sub}
             </div>
           </motion.div>
@@ -236,10 +237,10 @@ export default function EvaluationResults() {
             {distribution.map((band, i) => (
               <div key={band.label} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-foreground tracking-tight">{band.label}</span>
+                  <span className="text-xs font-semibold text-foreground tracking-tight">{band.label}</span>
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-bold text-muted-foreground/40">{band.range}</span>
-                    <span className="text-xs font-black text-foreground tabular-nums w-5 text-right">{band.count}</span>
+                    <span className="text-xs font-semibold text-foreground tabular-nums w-5 text-right">{band.count}</span>
                   </div>
                 </div>
                 <div className="h-9 bg-muted/20 rounded-xl overflow-hidden">
@@ -268,7 +269,7 @@ export default function EvaluationResults() {
               <div key={cs.cid} className="space-y-2">
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-xs font-bold text-foreground leading-snug">{cs.name}</span>
-                  <span className="text-xs font-black tabular-nums text-foreground shrink-0">
+                  <span className="text-xs font-semibold tabular-nums text-foreground shrink-0">
                     {cs.avg.toFixed(1)}<span className="text-muted-foreground/30 text-xs">/5</span>
                   </span>
                 </div>
@@ -288,10 +289,10 @@ export default function EvaluationResults() {
                         key={tier}
                         className={cn(
                           "eyebrow px-1.5 py-0.5 rounded-sm",
-                          tier === "perfect" ? "bg-green-50 text-green-700" :
-                          tier === "minor"   ? "bg-blue-50 text-blue-700" :
-                          tier === "gap"     ? "bg-amber-50 text-amber-700" :
-                                              "bg-red-50 text-red-700"
+                          tier === "perfect" ? "bg-[color:var(--status-success-bg)] text-[color:var(--status-success)]" :
+                          tier === "minor"   ? "bg-[color:var(--status-info-bg)] text-[color:var(--status-info)]" :
+                          tier === "gap"     ? "bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)]" :
+                                              "bg-[color:var(--status-error-bg)] text-[color:var(--status-error)]"
                         )}
                       >
                         {n} {tier}
@@ -337,120 +338,121 @@ export default function EvaluationResults() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-muted/20 border-b border-border/10">
-                <tr>
-                  <th className="eyebrow px-6 py-4 text-muted-foreground/50">#</th>
-                  <th className="eyebrow px-6 py-4 text-muted-foreground/50">Student</th>
-                  <th className="eyebrow px-6 py-4 text-muted-foreground/50">Roll No.</th>
-                  {criterionIds.map(cid => (
-                    <th key={cid} className="eyebrow px-4 py-4 text-muted-foreground/50 text-center">
-                      {cid.toUpperCase()}
-                    </th>
-                  ))}
-                  <th className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Score</th>
-                  <th className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Grade</th>
-                  <th className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Status</th>
-                  <th className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Integrity</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/10">
-                {sorted.map(({ student, scorePct, grade, submitted, flagged, levelMap }, idx) => (
-                  <motion.tr
-                    key={student.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: Math.min(idx * 0.025, 0.5) }}
-                    className="hover:bg-muted/5 transition-colors group"
-                  >
-                    {/* # */}
-                    <td className="px-6 py-5">
-                      <span className="text-xs font-black text-muted-foreground/25 tabular-nums">
-                        {String(idx + 1).padStart(2, "0")}
-                      </span>
-                    </td>
-
-                    {/* Student name + avatar */}
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-black text-muted-foreground group-hover:text-primary shrink-0">
-                          {student.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                        </div>
-                        <span className="text-xs font-extrabold text-foreground tracking-tight whitespace-nowrap">{student.name}</span>
-                      </div>
-                    </td>
-
-                    {/* Roll */}
-                    <td className="px-6 py-5">
-                      <span className="text-xs font-mono font-bold text-muted-foreground/50">{student.roll}</span>
-                    </td>
-
-                    {/* Criterion levels */}
-                    {criterionIds.map(cid => (
-                      <td key={cid} className="px-4 py-5 text-center">
-                        <span className="text-xs font-bold tabular-nums text-foreground/70">
-                          {levelMap[cid] ?? "—"}
-                        </span>
-                        {levelMap[cid] !== undefined && (
-                          <span className="text-xs text-muted-foreground/30">/5</span>
-                        )}
-                      </td>
-                    ))}
-
-                    {/* Score % */}
-                    <td className="px-6 py-5 text-center">
-                      <span className="text-xs font-black tabular-nums text-foreground">{scorePct}%</span>
-                    </td>
-
-                    {/* Grade badge */}
-                    <td className="px-6 py-5 text-center">
-                      <Badge
-                        variant="outline"
-                        className={cn("eyebrow h-5 px-2 rounded-full", gradeColorClass(grade))}
-                      >
-                        {grade}
-                      </Badge>
-                    </td>
-
-                    {/* Submission status */}
-                    <td className="px-6 py-5 text-center">
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "eyebrow h-5 px-2 rounded-full",
-                          submitted
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : "bg-muted/40 text-muted-foreground border-border/40"
-                        )}
-                      >
-                        {submitted ? "Done" : "Pending"}
-                      </Badge>
-                    </td>
-
-                    {/* Integrity */}
-                    <td className="px-6 py-5 text-center">
-                      {flagged ? (
-                        <div className="flex items-center justify-center gap-1 text-amber-600">
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                          <span className="eyebrow">{student.status}</span>
-                        </div>
-                      ) : (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-green-500 mx-auto" />
-                      )}
-                    </td>
-                  </motion.tr>
+          <Table className="text-left">
+            <TableHeader className="bg-muted/20 border-b border-border/10">
+              <TableRow className="hover:bg-muted/20">
+                <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50">#</TableHead>
+                <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50">Student</TableHead>
+                <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50">Roll No.</TableHead>
+                {criterionIds.map(cid => (
+                  <TableHead key={cid} className="eyebrow px-4 py-4 text-muted-foreground/50 text-center">
+                    {cid.toUpperCase()}
+                  </TableHead>
                 ))}
-              </tbody>
-            </table>
+                <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Score</TableHead>
+                <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Grade</TableHead>
+                <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Status</TableHead>
+                <TableHead className="eyebrow px-6 py-4 text-muted-foreground/50 text-center">Integrity</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className="divide-y divide-border/10">
+              {sorted.map(({ student, scorePct, grade, submitted, flagged, levelMap }, idx) => (
+                // motion.tr kept native: DS TableRow isn't ref-forwarding and
+                // can't be wrapped by framer-motion's HOC; classes below mirror
+                // TableRow defaults for consistency.
+                <motion.tr
+                  key={student.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: Math.min(idx * 0.025, 0.5) }}
+                  className="hover:bg-muted/5 transition-colors group"
+                >
+                  {/* # */}
+                  <TableCell className="px-6 py-5">
+                    <span className="text-xs font-semibold text-muted-foreground/25 tabular-nums">
+                      {String(idx + 1).padStart(2, "0")}
+                    </span>
+                  </TableCell>
 
-            {sorted.length === 0 && (
-              <div className="py-20 text-center">
-                <Users className="w-8 h-8 text-muted-foreground/20 mx-auto mb-3" />
-                <p className="eyebrow text-muted-foreground/30">No student data</p>
-              </div>
-            )}
-          </div>
+                  {/* Student name + avatar */}
+                  <TableCell className="px-6 py-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-semibold text-muted-foreground group-hover:text-primary shrink-0">
+                        {student.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                      </div>
+                      <span className="text-xs font-extrabold text-foreground tracking-tight whitespace-nowrap">{student.name}</span>
+                    </div>
+                  </TableCell>
+
+                  {/* Roll */}
+                  <TableCell className="px-6 py-5">
+                    <span className="text-xs font-mono font-bold text-muted-foreground/50">{student.roll}</span>
+                  </TableCell>
+
+                  {/* Criterion levels */}
+                  {criterionIds.map(cid => (
+                    <TableCell key={cid} className="px-4 py-5 text-center">
+                      <span className="text-xs font-bold tabular-nums text-foreground/70">
+                        {levelMap[cid] ?? "—"}
+                      </span>
+                      {levelMap[cid] !== undefined && (
+                        <span className="text-xs text-muted-foreground/30">/5</span>
+                      )}
+                    </TableCell>
+                  ))}
+
+                  {/* Score % */}
+                  <TableCell className="px-6 py-5 text-center">
+                    <span className="text-xs font-semibold tabular-nums text-foreground">{scorePct}%</span>
+                  </TableCell>
+
+                  {/* Grade badge */}
+                  <TableCell className="px-6 py-5 text-center">
+                    <Badge
+                      variant="outline"
+                      className={cn("eyebrow h-5 px-2 rounded-full", gradeColorClass(grade))}
+                    >
+                      {grade}
+                    </Badge>
+                  </TableCell>
+
+                  {/* Submission status */}
+                  <TableCell className="px-6 py-5 text-center">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "eyebrow h-5 px-2 rounded-full",
+                        submitted
+                          ? "bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30"
+                          : "bg-muted/40 text-muted-foreground border-border/40"
+                      )}
+                    >
+                      {submitted ? "Done" : "Pending"}
+                    </Badge>
+                  </TableCell>
+
+                  {/* Integrity */}
+                  <TableCell className="px-6 py-5 text-center">
+                    {flagged ? (
+                      <div className="flex items-center justify-center gap-1 text-[color:var(--status-warning)]">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        <span className="eyebrow">{student.status}</span>
+                      </div>
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[color:var(--status-success)] mx-auto" />
+                    )}
+                  </TableCell>
+                </motion.tr>
+              ))}
+            </TableBody>
+          </Table>
+
+          {sorted.length === 0 && (
+            <div className="py-20 text-center">
+              <Users className="w-8 h-8 text-muted-foreground/20 mx-auto mb-3" />
+              <p className="eyebrow text-muted-foreground/30">No student data</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

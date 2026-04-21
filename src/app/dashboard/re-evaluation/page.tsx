@@ -157,7 +157,7 @@ export default function ReEvaluationDashboard() {
                 <span className="text-muted-foreground/20 text-xs">·</span>
                 <span className="eyebrow text-primary/80">Re-Evaluation Module</span>
               </div>
-              <h1 className="text-4xl font-black tracking-tighter secondary-text">Manage your workload</h1>
+              <h1 className="text-4xl font-semibold tracking-tight secondary-text">Manage your workload</h1>
             </div>
             
             <div className="flex flex-col items-end gap-3">
@@ -173,7 +173,7 @@ export default function ReEvaluationDashboard() {
               <div key={i} className="group px-4 py-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-all flex flex-col justify-center">
                 <span className="eyebrow text-muted-foreground/50">{kpi.label}</span>
                 <div className="flex items-baseline gap-1.5 mt-1">
-                  <span className="text-xl font-black tracking-tighter" style={{ color: kpi.accent }}>{kpi.value}</span>
+                  <span className="text-xl font-semibold tracking-tight" style={{ color: kpi.accent }}>{kpi.value}</span>
                   <span className="text-xs font-bold text-muted-foreground/30">{kpi.sub}</span>
                 </div>
               </div>
@@ -278,9 +278,9 @@ export default function ReEvaluationDashboard() {
 function Section({ title, subtitle, icon, count, accent, children }: any) {
   const accentColors: any = {
     primary: 'text-primary bg-primary/5 border-primary/10',
-    amber: 'text-amber-600 bg-amber-500/5 border-amber-500/10',
-    slate: 'text-slate-600 bg-slate-500/5 border-slate-500/10',
-    emerald: 'text-emerald-600 bg-emerald-500/5 border-emerald-500/10',
+    amber: 'text-[color:var(--status-warning)] bg-[color:var(--status-warning)]/5 border-[color:var(--status-warning)]/10',
+    slate: 'text-muted-foreground bg-foreground/5 border-border/10',
+    emerald: 'text-[color:var(--status-success)] bg-[color:var(--status-success)]/5 border-[color:var(--status-success)]/10',
   }
   
   return (
@@ -313,7 +313,7 @@ function AssignmentCard({
     >
       <div className="absolute top-4 right-4 z-10">
         {overdueCount > 0 ? (
-          <Badge variant="outline" className="eyebrow text-xs border-red-500/20 text-red-600/70 bg-red-500/[0.04] rounded-md px-1.5 py-0">
+          <Badge variant="outline" className="eyebrow text-xs border-destructive/20 text-[color:var(--status-error)]/70 bg-destructive/[0.04] rounded-md px-1.5 py-0">
             {overdueCount} Overdue
           </Badge>
         ) : (
@@ -325,10 +325,10 @@ function AssignmentCard({
 
       <div className="space-y-3 flex-1 flex flex-col">
         <div>
-          <div className="p-1.5 w-fit rounded-lg bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300 border border-primary/10 mb-3">
+          <div className="p-1.5 w-fit rounded-lg bg-primary/5 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 border border-primary/10 mb-3">
             <BookOpen className="h-4 w-4" />
           </div>
-          <h3 className="text-sm font-black tracking-tight line-clamp-1 text-[#1E293B]">{title}</h3>
+          <h3 className="text-sm font-semibold tracking-tight line-clamp-1 text-[#1E293B]">{title}</h3>
           <div className="eyebrow flex items-center gap-1 text-xs text-muted-foreground/50 mt-0.5">
             {code} <span className="opacity-40">•</span> {subject} <span className="opacity-40">•</span> {batch}
           </div>
@@ -338,11 +338,11 @@ function AssignmentCard({
           <div className="flex items-end justify-between pt-3 border-t border-border/10">
             <div className="space-y-0.5">
               <span className="eyebrow text-xs text-muted-foreground/30">Workload</span>
-              <div className="text-xs font-black text-foreground/80">{pendingCount} Pending</div>
+              <div className="text-xs font-semibold text-foreground/80">{pendingCount} Pending</div>
             </div>
             <div className="space-y-0.5 text-right">
               <span className="eyebrow text-xs text-muted-foreground/30">Progress</span>
-              <div className="text-xs font-black text-muted-foreground">{resolvedCount}/{totalCount}</div>
+              <div className="text-xs font-semibold text-muted-foreground">{resolvedCount}/{totalCount}</div>
             </div>
           </div>
 
@@ -368,7 +368,7 @@ function AssignmentCard({
         </div>
       </div>
 
-      <div className={`absolute bottom-0 left-0 w-full h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left ${overdueCount > 0 ? 'bg-red-500' : 'bg-primary'}`} />
+      <div className={`absolute bottom-0 left-0 w-full h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left ${overdueCount > 0 ? 'bg-destructive' : 'bg-primary'}`} />
     </Card>
   )
 }

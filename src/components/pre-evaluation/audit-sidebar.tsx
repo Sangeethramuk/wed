@@ -12,10 +12,10 @@ export function AuditSidebar() {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case "system": return <ShieldCheck className="h-4 w-4 text-emerald-600/40" />
+      case "system": return <ShieldCheck className="h-4 w-4 text-[color:var(--status-success)]/40" />
       case "user": return <User className="h-4 w-4 text-primary/40" />
-      case "ai": return <Zap className="h-4 w-4 text-amber-500/40 fill-current" />
-      case "auditor": return <History className="h-4 w-4 text-slate-400" />
+      case "ai": return <Zap className="h-4 w-4 text-[color:var(--status-warning)]/40 fill-current" />
+      case "auditor": return <History className="h-4 w-4 text-muted-foreground/70" />
       default: return null
     }
   }
@@ -32,7 +32,7 @@ export function AuditSidebar() {
             <History className="h-6 w-6" />
           </div>
           <div className="space-y-1">
-            <SheetTitle className="text-2xl font-black tracking-tight secondary-text">
+            <SheetTitle className="text-2xl font-semibold tracking-tight secondary-text">
               Audit
             </SheetTitle>
             <p className="eyebrow font-semibold text-muted-foreground/40 leading-relaxed">
@@ -51,7 +51,7 @@ export function AuditSidebar() {
                 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-black tracking-tight text-foreground/60">{event.action}</h4>
+                    <h4 className="text-xs font-semibold tracking-tight text-foreground/60">{event.action}</h4>
                     <span className="eyebrow text-muted-foreground/30 bg-muted/20 px-1.5 py-0.5 rounded border border-border/10">{event.timestamp}</span>
                   </div>
                   <p className="text-xs text-muted-foreground/50 font-medium leading-relaxed pr-4">{event.details}</p>

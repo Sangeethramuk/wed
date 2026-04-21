@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import {
   BarChart3,
   Users,
@@ -80,7 +81,7 @@ export default function ResultInsights() {
         )}
         <div className="space-y-1.5">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-black tracking-tight text-foreground">{title}</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{title}</h1>
             <Badge variant="outline" className="eyebrow h-5 px-2 bg-primary/5 text-primary border-primary/20 rounded-full">
               PROTOCOL P1
             </Badge>
@@ -118,8 +119,8 @@ export default function ResultInsights() {
                   <CardDescription className="text-xs font-bold text-muted-foreground/50 mt-1">Cohort SE-PH2 Evaluation</CardDescription>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-black text-foreground tabular-nums tracking-tighter">45<span className="text-muted-foreground/30 text-sm">/45</span></div>
-                  <div className="eyebrow text-green-600">100% Processed</div>
+                  <div className="text-2xl font-semibold text-foreground tabular-nums tracking-tight">45<span className="text-muted-foreground/30 text-sm">/45</span></div>
+                  <div className="eyebrow text-[color:var(--status-success)]">100% Processed</div>
                 </div>
               </CardHeader>
               <CardContent className="p-8 space-y-8">
@@ -130,14 +131,14 @@ export default function ResultInsights() {
                 
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { label: 'High Confidence', count: 35, color: 'text-emerald-600', bg: 'bg-emerald-500/10' },
-                    { label: 'Manual Review', count: 3, color: 'text-amber-600', bg: 'bg-amber-500/10' },
+                    { label: 'High Confidence', count: 35, color: 'text-[color:var(--status-success)]', bg: 'bg-[color:var(--status-success)]/10' },
+                    { label: 'Manual Review', count: 3, color: 'text-[color:var(--status-warning)]', bg: 'bg-[color:var(--status-warning)]/10' },
                     { label: 'Elevated Cases', count: 5, color: 'text-primary', bg: 'bg-primary/10' },
-                    { label: 'Integrity Alert', count: 2, color: 'text-red-600', bg: 'bg-red-500/10' },
+                    { label: 'Integrity Alert', count: 2, color: 'text-[color:var(--status-error)]', bg: 'bg-destructive/10' },
                   ].map((stat) => (
                     <div key={stat.label} className={cn("p-4 rounded-2xl border border-border/40 flex items-center justify-between", stat.bg)}>
                       <span className="text-xs font-bold text-muted-foreground/80 tracking-tight">{stat.label}</span>
-                      <span className={cn("text-lg font-black", stat.color)}>{stat.count}</span>
+                      <span className={cn("text-lg font-semibold", stat.color)}>{stat.count}</span>
                     </div>
                   ))}
                 </div>
@@ -175,8 +176,8 @@ export default function ResultInsights() {
                     <div className="flex-1 space-y-1.5">
                       <div className="flex items-center justify-between">
                          <div className="flex items-center gap-3">
-                            <span className={cn("text-sm font-black tracking-tight", releaseTiming === opt.key ? "text-primary" : "text-foreground")}>{opt.title}</span>
-                            {opt.badge && <Badge variant="outline" className="eyebrow h-4 px-1.5 bg-emerald-500/10 text-emerald-700 border-green-200 rounded-sm">{opt.badge}</Badge>}
+                            <span className={cn("text-sm font-semibold tracking-tight", releaseTiming === opt.key ? "text-primary" : "text-foreground")}>{opt.title}</span>
+                            {opt.badge && <Badge variant="outline" className="eyebrow h-4 px-1.5 bg-[color:var(--status-success)]/10 text-[color:var(--status-success)] border-[color:var(--status-success)]/30 rounded-sm">{opt.badge}</Badge>}
                          </div>
                          <opt.icon className={cn("w-4 h-4 opacity-20", releaseTiming === opt.key ? "text-primary opacity-60" : "text-muted-foreground")} />
                       </div>
@@ -279,12 +280,12 @@ export default function ResultInsights() {
               </div>
             </div>
             <div className="space-y-1">
-              <div className="text-4xl font-black tracking-tighter tabular-nums text-foreground">
+              <div className="text-4xl font-semibold tracking-tight tabular-nums text-foreground">
                 {stat.value}<span className="text-sm font-bold text-muted-foreground/40 ml-1.5">{stat.unit}</span>
               </div>
               <div className={cn(
                 "eyebrow flex items-center gap-1.5",
-                stat.trend === 'up' ? 'text-green-600' : 'text-muted-foreground/60'
+                stat.trend === 'up' ? 'text-[color:var(--status-success)]' : 'text-muted-foreground/60'
               )}>
                 {stat.trend === 'up' && <ArrowUpRight className="w-3.5 h-3.5" />} {stat.sub}
               </div>
@@ -320,14 +321,14 @@ export default function ResultInsights() {
                           "hover:brightness-110 shadow-lg shadow-primary/5"
                         )}
                       >
-                         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                         <div className="absolute inset-0 bg-background/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </motion.div>
-                      <div className="absolute -top-10 text-xs font-black text-foreground opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 px-2 py-1 bg-background border border-border/40 rounded-lg shadow-xl tabular-nums">
+                      <div className="absolute -top-10 text-xs font-semibold text-foreground opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 px-2 py-1 bg-background border border-border/40 rounded-lg shadow-xl tabular-nums">
                         {data.count} <span className="text-xs text-muted-foreground">SUBMISSIONS</span>
                       </div>
                     </div>
                     <div className="text-center space-y-1 pt-5 shrink-0">
-                      <p className="text-xs font-black text-foreground tracking-tighter tabular-nums">{data.range}</p>
+                      <p className="text-xs font-semibold text-foreground tracking-tight tabular-nums">{data.range}</p>
                       <p className="eyebrow text-muted-foreground/30">{data.label}</p>
                     </div>
                   </div>
@@ -355,7 +356,7 @@ export default function ResultInsights() {
                        <span className="eyebrow text-foreground">{gap.label}</span>
                        <Badge variant="outline" className={cn(
                          "eyebrow h-5 rounded-sm",
-                         gap.severity === 'high' ? 'bg-amber-500/10 text-amber-600 border-amber-200' : 'bg-muted/50 text-muted-foreground border-border/40'
+                         gap.severity === 'high' ? 'bg-[color:var(--status-warning)]/10 text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30' : 'bg-muted/50 text-muted-foreground border-border/40'
                        )}>
                          {gap.severity} RISK
                        </Badge>
@@ -396,64 +397,62 @@ export default function ResultInsights() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-muted/20 border-b border-border/10">
-                <tr>
-                  <th className="eyebrow px-10 py-5 text-muted-foreground/50">Student Identity</th>
-                  <th className="eyebrow px-6 py-5 text-muted-foreground/50 text-center">Score Matrix</th>
-                  <th className="eyebrow px-6 py-5 text-muted-foreground/50 text-center">Protocol Status</th>
-                  <th className="eyebrow px-10 py-5 text-muted-foreground/50 text-right">Evaluation Grade</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/10">
-                {rosterData.map((student) => (
-                  <tr key={student.name} className="hover:bg-muted/5 transition-colors group">
-                    <td className="px-10 py-6">
-                      <div className="flex items-center gap-4">
-                         <div className="w-10 h-10 rounded-2xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-black text-muted-foreground group-hover:text-primary">
-                            {student.name.split(' ').map(n => n[0]).join('')}
-                         </div>
-                         <span className="font-extrabold text-foreground text-sm tracking-tight">{student.name}</span>
+          <Table className="text-left">
+            <TableHeader className="bg-muted/20 border-b border-border/10">
+              <TableRow>
+                <TableHead className="eyebrow px-10 py-5 text-muted-foreground/50">Student Identity</TableHead>
+                <TableHead className="eyebrow px-6 py-5 text-muted-foreground/50 text-center">Score Matrix</TableHead>
+                <TableHead className="eyebrow px-6 py-5 text-muted-foreground/50 text-center">Protocol Status</TableHead>
+                <TableHead className="eyebrow px-10 py-5 text-muted-foreground/50 text-right">Evaluation Grade</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className="divide-y divide-border/10">
+              {rosterData.map((student) => (
+                <TableRow key={student.name} className="hover:bg-muted/5 group">
+                  <TableCell className="px-10 py-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-2xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-semibold text-muted-foreground group-hover:text-primary">
+                        {student.name.split(' ').map(n => n[0]).join('')}
                       </div>
-                    </td>
-                    <td className="px-6 py-6 font-mono text-muted-foreground text-center">
-                       <div className="flex items-center justify-center gap-3">
-                          <span className="text-xs font-bold">{student.c1}</span>
-                          <span className="text-muted-foreground/20 text-xs">|</span>
-                          <span className="text-xs font-bold">{student.c2}</span>
-                          <span className="text-muted-foreground/20 text-xs">|</span>
-                          <span className="text-xs font-bold">{student.c3}</span>
-                          <span className="text-muted-foreground/20 text-xs">|</span>
-                          <span className="text-xs font-black text-foreground">{student.total}</span>
-                       </div>
-                    </td>
-                    <td className="px-6 py-6 text-center">
-                       <Badge variant="outline" className={cn(
-                         "eyebrow h-5 px-2 rounded-full",
-                         student.status === 'Published' ? 'bg-green-500/5 text-green-700 border-green-200' :
-                         student.status === 'Ready' ? 'bg-primary/5 text-primary border-primary/20' :
-                         'bg-amber-500/5 text-amber-700 border-amber-200'
-                       )}>
-                          {student.status}
-                       </Badge>
-                    </td>
-                    <td className="px-10 py-6 text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        <span className="text-xl font-black tabular-nums tracking-tighter text-foreground">{student.grade}</span>
-                        <div className={cn(
-                          "w-1.5 h-6 rounded-full",
-                          student.grade.includes('A') ? 'bg-primary' :
-                          student.grade.includes('B') ? 'bg-emerald-500' :
-                          'bg-amber-500'
-                        )} />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      <span className="font-extrabold text-foreground text-sm tracking-tight">{student.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-6 font-mono text-muted-foreground text-center">
+                    <div className="flex items-center justify-center gap-3">
+                      <span className="text-xs font-bold">{student.c1}</span>
+                      <span className="text-muted-foreground/20 text-xs">|</span>
+                      <span className="text-xs font-bold">{student.c2}</span>
+                      <span className="text-muted-foreground/20 text-xs">|</span>
+                      <span className="text-xs font-bold">{student.c3}</span>
+                      <span className="text-muted-foreground/20 text-xs">|</span>
+                      <span className="text-xs font-semibold text-foreground">{student.total}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-6 text-center">
+                    <Badge variant="outline" className={cn(
+                      "eyebrow h-5 px-2 rounded-full",
+                      student.status === 'Published' ? 'bg-[color:var(--status-success)]/5 text-[color:var(--status-success)] border-[color:var(--status-success)]/30' :
+                      student.status === 'Ready' ? 'bg-primary/5 text-primary border-primary/20' :
+                      'bg-[color:var(--status-warning)]/5 text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30'
+                    )}>
+                      {student.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="px-10 py-6 text-right">
+                    <div className="flex items-center justify-end gap-3">
+                      <span className="text-xl font-semibold tabular-nums tracking-tight text-foreground">{student.grade}</span>
+                      <div className={cn(
+                        "w-1.5 h-6 rounded-full",
+                        student.grade.includes('A') ? 'bg-primary' :
+                        student.grade.includes('B') ? 'bg-[color:var(--status-success)]' :
+                        'bg-[color:var(--status-warning)]'
+                      )} />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
       

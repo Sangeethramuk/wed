@@ -47,9 +47,9 @@ const MOCK_MANUSCRIPT_CONTENT: Record<string, string[]> = {
 }
 
 const CATEGORY_CONFIG = {
-  high_confidence: { dot: "bg-green-500", badge: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20", icon: ShieldAlert },
-  ocr_issue:       { dot: "bg-amber-500", badge: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20", icon: Wifi },
-  complex_case:    { dot: "bg-red-500",   badge: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20",     icon: AlertTriangle },
+  high_confidence: { dot: "bg-[color:var(--status-success)]", badge: "bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/20", icon: ShieldAlert },
+  ocr_issue:       { dot: "bg-[color:var(--status-warning)]", badge: "bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/20", icon: Wifi },
+  complex_case:    { dot: "bg-[color:var(--status-error)]",   badge: "bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] border-[color:var(--status-error)]/20",     icon: AlertTriangle },
 }
 
 export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
@@ -159,7 +159,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         onClick={() => setActiveCalibrationPaper(assignmentId, paper.paperId)}
                         className={`w-full flex items-center justify-between p-3 rounded-xl transition-all cursor-pointer text-left text-sm ${
                           isActive
-                            ? "bg-white text-foreground shadow-xl border border-border ring-1 ring-primary/20 z-10"
+                            ? "bg-background text-foreground shadow-xl border border-border ring-1 ring-primary/20 z-10"
                             : "hover:bg-accent/40 text-muted-foreground border border-transparent"
                         }`}
                       >
@@ -175,7 +175,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                           </div>
                           {isActive && <Sparkles className="h-2.5 w-2.5 text-primary shrink-0 ml-1" />}
                         </div>
-                        {isGraded && <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />}
+                        {isGraded && <CheckCircle2 className="h-3.5 w-3.5 text-[color:var(--status-success)] shrink-0" />}
                       </div>
                     )
                   })}
@@ -197,7 +197,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                       <span className="eyebrow text-primary/60 mb-0.5">
                         Blind Manuscript
                       </span>
-                      <h2 className="text-sm font-black tracking-tight text-foreground">
+                      <h2 className="text-sm font-semibold tracking-tight text-foreground">
                         {currentPaper.anonymizedLabel}
                       </h2>
                     </div>
@@ -211,21 +211,21 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                   <div className="flex items-center gap-4">
                     <div className="eyebrow flex items-center gap-3 px-5 py-2 bg-accent/40 rounded-full border border-border/50 text-muted-foreground/60 transition-all cursor-default">
                       <Tooltip>
-                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${hasScrolledToBottom ? "text-green-500" : ""}`} />}>
+                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${hasScrolledToBottom ? "text-[color:var(--status-success)]" : ""}`} />}>
                           {hasScrolledToBottom ? <CheckCircle2 className="h-3 w-3" /> : "○"} Read
                         </TooltipTrigger>
                         <TooltipContent>Scroll to the bottom of the manuscript to unlock</TooltipContent>
                       </Tooltip>
                       <Separator orientation="vertical" className="h-3 bg-border" />
                       <Tooltip>
-                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${inspectionTime >= 3 ? "text-green-500" : ""}`} />}>
+                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${inspectionTime >= 3 ? "text-[color:var(--status-success)]" : ""}`} />}>
                           <Timer className="h-3 w-3" /> {Math.min(inspectionTime, 3)}s/3s
                         </TooltipTrigger>
                         <TooltipContent>Spend at least 3 seconds reviewing the paper</TooltipContent>
                       </Tooltip>
                       <Separator orientation="vertical" className="h-3 bg-border" />
                       <Tooltip>
-                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${isAllGraded ? "text-green-500" : ""}`} />}>
+                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${isAllGraded ? "text-[color:var(--status-success)]" : ""}`} />}>
                           {isAllGraded ? <CheckCircle2 className="h-3 w-3" /> : "○"} Scored
                         </TooltipTrigger>
                         <TooltipContent>Grade all {criteria.length} criteria to unlock</TooltipContent>
@@ -239,15 +239,15 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
               <div
                 ref={manuscriptRef}
                 onScroll={handleScroll}
-                className="flex-1 overflow-y-auto bg-[#F9F8F4] scroll-smooth p-10 lg:p-24"
+                className="flex-1 overflow-y-auto bg-muted/30 scroll-smooth p-10 lg:p-24"
               >
                 <div 
-                  className="bg-white shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-[#E6E1D6]/50 mx-auto transition-all duration-300 relative group/page cursor-text flex flex-col"
+                  className="bg-background shadow-sm border border-border/50 mx-auto transition-all duration-300 relative group/page cursor-text flex flex-col"
                   style={{ width: "100%", maxWidth: "800px", minHeight: "100%" }}
                 >
                   <div className="absolute top-8 left-8 flex flex-col items-start gap-1">
                     <span className="eyebrow text-primary/40 group-hover/page:text-primary transition-colors">Blind Calibration</span>
-                    <span className="eyebrow text-[#E6E1D6] group-hover/page:text-slate-400 transition-colors">Digital Manuscript</span>
+                    <span className="eyebrow text-muted-foreground/30 group-hover/page:text-muted-foreground/60 transition-colors">Digital Manuscript</span>
                   </div>
 
                   <div className="p-16 lg:p-24 h-full font-serif overflow-hidden flex-1">
@@ -256,14 +256,14 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         <div className="flex items-center justify-between mt-8">
                           <h1 className="text-4xl font-serif text-foreground leading-tight italic tracking-tight underline decoration-primary/20">Software Engineering — Phase 2</h1>
                         </div>
-                        <p className="text-xs text-slate-400 italic">Identity anonymized for calibration protocol</p>
+                        <p className="text-xs text-muted-foreground/70 italic">Identity anonymized for calibration protocol</p>
                       </div>
 
                       <div className="space-y-12">
                         {criteria.map((criterion, idx) => (
                           <div key={criterion.id} className="space-y-6">
-                            <h2 className="text-xl font-bold italic border-l-2 border-amber-500 pl-4 tracking-tight text-slate-800 flex items-center gap-3">
-                              <span className="eyebrow text-amber-500/80 not-italic shrink-0">
+                            <h2 className="text-xl font-bold italic border-l-2 border-[color:var(--status-warning)] pl-4 tracking-tight text-foreground flex items-center gap-3">
+                              <span className="eyebrow text-[color:var(--status-warning)]/80 not-italic shrink-0">
                                 {criterion.id.toUpperCase()}
                               </span>
                               {criterion.name}
@@ -273,10 +273,10 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                                 "The student's response for this criterion demonstrates awareness of core concepts with moderate elaboration. Evidence of applied understanding is present though further depth would strengthen the argument.",
                                 "Supporting examples are provided with references to course material. The logical flow is maintained throughout this section with minor inconsistencies in the latter portion.",
                               ]).map((para, i) => (
-                                <p key={i} className="font-serif italic font-medium text-slate-700">{para}</p>
+                                <p key={i} className="font-serif italic font-medium text-muted-foreground">{para}</p>
                               ))}
                             </div>
-                            {idx < criteria.length - 1 && <Separator className="mt-8 opacity-20 border-[#E6E1D6]" />}
+                            {idx < criteria.length - 1 && <Separator className="mt-8 opacity-20 border-border/50" />}
                           </div>
                         ))}
                       </div>

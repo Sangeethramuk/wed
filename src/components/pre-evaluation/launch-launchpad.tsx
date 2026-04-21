@@ -36,11 +36,11 @@ export function LaunchLaunchpad() {
       {/* Success Banner - Reimagined */}
       <div className="text-center space-y-6">
         <div className="relative inline-flex mb-4">
-          <div className="h-32 w-32 rounded-3xl bg-primary/5 border-2 border-primary/20 flex items-center justify-center relative overflow-hidden group">
+          <div className="h-32 w-32 rounded-2xl bg-primary/5 border-2 border-primary/20 flex items-center justify-center relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-50 group-hover:scale-150 transition-transform duration-1000" />
             <Monitor className="h-16 w-16 text-primary group-hover:scale-110 transition-transform duration-500" />
-            <div className="absolute bottom-4 right-4 h-8 w-8 rounded-xl bg-emerald-500 flex items-center justify-center border-4 border-background shadow-lg">
-              <CheckCircle className="h-4 w-4 text-white" />
+            <div className="absolute bottom-4 right-4 h-8 w-8 rounded-xl bg-[color:var(--status-success)] flex items-center justify-center border-4 border-background shadow-lg">
+              <CheckCircle className="h-4 w-4 text-primary-foreground" />
             </div>
             {/* Sparkles Decoration */}
             <Sparkles className="absolute top-4 right-4 h-4 w-4 text-primary/40 animate-pulse" />
@@ -51,7 +51,7 @@ export function LaunchLaunchpad() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-4xl font-black tracking-tight secondary-text">Your digital desk is ready</h1>
+          <h1 className="text-4xl font-semibold tracking-tight secondary-text">Your digital desk is ready</h1>
           <p className="text-muted-foreground font-semibold text-base opacity-70">Setting up grading patterns... Success! Your students can now submit their work.</p>
         </div>
       </div>
@@ -63,22 +63,22 @@ export function LaunchLaunchpad() {
             <div className="flex items-center justify-between">
               <p className="eyebrow text-muted-foreground opacity-50">Student submission link</p>
               <div className="flex items-center gap-2">
-                <ShieldCheck className="h-3 w-3 text-emerald-500" />
-                <span className="eyebrow text-emerald-600/60">Protocol P1 Verified</span>
+                <ShieldCheck className="h-3 w-3 text-[color:var(--status-success)]" />
+                <span className="eyebrow text-[color:var(--status-success)]/60">Protocol P1 Verified</span>
               </div>
             </div>
             <div className="flex gap-3">
               <Input 
                 readOnly 
                 value={shareLink} 
-                className="h-14 bg-muted/20 border-2 border-border/40 rounded-2xl font-black text-sm px-6 focus-visible:ring-primary/10 tracking-tight"
+                className="h-14 bg-muted/20 border-2 border-border/40 rounded-2xl font-semibold text-sm px-6 focus-visible:ring-primary/10 tracking-tight"
               />
               <Button
                 variant="outline"
                 size="icon-lg"
                 onClick={copyToClipboard}
               >
-                {copied ? <CheckCircle className="h-6 w-6 text-emerald-500" /> : <Copy className="h-6 w-6" />}
+                {copied ? <CheckCircle className="h-6 w-6 text-[color:var(--status-success)]" /> : <Copy className="h-6 w-6" />}
               </Button>
             </div>
           </div>
@@ -91,8 +91,8 @@ export function LaunchLaunchpad() {
                 variant="outline"
                 className="h-auto flex-col items-start gap-3 p-6 group text-left whitespace-normal"
               >
-                <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/10 mb-1">
-                  <Database className="h-5 w-5 text-blue-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+                <div className="h-10 w-10 rounded-xl bg-[color:var(--status-info)]/10 flex items-center justify-center border border-[color:var(--status-info)]/10 mb-1">
+                  <Database className="h-5 w-5 text-[color:var(--status-info)] opacity-60 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <div className="space-y-1">
                   <span className="text-sm font-semibold block">Sync LMS</span>

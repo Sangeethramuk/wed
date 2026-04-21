@@ -30,8 +30,8 @@ const CATEGORY_OPTIONS = [
 function getAvatarColor(color: string) {
   switch (color) {
     case 'purple': return 'bg-primary';
-    case 'teal': return 'bg-teal-500';
-    case 'coral': return 'bg-orange-500';
+    case 'teal': return 'bg-[color:var(--status-info)]';
+    case 'coral': return 'bg-[color:var(--status-warning)]';
     default: return 'bg-primary';
   }
 }
@@ -39,9 +39,9 @@ function getAvatarColor(color: string) {
 function getCategoryStyle(cat: string) {
   switch (cat) {
     case 'Medical Leave': return `${statusStyles.error.bg} ${statusStyles.error.text} ${statusStyles.error.border}`;
-    case 'Academic Context': return 'bg-blue-50 text-blue-700 border-blue-200';
+    case 'Academic Context': return 'bg-[color:var(--status-info-bg)] text-[color:var(--status-info)] border-[color:var(--status-info)]/30';
     case 'Grading Decision': return 'bg-primary/10 text-primary border-primary/20';
-    case 'Conduct': return 'bg-amber-50 text-amber-700 border-amber-200';
+    case 'Conduct': return 'bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30';
     default: return 'bg-muted text-muted-foreground border-border';
   }
 }
@@ -92,7 +92,7 @@ export function InternalNotesPanel() {
           <span className="eyebrow text-foreground/70">
             Internal Notes
           </span>
-          <Badge variant="outline" className="text-xs font-bold h-4 bg-amber-50 text-amber-700 border-amber-200">
+          <Badge variant="outline" className="text-xs font-bold h-4 bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30">
             INSTRUCTORS ONLY
           </Badge>
         </div>
@@ -151,12 +151,12 @@ export function InternalNotesPanel() {
                         notes[currentNoteIdx].isOwn
                           ? 'border-primary/30 bg-primary/5'
                           : notes[currentNoteIdx].isFlagged
-                          ? 'border-amber-200 bg-amber-50'
+                          ? 'border-[color:var(--status-warning)]/30 bg-[color:var(--status-warning-bg)]'
                           : 'border-border bg-muted/20'
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <div className={`w-6 h-6 rounded-full ${getAvatarColor(notes[currentNoteIdx].avatarColor)} flex items-center justify-center text-xs font-bold text-white`}>
+                        <div className={`w-6 h-6 rounded-full ${getAvatarColor(notes[currentNoteIdx].avatarColor)} flex items-center justify-center text-xs font-bold text-primary-foreground`}>
                           {notes[currentNoteIdx].initials}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -164,7 +164,7 @@ export function InternalNotesPanel() {
                           <div className="text-xs text-muted-foreground">{notes[currentNoteIdx].role}</div>
                         </div>
                         {notes[currentNoteIdx].isFlagged && (
-                          <Badge variant="outline" className="text-xs font-bold h-4 bg-amber-50 text-amber-700 border-amber-200">
+                          <Badge variant="outline" className="text-xs font-bold h-4 bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30">
                             Contextual
                           </Badge>
                         )}
