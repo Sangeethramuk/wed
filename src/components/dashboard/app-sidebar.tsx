@@ -54,7 +54,7 @@ const mainNavItems = [
 export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border h-14 justify-center">
+      <SidebarHeader className="border-b border-sidebar-border h-16 justify-center px-3">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -72,7 +72,7 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-3 py-4">
         <SidebarGroup>
           <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -93,7 +93,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4">
+      <SidebarFooter className="border-t border-sidebar-border px-3 py-4">
         <div className="flex w-full items-center justify-center">
           <span className="text-xs text-muted-foreground font-medium tracking-wider">
             Powered by <span className="font-semibold text-foreground">EducAItors</span>
