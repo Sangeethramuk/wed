@@ -406,6 +406,27 @@
 }
 
 /* ============================================
+   SHELL SPACING TOKENS
+   Standard padding rhythm shared by sidebar,
+   topbar, and card primitives. Use via Tailwind
+   arbitrary syntax: `p-[var(--space-card)]`,
+   `px-[var(--space-shell-x)]`, etc.
+   - shell-x / shell-y: outer chrome padding
+     (sidebar header/footer, topbar, layout main)
+   - card: standard card content padding
+   - card-compact: tight cards (KPI tiles, list rows)
+   - stack: vertical gap between stacked elements
+   ============================================ */
+:root {
+  --space-shell-x: 1.5rem;     /* 24px — topbar / page horizontal inset */
+  --space-shell-y: 1rem;       /* 16px — topbar / sidebar vertical padding */
+  --space-card: 1.5rem;        /* 24px — hero card content padding (p-6) */
+  --space-card-compact: 1rem;  /* 16px — compact card content (p-4) */
+  --space-stack: 0.75rem;      /* 12px — stacked-element gap (gap-3) */
+  --space-stack-tight: 0.5rem; /* 8px — tight stacked gap (gap-2) */
+}
+
+/* ============================================
    BASE STYLES
    ============================================ */
 @layer base {
