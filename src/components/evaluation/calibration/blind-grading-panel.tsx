@@ -301,24 +301,19 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
 
           {/* ── Right Panel: Rubric Evaluation (double-blind stepper) ── */}
           <ResizablePanel defaultSize={30} minSize={20}>
-            <div className="h-full flex flex-col border-l border-border bg-background">
+            <div className="h-full flex flex-col border-l border-border bg-background overflow-hidden">
 
-              {/* Sticky nav */}
-              <div className="bg-background border-b border-border px-4 pt-3 pb-0 shrink-0">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-semibold text-foreground">Rubric evaluation</span>
-                  <span className="text-xs font-mono text-muted-foreground/60 bg-muted/40 border border-border/60 rounded-full px-2 py-0.5">
+              {/* Sticky header — matches grading sidebar */}
+              <div className="p-4 border-b border-border bg-background shrink-0 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-semibold tracking-tight text-foreground">Rubric evaluation</h2>
+                  <Badge variant="outline" className="rounded-full text-xs font-semibold px-2 h-5 bg-background">
                     {gradedCriteria.length} of {criteria.length} scored
-                  </span>
+                  </Badge>
                 </div>
-                <div className="h-[3px] bg-muted/30 rounded-full mb-3 overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
-                    style={{ width: `${(gradedCriteria.length / Math.max(criteria.length, 1)) * 100}%` }}
-                  />
-                </div>
-                {/* Stepper */}
-                <div className="flex">
+                <Progress value={(gradedCriteria.length / Math.max(criteria.length, 1)) * 100} className="h-1" />
+                {/* Stepper — C1/C2/C3 dots-with-label, matches grading */}
+                <div className="flex gap-1">
                   {criteria.map((c, i) => {
                     const sc = paperScores.find(s => s.criterionId === c.id)
                     const isDone = (sc?.instructorLevel ?? 0) > 0
@@ -329,22 +324,18 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         variant="ghost"
                         size="sm"
                         onClick={() => setActiveCriterionIdx(i)}
-                        className={`flex-1 h-auto flex-col gap-1 border-b-2 rounded-none ${
-                          isActive ? 'border-primary' : 'border-transparent'
-                        }`}
+                        className="flex-1 h-auto flex-col gap-1 py-1"
                       >
-                        <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
-                          isDone
-                            ? 'bg-primary border-primary text-primary-foreground'
-                            : isActive
-                            ? 'border-[1.5px] border-primary bg-primary/10 text-primary'
-                            : 'border border-border/60 bg-background text-muted-foreground/50'
+                        <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
+                          isDone ? 'bg-foreground border-foreground' :
+                          isActive ? 'border-primary bg-background' :
+                          'border-border bg-background'
                         }`}>
-                          {isDone ? '✓' : i + 1}
+                          {isActive && !isDone && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
                         </div>
-                        <span className={`text-xs font-medium text-center leading-tight max-w-[70px] ${
-                          isDone ? 'text-muted-foreground' : isActive ? 'text-primary' : 'text-muted-foreground/50'
-                        }`}>{c.name}</span>
+                        <span className={`text-xs font-semibold transition-colors ${isActive ? 'text-foreground' : 'text-muted-foreground/50'}`}>
+                          {c.id.toUpperCase()}
+                        </span>
                       </Button>
                     )
                   })}
@@ -352,30 +343,39 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
               </div>
 
               {/* Scrollable body */}
-              <ScrollArea className="flex-1">
-                <div className="p-3 space-y-2.5">
+              <ScrollArea className="flex-1 min-h-0">
+                <div className="p-4 space-y-3">
                   {activeCriterion && (
                     <>
-                      {/* Main criterion card */}
-                      <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
-                        <div className="p-3.5 space-y-3.5">
+                      {/* Main criterion card — matches grading card treatment */}
+                      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                        <div className="p-4 space-y-4">
                           <div>
-                            <h4 className="text-sm font-semibold text-foreground leading-snug">{activeCriterion.name}</h4>
-                            <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+                            <h3 className="text-sm font-semibold text-foreground leading-tight">{activeCriterion.name}</h3>
+                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                               {activeCriterion.levelLabels.join(' → ')}
                             </p>
                           </div>
 
-                          {/* Score */}
-                          <div>
-                            <span className="eyebrow font-semibold text-muted-foreground/60 block mb-2">Your score</span>
+                          {/* Score row — single-line layout matching grading pattern */}
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                              <span className="eyebrow text-muted-foreground">Your score</span>
+                              {activeScore > 0 && (
+                                <div className="flex items-baseline gap-1">
+                                  <span className="text-2xl font-bold text-foreground tabular-nums">{activeScore}</span>
+                                  <span className="text-sm text-muted-foreground">/5</span>
+                                </div>
+                              )}
+                            </div>
                             <div className="flex gap-1.5">
                               {[1, 2, 3, 4, 5].map(v => (
                                 <Button
                                   key={v}
                                   variant={activeScore === v ? "default" : "outline"}
-                                  size="icon-sm"
+                                  size="sm"
                                   onClick={() => handleLevelSelect(activeCriterion.id, v)}
+                                  className="flex-1"
                                 >
                                   {v}
                                 </Button>
@@ -385,41 +385,41 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
 
                           {/* Reason (shown once score is selected) */}
                           {activeScore > 0 && (
-                            <div>
-                              <span className="eyebrow font-semibold text-muted-foreground/60 block mb-1.5">Reason for this score</span>
+                            <div className="space-y-1.5">
+                              <span className="eyebrow text-muted-foreground">Reason for this score</span>
                               <textarea
                                 value={reasons[activeCriterion.id] ?? ''}
                                 onChange={e => setReasons(r => ({ ...r, [activeCriterion.id]: e.target.value }))}
                                 rows={3}
                                 placeholder="Explain your reasoning for this score…"
-                                className="w-full text-sm leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[72px] transition-colors"
+                                className="w-full text-sm leading-relaxed text-foreground bg-background border border-border rounded-md p-2.5 resize-y focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary font-sans min-h-[72px] transition-colors"
                               />
                             </div>
                           )}
 
                           {/* Feedback */}
-                          <div>
-                            <span className="eyebrow font-semibold text-muted-foreground/60 block mb-1.5">Feedback</span>
+                          <div className="space-y-1.5">
+                            <span className="eyebrow text-muted-foreground">Feedback</span>
                             <textarea
                               value={feedbacks[activeCriterion.id] ?? ''}
                               onChange={e => setFeedbacks(f => ({ ...f, [activeCriterion.id]: e.target.value }))}
                               rows={4}
                               placeholder="Write feedback for this criterion…"
-                              className="w-full text-sm leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[90px] transition-colors"
+                              className="w-full text-sm leading-relaxed text-foreground bg-background border border-border rounded-md p-2.5 resize-y focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary font-sans min-h-[90px] transition-colors"
                             />
                           </div>
                         </div>
                       </div>
 
-                      {/* Evidence accordion */}
-                      <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
+                      {/* Evidence accordion — same card treatment */}
+                      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
                         <Button
                           variant="ghost"
                           onClick={() => toggleAccordion('evidence')}
                           className="w-full justify-between"
                         >
                           <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 rounded-[5px] bg-primary/10 flex items-center justify-center shrink-0 text-primary">
+                            <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center shrink-0 text-primary">
                               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h5M2 9h6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
                             </div>
                             Evidence (0 linked)
@@ -427,7 +427,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                           <ChevronRight className={`h-4 w-4 text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen.evidence ? 'rotate-90' : ''}`} />
                         </Button>
                         {accordionOpen.evidence && (
-                          <div className="border-t border-border p-3.5 space-y-2">
+                          <div className="border-t border-border p-4 space-y-2">
                             <div className="text-xs text-primary bg-primary/5 border border-dashed border-primary/30 rounded-md p-2.5">
                               No evidence linked yet — select text in the left panel to add evidence
                             </div>
@@ -446,7 +446,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
               {/* Footer */}
               <div className="px-4 py-3 border-t border-border bg-background shrink-0 space-y-2">
                 {isLastCriterion && (
-                  <div className="eyebrow flex items-center justify-between text-muted-foreground/40 pb-1">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground pb-1">
                     <span>Paper {currentPaperIndex + 1} of {papers.length}</span>
                     <span>{totalGradedPapers} complete</span>
                   </div>
@@ -458,7 +458,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                     onClick={() => setActiveCriterionIdx(i => Math.max(0, i - 1))}
                     disabled={activeCriterionIdx === 0}
                   >
-                    <ChevronLeft className="h-3.5 w-3.5" /> Previous
+                    <ChevronLeft /> Previous
                   </Button>
 
                   <div className="flex items-center gap-1.5">
@@ -471,7 +471,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         size="sm"
                         onClick={() => setActiveCriterionIdx(i => i + 1)}
                       >
-                        Next criterion <ArrowRight className="h-3.5 w-3.5" />
+                        Next criterion <ArrowRight />
                       </Button>
                     ) : (
                       <Tooltip>
@@ -481,15 +481,15 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                             disabled={!isGateUnlocked}
                             onClick={isGateUnlocked ? handleNext : undefined}
                           >
-                            {isGateUnlocked ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
+                            {isGateUnlocked ? <Unlock /> : <Lock />}
                             {isLastPaper ? 'View delta' : 'Next paper'}
-                            <ArrowRight className="h-3.5 w-3.5" />
+                            <ArrowRight />
                           </Button>
                         </TooltipTrigger>
                         {!isGateUnlocked && (
                           <TooltipContent className="max-w-xs p-3 space-y-1 mb-2">
-                            <p className="eyebrow text-xs text-primary">Protocol Gate Locked</p>
-                            <p className="text-xs italic text-muted-foreground">
+                            <p className="text-xs font-semibold text-foreground">Protocol gate locked</p>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
                               Scroll the manuscript, spend 3s reviewing, and score all {criteria.length} criteria.
                             </p>
                           </TooltipContent>
