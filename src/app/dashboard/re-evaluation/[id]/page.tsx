@@ -122,7 +122,7 @@ export default function ReEvalWorkspacePage() {
   const agree = Math.abs(instScore - aiScore) <= 1
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] bg-muted/40/50 rounded-2xl border border-border/10 overflow-hidden shadow-sm">
+    <div className="flex flex-col h-[calc(100vh-2rem)] bg-muted/40/50 rounded-xl border border-border/10 overflow-hidden shadow-sm">
       {/* Institutional Topbar */}
       <div className="h-16 px-6 flex items-center justify-between bg-background/80 backdrop-blur-md border-b border-border flex-shrink-0 z-50">
         <div className="flex items-center gap-6">
@@ -200,7 +200,7 @@ export default function ReEvalWorkspacePage() {
 
           <div className="flex-1 overflow-y-auto p-8" style={{ scrollbarWidth: 'thin' }}>
             {view === 'scan' ? (
-              <div className="max-w-2xl mx-auto rounded-2xl bg-background border border-border shadow-xl shadow-slate-200/50 p-10 font-serif text-sm leading-[1.8] text-foreground relative ring-1 ring-slate-900/5">
+              <div className="max-w-2xl mx-auto rounded-xl bg-background border border-border shadow-xl shadow-slate-200/50 p-10 font-serif text-sm leading-[1.8] text-foreground relative ring-1 ring-slate-900/5">
                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-border/5">
                   <div className="eyebrow text-muted-foreground/40 font-sans">
                     {st.rollId} · {st.name} · {st.assign}
@@ -265,7 +265,7 @@ export default function ReEvalWorkspacePage() {
                 </div>
               </div>
             ) : (
-              <div className="max-w-2xl mx-auto rounded-2xl bg-foreground border border-border p-8 font-mono text-sm leading-relaxed text-muted-foreground/70">
+              <div className="max-w-2xl mx-auto rounded-xl bg-foreground border border-border p-8 font-mono text-sm leading-relaxed text-muted-foreground/70">
                 <div className="flex items-center gap-3 mb-6 px-4 py-3 rounded-xl bg-[color:var(--status-warning)]/10 border border-[color:var(--status-warning)]/20 text-[color:var(--status-warning)] font-sans">
                   <InfoIcon className="size-4" />
                   <span className="text-xs font-bold">This is the extracted machine text. Red sections indicate lower confidence.</span>
@@ -312,7 +312,7 @@ export default function ReEvalWorkspacePage() {
                 {/* Section: Student Dispute */}
                 <section className="space-y-3">
                   <div className="eyebrow text-muted-foreground/40">Intelligence Layer</div>
-                  <div className="rounded-2xl bg-background border border-border shadow-sm overflow-hidden">
+                  <div className="rounded-xl bg-background border border-border shadow-sm overflow-hidden">
                     <div className="px-5 py-4 border-b border-border/50 bg-muted/40/50">
                       <div className="flex items-center justify-between">
                          <span className="eyebrow text-muted-foreground/50">Disputed Reasoning</span>
@@ -345,7 +345,7 @@ export default function ReEvalWorkspacePage() {
                     <span className="eyebrow text-muted-foreground/30">Decision Workspace</span>
                   </div>
 
-                  <div className="rounded-2xl bg-background border border-border shadow-sm p-2 space-y-2">
+                  <div className="rounded-xl bg-background border border-border shadow-sm p-2 space-y-2">
                     <DecisionOption
                       active={decision === 'uphold'}
                       variant="uphold"
@@ -434,7 +434,7 @@ export default function ReEvalWorkspacePage() {
                   <div className="flex items-center justify-between">
                     <div className="eyebrow text-muted-foreground/40">Official Record</div>
                   </div>
-                  <div className="rounded-2xl bg-background border-2 border-primary/20 shadow-sm p-5 space-y-4">
+                  <div className="rounded-xl bg-background border-2 border-primary/20 shadow-sm p-5 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="eyebrow flex items-center gap-2 text-foreground">
                         <EditIcon className="size-3.5" />
@@ -468,7 +468,7 @@ export default function ReEvalWorkspacePage() {
 
             {wsState === 'compare' && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="rounded-2xl p-6 bg-background border border-border/10 shadow-sm space-y-4">
+                <div className="rounded-xl p-6 bg-background border border-border/10 shadow-sm space-y-4">
                   <div className="flex items-center gap-3">
                     {comparing ? (
                       <div className="size-5 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
@@ -498,7 +498,7 @@ export default function ReEvalWorkspacePage() {
                 )}
 
                 {!comparing && (
-                  <div className="rounded-2xl border border-border/10 bg-background overflow-hidden shadow-sm">
+                  <div className="rounded-xl border border-border/10 bg-background overflow-hidden shadow-sm">
                     <div className="px-5 py-4 bg-muted/40/50 border-b border-border/5">
                       <span className="eyebrow text-muted-foreground/40">Next Actions & Routing</span>
                     </div>
@@ -532,7 +532,7 @@ export default function ReEvalWorkspacePage() {
                     <h2 className="text-3xl font-semibold tracking-tight">Review Submitted</h2>
                     <p className="text-sm text-muted-foreground font-medium">Successfully routed to HOD dashboard for final approval.</p>
                   </div>
-                  <div className="w-full max-w-sm p-6 rounded-2xl bg-background border border-border/10 shadow-sm space-y-4">
+                  <div className="w-full max-w-sm p-6 rounded-xl bg-background border border-border/10 shadow-sm space-y-4">
                      <div className="flex items-center justify-between text-xs font-bold">
                        <span className="text-muted-foreground/40">Student</span>
                        <span className="text-foreground">{st.name}</span>
@@ -646,7 +646,7 @@ function DecisionOption({ active, variant, label, desc, onClick, children }: { a
 function CompareCard({ label, score, reason, variant }: { label: string; score: number; reason: string; variant?: 'primary' }) {
   const isPrimary = variant === 'primary'
   return (
-    <div className={`rounded-2xl p-5 border ${isPrimary ? 'bg-primary/5 border-primary/20' : 'bg-muted/40 border-border/10'}`}>
+    <div className={`rounded-xl p-5 border ${isPrimary ? 'bg-primary/5 border-primary/20' : 'bg-muted/40 border-border/10'}`}>
        <span className={`eyebrow ${isPrimary ? 'text-primary' : 'text-muted-foreground/40'}`}>{label}</span>
        <div className={`text-2xl font-semibold tracking-tight my-1 ${isPrimary ? 'text-primary' : 'text-foreground'}`}>{score}<span className="text-muted-foreground/30 font-bold ml-1 text-base">/ 10</span></div>
        <p className="text-xs font-medium text-muted-foreground leading-snug line-clamp-2">{reason}</p>

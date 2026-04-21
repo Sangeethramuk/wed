@@ -70,7 +70,7 @@ export function StudentPreview() {
       <div className="max-w-2xl mx-auto py-20 space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-500">
         <div className="text-center space-y-6">
           <div className="relative inline-flex mb-4">
-            <div className="h-32 w-32 rounded-2xl bg-primary/5 border-2 border-primary/20 flex items-center justify-center relative overflow-hidden group">
+            <div className="h-32 w-32 rounded-xl bg-primary/5 border-2 border-primary/20 flex items-center justify-center relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-50 group-hover:scale-150 transition-transform duration-1000" />
               <Monitor className="h-16 w-16 text-primary group-hover:scale-110 transition-transform duration-500" />
               <div className="absolute bottom-4 right-4 h-8 w-8 rounded-xl bg-[color:var(--status-success)] flex items-center justify-center border-4 border-background shadow-lg">
@@ -85,7 +85,7 @@ export function StudentPreview() {
           </div>
         </div>
 
-        <Card className="border border-border/20 rounded-2xl overflow-hidden bg-card">
+        <Card className="border border-border/20 rounded-xl overflow-hidden bg-card">
           <CardContent className="p-6 space-y-8">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -237,7 +237,7 @@ function StudentView({
   latePolicyLabel: Record<string, string>
 }) {
   return (
-    <div className="border border-border/20 rounded-2xl overflow-hidden bg-card animate-in fade-in duration-300">
+    <div className="border border-border/20 rounded-xl overflow-hidden bg-card animate-in fade-in duration-300">
       {/* Assignment Header */}
       <div className="bg-muted/[0.03] border-b border-border/10 px-8 py-8 space-y-3">
         <p className="eyebrow text-muted-foreground/40">
@@ -396,7 +396,7 @@ function InstructorView({
   const totalWeight = allQuestions.reduce((s, q) => s + Number(q.weight || 0), 0)
 
   return (
-    <div className="border border-border/20 rounded-2xl overflow-hidden bg-card animate-in fade-in duration-300">
+    <div className="border border-border/20 rounded-xl overflow-hidden bg-card animate-in fade-in duration-300">
       <div className="bg-muted/5 border-b border-border/10 px-8 py-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center border border-primary/10">

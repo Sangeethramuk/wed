@@ -308,7 +308,7 @@ function AssignmentCard({
   
   return (
     <Card 
-      className="group relative overflow-hidden cursor-pointer hover:border-primary/20 transition-all border-border/20 bg-card/20 backdrop-blur-sm rounded-2xl p-4 flex flex-col shadow-none min-h-[220px]"
+      className="group relative overflow-hidden cursor-pointer hover:border-primary/20 transition-all border-border/20 bg-card/20 backdrop-blur-sm rounded-xl p-4 flex flex-col shadow-none min-h-[220px]"
       onClick={onClick}
     >
       <div className="absolute top-4 right-4 z-10">

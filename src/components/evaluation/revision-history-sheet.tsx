@@ -292,7 +292,7 @@ export function RevisionHistorySheet({
         {events.length === 0 ? (
           <div className="flex-1 flex items-center justify-center p-8">
             <div className="text-center space-y-4">
-              <div className="h-16 w-16 rounded-2xl bg-muted/30 flex items-center justify-center mx-auto">
+              <div className="h-16 w-16 rounded-xl bg-muted/30 flex items-center justify-center mx-auto">
                 <Clock className="h-8 w-8 text-muted-foreground/20" />
               </div>
               <div>

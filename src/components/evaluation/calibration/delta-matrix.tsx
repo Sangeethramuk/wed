@@ -63,7 +63,7 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-5 animate-in fade-in duration-500">
 
       {/* Header card */}
-      <div className="bg-background border border-border/60 rounded-2xl p-5 shadow-sm space-y-4">
+      <div className="bg-background border border-border/60 rounded-xl p-5 shadow-sm space-y-4">
         <h2 className="text-lg font-bold tracking-tight">Review &amp; Align Your Scores</h2>
 
         {discrepancies.length > 0 ? (

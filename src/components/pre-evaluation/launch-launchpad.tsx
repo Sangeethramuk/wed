@@ -36,7 +36,7 @@ export function LaunchLaunchpad() {
       {/* Success Banner - Reimagined */}
       <div className="text-center space-y-6">
         <div className="relative inline-flex mb-4">
-          <div className="h-32 w-32 rounded-2xl bg-primary/5 border-2 border-primary/20 flex items-center justify-center relative overflow-hidden group">
+          <div className="h-32 w-32 rounded-xl bg-primary/5 border-2 border-primary/20 flex items-center justify-center relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-50 group-hover:scale-150 transition-transform duration-1000" />
             <Monitor className="h-16 w-16 text-primary group-hover:scale-110 transition-transform duration-500" />
             <div className="absolute bottom-4 right-4 h-8 w-8 rounded-xl bg-[color:var(--status-success)] flex items-center justify-center border-4 border-background shadow-lg">
@@ -71,7 +71,7 @@ export function LaunchLaunchpad() {
               <Input 
                 readOnly 
                 value={shareLink} 
-                className="h-14 bg-muted/20 border-2 border-border/40 rounded-2xl font-semibold text-sm px-6 focus-visible:ring-primary/10 tracking-tight"
+                className="h-14 bg-muted/20 border-2 border-border/40 rounded-xl font-semibold text-sm px-6 focus-visible:ring-primary/10 tracking-tight"
               />
               <Button
                 variant="outline"

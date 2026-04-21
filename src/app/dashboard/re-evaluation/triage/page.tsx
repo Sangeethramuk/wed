@@ -106,7 +106,7 @@ export default function ReEvaluationPage() {
         {/* Table — DS primitive. Borders: only row-level (border-b via
             TableRow); no vertical cell dividers. Container uses the full
             border token (not /10) for DS-consistent visibility. */}
-        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
           <Table className="text-left">
             <TableHeader className="bg-muted/40">
               <TableRow className="hover:bg-muted/40">

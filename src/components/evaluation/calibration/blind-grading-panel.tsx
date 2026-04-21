@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Lock,
   Unlock,
   Timer,
@@ -25,7 +26,26 @@ import {
   ShieldAlert,
   Wifi,
   AlertTriangle,
+  Plus,
+  X,
 } from "lucide-react"
+
+type MappedEvidence = {
+  id: string
+  text: string
+  paperId: string
+  criterionId: string
+}
+
+type TextSelectionMode = {
+  active: boolean
+  criterionId: string | null
+}
+
+const newEvidenceId = () =>
+  (typeof crypto !== "undefined" && "randomUUID" in crypto)
+    ? crypto.randomUUID()
+    : `ev-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
 const MOCK_MANUSCRIPT_CONTENT: Record<string, string[]> = {
   c1: [
@@ -62,6 +82,10 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
   const [reasons, setReasons] = useState<Record<string, string>>({})
   const [feedbacks, setFeedbacks] = useState<Record<string, string>>({})
   const [accordionOpen, setAccordionOpen] = useState<Record<string, boolean>>({})
+  const [textSelectionMode, setTextSelectionMode] = useState<TextSelectionMode>({ active: false, criterionId: null })
+  const [mappedEvidence, setMappedEvidence] = useState<MappedEvidence[]>([])
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null)
   const manuscriptRef = useRef<HTMLDivElement>(null)
 
   const papers    = cal?.papers ?? []
@@ -87,15 +111,60 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
   const activeScore = paperScores.find(s => s.criterionId === activeCriterion?.id)?.instructorLevel ?? 0
   const toggleAccordion = (key: string) => setAccordionOpen(prev => ({ ...prev, [key]: !prev[key] }))
 
-  // Reset gates when switching papers
+  // Reset gates + ephemeral UI when switching papers.
+  // mappedEvidence is NOT reset — keyed by paperId+criterionId and filtered at render.
   useEffect(() => {
     setInspectionTime(0)
     setHasScrolledToBottom(false)
     setActiveCriterionIdx(0)
+    setTextSelectionMode({ active: false, criterionId: null })
+    setPickerOpen(false)
+    setSelection(null)
     if (manuscriptRef.current) manuscriptRef.current.scrollTop = 0
     const interval = setInterval(() => setInspectionTime(t => t + 1), 1000)
     return () => clearInterval(interval)
   }, [activePaperId])
+
+  const handleManuscriptMouseUp = () => {
+    if (!activePaperId) return
+    const sel = window.getSelection()
+    if (!sel) return
+    const raw = sel.toString()
+    const text = raw.trim().replace(/\s+/g, " ")
+    if (!text) { setSelection(null); return }
+    const range = sel.getRangeAt(0)
+    const rect = range.getBoundingClientRect()
+    setSelection({ text, x: rect.left + rect.width / 2, y: rect.top })
+  }
+
+  const linkEvidenceToCriterion = (criterionId: string) => {
+    if (!selection || !activePaperId) return
+    setMappedEvidence(prev => [...prev, { id: newEvidenceId(), text: selection.text, paperId: activePaperId, criterionId }])
+    window.getSelection()?.removeAllRanges()
+    setSelection(null)
+    setTextSelectionMode({ active: false, criterionId: null })
+    setPickerOpen(false)
+  }
+
+  const dismissSelection = () => {
+    window.getSelection()?.removeAllRanges()
+    setSelection(null)
+  }
+
+  const enterSelectionMode = (criterionId: string) => {
+    setTextSelectionMode({ active: true, criterionId })
+    setPickerOpen(false)
+  }
+
+  const cancelSelectionMode = () => setTextSelectionMode({ active: false, criterionId: null })
+
+  const removeEvidence = (id: string) => setMappedEvidence(prev => prev.filter(e => e.id !== id))
+
+  const criterionLabel = (criterionId: string | null) => {
+    if (!criterionId) return ""
+    const c = criteria.find(x => x.id === criterionId)
+    return c ? `${c.id.toUpperCase()} · ${c.name}` : criterionId.toUpperCase()
+  }
 
   const handleScroll = () => {
     const el = manuscriptRef.current
@@ -239,7 +308,8 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
               <div
                 ref={manuscriptRef}
                 onScroll={handleScroll}
-                className="flex-1 overflow-y-auto bg-muted/30 scroll-smooth p-10 lg:p-24"
+                onMouseUp={handleManuscriptMouseUp}
+                className={`flex-1 overflow-y-auto bg-muted/30 scroll-smooth p-10 lg:p-24 ${textSelectionMode.active ? "cursor-crosshair" : ""}`}
               >
                 <div 
                   className="bg-background shadow-sm border border-border/50 mx-auto transition-all duration-300 relative group/page cursor-text flex flex-col"
@@ -412,32 +482,91 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                       </div>
 
                       {/* Evidence accordion — same card treatment */}
-                      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-                        <Button
-                          variant="ghost"
-                          onClick={() => toggleAccordion('evidence')}
-                          className="w-full justify-between"
-                        >
-                          <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center shrink-0 text-primary">
-                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h5M2 9h6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-                            </div>
-                            Evidence (0 linked)
-                          </div>
-                          <ChevronRight className={`h-4 w-4 text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen.evidence ? 'rotate-90' : ''}`} />
-                        </Button>
-                        {accordionOpen.evidence && (
-                          <div className="border-t border-border p-4 space-y-2">
-                            <div className="text-xs text-primary bg-primary/5 border border-dashed border-primary/30 rounded-md p-2.5">
-                              No evidence linked yet — select text in the left panel to add evidence
-                            </div>
-                            <Button variant="outline" size="sm" className="w-full border-dashed">
-                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                              Add evidence — select text in left panel
+                      {(() => {
+                        const pointEvidence = mappedEvidence.filter(e => e.paperId === activePaperId && e.criterionId === activeCriterion.id)
+                        const isModeActiveHere = textSelectionMode.active && textSelectionMode.criterionId === activeCriterion.id
+                        return (
+                          <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                            <Button
+                              variant="ghost"
+                              onClick={() => toggleAccordion('evidence')}
+                              className="w-full justify-between"
+                            >
+                              <div className="flex items-center gap-2">
+                                <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center shrink-0 text-primary">
+                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h5M2 9h6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                                </div>
+                                Evidence ({pointEvidence.length} linked)
+                              </div>
+                              <ChevronRight className={`h-4 w-4 text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen.evidence ? 'rotate-90' : ''}`} />
                             </Button>
+                            {accordionOpen.evidence && (
+                              <div className="border-t border-border p-3.5 space-y-3">
+                                {pointEvidence.length > 0 ? (
+                                  <div className="space-y-1.5">
+                                    {pointEvidence.map((ev, i) => (
+                                      <div key={ev.id} className="flex items-start gap-2 p-2 rounded-md bg-muted/20 border border-border/60 group/ev">
+                                        <span className="text-xs font-mono font-bold text-primary shrink-0 pt-0.5">E{i + 1}</span>
+                                        <p className="text-xs font-serif italic text-foreground/70 flex-1 leading-relaxed">
+                                          &ldquo;{ev.text.length > 60 ? ev.text.slice(0, 60) + '…' : ev.text}&rdquo;
+                                        </p>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon-xs"
+                                          onClick={() => removeEvidence(ev.id)}
+                                          className="opacity-0 group-hover/ev:opacity-100 transition-opacity shrink-0"
+                                          aria-label="Remove evidence"
+                                        >
+                                          <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-xs text-muted-foreground bg-muted/10 border border-dashed border-border rounded-md p-2.5">
+                                    No evidence linked yet — highlight any text in the manuscript to see a link popover.
+                                  </div>
+                                )}
+                                {isModeActiveHere || (textSelectionMode.active && textSelectionMode.criterionId !== activeCriterion.id) ? (
+                                  <div className="flex items-center justify-between gap-2 text-xs text-primary bg-primary/5 border border-primary/30 rounded-md p-2.5">
+                                    <span className="leading-snug">
+                                      Selecting for <span className="font-semibold">{criterionLabel(textSelectionMode.criterionId)}</span> — highlight text in the manuscript.
+                                    </span>
+                                    <Button variant="ghost" size="sm" onClick={cancelSelectionMode} className="shrink-0 text-primary hover:text-primary">
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                ) : pickerOpen ? (
+                                  <div className="space-y-2 p-2.5 rounded-md border border-border bg-muted/10">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-xs font-semibold text-foreground">Attach evidence to</span>
+                                      <Button variant="ghost" size="sm" onClick={() => setPickerOpen(false)} className="h-6 px-2 text-muted-foreground">Cancel</Button>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {criteria.map(c => (
+                                        <Button key={c.id} variant="outline" size="sm" onClick={() => enterSelectionMode(c.id)}>
+                                          <span className="font-mono font-semibold mr-1">{c.id.toUpperCase()}</span>
+                                          <span className="truncate max-w-[140px]">{c.name}</span>
+                                        </Button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex gap-1">
+                                    <Button variant="outline" size="sm" onClick={() => enterSelectionMode(activeCriterion.id)} className="flex-1 border-dashed justify-start">
+                                      <Plus className="h-3 w-3" />
+                                      <span className="truncate">Add evidence to {activeCriterion.id.toUpperCase()} · {activeCriterion.name}</span>
+                                    </Button>
+                                    <Button variant="ghost" size="icon-sm" onClick={() => setPickerOpen(true)} aria-label="Change evidence target criterion">
+                                      <ChevronDown className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
+                        )
+                      })()}
                     </>
                   )}
                 </div>
@@ -504,6 +633,78 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
 
         </ResizablePanelGroup>
       </div>
+
+      {selection && (() => {
+        const isPreselected = textSelectionMode.active && textSelectionMode.criterionId !== null
+        const presetCriterion = isPreselected ? criteria.find(c => c.id === textSelectionMode.criterionId) : null
+
+        if (isPreselected && presetCriterion) {
+          return (
+            <div
+              className="fixed z-[100] bg-card border border-primary/30 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-xl p-4 flex flex-col gap-3 w-80 backdrop-blur-md"
+              style={{ left: selection.x, top: selection.y, transform: "translate(-50%, -110%)" }}
+              onMouseDown={e => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-2">
+                <Plus className="h-3.5 w-3.5 text-primary" />
+                <span className="eyebrow text-primary">Link to {presetCriterion.id.toUpperCase()}</span>
+              </div>
+              <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+                <p className="text-xs font-serif italic text-foreground/70 leading-relaxed">
+                  &ldquo;{selection.text.length > 100 ? selection.text.slice(0, 100) + "…" : selection.text}&rdquo;
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Link this text as evidence for{" "}
+                <span className="font-semibold text-foreground">{presetCriterion.id.toUpperCase()} — {presetCriterion.name}</span>?
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={dismissSelection} className="flex-1">No, dismiss</Button>
+                <Button size="sm" onClick={() => linkEvidenceToCriterion(presetCriterion.id)} className="flex-1">Yes, link it</Button>
+              </div>
+            </div>
+          )
+        }
+
+        return (
+          <div
+            className="fixed z-[100] bg-card border border-border shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-xl p-3 flex flex-col gap-2 w-72 backdrop-blur-md"
+            style={{ left: selection.x, top: selection.y, transform: "translate(-50%, -110%)" }}
+            onMouseDown={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-2 pb-2 border-b border-border/60 mb-1">
+              <div className="flex items-center gap-2">
+                <Plus className="h-3.5 w-3.5 text-primary" />
+                <span className="eyebrow text-muted-foreground">Link evidence</span>
+              </div>
+              <span className="text-xs font-semibold text-muted-foreground tabular-nums">Paper {currentPaperIndex + 1}</span>
+            </div>
+            <div className="px-2 pb-1">
+              <p className="text-xs font-serif italic text-foreground/70 leading-relaxed line-clamp-2">
+                &ldquo;{selection.text.length > 100 ? selection.text.slice(0, 100) + "…" : selection.text}&rdquo;
+              </p>
+            </div>
+            <div className="flex flex-col gap-1 max-h-[300px] overflow-y-auto pr-1">
+              {criteria.map(c => (
+                <div
+                  key={c.id}
+                  role="button"
+                  onClick={() => linkEvidenceToCriterion(c.id)}
+                  className="w-full text-left p-2.5 rounded-lg hover:bg-primary/5 transition-all flex flex-col gap-0.5 group/btn cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold tracking-tight text-foreground group-hover/btn:text-primary transition-colors">{c.name}</span>
+                    <ArrowRight className="h-3 w-3 opacity-0 group-hover/btn:opacity-100 transition-all text-primary" />
+                  </div>
+                  <span className="eyebrow text-muted-foreground/60">Criterion {c.id.toUpperCase()}</span>
+                </div>
+              ))}
+            </div>
+            <Separator className="bg-border/50 my-1" />
+            <Button variant="ghost" size="sm" onClick={dismissSelection} className="w-full">Dismiss</Button>
+          </div>
+        )
+      })()}
     </TooltipProvider>
   )
 }

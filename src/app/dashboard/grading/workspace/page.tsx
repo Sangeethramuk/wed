@@ -103,7 +103,7 @@ export default function WorkspacePage() {
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-xl w-full bg-background rounded-2xl shadow-2xl p-12 text-center flex flex-col items-center"
+          className="max-w-xl w-full bg-background rounded-xl shadow-2xl p-12 text-center flex flex-col items-center"
         >
           <div className="w-20 h-20 bg-[color:var(--status-success-bg)] rounded-full flex items-center justify-center mb-6">
             <CheckCircle2 className="w-10 h-10 text-[color:var(--status-success)]" />
@@ -115,11 +115,11 @@ export default function WorkspacePage() {
           </p>
           
           <div className="grid grid-cols-2 gap-4 w-full mb-8">
-             <div className="bg-muted/40 p-4 rounded-2xl border border-border/50 flex flex-col items-center">
+             <div className="bg-muted/40 p-4 rounded-xl border border-border/50 flex flex-col items-center">
                 <span className="eyebrow text-muted-foreground/70 mb-1">Final Delta</span>
                 <span className="text-xl font-bold text-foreground">0.42</span>
              </div>
-             <div className="bg-muted/40 p-4 rounded-2xl border border-border/50 flex flex-col items-center">
+             <div className="bg-muted/40 p-4 rounded-xl border border-border/50 flex flex-col items-center">
                 <span className="eyebrow text-muted-foreground/70 mb-1">Fixes Applied</span>
                 <span className="text-xl font-bold text-foreground">1</span>
              </div>
@@ -194,7 +194,7 @@ export default function WorkspacePage() {
             exit={{ opacity: 0, y: -20, x: '-50%' }}
             className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4"
           >
-            <div className="bg-foreground text-background p-4 rounded-2xl shadow-2xl flex items-center justify-between border border-background/10 backdrop-blur-md">
+            <div className="bg-foreground text-background p-4 rounded-xl shadow-2xl flex items-center justify-between border border-background/10 backdrop-blur-md">
               <div className="flex items-center gap-3">
                  <div className="p-2 bg-[color:var(--status-warning)] rounded-lg">
                     <Zap className="w-4 h-4 text-foreground fill-slate-900" />
@@ -268,7 +268,7 @@ export default function WorkspacePage() {
                            initial={{ opacity: 0, height: 0 }}
                            animate={{ opacity: 1, height: 'auto' }}
                            exit={{ opacity: 0, height: 0 }}
-                           className="relative p-8 bg-[color:var(--status-warning-bg)] border border-[color:var(--status-warning)]/30 rounded-2xl my-8 overflow-hidden"
+                           className="relative p-8 bg-[color:var(--status-warning-bg)] border border-[color:var(--status-warning)]/30 rounded-xl my-8 overflow-hidden"
                          >
                             <div className="absolute top-0 right-0 p-4 opacity-10"><Ghost className="w-16 h-16 text-[color:var(--status-warning)]" /></div>
                             <span className="eyebrow text-[color:var(--status-warning)] mb-4 block">Hidden Layer: White Font Injection (Defense 1.1)</span>
@@ -287,7 +287,7 @@ export default function WorkspacePage() {
                        Conclusion: Normalization ensures that our data models are robust, efficient, and capable of supporting high-density institutional operations.
                     </p>
                     
-                    <div className="h-64 mt-20 border border-dashed border-border/50 rounded-2xl flex flex-col items-center justify-center bg-muted/30 gap-4">
+                    <div className="h-64 mt-20 border border-dashed border-border/50 rounded-xl flex flex-col items-center justify-center bg-muted/30 gap-4">
                        <ShieldCheck className="w-8 h-8 text-muted-foreground/30" />
                        <span className="eyebrow text-muted-foreground/50">End of Document Stream</span>
                     </div>
