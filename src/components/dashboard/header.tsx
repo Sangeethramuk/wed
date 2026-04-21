@@ -21,7 +21,7 @@ export function DashboardHeader() {
 
   return (
     <>
-    <header className="flex h-14 items-center gap-2 border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="flex h-16 items-center gap-3 border-b border-border bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <SidebarTrigger />
 
       <div className="flex flex-1 items-center justify-end gap-2">

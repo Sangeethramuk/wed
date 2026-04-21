@@ -66,7 +66,7 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="pt-4 group-data-[collapsible=icon]:pt-3">
+      <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:pt-3">
         <SidebarGroup className="group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:items-center">
           <SidebarGroupContent className="group-data-[collapsible=icon]:w-full">
             <SidebarMenu className="gap-1 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:items-center">
@@ -95,7 +95,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-3 gap-1 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:items-center">
+      <SidebarFooter className="border-t border-sidebar-border px-3 py-4 gap-1 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:items-center">
         <SidebarMenu className="gap-1 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:items-center">
           <SidebarMenuItem className="group-data-[collapsible=icon]:w-auto">
             <SidebarMenuButton
