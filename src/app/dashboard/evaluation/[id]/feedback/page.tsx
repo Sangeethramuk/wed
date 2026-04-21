@@ -285,25 +285,20 @@ export default function FeedbackPage() {
         <section className="flex-1 flex flex-col overflow-hidden bg-[#fafafa]">
           <Tabs defaultValue="feedback" value={activeTab} onValueChange={(v) => setActiveTab(v as string)} className="flex-1 flex flex-col overflow-hidden">
             <div className="bg-background flex items-center justify-center border-b border-border shrink-0 h-12">
-               <div className="flex h-full">
-                  {/* TODO: migrate to shadcn Tabs primitive */}
-                  <Button
-                    variant="ghost"
-                    aria-current={activeTab === 'feedback' ? 'page' : undefined}
-                    onClick={() => setActiveTab('feedback')}
-                    className="border-b-2 border-transparent aria-[current=page]:border-foreground rounded-none"
-                  >
-                    <StarIcon className="w-3.5 h-3.5" /> Overall feedback
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    aria-current={activeTab === 'solution' ? 'page' : undefined}
-                    onClick={() => setActiveTab('solution')}
-                    className="border-b-2 border-transparent aria-[current=page]:border-foreground rounded-none"
-                  >
-                    <Lightbulb className="w-3.5 h-3.5" /> Solution direction
-                  </Button>
-               </div>
+              <TabsList className="bg-transparent p-0 h-full gap-0">
+                <TabsTrigger
+                  value="feedback"
+                  className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none gap-1.5 px-4"
+                >
+                  <StarIcon className="w-3.5 h-3.5" /> Overall feedback
+                </TabsTrigger>
+                <TabsTrigger
+                  value="solution"
+                  className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none gap-1.5 px-4"
+                >
+                  <Lightbulb className="w-3.5 h-3.5" /> Solution direction
+                </TabsTrigger>
+              </TabsList>
             </div>
 
             {/* Overall Feedback Tab */}
