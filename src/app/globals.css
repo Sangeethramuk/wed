@@ -466,8 +466,14 @@ select,
   letter-spacing: normal;
 }
 
-/* Headings stay semibold */
-h1, h2, h3, h4, h5, h6 {
+/* H1/H2 are bold (page-level heading hierarchy);
+   H3-H6 remain semibold (section subheadings).
+   Aligns with the student-module reference where page titles
+   ("Dashboard", "Business Case Analysis") read with stronger weight. */
+h1, h2 {
+  font-weight: 700;
+}
+h3, h4, h5, h6 {
   font-weight: 600;
 }
 
