@@ -208,11 +208,11 @@
    ============================================ */
 [data-theme="violet-light"],
 [data-theme="brand-light"] {
-  --background: oklch(0.9940 0 0);
+  --background: oklch(0.9777 0.0051 247.8763);
   --foreground: oklch(0 0 0);
-  --card: oklch(0.9940 0 0);
+  --card: oklch(1.0000 0 0);
   --card-foreground: oklch(0 0 0);
-  --popover: oklch(0.9911 0 0);
+  --popover: oklch(1.0000 0 0);
   --popover-foreground: oklch(0 0 0);
   --primary: #21508c;
   --primary-foreground: oklch(1.0000 0 0);
@@ -232,13 +232,13 @@
   --chart-3: oklch(0.7336 0.1758 50.5517);
   --chart-4: oklch(0.5828 0.1809 259.7276);
   --chart-5: oklch(0.5590 0 0);
-  --sidebar: oklch(0.9777 0.0051 247.8763);
+  --sidebar: oklch(1.0000 0 0);
   --sidebar-foreground: oklch(0 0 0);
   --sidebar-primary: oklch(0 0 0);
   --sidebar-primary-foreground: oklch(1.0000 0 0);
-  --sidebar-accent: oklch(0.9401 0 0);
-  --sidebar-accent-foreground: oklch(0 0 0);
-  --sidebar-border: oklch(0.9401 0 0);
+  --sidebar-accent: oklch(0.9393 0.0288 266.3680);
+  --sidebar-accent-foreground: oklch(0.5445 0.1903 259.4848);
+  --sidebar-border: oklch(0.9300 0.0094 286.2156);
   --sidebar-ring: oklch(0 0 0);
   --destructive-foreground: oklch(1.0000 0 0);
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
