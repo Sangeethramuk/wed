@@ -17,7 +17,6 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
   Lock,
   Unlock,
   Timer,
@@ -26,7 +25,6 @@ import {
   ShieldAlert,
   Wifi,
   AlertTriangle,
-  Plus,
   X,
 } from "lucide-react"
 
@@ -84,7 +82,6 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
   const [accordionOpen, setAccordionOpen] = useState<Record<string, boolean>>({})
   const [textSelectionMode, setTextSelectionMode] = useState<TextSelectionMode>({ active: false, criterionId: null })
   const [mappedEvidence, setMappedEvidence] = useState<MappedEvidence[]>([])
-  const [pickerOpen, setPickerOpen] = useState(false)
   // Floating-popover state: { text, x, y } when user has highlighted text,
   // null otherwise. Mirrors main grading (evaluation/[id]/page.tsx:110).
   const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null)
@@ -122,7 +119,6 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
     setHasScrolledToBottom(false)
     setActiveCriterionIdx(0)
     setTextSelectionMode({ active: false, criterionId: null })
-    setPickerOpen(false)
     setSelection(null)
     if (manuscriptRef.current) manuscriptRef.current.scrollTop = 0
     const interval = setInterval(() => setInspectionTime(t => t + 1), 1000)
@@ -136,9 +132,11 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
     if (isBottom) setHasScrolledToBottom(true)
   }
 
-  // Capture the highlighted range into `selection` state so the floating
-  // popover can render next to the text. Mirrors main grading at
-  // src/app/dashboard/evaluation/[id]/page.tsx:495-534.
+  // On mouseup in the manuscript:
+  //   - If textSelectionMode is active → AUTO-LINK to that criterion
+  //     (pre-scoped shortcut set by the "+ Add evidence" button)
+  //   - Otherwise → open the floating popover with the full criterion
+  //     picker, mirroring the main grading UX.
   const handleManuscriptMouseUp = () => {
     if (!activePaperId) return
     const sel = window.getSelection()
@@ -149,6 +147,18 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
       setSelection(null)
       return
     }
+
+    if (textSelectionMode.active && textSelectionMode.criterionId) {
+      setMappedEvidence(prev => [
+        ...prev,
+        { id: newEvidenceId(), text, paperId: activePaperId, criterionId: textSelectionMode.criterionId! },
+      ])
+      sel.removeAllRanges()
+      setTextSelectionMode({ active: false, criterionId: null })
+      setSelection(null)
+      return
+    }
+
     const range = sel.getRangeAt(0)
     const rect = range.getBoundingClientRect()
     setSelection({
@@ -168,7 +178,6 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
     window.getSelection()?.removeAllRanges()
     setSelection(null)
     setTextSelectionMode({ active: false, criterionId: null })
-    setPickerOpen(false)
   }
 
   const dismissSelection = () => {
@@ -178,7 +187,6 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
 
   const enterSelectionMode = (criterionId: string) => {
     setTextSelectionMode({ active: true, criterionId })
-    setPickerOpen(false)
   }
 
   const cancelSelectionMode = () => {
@@ -326,6 +334,30 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                 </div>
               </header>
 
+              {/* Selection-mode banner — appears above the manuscript when
+                  the user clicked "Add evidence" and is about to highlight.
+                  Mirrors the top banner pattern on the main grading screen. */}
+              {textSelectionMode.active && textSelectionMode.criterionId && (
+                <div className="flex items-center justify-between gap-2 px-6 py-3 bg-primary text-primary-foreground shrink-0 shadow-sm">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                      <path d="M5 7l-2 2a2.8 2.8 0 0 0 4 4l2-2M9 7l2-2a2.8 2.8 0 0 0-4-4L5 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Select text to link as evidence for{" "}
+                    <span className="font-bold">{criterionLabel(textSelectionMode.criterionId)}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={cancelSelectionMode}
+                    className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                    aria-label="Cancel evidence selection"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              )}
+
               {/* Manuscript Viewer */}
               <div
                 ref={manuscriptRef}
@@ -333,8 +365,10 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                 onMouseUp={handleManuscriptMouseUp}
                 className={`flex-1 overflow-y-auto bg-[#F9F8F4] scroll-smooth p-10 lg:p-24 ${textSelectionMode.active ? "cursor-crosshair" : ""}`}
               >
-                <div 
-                  className="bg-white shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-[#E6E1D6]/50 mx-auto transition-all duration-300 relative group/page cursor-text flex flex-col"
+                <div
+                  className={`bg-white shadow-[0_0_50px_rgba(0,0,0,0.05)] mx-auto transition-all duration-300 relative group/page cursor-text flex flex-col ${
+                    textSelectionMode.active ? "ring-2 ring-primary/40 border border-primary/40" : "border border-[#E6E1D6]/50"
+                  }`}
                   style={{ width: "100%", maxWidth: "800px", minHeight: "100%" }}
                 >
                   <div className="absolute top-8 left-8 flex flex-col items-start gap-1">
@@ -526,97 +560,63 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                             {accordionOpen.evidence && (
                               <div className="border-t border-border p-3.5 space-y-3">
 
-                                {/* Existing evidence list */}
-                                {pointEvidence.length > 0 ? (
-                                  <div className="space-y-1.5">
+                                {/* Empty state OR evidence chips */}
+                                {pointEvidence.length === 0 ? (
+                                  <div className="rounded-lg border border-dashed border-primary/40 bg-primary/[0.04] py-8 px-4 text-center space-y-1">
+                                    <p className="text-sm font-semibold text-primary">No evidence linked yet</p>
+                                    <p className="text-xs italic text-primary/70">
+                                      Select text in the manuscript to map it here
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-wrap gap-1.5">
                                     {pointEvidence.map((ev, i) => (
-                                      <div key={ev.id} className="flex items-start gap-2 p-2 rounded-md bg-muted/20 border border-border/60 group/ev">
-                                        <span className="text-xs font-mono font-bold text-primary shrink-0 pt-0.5">E{i + 1}</span>
-                                        <p className="text-xs font-serif italic text-foreground/70 flex-1 leading-relaxed">
-                                          &ldquo;{ev.text.length > 60 ? ev.text.slice(0, 60) + '…' : ev.text}&rdquo;
-                                        </p>
+                                      <div
+                                        key={ev.id}
+                                        className="group/ev inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-md border border-border bg-muted/30 text-xs"
+                                        title={ev.text}
+                                      >
+                                        <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" aria-hidden />
+                                        <span className="font-medium text-foreground">Evidence #{i + 1}</span>
                                         <Button
                                           variant="ghost"
                                           size="icon-xs"
                                           onClick={() => removeEvidence(ev.id)}
-                                          className="opacity-0 group-hover/ev:opacity-100 transition-opacity shrink-0"
-                                          aria-label="Remove evidence"
+                                          className="opacity-60 hover:opacity-100"
+                                          aria-label={`Remove evidence ${i + 1}`}
                                         >
                                           <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
                                         </Button>
                                       </div>
                                     ))}
                                   </div>
-                                ) : (
-                                  <div className="text-xs text-muted-foreground bg-muted/10 border border-dashed border-border rounded-md p-2.5">
-                                    No evidence linked yet — highlight any text in the manuscript to see a link popover.
-                                  </div>
                                 )}
 
-                                {/* Add-evidence control: selection-mode banner OR default button + picker */}
-                                {isModeActiveHere || (textSelectionMode.active && textSelectionMode.criterionId !== activeCriterion.id) ? (
-                                  <div className="flex items-center justify-between gap-2 text-xs text-primary bg-primary/5 border border-primary/30 rounded-md p-2.5">
-                                    <span className="leading-snug">
-                                      Selecting for <span className="font-semibold">{criterionLabel(textSelectionMode.criterionId)}</span> — highlight text in the manuscript.
-                                    </span>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={cancelSelectionMode}
-                                      className="shrink-0 text-primary hover:text-primary"
-                                    >
-                                      Cancel
-                                    </Button>
-                                  </div>
-                                ) : pickerOpen ? (
-                                  <div className="space-y-2 p-2.5 rounded-md border border-border bg-muted/10">
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-xs font-semibold text-foreground">Attach evidence to</span>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => setPickerOpen(false)}
-                                        className="h-6 px-2 text-muted-foreground"
-                                      >
-                                        Cancel
-                                      </Button>
-                                    </div>
-                                    <div className="flex flex-wrap gap-1.5">
-                                      {criteria.map(c => (
-                                        <Button
-                                          key={c.id}
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => enterSelectionMode(c.id)}
-                                        >
-                                          <span className="font-mono font-semibold mr-1">{c.id.toUpperCase()}</span>
-                                          <span className="truncate max-w-[140px]">{c.name}</span>
-                                        </Button>
-                                      ))}
-                                    </div>
-                                  </div>
+                                {/* Add-evidence button — swaps to "Selecting evidence…" when active */}
+                                {isModeActiveHere ? (
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={cancelSelectionMode}
+                                    className="w-full"
+                                  >
+                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+                                      <path d="M4.5 5.5l-2 2a2.4 2.4 0 0 0 3.4 3.4l2-2M7.5 5.5l2-2a2.4 2.4 0 0 0-3.4-3.4l-2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                                    </svg>
+                                    Selecting evidence…
+                                  </Button>
                                 ) : (
-                                  <div className="flex gap-1">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => enterSelectionMode(activeCriterion.id)}
-                                      className="flex-1 border-dashed justify-start"
-                                    >
-                                      <Plus className="h-3 w-3" />
-                                      <span className="truncate">
-                                        Add evidence to {activeCriterion.id.toUpperCase()} · {activeCriterion.name}
-                                      </span>
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon-sm"
-                                      onClick={() => setPickerOpen(true)}
-                                      aria-label="Change evidence target criterion"
-                                    >
-                                      <ChevronDown className="h-3.5 w-3.5" />
-                                    </Button>
-                                  </div>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => enterSelectionMode(activeCriterion.id)}
+                                    className="w-full border-dashed"
+                                  >
+                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+                                      <path d="M4.5 5.5l-2 2a2.4 2.4 0 0 0 3.4 3.4l2-2M7.5 5.5l2-2a2.4 2.4 0 0 0-3.4-3.4l-2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                                    </svg>
+                                    + Add evidence
+                                  </Button>
                                 )}
                               </div>
                             )}
@@ -691,91 +691,51 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
       </div>
 
       {/* Floating evidence-link popover — appears next to the highlighted
-          text in the manuscript. Mirrors main grading
-          (evaluation/[id]/page.tsx:1345-1444). Two variants:
-          - textSelectionMode active → single-criterion confirm (Yes/No)
-          - otherwise → full criteria picker so the user explicitly chooses */}
-      {selection && (() => {
-        const isPreselected = textSelectionMode.active && textSelectionMode.criterionId !== null
-        const presetCriterion = isPreselected ? criteria.find(c => c.id === textSelectionMode.criterionId) : null
-
-        if (isPreselected && presetCriterion) {
-          return (
-            <div
-              className="fixed z-[100] bg-card border border-primary/30 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-xl p-4 flex flex-col gap-3 w-80 backdrop-blur-md"
-              style={{ left: selection.x, top: selection.y, transform: "translate(-50%, -110%)" }}
-              onMouseDown={e => e.stopPropagation()}
-            >
-              <div className="flex items-center gap-2">
-                <Plus className="h-3.5 w-3.5 text-primary" />
-                <span className="eyebrow text-primary">Link to {presetCriterion.id.toUpperCase()}</span>
-              </div>
-              <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/10">
-                <p className="text-xs font-serif italic text-foreground/70 leading-relaxed">
-                  &ldquo;{selection.text.length > 100 ? selection.text.slice(0, 100) + "…" : selection.text}&rdquo;
-                </p>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Link this text as evidence for{" "}
-                <span className="font-semibold text-foreground">{presetCriterion.id.toUpperCase()} — {presetCriterion.name}</span>?
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={dismissSelection} className="flex-1">
-                  No, dismiss
-                </Button>
-                <Button size="sm" onClick={() => linkEvidenceToCriterion(presetCriterion.id)} className="flex-1">
-                  Yes, link it
-                </Button>
-              </div>
+          text when the user selects text WITHOUT first clicking "+ Add
+          evidence". Mirrors main grading (evaluation/[id]/page.tsx:1394-1442):
+          full criteria picker so the instructor explicitly picks the target.
+          The pre-scoped (button-first) flow auto-links and never shows this. */}
+      {selection && (
+        <div
+          className="fixed z-[100] bg-card border border-border shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-xl p-3 flex flex-col gap-2 w-72 backdrop-blur-md"
+          style={{ left: selection.x, top: selection.y, transform: "translate(-50%, -110%)" }}
+          onMouseDown={e => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between px-2 pb-2 border-b border-border/60 mb-1">
+            <div className="flex items-center gap-2">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden className="text-primary">
+                <path d="M5 7l-2 2a2.8 2.8 0 0 0 4 4l2-2M9 7l2-2a2.8 2.8 0 0 0-4-4L5 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="eyebrow text-muted-foreground">Link evidence</span>
             </div>
-          )
-        }
-
-        return (
-          <div
-            className="fixed z-[100] bg-card border border-border shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-xl p-3 flex flex-col gap-2 w-72 backdrop-blur-md"
-            style={{ left: selection.x, top: selection.y, transform: "translate(-50%, -110%)" }}
-            onMouseDown={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-2 pb-2 border-b border-border/60 mb-1">
-              <div className="flex items-center gap-2">
-                <Plus className="h-3.5 w-3.5 text-primary" />
-                <span className="eyebrow text-muted-foreground">Link evidence</span>
-              </div>
-              <span className="text-xs font-semibold text-muted-foreground tabular-nums">
-                Paper {currentPaperIndex + 1}
-              </span>
-            </div>
-            <div className="px-2 pb-1">
-              <p className="text-xs font-serif italic text-foreground/70 leading-relaxed line-clamp-2">
-                &ldquo;{selection.text.length > 100 ? selection.text.slice(0, 100) + "…" : selection.text}&rdquo;
-              </p>
-            </div>
-            <div className="flex flex-col gap-1 max-h-[300px] overflow-y-auto pr-1">
-              {criteria.map(c => (
-                <div
-                  key={c.id}
-                  role="button"
-                  onClick={() => linkEvidenceToCriterion(c.id)}
-                  className="w-full text-left p-2.5 rounded-lg hover:bg-primary/5 transition-all flex flex-col gap-0.5 group/btn cursor-pointer"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold tracking-tight text-foreground group-hover/btn:text-primary transition-colors">
-                      {c.name}
-                    </span>
-                    <ArrowRight className="h-3 w-3 opacity-0 group-hover/btn:opacity-100 transition-all text-primary" />
-                  </div>
-                  <span className="eyebrow text-muted-foreground/60">Criterion {c.id.toUpperCase()}</span>
-                </div>
-              ))}
-            </div>
-            <Separator className="bg-border/50 my-1" />
-            <Button variant="ghost" size="sm" onClick={dismissSelection} className="w-full">
-              Dismiss
-            </Button>
+            <span className="text-xs font-semibold text-muted-foreground tabular-nums">
+              Paper {currentPaperIndex + 1}
+            </span>
           </div>
-        )
-      })()}
+          <div className="flex flex-col gap-1 max-h-[300px] overflow-y-auto pr-1">
+            {criteria.map(c => (
+              <div
+                key={c.id}
+                role="button"
+                onClick={() => linkEvidenceToCriterion(c.id)}
+                className="w-full text-left p-2.5 rounded-lg hover:bg-primary/5 transition-all flex flex-col gap-0.5 group/btn cursor-pointer"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold tracking-tight text-foreground group-hover/btn:text-primary transition-colors">
+                    {c.name}
+                  </span>
+                  <ArrowRight className="h-3 w-3 opacity-0 group-hover/btn:opacity-100 transition-all text-primary" />
+                </div>
+                <span className="text-xs text-muted-foreground/60">Criterion {c.id}</span>
+              </div>
+            ))}
+          </div>
+          <Separator className="bg-border/50 my-1" />
+          <Button variant="ghost" size="sm" onClick={dismissSelection} className="w-full">
+            Dismiss
+          </Button>
+        </div>
+      )}
     </TooltipProvider>
   )
 }
