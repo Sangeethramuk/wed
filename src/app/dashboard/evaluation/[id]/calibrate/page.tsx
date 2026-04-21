@@ -10,6 +10,7 @@ import { NegotiationDialogue } from "@/components/evaluation/calibration/negotia
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, CloudCheck } from "lucide-react"
 import Link from "next/link"
 
@@ -66,49 +67,50 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       {/* Sticky header */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/10 px-4 pt-4 pb-4">
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border px-4 pt-4 pb-4">
         <div className="max-w-6xl mx-auto w-full">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <Link href="/dashboard/evaluation">
                 <Button variant="ghost" size="sm">
                   <ArrowLeft /> Triage desk
                 </Button>
               </Link>
-              <div className="w-px h-4 bg-border/50" />
-              <div className="eyebrow flex items-center gap-3">
-                <span className="text-primary font-black">
-                  Step {currentStep?.step ?? 1} of {PHASE_STEPS.length - 1} — {currentStep?.label}
+              <Separator orientation="vertical" className="h-4" />
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-semibold text-foreground">
+                  Step {currentStep?.step ?? 1} of {PHASE_STEPS.length - 1}
                 </span>
+                <span className="text-muted-foreground">— {currentStep?.label}</span>
                 {nextStep && cal.phase !== "negotiation" && (
                   <>
-                    <span className="text-muted-foreground/20">·</span>
-                    <span className="text-muted-foreground/30 italic lowercase tracking-widest">Next: {nextStep.label}</span>
+                    <span className="text-muted-foreground/40">·</span>
+                    <span className="text-muted-foreground/70">Next: {nextStep.label}</span>
                   </>
                 )}
               </div>
-              <div className="flex gap-1.5 ml-2">
+              <div className="flex gap-1.5 ml-1">
                 {PHASE_STEPS.filter(s => s.id !== "complete").map(s => (
-                  <div key={s.id} className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                    s.id === cal.phase ? "bg-primary" : "bg-muted-foreground/20"
+                  <div key={s.id} className={`size-2 rounded-full transition-colors ${
+                    s.id === cal.phase ? "bg-primary" : "bg-border"
                   }`} />
                 ))}
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               {cal.phase === "blind_grading" && (
-                <Badge variant="outline" className="eyebrow bg-muted/30 border-border/30">
+                <Badge variant="outline">
                   {gradedCount}/{totalPapers} papers graded
                 </Badge>
               )}
-              <div className="eyebrow flex items-center gap-1.5 text-muted-foreground/25">
-                <CloudCheck className="h-3 w-3 text-green-500/30" />
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <CloudCheck className="size-3.5 text-[color:var(--status-success)]" />
                 Auto-saved
               </div>
             </div>
           </div>
-          <Progress value={progressPercent} className="h-0.5 bg-primary/10 transition-all duration-1000 ease-in-out" />
+          <Progress value={progressPercent} className="h-1 transition-all duration-1000 ease-in-out" />
         </div>
       </div>
 
