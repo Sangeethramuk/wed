@@ -71,7 +71,7 @@ export function LaunchLaunchpad() {
               <Input 
                 readOnly 
                 value={shareLink} 
-                className="h-14 bg-muted/20 border-2 border-border/40 rounded-2xl font-black text-sm px-6 focus-visible:ring-primary/10 tracking-tight"
+                className="h-14 bg-muted/20 border-2 border-border/40 rounded-xl font-black text-sm px-6 focus-visible:ring-primary/10 tracking-tight"
               />
               <Button
                 variant="outline"

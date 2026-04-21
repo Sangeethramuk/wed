@@ -26,7 +26,7 @@ export function CalibrationConfirm() {
 
         <div className="grid gap-6">
           {isHistory ? (
-            <Card className="border-2 border-emerald-500/20 bg-emerald-500/[0.02] rounded-2xl overflow-hidden shadow-xl shadow-emerald-500/5">
+            <Card className="border-2 border-emerald-500/20 bg-emerald-500/[0.02] rounded-xl overflow-hidden shadow-xl shadow-emerald-500/5">
               <CardHeader className="pb-4 pt-8 px-8">
                 <div className="flex items-center gap-3 text-emerald-600/60 transition-all">
                   <div className="h-6 w-6 rounded-full bg-emerald-500/10 flex items-center justify-center">
@@ -50,7 +50,7 @@ export function CalibrationConfirm() {
               </CardContent>
             </Card>
           ) : (
-            <Card className="border-2 border-amber-500/20 bg-amber-500/[0.02] rounded-2xl overflow-hidden shadow-xl shadow-amber-500/5">
+            <Card className="border-2 border-amber-500/20 bg-amber-500/[0.02] rounded-xl overflow-hidden shadow-xl shadow-amber-500/5">
               <CardHeader className="pb-4 pt-8 px-8">
                 <div className="flex items-center gap-3 text-amber-600/60">
                   <div className="h-6 w-6 rounded-full bg-amber-500/10 flex items-center justify-center">
@@ -64,14 +64,14 @@ export function CalibrationConfirm() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 px-8 pb-8">
-                <div className="flex items-start gap-5 p-6 rounded-2xl bg-background/50 border border-amber-500/10 group hover:border-amber-500/40 transition-all cursor-pointer hover:bg-white shadow-none hover:shadow-lg hover:shadow-amber-500/5">
+                <div className="flex items-start gap-5 p-6 rounded-xl bg-background/50 border border-amber-500/10 group hover:border-amber-500/40 transition-all cursor-pointer hover:bg-white shadow-none hover:shadow-lg hover:shadow-amber-500/5">
                   <div className="eyebrow px-3 py-1 rounded-md bg-amber-100 text-amber-700 mt-1">Option 1</div>
                   <div className="space-y-1 flex-1">
                     <p className="text-lg font-black tracking-tight">Interactive Calibration</p>
                     <p className="text-xs font-semibold text-muted-foreground opacity-60 leading-relaxed">The AI will observe your grading of the first 5 student responses to align with your personal bias.</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-5 p-6 rounded-2xl bg-background/30 border border-border/40 group hover:border-primary/40 transition-all cursor-pointer hover:bg-white shadow-none hover:shadow-lg hover:shadow-primary/5">
+                <div className="flex items-start gap-5 p-6 rounded-xl bg-background/30 border border-border/40 group hover:border-primary/40 transition-all cursor-pointer hover:bg-white shadow-none hover:shadow-lg hover:shadow-primary/5">
                   <div className="eyebrow px-3 py-1 rounded-md bg-muted text-muted-foreground mt-1">Option 2</div>
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center justify-between">
@@ -87,7 +87,7 @@ export function CalibrationConfirm() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Tooltip>
-              <TooltipTrigger className="border border-border/20 rounded-2xl overflow-hidden shadow-none bg-muted/[0.02] hover:bg-white transition-all hover:border-primary/20 cursor-help">
+              <TooltipTrigger className="border border-border/20 rounded-xl overflow-hidden shadow-none bg-muted/[0.02] hover:bg-white transition-all hover:border-primary/20 cursor-help">
                 <CardContent className="pt-6 pb-6 px-6 space-y-2">
                   <p className="eyebrow text-muted-foreground opacity-30">Assignment Scope</p>
                   <p className="text-sm font-black tracking-tight secondary-text">Multiple Files (Artifacts)</p>
@@ -97,7 +97,7 @@ export function CalibrationConfirm() {
             </Tooltip>
 
             <Tooltip>
-              <TooltipTrigger className="border border-border/20 rounded-2xl overflow-hidden shadow-none bg-muted/[0.02] hover:bg-white transition-all hover:border-primary/20 cursor-help">
+              <TooltipTrigger className="border border-border/20 rounded-xl overflow-hidden shadow-none bg-muted/[0.02] hover:bg-white transition-all hover:border-primary/20 cursor-help">
                 <CardContent className="pt-6 pb-6 px-6 space-y-2">
                   <p className="eyebrow text-muted-foreground opacity-30">Framework Mapping</p>
                   <p className="text-sm font-black tracking-tight secondary-text">3 Linked CO-POs</p>
@@ -107,7 +107,7 @@ export function CalibrationConfirm() {
             </Tooltip>
 
             <Tooltip>
-              <TooltipTrigger className="border border-border/20 rounded-2xl overflow-hidden shadow-none bg-muted/[0.02] hover:bg-white transition-all hover:border-primary/20 cursor-help">
+              <TooltipTrigger className="border border-border/20 rounded-xl overflow-hidden shadow-none bg-muted/[0.02] hover:bg-white transition-all hover:border-primary/20 cursor-help">
                 <CardContent className="pt-6 pb-6 px-6 space-y-2">
                   <p className="eyebrow text-muted-foreground opacity-30">Class Size</p>
                   <p className="text-sm font-black tracking-tight secondary-text">~45 Students</p>

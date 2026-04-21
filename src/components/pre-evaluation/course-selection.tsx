@@ -145,7 +145,7 @@ export function CourseSelection() {
             {MOCK_COURSES.map((course) => (
               <Card
                 key={course.id}
-                className="group relative overflow-hidden cursor-pointer hover:border-primary/20 transition-all border-border/20 bg-card/20 backdrop-blur-sm rounded-2xl p-2 flex flex-col shadow-none"
+                className="group relative overflow-hidden cursor-pointer hover:border-primary/20 transition-all border-border/20 bg-card/20 backdrop-blur-sm rounded-xl p-2 flex flex-col shadow-none"
                 onClick={() => handleSelect(course.name)}
               >
                 <div className="absolute top-6 right-6 z-10 flex items-center gap-1.5">

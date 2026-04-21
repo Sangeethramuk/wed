@@ -71,7 +71,7 @@ export default function EvaluationOnboarding() {
             transition={{ delay: index * 0.1 }}
           >
             <Card className="p-8 h-full flex flex-col space-y-8 hover:shadow-2xl hover:shadow-primary/5 transition-all border-border/50 bg-card/40 backdrop-blur-sm group hover:-translate-y-1">
-              <div className={`w-14 h-14 rounded-2xl ${item.color} flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm`}>
+              <div className={`w-14 h-14 rounded-xl ${item.color} flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm`}>
                 <item.icon className="h-7 w-7" />
               </div>
               <div className="space-y-3 flex-1">

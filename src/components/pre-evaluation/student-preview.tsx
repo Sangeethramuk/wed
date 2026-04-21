@@ -84,7 +84,7 @@ export function StudentPreview() {
           </div>
         </div>
 
-        <Card className="border border-border/20 rounded-2xl overflow-hidden bg-card">
+        <Card className="border border-border/20 rounded-xl overflow-hidden bg-card">
           <CardContent className="p-8 space-y-8">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -236,7 +236,7 @@ function StudentView({
   latePolicyLabel: Record<string, string>
 }) {
   return (
-    <div className="border border-border/20 rounded-2xl overflow-hidden bg-card animate-in fade-in duration-300">
+    <div className="border border-border/20 rounded-xl overflow-hidden bg-card animate-in fade-in duration-300">
       {/* Assignment Header */}
       <div className="bg-muted/[0.03] border-b border-border/10 px-8 py-8 space-y-3">
         <p className="eyebrow text-muted-foreground/40">
@@ -395,7 +395,7 @@ function InstructorView({
   const totalWeight = allQuestions.reduce((s, q) => s + Number(q.weight || 0), 0)
 
   return (
-    <div className="border border-border/20 rounded-2xl overflow-hidden bg-card animate-in fade-in duration-300">
+    <div className="border border-border/20 rounded-xl overflow-hidden bg-card animate-in fade-in duration-300">
       <div className="bg-muted/5 border-b border-border/10 px-8 py-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center border border-primary/10">

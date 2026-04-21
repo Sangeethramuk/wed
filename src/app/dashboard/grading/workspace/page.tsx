@@ -113,11 +113,11 @@ export default function WorkspacePage() {
           </p>
           
           <div className="grid grid-cols-2 gap-4 w-full mb-8">
-             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col items-center">
+             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center">
                 <span className="eyebrow text-slate-400 mb-1">Final Delta</span>
                 <span className="text-xl font-bold text-slate-900">0.42</span>
              </div>
-             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col items-center">
+             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center">
                 <span className="eyebrow text-slate-400 mb-1">Fixes Applied</span>
                 <span className="text-xl font-bold text-slate-900">1</span>
              </div>
@@ -192,7 +192,7 @@ export default function WorkspacePage() {
             exit={{ opacity: 0, y: -20, x: '-50%' }}
             className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4"
           >
-            <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border border-white/10 backdrop-blur-md">
+            <div className="bg-slate-900 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between border border-white/10 backdrop-blur-md">
               <div className="flex items-center gap-3">
                  <div className="p-2 bg-amber-500 rounded-lg">
                     <Zap className="w-4 h-4 text-slate-900 fill-slate-900" />
@@ -266,7 +266,7 @@ export default function WorkspacePage() {
                            initial={{ opacity: 0, height: 0 }}
                            animate={{ opacity: 1, height: 'auto' }}
                            exit={{ opacity: 0, height: 0 }}
-                           className="relative p-8 bg-amber-50/40 border border-amber-200/50 rounded-2xl my-8 overflow-hidden"
+                           className="relative p-8 bg-amber-50/40 border border-amber-200/50 rounded-xl my-8 overflow-hidden"
                          >
                             <div className="absolute top-0 right-0 p-4 opacity-10"><Ghost className="w-16 h-16 text-amber-500" /></div>
                             <span className="eyebrow text-amber-600 mb-4 block">Hidden Layer: White Font Injection (Defense 1.1)</span>

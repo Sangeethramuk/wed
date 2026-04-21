@@ -109,7 +109,7 @@ export default function ReEvaluationPage() {
       <div className="max-w-6xl mx-auto w-full pb-20 px-4 pt-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
         
         {/* Table Container */}
-        <div className="rounded-2xl border border-border/10 bg-card/10 backdrop-blur-sm overflow-hidden">
+        <div className="rounded-xl border border-border/10 bg-card/10 backdrop-blur-sm overflow-hidden">
           {/* Header */}
           <div
             className="eyebrow grid text-muted-foreground/40"

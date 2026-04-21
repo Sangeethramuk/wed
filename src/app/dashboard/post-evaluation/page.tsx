@@ -135,7 +135,7 @@ export default function ResultInsights() {
                     { label: 'Elevated Cases', count: 5, color: 'text-primary', bg: 'bg-primary/10' },
                     { label: 'Integrity Alert', count: 2, color: 'text-red-600', bg: 'bg-red-500/10' },
                   ].map((stat) => (
-                    <div key={stat.label} className={cn("p-4 rounded-2xl border border-border/40 flex items-center justify-between", stat.bg)}>
+                    <div key={stat.label} className={cn("p-4 rounded-xl border border-border/40 flex items-center justify-between", stat.bg)}>
                       <span className="text-xs font-bold text-muted-foreground/80 tracking-tight">{stat.label}</span>
                       <span className={cn("text-lg font-black", stat.color)}>{stat.count}</span>
                     </div>
@@ -214,7 +214,7 @@ export default function ResultInsights() {
                     </div>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-background border border-primary/20 border-dashed">
+                  <div className="p-5 rounded-xl bg-background border border-primary/20 border-dashed">
                       <p className="text-xs font-medium text-muted-foreground leading-relaxed italic">
                         "Publishing will notify all students in the cohort and unlock their solution direction roadmaps."
                       </p>
@@ -274,7 +274,7 @@ export default function ResultInsights() {
           <motion.div whileHover={{ y: -4 }} key={stat.label} className="p-7 bg-background border border-border/40 rounded-[28px] shadow-[0_4px_24px_rgb(0,0,0,0.02)] transition-all">
             <div className="flex items-start justify-between mb-4">
               <span className="eyebrow text-muted-foreground/40">{stat.label}</span>
-              <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center">
                  <stat.icon className="h-5 w-5 text-primary opacity-60" />
               </div>
             </div>
@@ -411,7 +411,7 @@ export default function ResultInsights() {
                   <tr key={student.name} className="hover:bg-muted/5 transition-colors group">
                     <td className="px-10 py-6">
                       <div className="flex items-center gap-4">
-                         <div className="w-10 h-10 rounded-2xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-black text-muted-foreground group-hover:text-primary">
+                         <div className="w-10 h-10 rounded-xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-black text-muted-foreground group-hover:text-primary">
                             {student.name.split(' ').map(n => n[0]).join('')}
                          </div>
                          <span className="font-extrabold text-foreground text-sm tracking-tight">{student.name}</span>
