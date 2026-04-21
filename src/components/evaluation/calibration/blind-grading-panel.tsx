@@ -85,6 +85,9 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
   const [textSelectionMode, setTextSelectionMode] = useState<TextSelectionMode>({ active: false, criterionId: null })
   const [mappedEvidence, setMappedEvidence] = useState<MappedEvidence[]>([])
   const [pickerOpen, setPickerOpen] = useState(false)
+  // Floating-popover state: { text, x, y } when user has highlighted text,
+  // null otherwise. Mirrors main grading (evaluation/[id]/page.tsx:110).
+  const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null)
   const manuscriptRef = useRef<HTMLDivElement>(null)
 
   const papers    = cal?.papers ?? []
@@ -120,6 +123,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
     setActiveCriterionIdx(0)
     setTextSelectionMode({ active: false, criterionId: null })
     setPickerOpen(false)
+    setSelection(null)
     if (manuscriptRef.current) manuscriptRef.current.scrollTop = 0
     const interval = setInterval(() => setInspectionTime(t => t + 1), 1000)
     return () => clearInterval(interval)
@@ -132,22 +136,44 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
     if (isBottom) setHasScrolledToBottom(true)
   }
 
-  // Capture text selection when selection mode is active.
-  // Preserves native copy/paste when mode is off (early-returns).
+  // Capture the highlighted range into `selection` state so the floating
+  // popover can render next to the text. Mirrors main grading at
+  // src/app/dashboard/evaluation/[id]/page.tsx:495-534.
   const handleManuscriptMouseUp = () => {
-    if (!textSelectionMode.active || !textSelectionMode.criterionId || !activePaperId) return
-    const selection = window.getSelection()
-    if (!selection) return
-    const raw = selection.toString()
+    if (!activePaperId) return
+    const sel = window.getSelection()
+    if (!sel) return
+    const raw = sel.toString()
     const text = raw.trim().replace(/\s+/g, " ")
-    if (!text) return
+    if (!text) {
+      setSelection(null)
+      return
+    }
+    const range = sel.getRangeAt(0)
+    const rect = range.getBoundingClientRect()
+    setSelection({
+      text,
+      x: rect.left + rect.width / 2,
+      y: rect.top,
+    })
+  }
+
+  // Commit a captured selection to the given criterion and dismiss the popover.
+  const linkEvidenceToCriterion = (criterionId: string) => {
+    if (!selection || !activePaperId) return
     setMappedEvidence(prev => [
       ...prev,
-      { id: newEvidenceId(), text, paperId: activePaperId, criterionId: textSelectionMode.criterionId! },
+      { id: newEvidenceId(), text: selection.text, paperId: activePaperId, criterionId },
     ])
-    selection.removeAllRanges()
+    window.getSelection()?.removeAllRanges()
+    setSelection(null)
     setTextSelectionMode({ active: false, criterionId: null })
     setPickerOpen(false)
+  }
+
+  const dismissSelection = () => {
+    window.getSelection()?.removeAllRanges()
+    setSelection(null)
   }
 
   const enterSelectionMode = (criterionId: string) => {
@@ -523,7 +549,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                                   </div>
                                 ) : (
                                   <div className="text-xs text-muted-foreground bg-muted/10 border border-dashed border-border rounded-md p-2.5">
-                                    No evidence linked yet — highlight text in the manuscript to add.
+                                    No evidence linked yet — highlight any text in the manuscript to see a link popover.
                                   </div>
                                 )}
 
@@ -663,6 +689,93 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
 
         </ResizablePanelGroup>
       </div>
+
+      {/* Floating evidence-link popover — appears next to the highlighted
+          text in the manuscript. Mirrors main grading
+          (evaluation/[id]/page.tsx:1345-1444). Two variants:
+          - textSelectionMode active → single-criterion confirm (Yes/No)
+          - otherwise → full criteria picker so the user explicitly chooses */}
+      {selection && (() => {
+        const isPreselected = textSelectionMode.active && textSelectionMode.criterionId !== null
+        const presetCriterion = isPreselected ? criteria.find(c => c.id === textSelectionMode.criterionId) : null
+
+        if (isPreselected && presetCriterion) {
+          return (
+            <div
+              className="fixed z-[100] bg-card border border-primary/30 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-xl p-4 flex flex-col gap-3 w-80 backdrop-blur-md"
+              style={{ left: selection.x, top: selection.y, transform: "translate(-50%, -110%)" }}
+              onMouseDown={e => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-2">
+                <Plus className="h-3.5 w-3.5 text-primary" />
+                <span className="eyebrow text-primary">Link to {presetCriterion.id.toUpperCase()}</span>
+              </div>
+              <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+                <p className="text-xs font-serif italic text-foreground/70 leading-relaxed">
+                  &ldquo;{selection.text.length > 100 ? selection.text.slice(0, 100) + "…" : selection.text}&rdquo;
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Link this text as evidence for{" "}
+                <span className="font-semibold text-foreground">{presetCriterion.id.toUpperCase()} — {presetCriterion.name}</span>?
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={dismissSelection} className="flex-1">
+                  No, dismiss
+                </Button>
+                <Button size="sm" onClick={() => linkEvidenceToCriterion(presetCriterion.id)} className="flex-1">
+                  Yes, link it
+                </Button>
+              </div>
+            </div>
+          )
+        }
+
+        return (
+          <div
+            className="fixed z-[100] bg-card border border-border shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-xl p-3 flex flex-col gap-2 w-72 backdrop-blur-md"
+            style={{ left: selection.x, top: selection.y, transform: "translate(-50%, -110%)" }}
+            onMouseDown={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-2 pb-2 border-b border-border/60 mb-1">
+              <div className="flex items-center gap-2">
+                <Plus className="h-3.5 w-3.5 text-primary" />
+                <span className="eyebrow text-muted-foreground">Link evidence</span>
+              </div>
+              <span className="text-xs font-semibold text-muted-foreground tabular-nums">
+                Paper {currentPaperIndex + 1}
+              </span>
+            </div>
+            <div className="px-2 pb-1">
+              <p className="text-xs font-serif italic text-foreground/70 leading-relaxed line-clamp-2">
+                &ldquo;{selection.text.length > 100 ? selection.text.slice(0, 100) + "…" : selection.text}&rdquo;
+              </p>
+            </div>
+            <div className="flex flex-col gap-1 max-h-[300px] overflow-y-auto pr-1">
+              {criteria.map(c => (
+                <div
+                  key={c.id}
+                  role="button"
+                  onClick={() => linkEvidenceToCriterion(c.id)}
+                  className="w-full text-left p-2.5 rounded-lg hover:bg-primary/5 transition-all flex flex-col gap-0.5 group/btn cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold tracking-tight text-foreground group-hover/btn:text-primary transition-colors">
+                      {c.name}
+                    </span>
+                    <ArrowRight className="h-3 w-3 opacity-0 group-hover/btn:opacity-100 transition-all text-primary" />
+                  </div>
+                  <span className="eyebrow text-muted-foreground/60">Criterion {c.id.toUpperCase()}</span>
+                </div>
+              ))}
+            </div>
+            <Separator className="bg-border/50 my-1" />
+            <Button variant="ghost" size="sm" onClick={dismissSelection} className="w-full">
+              Dismiss
+            </Button>
+          </div>
+        )
+      })()}
     </TooltipProvider>
   )
 }
