@@ -441,7 +441,7 @@ export function AssignmentSpecs() {
                 <Card key={block.id} className="border border-border/30 rounded-xl bg-card/10 backdrop-blur-sm shadow-none overflow-hidden">
                   {commonHeader}
                   {!isCollapsed && (
-                    <CardContent className="p-5 space-y-4">
+                    <CardContent className="p-6 space-y-4">
                       {block.type === "instructions" && (
                         <InstructionsEditor
                           block={block}
