@@ -195,7 +195,107 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     { id: 4, type: "c4", label: "Technical Setup & Integration", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the tool/API integration, config documentation, runnable end-to-end execution, basic error handling, and test path is present, and 20% has issues.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] }
   ]
 
-  const [criterionState, setCriterionState] = useState<Record<number, { score: number, isOverridden: boolean, feedback: string, confirmed: boolean }>>({})
+  type FeedbackStatus = 'idle' | 'generating' | 'ready' | 'stale' | 'stale_edited';
+  const [criterionState, setCriterionState] = useState<Record<number, { 
+    score: number, 
+    isOverridden: boolean, 
+    feedback: string, 
+    confirmed: boolean,
+    feedbackStatus?: FeedbackStatus,
+    feedbackIsEdited?: boolean,
+    feedbackUpdatedAt?: number,
+    lastConfirmedScore?: number
+  }>>({})
+
+  const pick = (...options: string[]) => options[Math.floor(Math.random() * options.length)];
+
+  function generateFeedbackText(criterionName: string, score: number, maxPoints: number, reasoning: string, evidence: string[]): string {
+    const normalizedScore = (score / maxPoints) * 10;
+    const crit = criterionName;
+
+    if (normalizedScore === 10) {
+      return pick(
+        `The submission fully addresses all aspects of ${crit}. The response is well-structured, demonstrates clear understanding of the core concepts, and provides reasoning that is both accurate and complete. No significant gaps identified — this reflects strong command of the expected outcome.`,
+        `Excellent work on ${crit}. Every required element is present, the explanation is precise, and the reasoning holds up throughout. This submission meets the highest standard for this criterion with no areas requiring improvement.`,
+        `Strong and complete response for ${crit}. The student demonstrates thorough understanding, supports their points well, and communicates the solution clearly. The quality of reasoning and coverage of expectations is fully met.`
+      );
+    }
+
+    if (normalizedScore >= 8) {
+      return pick(
+        `The response addresses ${crit} well and shows a solid understanding of the core requirements. The explanation is structured and mostly complete. To reach the highest level, the student should expand on the assumptions made and add a practical example that directly ties back to the scenario.`,
+        `Good work on ${crit}. The key concepts are covered and the reasoning is logical. However, the response would benefit from deeper elaboration on edge cases and a clearer connection between the approach taken and the expected outcome for this criterion.`,
+        `The student demonstrates a strong grasp of ${crit} with clear and mostly accurate reasoning. One area for improvement is the lack of a concrete applied example — introducing one would significantly strengthen the argument and demonstrate full mastery of the criterion.`
+      );
+    }
+
+    if (normalizedScore >= 5) {
+      return pick(
+        `The response partially addresses ${crit}. The core concept is identified, but the explanation stays at a surface level and does not fully demonstrate the expected depth. The student should revisit the key requirements, clarify the constraints they are working within, and provide at least one applied example to support their reasoning.`,
+        `Some understanding of ${crit} is evident, but the response does not fully meet the expectations for this criterion. Key aspects such as trade-offs and practical implications are missing. Strengthening the explanation with a concrete use case and addressing the gaps in the reasoning would improve this significantly.`,
+        `The student has made a reasonable attempt at ${crit}, and the right area is identified. However, the response lacks the precision and completeness expected. The connection between the concept and the scenario is unclear — focusing on how the solution applies to the specific context would help bridge this gap.`
+      );
+    }
+
+    return pick(
+      `The response shows a limited understanding of ${crit}. While some relevant terminology is present, the core requirement has not been addressed. The student should return to the fundamental principles of this criterion, consider how they apply to the given scenario, and build their answer around a clear explanation of the expected outcome.`,
+      `This response does not adequately address ${crit}. The submission lacks the structure, explanation, and depth required to meet the criterion expectations. The student is encouraged to revisit the rubric, identify what a complete answer would need to include, and approach the response with a clearer focus on the required elements.`,
+      `The attempt at ${crit} is incomplete and does not meet the minimum expectation. The key concept is either missing or incorrectly applied. The student should focus on understanding the core principle first, then demonstrate how it connects to the scenario before constructing their response.`
+    );
+  }
+
+
+  const handleFeedbackRefresh = (id: number, newScore: number, isOverride: boolean) => {
+    const existing = criterionState[id];
+    setCriterionState(prev => ({
+      ...prev,
+      [id]: { ...existing, score: newScore, isOverridden: isOverride, confirmed: true, feedbackStatus: 'generating', lastConfirmedScore: newScore, feedback: existing?.feedback || '' }
+    }));
+    setTimeout(() => {
+      setCriterionState(current => {
+        const point = rubricPoints.find(p => p.id === id);
+        const evidence = mappedEvidence.filter(e => e.criterionId === id).map(e => e.text);
+        if (point) {
+          const text = generateFeedbackText(point.label, newScore, point.maxPoints, point.reasoning, evidence);
+          return {
+            ...current,
+            [id]: {
+              ...current[id],
+              feedback: text,
+              feedbackStatus: 'ready',
+              feedbackIsEdited: false,
+              feedbackUpdatedAt: Date.now()
+            }
+          };
+        }
+        return current;
+      });
+    }, 150);
+  }
+
+  // Pre-populate AI feedback on load
+  useEffect(() => {
+    setCriterionState(prev => {
+      const next = { ...prev };
+      let changed = false;
+      rubricPoints.forEach(p => {
+        if (!next[p.id]) {
+          next[p.id] = {
+            score: p.aiScore,
+            isOverridden: false,
+            feedback: generateFeedbackText(p.label, p.aiScore, p.maxPoints, p.reasoning, []),
+            confirmed: false,
+            feedbackStatus: 'ready',
+            feedbackUpdatedAt: Date.now(),
+            lastConfirmedScore: p.aiScore
+          };
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const calculateTotalScore = () => {
     return rubricPoints.reduce((total, point) => {
@@ -210,7 +310,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   const totalMaxPoints = rubricPoints.reduce((sum, p) => sum + p.maxPoints, 0)
   const currentTotalScore = calculateTotalScore()  
   const handleScoreConfirm = (id: number, aiScore: number) => {
-    setCriterionState(prev => ({ ...prev, [id]: { ...prev[id], score: aiScore, isOverridden: false, confirmed: true } }))
+    handleFeedbackRefresh(id, aiScore, false)
     addRevisionEvent({
       type: 'score_confirmed',
       criterionId: id,
@@ -267,10 +367,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   const handleConfirmOverride = (criterionId: number) => {
     const draft = overrideDrafts[criterionId]
     if (!draft || draft.reasoning.length < 20) return
-    setCriterionState(prev => ({
-      ...prev,
-      [criterionId]: { ...prev[criterionId], score: draft.proposedScore, isOverridden: true, confirmed: true }
-    }))
+    handleFeedbackRefresh(criterionId, draft.proposedScore, true)
     addRevisionEvent({
       type: 'override',
       criterionId,
@@ -681,6 +778,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                     <TooltipTrigger>
                       <div 
                         role="button" 
+                        suppressHydrationWarning
                         tabIndex={0} 
                         onClick={() => setRevisionHistoryOpen(true)}
                         className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer focus:outline-none border border-border relative"
@@ -1000,7 +1098,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                 Cancel
                               </Button>
                               <Button size="sm" onClick={() => handleConfirmOverride(point.id)} disabled={!isOverrideValid}
-                                className="h-8 flex-1 text-[10px] font-black uppercase tracking-widest bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:pointer-events-none">
+                  className="h-8 flex-1 text-[10px] font-black uppercase tracking-widest bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:pointer-events-none">
                                 Confirm Override
                               </Button>
                             </div>
@@ -1008,13 +1106,134 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                         )}
 
                         <div className="space-y-1.5">
-                          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Feedback</span>
-                          <textarea
-                            value={state.feedback || ''}
-                            onChange={e => handleFeedbackChange(point.id, e.target.value)}
-                            placeholder="Add specific feedback for this criterion..."
-                            className="w-full h-20 rounded-lg border border-border bg-muted/5 p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground/80 placeholder:text-xs"
-                          />
+                          {(() => {
+                            const cid = point.id;
+                            const fbStatus = state.feedbackStatus;
+                            const isEdited = state.feedbackIsEdited;
+                            const isOverrideConfirmed = state.isOverridden && state.confirmed;
+
+                            // Edge case: had manual edit before override triggered
+                            const showEditVsRefreshPrompt = isOverride && isEdited && (fbStatus === 'ready');
+
+                            return (
+                              <div>
+                                {/* EDGE CASE — instructor edited then triggered an override: ask what to do */}
+                                {showEditVsRefreshPrompt && (
+                                  <div className="border border-amber-200 rounded-lg bg-amber-50/60 overflow-hidden mb-3">
+                                    <div className="px-3 pt-3 pb-2">
+                                      <p className="text-[12px] font-semibold text-amber-800 mb-1">You've edited this feedback</p>
+                                      <p className="text-[11px] text-amber-700/80 leading-snug">You changed the score. Keep your edited feedback or generate new feedback for the updated score?</p>
+                                    </div>
+                                    <div className="flex border-t border-amber-200">
+                                      <button
+                                        onClick={() => {
+                                          setCriterionState(prev => ({ ...prev, [cid]: { ...prev[cid], feedbackIsEdited: false } }));
+                                        }}
+                                        className="flex-1 py-2 text-[11px] font-medium text-amber-700/80 hover:bg-amber-100 transition-colors bg-transparent border-none cursor-pointer font-sans border-r border-amber-200"
+                                      >Keep edited feedback</button>
+                                      <button
+                                        onClick={() => {
+                                          const evidence = mappedEvidence.filter(e => e.criterionId === cid).map(e => e.text);
+                                          const text = generateFeedbackText(point.label, state.score || 0, point.maxPoints, point.reasoning, evidence);
+                                          setCriterionState(prev => ({ ...prev, [cid]: { ...prev[cid], feedback: text, feedbackIsEdited: false, feedbackUpdatedAt: Date.now() } }));
+                                        }}
+                                        className="flex-1 py-2 text-[11px] font-semibold text-amber-800 hover:bg-amber-100 transition-colors bg-transparent border-none cursor-pointer font-sans"
+                                      >Generate for updated score</button>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* STATE — feedback generating */}
+                                {fbStatus === 'generating' && (
+                                  <div className="flex items-center gap-2.5 py-4 px-3 border border-border rounded-md bg-muted/10 animate-pulse">
+                                    <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
+                                    <span className="text-[12px] text-muted-foreground">Generating feedback…</span>
+                                  </div>
+                                )}
+
+                                {/* STATE — feedback ready */}
+                                {fbStatus !== 'generating' && (
+                                  <>
+                                    {/* Header row: Feedback label + status badge */}
+                                    <div className="flex items-center justify-between mb-1.5">
+                                      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Feedback</span>
+                                      <div className="flex items-center gap-1.5">
+                                        {isOverrideConfirmed && !isEdited && (
+                                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                            <Zap className="w-2.5 h-2.5" /> Updated score: {state.lastConfirmedScore}
+                                          </span>
+                                        )}
+                                        {isEdited && (
+                                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted/40 text-muted-foreground border border-border/50">
+                                            <Edit2 className="w-2.5 h-2.5" /> Edited
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    <div className="relative">
+                                      <textarea
+                                        value={state.feedback || ''}
+                                        onChange={e => {
+                                          e.target.style.height = 'auto';
+                                          e.target.style.height = e.target.scrollHeight + 'px';
+                                          setCriterionState(prev => ({ ...prev, [cid]: { ...prev[cid], feedback: e.target.value, feedbackIsEdited: true } }));
+                                        }}
+                                        ref={el => {
+                                          if (el) {
+                                            el.style.height = 'auto';
+                                            el.style.height = el.scrollHeight + 'px';
+                                          }
+                                        }}
+                                        disabled={isOverride}
+                                        rows={1}
+                                        className={`w-full text-[13px] leading-[1.7] text-foreground bg-muted/5 border border-border rounded-lg p-3 resize-none overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary/20 font-sans transition-colors`}
+                                      />
+                                      {isOverride && (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 rounded-lg bg-amber-50 border border-amber-200">
+                                          <Zap className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                                          <span className="text-[12px] font-medium text-amber-800 text-center leading-snug px-4">Feedback is updating based on your changes</span>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Bottom action row */}
+                                    {!isOverride && (
+                                      <div className="flex items-center justify-between mt-2">
+                                        <div>
+                                          {isEdited && (
+                                            <button
+                                              onClick={() => {
+                                                const raw = state.feedback || '';
+                                                const structured = raw.split(/\s+/).join(' ').trim().replace(/\.\s*$/, '') + '.';
+                                                const final = structured.charAt(0).toUpperCase() + structured.slice(1);
+                                                setCriterionState(prev => ({ ...prev, [cid]: { ...prev[cid], feedback: final } }));
+                                              }}
+                                              className="flex items-center gap-1 text-[11px] text-muted-foreground/60 hover:text-primary transition-colors bg-transparent border-none cursor-pointer font-sans p-0"
+                                            >
+                                              <Sparkles className="w-3 h-3" /> Refine
+                                            </button>
+                                          )}
+                                        </div>
+                                        <button
+                                          onClick={() => {
+                                            setCriterionState(prev => ({ ...prev, [cid]: { ...prev[cid], confirmed: true } }));
+                                            if (!isLastCriterion) {
+                                              setActiveRubricCriterionIdx(activeRubricCriterionIdx + 1);
+                                            }
+                                          }}
+                                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-foreground text-background hover:bg-foreground/80 transition-colors cursor-pointer border-none"
+                                        >
+                                          <CheckCircle2 className="w-3.5 h-3.5" />
+                                          {isLastCriterion ? 'Confirm Feedback' : 'Confirm & Next'}
+                                        </button>
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>
