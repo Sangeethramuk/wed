@@ -22,7 +22,9 @@ import {
   Lock,
   Ghost,
   CheckCircle2,
-  FileText
+  FileText,
+  Sparkles,
+  PenLine
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -44,12 +46,129 @@ export default function WorkspacePage() {
   const [isIntegrityRevealActive, setIsIntegrityRevealActive] = useState(false);
   const [isFinalized, setIsFinalized] = useState(false);
   const [activeCriterionIdx, setActiveCriterionIdx] = useState(0);
-  const [feedbacks, setFeedbacks] = useState<Record<string, string>>({});
+  // --- Feedback lifecycle state ---
+  type FeedbackStatus = 'idle' | 'generating' | 'ready' | 'stale' | 'stale_edited';
+  interface FeedbackEntry {
+    text: string;
+    score: number;       // confirmed score at time of generation
+    status: FeedbackStatus;
+    isEdited: boolean;
+    updatedAt: number;   // ms timestamp
+  }
+  const [feedbackMap, setFeedbackMap] = useState<Record<string, FeedbackEntry>>({});
+  // confirmed score per criterion (set by Confirm button)
+  const [confirmedScores, setConfirmedScores] = useState<Record<string, number>>({});
+  // stale-edit guard: when score changes after manual edit, offer choice
+  const [staleEditGuard, setStaleEditGuard] = useState<Record<string, boolean>>({});
+  // --- End feedback lifecycle state ---
   const [overrideReasons, setOverrideReasons] = useState<Record<string, string>>({});
   const [reasonNotes, setReasonNotes] = useState<Record<string, string>>({});
   const [reviewStripOpen, setReviewStripOpen] = useState<Record<string, boolean>>({});
   const [accordionOpen, setAccordionOpen] = useState<Record<string, boolean>>({});
   const toggleAccordion = (key: string) => setAccordionOpen(prev => ({ ...prev, [key]: !prev[key] }));
+
+  // ─── Feedback generation helpers ────────────────────────────────────────────
+
+  // Rotate randomly among alternatives to avoid identical phrasing
+  const pick = (...options: string[]) => options[Math.floor(Math.random() * options.length)];
+
+  function generateFeedbackText(criterionName: string, level: number, reasoning: string, evidence: string[]): string {
+    const score = level * 2;
+    const crit = criterionName;
+
+    if (score === 10) {
+      return pick(
+        `Excellent response with clear reasoning across all required points.`,
+        `Strong answer demonstrating complete coverage of the criterion.`,
+        `The submission shows precise understanding of ${crit} with solid reasoning.`
+      );
+    }
+
+    if (score >= 8) {
+      const praise = pick('Well-structured answer.', 'Strong response overall;', 'Good logical flow.');
+      const gap = pick(
+        'Expanding the explanation of assumptions would strengthen it further.',
+        'one more practical example would improve depth.',
+        'clarifying the edge cases slightly would push this to the highest level.'
+      );
+      return `${praise} ${gap}`;
+    }
+
+    if (score >= 5) {
+      const whatWorked = pick(
+        `Core concept is identified,`,
+        `Good starting structure,`,
+        `You've identified the right area,`
+      );
+      const missing = pick(
+        `but the response does not fully explain scalability trade-offs.`,
+        `though constraints were not clearly defined.`,
+        `but the explanation stays somewhat at surface level.`
+      );
+      const action = pick(
+        `Add one applied example.`,
+        `Clarify scope before proposing the solution.`,
+        `Connect it back to the main scenario.`
+      );
+      return `${whatWorked} ${missing} ${action}`;
+    }
+
+    // Score 0-4
+    const ack = pick(
+      `Some relevant terminology is present,`,
+      `There is an attempt to address the topic,`,
+      `A partial attempt is visible,`
+    );
+    const gap = pick(
+      `but the main concept is not yet explained clearly.`,
+      `however the criterion requirements were largely missed.`,
+      `but the core requirement for ${crit} is not addressed.`
+    );
+    const direction = pick(
+      `Revisit the fundamentals and think about how the system would behave under load.`,
+      `Start with the core principle and relate it to the use case.`,
+      `Think about what a complete answer for ${crit} would need to demonstrate.`
+    );
+    return `${ack} ${gap} ${direction}`;
+  }
+
+  function confirmScoreAndGenerateFeedback(criterionId: string, level: number, criterion: { name: string; reasoning: string; evidence: string[] }) {
+    // Mark score as confirmed
+    setConfirmedScores(prev => ({ ...prev, [criterionId]: level }));
+    // Enter generating state
+    setFeedbackMap(prev => ({ ...prev, [criterionId]: { text: '', score: level, status: 'generating', isEdited: false, updatedAt: Date.now() } }));
+    // Simulate brief async generation (150ms feels responsive without being instant)
+    setTimeout(() => {
+      const text = generateFeedbackText(criterion.name, level, criterion.reasoning, criterion.evidence);
+      setFeedbackMap(prev => ({ ...prev, [criterionId]: { text, score: level, status: 'ready', isEdited: false, updatedAt: Date.now() } }));
+    }, 150);
+  }
+
+  function handleScoreChangeAfterFeedback(criterionId: string, newLevel: number, criterion: { name: string; reasoning: string; evidence: string[] }) {
+    const existing = feedbackMap[criterionId];
+    if (!existing || existing.status === 'idle') return;
+    if (existing.isEdited) {
+      // Edited content — show guard prompt instead of auto-refresh
+      setStaleEditGuard(prev => ({ ...prev, [criterionId]: true }));
+      setFeedbackMap(prev => ({ ...prev, [criterionId]: { ...existing, status: 'stale_edited' } }));
+    } else {
+      // Auto-refresh: mark stale immediately, regenerate
+      setFeedbackMap(prev => ({ ...prev, [criterionId]: { ...existing, status: 'stale' } }));
+      setTimeout(() => {
+        const text = generateFeedbackText(criterion.name, newLevel, criterion.reasoning, criterion.evidence);
+        setFeedbackMap(prev => ({ ...prev, [criterionId]: { text, score: newLevel, status: 'ready', isEdited: false, updatedAt: Date.now() } }));
+      }, 280);
+    }
+  }
+
+  function formatTimestamp(ms: number): string {
+    const diff = Math.floor((Date.now() - ms) / 1000);
+    if (diff < 10) return 'just now';
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    return `${Math.floor(diff / 3600)}h ago`;
+  }
+  // ────────────────────────────────────────────────────────────────────────────
 
   const assignment = currentAssignmentId ? assignments[currentAssignmentId] : null;
   const activeStudent = assignment?.students.find(s => s.id === (activeStudentId || assignment.students[0]?.id));
@@ -74,10 +193,20 @@ export default function WorkspacePage() {
 
   if (!assignment || !activeStudent) return null;
 
-  const handleGradeSelection = (criterionId: string, level: number) => {
+  const handleGradeSelection = (criterionId: string, level: number, criterion: { name: string; reasoning: string; evidence: string[] }) => {
     setProfessorGrades(prev => ({ ...prev, [criterionId]: level }));
     
-    // Simulate Pattern Detection (after 2nd selection if it's different from AI)
+    // If feedback already exists for this criterion, handle stale logic
+    const existing = feedbackMap[criterionId];
+    if (existing && (existing.status === 'ready' || existing.status === 'stale' || existing.status === 'stale_edited')) {
+      handleScoreChangeAfterFeedback(criterionId, level, criterion);
+    }
+    // Reset stale-edit guard when score picker changes (guard shows only for edited content)
+    if (existing?.status !== 'stale_edited') {
+      setStaleEditGuard(prev => ({ ...prev, [criterionId]: false }));
+    }
+
+    // Pattern detection (after 2nd selection)
     const currentSelectionsCount = Object.keys(professorGrades).length + 1;
     if (currentSelectionsCount >= 2 && !showPatternAlert) {
        setTimeout(() => setShowPatternAlert(true), 1000);
@@ -407,7 +536,7 @@ export default function WorkspacePage() {
                                     {[1, 2, 3, 4, 5].map(v => (
                                       <button
                                         key={v}
-                                        onClick={() => handleGradeSelection(activeCriterion.id, v)}
+                                        onClick={() => handleGradeSelection(activeCriterion.id, v, activeCriterion)}
                                         className={`w-[30px] h-[30px] rounded-md border text-[13px] font-medium cursor-pointer transition-all font-sans ${
                                           professorLevel === v
                                             ? 'bg-foreground border-foreground text-background shadow-sm'
@@ -451,17 +580,136 @@ export default function WorkspacePage() {
                               </div>
                             )}
 
-                            {/* Feedback */}
-                            <div>
-                              <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-1.5">Feedback</span>
-                              <textarea
-                                value={feedbacks[activeCriterion.id] ?? ''}
-                                onChange={e => setFeedbacks(f => ({ ...f, [activeCriterion.id]: e.target.value }))}
-                                rows={4}
-                                placeholder="Write feedback for this criterion…"
-                                className="w-full text-[13px] leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[90px] transition-colors"
-                              />
-                            </div>
+                            {/* ── Feedback Lifecycle Section ─────────────────────────────────── */}
+                            {(() => {
+                              const cid = activeCriterion.id;
+                              const confirmed = confirmedScores[cid];
+                              const fb = feedbackMap[cid];
+                              const pending = professorLevel; // current picker selection, unconfirmed
+
+                              // Helper: trust metadata row
+                              const TrustBadge = () => {
+                                if (!fb || fb.status === 'idle' || fb.status === 'generating') return null;
+                                return (
+                                  <div className="flex items-center gap-2 flex-wrap mt-2">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/8 text-primary border border-primary/20">
+                                      <Sparkles className="w-2.5 h-2.5" /> AI Generated
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted/40 text-muted-foreground border border-border/50">
+                                      Based on score {fb.score * 2}/10
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted/40 text-muted-foreground border border-border/50">
+                                      <Clock className="w-2.5 h-2.5" /> Updated {formatTimestamp(fb.updatedAt)}
+                                    </span>
+                                    {fb.isEdited && (
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                        <PenLine className="w-2.5 h-2.5" /> Instructor Edited
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              };
+
+                              return (
+                                <div>
+                                  <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-1.5">Feedback</span>
+
+                                  {/* STATE 1 — no score confirmed yet */}
+                                  {!confirmed && (
+                                    <div className="flex flex-col items-center justify-center gap-2 py-5 border border-dashed border-border rounded-md bg-muted/10">
+                                      <Lock className="w-4 h-4 text-muted-foreground/30" />
+                                      <p className="text-[12px] text-muted-foreground/50 text-center leading-snug">
+                                        {pending
+                                          ? <span>Score selected — press <strong>Confirm</strong> below to generate feedback.</span>
+                                          : 'Confirm score to generate feedback.'}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {/* STATE 2 — generating */}
+                                  {confirmed && fb?.status === 'generating' && (
+                                    <div className="flex items-center gap-2.5 py-4 px-3 border border-border rounded-md bg-muted/10 animate-pulse">
+                                      <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
+                                      <span className="text-[12px] text-muted-foreground">Generating feedback based on score {confirmed * 2}/10…</span>
+                                    </div>
+                                  )}
+
+                                  {/* STATE 3 — stale (auto-refreshing, no edit) */}
+                                  {confirmed && fb?.status === 'stale' && (
+                                    <div className="flex items-center gap-2.5 py-4 px-3 border border-amber-200 rounded-md bg-amber-50/60 animate-pulse">
+                                      <RotateCcw className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                      <span className="text-[12px] text-amber-700">Score updated — refreshing feedback…</span>
+                                    </div>
+                                  )}
+
+                                  {/* STATE 3b — stale + manually edited: offer choice */}
+                                  {confirmed && fb?.status === 'stale_edited' && staleEditGuard[cid] && (
+                                    <div className="border border-amber-200 rounded-md bg-amber-50/60 overflow-hidden mb-2">
+                                      <div className="px-3 pt-3 pb-2">
+                                        <p className="text-[12px] font-semibold text-amber-800 mb-1">Score changed after manual edit</p>
+                                        <p className="text-[11px] text-amber-700/80 leading-snug">Refresh feedback to match the new score, or keep your edited version.</p>
+                                      </div>
+                                      <div className="flex border-t border-amber-200">
+                                        <button
+                                          onClick={() => {
+                                            const lv = professorLevel ?? confirmedScores[cid];
+                                            setStaleEditGuard(prev => ({ ...prev, [cid]: false }));
+                                            setFeedbackMap(prev => ({ ...prev, [cid]: { ...fb, status: 'stale' } }));
+                                            setTimeout(() => {
+                                              const text = generateFeedbackText(activeCriterion.name, lv, activeCriterion.reasoning, activeCriterion.evidence);
+                                              setFeedbackMap(prev => ({ ...prev, [cid]: { text, score: lv, status: 'ready', isEdited: false, updatedAt: Date.now() } }));
+                                            }, 280);
+                                          }}
+                                          className="flex-1 py-1.5 text-[11px] font-semibold text-amber-800 hover:bg-amber-100 transition-colors bg-transparent border-none cursor-pointer font-sans border-r border-amber-200"
+                                        >Refresh to match score</button>
+                                        <button
+                                          onClick={() => {
+                                            setStaleEditGuard(prev => ({ ...prev, [cid]: false }));
+                                            setFeedbackMap(prev => ({ ...prev, [cid]: { ...fb, status: 'ready' } }));
+                                          }}
+                                          className="flex-1 py-1.5 text-[11px] font-medium text-amber-700/70 hover:bg-amber-100 transition-colors bg-transparent border-none cursor-pointer font-sans"
+                                        >Keep edited version</button>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* STATE 4 — feedback ready (editable textarea) */}
+                                  {confirmed && (fb?.status === 'ready' || (fb?.status === 'stale_edited' && !staleEditGuard[cid])) && (
+                                    <>
+                                      <textarea
+                                        value={fb.text}
+                                        onChange={e => setFeedbackMap(prev => ({ ...prev, [cid]: { ...fb, text: e.target.value, isEdited: true } }))}
+                                        rows={4}
+                                        className="w-full text-[13px] leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[90px] transition-colors"
+                                      />
+                                      <TrustBadge />
+                                      <button
+                                        onClick={() => {
+                                          setFeedbackMap(prev => ({ ...prev, [cid]: { ...fb, status: 'generating' } }));
+                                          setTimeout(() => {
+                                            const text = generateFeedbackText(activeCriterion.name, confirmed, activeCriterion.reasoning, activeCriterion.evidence);
+                                            setFeedbackMap(prev => ({ ...prev, [cid]: { text, score: confirmed, status: 'ready', isEdited: false, updatedAt: Date.now() } }));
+                                          }, 150);
+                                        }}
+                                        className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground/60 hover:text-primary transition-colors bg-transparent border-none cursor-pointer font-sans p-0"
+                                      >
+                                        <RotateCcw className="w-3 h-3" /> Regenerate
+                                      </button>
+                                    </>
+                                  )}
+
+                                  {/* Confirm button — only shown when picker has selection but score not confirmed, or score changed */}
+                                  {pending && pending !== confirmed && !staleEditGuard[cid] && fb?.status !== 'stale' && fb?.status !== 'stale_edited' && (
+                                    <button
+                                      onClick={() => confirmScoreAndGenerateFeedback(cid, pending, activeCriterion)}
+                                      className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 text-[12px] font-semibold text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors cursor-pointer font-sans"
+                                    >
+                                      <Sparkles className="w-3 h-3" /> Confirm score & generate feedback
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
 
