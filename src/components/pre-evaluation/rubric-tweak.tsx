@@ -92,7 +92,7 @@ export function RubricTweak() {
       <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 pt-6 px-4">
         <div className="flex items-center justify-between border-b border-border/10 pb-6 sticky top-0 z-50 bg-background/80 backdrop-blur-md -mx-4 px-4 pt-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 border border-border/20 shadow-none" onClick={prevStep}>
+            <Button variant="ghost" size="icon" onClick={prevStep}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="space-y-0">
@@ -188,7 +188,6 @@ export function RubricTweak() {
                           levelLabel={level}
                           currentPoints={rubric[0]?.levels.find(l => l.label === level)?.points ?? 0}
                           onChange={(val) => {
-                            // apply to all criteria's matching level (keeps grade structure consistent)
                             for (const c of rubric) updateCriterionLevel(c.id, level, { points: val })
                           }}
                         />

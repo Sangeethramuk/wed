@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Lock,
   Unlock,
   Timer,
@@ -25,7 +26,26 @@ import {
   ShieldAlert,
   Wifi,
   AlertTriangle,
+  Plus,
+  X,
 } from "lucide-react"
+
+type MappedEvidence = {
+  id: string
+  text: string
+  paperId: string
+  criterionId: string
+}
+
+type TextSelectionMode = {
+  active: boolean
+  criterionId: string | null
+}
+
+const newEvidenceId = () =>
+  (typeof crypto !== "undefined" && "randomUUID" in crypto)
+    ? crypto.randomUUID()
+    : `ev-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
 const MOCK_MANUSCRIPT_CONTENT: Record<string, string[]> = {
   c1: [
@@ -47,9 +67,9 @@ const MOCK_MANUSCRIPT_CONTENT: Record<string, string[]> = {
 }
 
 const CATEGORY_CONFIG = {
-  high_confidence: { dot: "bg-green-500", badge: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20", icon: ShieldAlert },
-  ocr_issue:       { dot: "bg-amber-500", badge: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20", icon: Wifi },
-  complex_case:    { dot: "bg-red-500",   badge: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20",     icon: AlertTriangle },
+  high_confidence: { dot: "bg-[color:var(--status-success)]", badge: "bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/20", icon: ShieldAlert },
+  ocr_issue:       { dot: "bg-[color:var(--status-warning)]", badge: "bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/20", icon: Wifi },
+  complex_case:    { dot: "bg-[color:var(--status-error)]",   badge: "bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] border-[color:var(--status-error)]/20",     icon: AlertTriangle },
 }
 
 export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
@@ -62,6 +82,10 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
   const [reasons, setReasons] = useState<Record<string, string>>({})
   const [feedbacks, setFeedbacks] = useState<Record<string, string>>({})
   const [accordionOpen, setAccordionOpen] = useState<Record<string, boolean>>({})
+  const [textSelectionMode, setTextSelectionMode] = useState<TextSelectionMode>({ active: false, criterionId: null })
+  const [mappedEvidence, setMappedEvidence] = useState<MappedEvidence[]>([])
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null)
   const manuscriptRef = useRef<HTMLDivElement>(null)
 
   const papers    = cal?.papers ?? []
@@ -87,15 +111,60 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
   const activeScore = paperScores.find(s => s.criterionId === activeCriterion?.id)?.instructorLevel ?? 0
   const toggleAccordion = (key: string) => setAccordionOpen(prev => ({ ...prev, [key]: !prev[key] }))
 
-  // Reset gates when switching papers
+  // Reset gates + ephemeral UI when switching papers.
+  // mappedEvidence is NOT reset — keyed by paperId+criterionId and filtered at render.
   useEffect(() => {
     setInspectionTime(0)
     setHasScrolledToBottom(false)
     setActiveCriterionIdx(0)
+    setTextSelectionMode({ active: false, criterionId: null })
+    setPickerOpen(false)
+    setSelection(null)
     if (manuscriptRef.current) manuscriptRef.current.scrollTop = 0
     const interval = setInterval(() => setInspectionTime(t => t + 1), 1000)
     return () => clearInterval(interval)
   }, [activePaperId])
+
+  const handleManuscriptMouseUp = () => {
+    if (!activePaperId) return
+    const sel = window.getSelection()
+    if (!sel) return
+    const raw = sel.toString()
+    const text = raw.trim().replace(/\s+/g, " ")
+    if (!text) { setSelection(null); return }
+    const range = sel.getRangeAt(0)
+    const rect = range.getBoundingClientRect()
+    setSelection({ text, x: rect.left + rect.width / 2, y: rect.top })
+  }
+
+  const linkEvidenceToCriterion = (criterionId: string) => {
+    if (!selection || !activePaperId) return
+    setMappedEvidence(prev => [...prev, { id: newEvidenceId(), text: selection.text, paperId: activePaperId, criterionId }])
+    window.getSelection()?.removeAllRanges()
+    setSelection(null)
+    setTextSelectionMode({ active: false, criterionId: null })
+    setPickerOpen(false)
+  }
+
+  const dismissSelection = () => {
+    window.getSelection()?.removeAllRanges()
+    setSelection(null)
+  }
+
+  const enterSelectionMode = (criterionId: string) => {
+    setTextSelectionMode({ active: true, criterionId })
+    setPickerOpen(false)
+  }
+
+  const cancelSelectionMode = () => setTextSelectionMode({ active: false, criterionId: null })
+
+  const removeEvidence = (id: string) => setMappedEvidence(prev => prev.filter(e => e.id !== id))
+
+  const criterionLabel = (criterionId: string | null) => {
+    if (!criterionId) return ""
+    const c = criteria.find(x => x.id === criterionId)
+    return c ? `${c.id.toUpperCase()} · ${c.name}` : criterionId.toUpperCase()
+  }
 
   const handleScroll = () => {
     const el = manuscriptRef.current
@@ -132,10 +201,10 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
             <div className="flex flex-col h-full border-r border-border">
               <div className="p-4 border-b border-border space-y-4 shrink-0">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground/80">
+                  <h2 className="eyebrow text-muted-foreground/80">
                     Blind Queue
                   </h2>
-                  <Badge variant="outline" className="rounded-full bg-background border-border text-[9px]">
+                  <Badge variant="outline" className="rounded-full bg-background border-border text-xs">
                     {totalGradedPapers}/{papers.length}
                   </Badge>
                 </div>
@@ -159,23 +228,23 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         onClick={() => setActiveCalibrationPaper(assignmentId, paper.paperId)}
                         className={`w-full flex items-center justify-between p-3 rounded-xl transition-all cursor-pointer text-left text-sm ${
                           isActive
-                            ? "bg-white text-foreground shadow-xl border border-border ring-1 ring-primary/20 z-10"
+                            ? "bg-background text-foreground shadow-xl border border-border ring-1 ring-primary/20 z-10"
                             : "hover:bg-accent/40 text-muted-foreground border border-transparent"
                         }`}
                       >
                         <div className="flex items-center gap-2.5 flex-1 min-w-0">
                           <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${catConfig.dot} ${isActive ? 'shadow-[0_0_8px_rgba(var(--primary),0.4)]' : ''}`} />
                           <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className={`font-bold tracking-tight text-[11px] uppercase tracking-widest truncate ${isActive ? "text-primary" : "text-foreground/70"}`}>
+                            <span className={`eyebrow tracking-tight truncate ${isActive ? "text-primary" : "text-foreground/70"}`}>
                               {paper.anonymizedLabel}
                             </span>
-                            <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest tabular-nums">
+                            <span className="eyebrow text-muted-foreground/40 tabular-nums">
                               Paper {idx + 1}
                             </span>
                           </div>
                           {isActive && <Sparkles className="h-2.5 w-2.5 text-primary shrink-0 ml-1" />}
                         </div>
-                        {isGraded && <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />}
+                        {isGraded && <CheckCircle2 className="h-3.5 w-3.5 text-[color:var(--status-success)] shrink-0" />}
                       </div>
                     )
                   })}
@@ -194,38 +263,38 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60 mb-0.5">
+                      <span className="eyebrow text-primary/60 mb-0.5">
                         Blind Manuscript
                       </span>
-                      <h2 className="text-sm font-black tracking-tight text-foreground uppercase">
+                      <h2 className="text-sm font-semibold tracking-tight text-foreground">
                         {currentPaper.anonymizedLabel}
                       </h2>
                     </div>
                     <Separator orientation="vertical" className="h-6 bg-border mx-2" />
-                    <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
+                    <span className="eyebrow text-muted-foreground/40">
                       Paper {currentPaperIndex + 1} of {papers.length}
                     </span>
                   </div>
 
                   {/* Engagement gates strip */}
                   <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3 px-5 py-2 bg-accent/40 rounded-full border border-border/50 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 transition-all cursor-default">
+                    <div className="eyebrow flex items-center gap-3 px-5 py-2 bg-accent/40 rounded-full border border-border/50 text-muted-foreground/60 transition-all cursor-default">
                       <Tooltip>
-                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${hasScrolledToBottom ? "text-green-500" : ""}`} />}>
+                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${hasScrolledToBottom ? "text-[color:var(--status-success)]" : ""}`} />}>
                           {hasScrolledToBottom ? <CheckCircle2 className="h-3 w-3" /> : "○"} Read
                         </TooltipTrigger>
                         <TooltipContent>Scroll to the bottom of the manuscript to unlock</TooltipContent>
                       </Tooltip>
                       <Separator orientation="vertical" className="h-3 bg-border" />
                       <Tooltip>
-                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${inspectionTime >= 3 ? "text-green-500" : ""}`} />}>
+                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${inspectionTime >= 3 ? "text-[color:var(--status-success)]" : ""}`} />}>
                           <Timer className="h-3 w-3" /> {Math.min(inspectionTime, 3)}s/3s
                         </TooltipTrigger>
                         <TooltipContent>Spend at least 3 seconds reviewing the paper</TooltipContent>
                       </Tooltip>
                       <Separator orientation="vertical" className="h-3 bg-border" />
                       <Tooltip>
-                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${isAllGraded ? "text-green-500" : ""}`} />}>
+                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${isAllGraded ? "text-[color:var(--status-success)]" : ""}`} />}>
                           {isAllGraded ? <CheckCircle2 className="h-3 w-3" /> : "○"} Scored
                         </TooltipTrigger>
                         <TooltipContent>Grade all {criteria.length} criteria to unlock</TooltipContent>
@@ -239,15 +308,16 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
               <div
                 ref={manuscriptRef}
                 onScroll={handleScroll}
-                className="flex-1 overflow-y-auto bg-[#F9F8F4] scroll-smooth p-10 lg:p-24"
+                onMouseUp={handleManuscriptMouseUp}
+                className={`flex-1 overflow-y-auto bg-muted/30 scroll-smooth p-10 lg:p-24 ${textSelectionMode.active ? "cursor-crosshair" : ""}`}
               >
                 <div 
-                  className="bg-white shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-[#E6E1D6]/50 mx-auto transition-all duration-300 relative group/page cursor-text flex flex-col"
+                  className="bg-background shadow-sm border border-border/50 mx-auto transition-all duration-300 relative group/page cursor-text flex flex-col"
                   style={{ width: "100%", maxWidth: "800px", minHeight: "100%" }}
                 >
                   <div className="absolute top-8 left-8 flex flex-col items-start gap-1">
-                    <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary/40 group-hover/page:text-primary transition-colors">Blind Calibration</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[#E6E1D6] group-hover/page:text-slate-400 transition-colors">Digital Manuscript</span>
+                    <span className="eyebrow text-primary/40 group-hover/page:text-primary transition-colors">Blind Calibration</span>
+                    <span className="eyebrow text-muted-foreground/30 group-hover/page:text-muted-foreground/60 transition-colors">Digital Manuscript</span>
                   </div>
 
                   <div className="p-16 lg:p-24 h-full font-serif overflow-hidden flex-1">
@@ -256,14 +326,14 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         <div className="flex items-center justify-between mt-8">
                           <h1 className="text-4xl font-serif text-foreground leading-tight italic tracking-tight underline decoration-primary/20">Software Engineering — Phase 2</h1>
                         </div>
-                        <p className="text-xs text-slate-400 italic">Identity anonymized for calibration protocol</p>
+                        <p className="text-xs text-muted-foreground/70 italic">Identity anonymized for calibration protocol</p>
                       </div>
 
                       <div className="space-y-12">
                         {criteria.map((criterion, idx) => (
                           <div key={criterion.id} className="space-y-6">
-                            <h2 className="text-xl font-bold italic border-l-2 border-amber-500 pl-4 tracking-tight text-slate-800 flex items-center gap-3">
-                              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-500/80 not-italic shrink-0">
+                            <h2 className="text-xl font-bold italic border-l-2 border-[color:var(--status-warning)] pl-4 tracking-tight text-foreground flex items-center gap-3">
+                              <span className="eyebrow text-[color:var(--status-warning)]/80 not-italic shrink-0">
                                 {criterion.id.toUpperCase()}
                               </span>
                               {criterion.name}
@@ -273,10 +343,10 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                                 "The student's response for this criterion demonstrates awareness of core concepts with moderate elaboration. Evidence of applied understanding is present though further depth would strengthen the argument.",
                                 "Supporting examples are provided with references to course material. The logical flow is maintained throughout this section with minor inconsistencies in the latter portion.",
                               ]).map((para, i) => (
-                                <p key={i} className="font-serif italic font-medium text-slate-700">{para}</p>
+                                <p key={i} className="font-serif italic font-medium text-muted-foreground">{para}</p>
                               ))}
                             </div>
-                            {idx < criteria.length - 1 && <Separator className="mt-8 opacity-20 border-[#E6E1D6]" />}
+                            {idx < criteria.length - 1 && <Separator className="mt-8 opacity-20 border-border/50" />}
                           </div>
                         ))}
                       </div>
@@ -285,7 +355,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         <div className="pt-20 pb-8 shrink-0 w-full flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity">
                             <div className="flex flex-col items-center gap-4">
                               <CheckCircle2 className="h-10 w-10 text-primary" />
-                              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground">End of Submission</span>
+                              <span className="eyebrow text-muted-foreground">End of Submission</span>
                             </div>
                         </div>
                       )}
@@ -301,143 +371,202 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
 
           {/* ── Right Panel: Rubric Evaluation (double-blind stepper) ── */}
           <ResizablePanel defaultSize={30} minSize={20}>
-            <div className="h-full flex flex-col border-l border-border bg-background">
+            <div className="h-full flex flex-col border-l border-border bg-background overflow-hidden">
 
-              {/* Sticky nav */}
-              <div className="bg-background border-b border-border px-4 pt-3 pb-0 shrink-0">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[13px] font-semibold text-foreground">Rubric evaluation</span>
-                  <span className="text-[11px] font-mono text-muted-foreground/60 bg-muted/40 border border-border/60 rounded-full px-2 py-0.5">
+              {/* Sticky header — matches grading sidebar */}
+              <div className="p-4 border-b border-border bg-background shrink-0 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-semibold tracking-tight text-foreground">Rubric evaluation</h2>
+                  <Badge variant="outline" className="rounded-full text-xs font-semibold px-2 h-5 bg-background">
                     {gradedCriteria.length} of {criteria.length} scored
-                  </span>
+                  </Badge>
                 </div>
-                <div className="h-[3px] bg-muted/30 rounded-full mb-3 overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
-                    style={{ width: `${(gradedCriteria.length / Math.max(criteria.length, 1)) * 100}%` }}
-                  />
-                </div>
-                {/* Stepper */}
-                <div className="flex">
+                <Progress value={(gradedCriteria.length / Math.max(criteria.length, 1)) * 100} className="h-1" />
+                {/* Stepper — C1/C2/C3 dots-with-label, matches grading */}
+                <div className="flex gap-1">
                   {criteria.map((c, i) => {
                     const sc = paperScores.find(s => s.criterionId === c.id)
                     const isDone = (sc?.instructorLevel ?? 0) > 0
                     const isActive = i === activeCriterionIdx
                     return (
-                      <button
+                      <Button
                         key={c.id}
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setActiveCriterionIdx(i)}
-                        className={`flex-1 flex flex-col items-center gap-1 px-1 pt-1.5 pb-2.5 border-b-2 transition-all cursor-pointer bg-transparent font-sans ${
-                          isActive ? 'border-primary' : 'border-transparent hover:bg-muted/20'
-                        }`}
+                        className="flex-1 h-auto flex-col gap-1 py-1"
                       >
-                        <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center text-[10px] font-semibold transition-all ${
-                          isDone
-                            ? 'bg-primary border-primary text-primary-foreground'
-                            : isActive
-                            ? 'border-[1.5px] border-primary bg-primary/10 text-primary'
-                            : 'border border-border/60 bg-background text-muted-foreground/50'
+                        <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
+                          isDone ? 'bg-foreground border-foreground' :
+                          isActive ? 'border-primary bg-background' :
+                          'border-border bg-background'
                         }`}>
-                          {isDone ? '✓' : i + 1}
+                          {isActive && !isDone && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
                         </div>
-                        <span className={`text-[10px] font-medium text-center leading-tight max-w-[70px] ${
-                          isDone ? 'text-muted-foreground' : isActive ? 'text-primary' : 'text-muted-foreground/50'
-                        }`}>{c.name}</span>
-                      </button>
+                        <span className={`text-xs font-semibold transition-colors ${isActive ? 'text-foreground' : 'text-muted-foreground/50'}`}>
+                          {c.id.toUpperCase()}
+                        </span>
+                      </Button>
                     )
                   })}
                 </div>
               </div>
 
               {/* Scrollable body */}
-              <ScrollArea className="flex-1">
-                <div className="p-3 space-y-2.5">
+              <ScrollArea className="flex-1 min-h-0">
+                <div className="p-4 space-y-3">
                   {activeCriterion && (
                     <>
-                      {/* Main criterion card */}
-                      <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
-                        <div className="p-3.5 space-y-3.5">
+                      {/* Main criterion card — matches grading card treatment */}
+                      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                        <div className="p-4 space-y-4">
                           <div>
-                            <h4 className="text-[15px] font-semibold text-foreground leading-snug">{activeCriterion.name}</h4>
-                            <p className="text-[12px] text-muted-foreground leading-relaxed mt-1">
+                            <h3 className="text-sm font-semibold text-foreground leading-tight">{activeCriterion.name}</h3>
+                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                               {activeCriterion.levelLabels.join(' → ')}
                             </p>
                           </div>
 
-                          {/* Score */}
-                          <div>
-                            <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-2">Your score</span>
+                          {/* Score row — single-line layout matching grading pattern */}
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                              <span className="eyebrow text-muted-foreground">Your score</span>
+                              {activeScore > 0 && (
+                                <div className="flex items-baseline gap-1">
+                                  <span className="text-2xl font-bold text-foreground tabular-nums">{activeScore}</span>
+                                  <span className="text-sm text-muted-foreground">/5</span>
+                                </div>
+                              )}
+                            </div>
                             <div className="flex gap-1.5">
                               {[1, 2, 3, 4, 5].map(v => (
-                                <button
+                                <Button
                                   key={v}
+                                  variant={activeScore === v ? "default" : "outline"}
+                                  size="sm"
                                   onClick={() => handleLevelSelect(activeCriterion.id, v)}
-                                  className={`w-[38px] h-[38px] rounded-md border text-sm font-medium cursor-pointer transition-all font-sans ${
-                                    activeScore === v
-                                      ? 'bg-foreground border-foreground text-background shadow-sm'
-                                      : 'bg-background border-border/70 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5'
-                                  }`}
+                                  className="flex-1"
                                 >
                                   {v}
-                                </button>
+                                </Button>
                               ))}
                             </div>
                           </div>
 
                           {/* Reason (shown once score is selected) */}
                           {activeScore > 0 && (
-                            <div>
-                              <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-1.5">Reason for this score</span>
+                            <div className="space-y-1.5">
+                              <span className="eyebrow text-muted-foreground">Reason for this score</span>
                               <textarea
                                 value={reasons[activeCriterion.id] ?? ''}
                                 onChange={e => setReasons(r => ({ ...r, [activeCriterion.id]: e.target.value }))}
                                 rows={3}
                                 placeholder="Explain your reasoning for this score…"
-                                className="w-full text-[13px] leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[72px] transition-colors"
+                                className="w-full text-sm leading-relaxed text-foreground bg-background border border-border rounded-md p-2.5 resize-y focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary font-sans min-h-[72px] transition-colors"
                               />
                             </div>
                           )}
 
                           {/* Feedback */}
-                          <div>
-                            <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground/60 block mb-1.5">Feedback</span>
+                          <div className="space-y-1.5">
+                            <span className="eyebrow text-muted-foreground">Feedback</span>
                             <textarea
                               value={feedbacks[activeCriterion.id] ?? ''}
                               onChange={e => setFeedbacks(f => ({ ...f, [activeCriterion.id]: e.target.value }))}
                               rows={4}
                               placeholder="Write feedback for this criterion…"
-                              className="w-full text-[13px] leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[90px] transition-colors"
+                              className="w-full text-sm leading-relaxed text-foreground bg-background border border-border rounded-md p-2.5 resize-y focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary font-sans min-h-[90px] transition-colors"
                             />
                           </div>
                         </div>
                       </div>
 
-                      {/* Evidence accordion */}
-                      <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
-                        <button
-                          onClick={() => toggleAccordion('evidence')}
-                          className="w-full flex items-center justify-between px-3.5 py-2.5 text-[13px] font-medium text-foreground hover:bg-muted/20 transition-colors text-left gap-2 bg-transparent border-none cursor-pointer font-sans"
-                        >
-                          <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 rounded-[5px] bg-primary/10 flex items-center justify-center shrink-0 text-primary">
-                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h5M2 9h6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-                            </div>
-                            Evidence (0 linked)
+                      {/* Evidence accordion — same card treatment */}
+                      {(() => {
+                        const pointEvidence = mappedEvidence.filter(e => e.paperId === activePaperId && e.criterionId === activeCriterion.id)
+                        const isModeActiveHere = textSelectionMode.active && textSelectionMode.criterionId === activeCriterion.id
+                        return (
+                          <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                            <Button
+                              variant="ghost"
+                              onClick={() => toggleAccordion('evidence')}
+                              className="w-full justify-between"
+                            >
+                              <div className="flex items-center gap-2">
+                                <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center shrink-0 text-primary">
+                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h5M2 9h6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                                </div>
+                                Evidence ({pointEvidence.length} linked)
+                              </div>
+                              <ChevronRight className={`h-4 w-4 text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen.evidence ? 'rotate-90' : ''}`} />
+                            </Button>
+                            {accordionOpen.evidence && (
+                              <div className="border-t border-border p-3.5 space-y-3">
+                                {pointEvidence.length > 0 ? (
+                                  <div className="space-y-1.5">
+                                    {pointEvidence.map((ev, i) => (
+                                      <div key={ev.id} className="flex items-start gap-2 p-2 rounded-md bg-muted/20 border border-border/60 group/ev">
+                                        <span className="text-xs font-mono font-bold text-primary shrink-0 pt-0.5">E{i + 1}</span>
+                                        <p className="text-xs font-serif italic text-foreground/70 flex-1 leading-relaxed">
+                                          &ldquo;{ev.text.length > 60 ? ev.text.slice(0, 60) + '…' : ev.text}&rdquo;
+                                        </p>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon-xs"
+                                          onClick={() => removeEvidence(ev.id)}
+                                          className="opacity-0 group-hover/ev:opacity-100 transition-opacity shrink-0"
+                                          aria-label="Remove evidence"
+                                        >
+                                          <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-xs text-muted-foreground bg-muted/10 border border-dashed border-border rounded-md p-2.5">
+                                    No evidence linked yet — highlight any text in the manuscript to see a link popover.
+                                  </div>
+                                )}
+                                {isModeActiveHere || (textSelectionMode.active && textSelectionMode.criterionId !== activeCriterion.id) ? (
+                                  <div className="flex items-center justify-between gap-2 text-xs text-primary bg-primary/5 border border-primary/30 rounded-md p-2.5">
+                                    <span className="leading-snug">
+                                      Selecting for <span className="font-semibold">{criterionLabel(textSelectionMode.criterionId)}</span> — highlight text in the manuscript.
+                                    </span>
+                                    <Button variant="ghost" size="sm" onClick={cancelSelectionMode} className="shrink-0 text-primary hover:text-primary">
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                ) : pickerOpen ? (
+                                  <div className="space-y-2 p-2.5 rounded-md border border-border bg-muted/10">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-xs font-semibold text-foreground">Attach evidence to</span>
+                                      <Button variant="ghost" size="sm" onClick={() => setPickerOpen(false)} className="h-6 px-2 text-muted-foreground">Cancel</Button>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {criteria.map(c => (
+                                        <Button key={c.id} variant="outline" size="sm" onClick={() => enterSelectionMode(c.id)}>
+                                          <span className="font-mono font-semibold mr-1">{c.id.toUpperCase()}</span>
+                                          <span className="truncate max-w-[140px]">{c.name}</span>
+                                        </Button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex gap-1">
+                                    <Button variant="outline" size="sm" onClick={() => enterSelectionMode(activeCriterion.id)} className="flex-1 border-dashed justify-start">
+                                      <Plus className="h-3 w-3" />
+                                      <span className="truncate">Add evidence to {activeCriterion.id.toUpperCase()} · {activeCriterion.name}</span>
+                                    </Button>
+                                    <Button variant="ghost" size="icon-sm" onClick={() => setPickerOpen(true)} aria-label="Change evidence target criterion">
+                                      <ChevronDown className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
-                          <ChevronRight className={`h-4 w-4 text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen.evidence ? 'rotate-90' : ''}`} />
-                        </button>
-                        {accordionOpen.evidence && (
-                          <div className="border-t border-border p-3.5 space-y-2">
-                            <div className="text-[12px] text-primary bg-primary/5 border border-dashed border-primary/30 rounded-md p-2.5">
-                              No evidence linked yet — select text in the left panel to add evidence
-                            </div>
-                            <button className="w-full flex items-center gap-1.5 text-[12px] text-primary font-medium border border-dashed border-primary/30 rounded-md px-3 py-1.5 hover:bg-primary/5 transition-all bg-transparent cursor-pointer font-sans">
-                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                              Add evidence — select text in left panel
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                        )
+                      })()}
                     </>
                   )}
                 </div>
@@ -446,52 +575,50 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
               {/* Footer */}
               <div className="px-4 py-3 border-t border-border bg-background shrink-0 space-y-2">
                 {isLastCriterion && (
-                  <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 pb-1">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground pb-1">
                     <span>Paper {currentPaperIndex + 1} of {papers.length}</span>
                     <span>{totalGradedPapers} complete</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between gap-2">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setActiveCriterionIdx(i => Math.max(0, i - 1))}
                     disabled={activeCriterionIdx === 0}
-                    className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium text-muted-foreground rounded-md hover:bg-muted/30 transition-colors disabled:opacity-30 bg-transparent border-none cursor-pointer font-sans"
                   >
-                    <ChevronLeft className="h-3.5 w-3.5" /> Previous
-                  </button>
+                    <ChevronLeft /> Previous
+                  </Button>
 
                   <div className="flex items-center gap-1.5">
-                    <button className="px-3 py-1.5 text-[13px] font-medium text-foreground bg-muted/40 border border-border/60 rounded-md hover:bg-muted/60 transition-colors cursor-pointer font-sans">
+                    <Button variant="outline" size="sm">
                       Save
-                    </button>
+                    </Button>
 
                     {!isLastCriterion ? (
-                      <button
+                      <Button
+                        size="sm"
                         onClick={() => setActiveCriterionIdx(i => i + 1)}
-                        className="flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors cursor-pointer font-sans"
                       >
-                        Next criterion <ArrowRight className="h-3.5 w-3.5" />
-                      </button>
+                        Next criterion <ArrowRight />
+                      </Button>
                     ) : (
                       <Tooltip>
                         <TooltipTrigger render={<span className="inline-flex" />}>
-                          <button
+                          <Button
+                            size="sm"
+                            disabled={!isGateUnlocked}
                             onClick={isGateUnlocked ? handleNext : undefined}
-                            className={`flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors font-sans ${
-                              isGateUnlocked
-                                ? 'text-primary-foreground bg-primary hover:bg-primary/90 cursor-pointer'
-                                : 'opacity-40 text-primary-foreground bg-primary cursor-not-allowed'
-                            }`}
                           >
-                            {isGateUnlocked ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
-                            {isLastPaper ? 'View Delta' : 'Next Paper'}
-                            <ArrowRight className="h-3.5 w-3.5" />
-                          </button>
+                            {isGateUnlocked ? <Unlock /> : <Lock />}
+                            {isLastPaper ? 'View delta' : 'Next paper'}
+                            <ArrowRight />
+                          </Button>
                         </TooltipTrigger>
                         {!isGateUnlocked && (
                           <TooltipContent className="max-w-xs p-3 space-y-1 mb-2">
-                            <p className="font-bold text-xs uppercase tracking-widest text-primary">Protocol Gate Locked</p>
-                            <p className="text-[11px] italic text-muted-foreground">
+                            <p className="text-xs font-semibold text-foreground">Protocol gate locked</p>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
                               Scroll the manuscript, spend 3s reviewing, and score all {criteria.length} criteria.
                             </p>
                           </TooltipContent>
@@ -506,6 +633,78 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
 
         </ResizablePanelGroup>
       </div>
+
+      {selection && (() => {
+        const isPreselected = textSelectionMode.active && textSelectionMode.criterionId !== null
+        const presetCriterion = isPreselected ? criteria.find(c => c.id === textSelectionMode.criterionId) : null
+
+        if (isPreselected && presetCriterion) {
+          return (
+            <div
+              className="fixed z-[100] bg-card border border-primary/30 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-xl p-4 flex flex-col gap-3 w-80 backdrop-blur-md"
+              style={{ left: selection.x, top: selection.y, transform: "translate(-50%, -110%)" }}
+              onMouseDown={e => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-2">
+                <Plus className="h-3.5 w-3.5 text-primary" />
+                <span className="eyebrow text-primary">Link to {presetCriterion.id.toUpperCase()}</span>
+              </div>
+              <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+                <p className="text-xs font-serif italic text-foreground/70 leading-relaxed">
+                  &ldquo;{selection.text.length > 100 ? selection.text.slice(0, 100) + "…" : selection.text}&rdquo;
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Link this text as evidence for{" "}
+                <span className="font-semibold text-foreground">{presetCriterion.id.toUpperCase()} — {presetCriterion.name}</span>?
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={dismissSelection} className="flex-1">No, dismiss</Button>
+                <Button size="sm" onClick={() => linkEvidenceToCriterion(presetCriterion.id)} className="flex-1">Yes, link it</Button>
+              </div>
+            </div>
+          )
+        }
+
+        return (
+          <div
+            className="fixed z-[100] bg-card border border-border shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-xl p-3 flex flex-col gap-2 w-72 backdrop-blur-md"
+            style={{ left: selection.x, top: selection.y, transform: "translate(-50%, -110%)" }}
+            onMouseDown={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-2 pb-2 border-b border-border/60 mb-1">
+              <div className="flex items-center gap-2">
+                <Plus className="h-3.5 w-3.5 text-primary" />
+                <span className="eyebrow text-muted-foreground">Link evidence</span>
+              </div>
+              <span className="text-xs font-semibold text-muted-foreground tabular-nums">Paper {currentPaperIndex + 1}</span>
+            </div>
+            <div className="px-2 pb-1">
+              <p className="text-xs font-serif italic text-foreground/70 leading-relaxed line-clamp-2">
+                &ldquo;{selection.text.length > 100 ? selection.text.slice(0, 100) + "…" : selection.text}&rdquo;
+              </p>
+            </div>
+            <div className="flex flex-col gap-1 max-h-[300px] overflow-y-auto pr-1">
+              {criteria.map(c => (
+                <div
+                  key={c.id}
+                  role="button"
+                  onClick={() => linkEvidenceToCriterion(c.id)}
+                  className="w-full text-left p-2.5 rounded-lg hover:bg-primary/5 transition-all flex flex-col gap-0.5 group/btn cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold tracking-tight text-foreground group-hover/btn:text-primary transition-colors">{c.name}</span>
+                    <ArrowRight className="h-3 w-3 opacity-0 group-hover/btn:opacity-100 transition-all text-primary" />
+                  </div>
+                  <span className="eyebrow text-muted-foreground/60">Criterion {c.id.toUpperCase()}</span>
+                </div>
+              ))}
+            </div>
+            <Separator className="bg-border/50 my-1" />
+            <Button variant="ghost" size="sm" onClick={dismissSelection} className="w-full">Dismiss</Button>
+          </div>
+        )
+      })()}
     </TooltipProvider>
   )
 }

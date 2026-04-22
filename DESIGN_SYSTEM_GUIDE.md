@@ -1,304 +1,147 @@
 # Design System Guide
 
-## Overview
-This project uses shadcn/ui components with a **Multi-Theme System** supporting 4 distinct theme variants:
-
-1. ☀️ **Twitter Light** - Clean light theme with blue accents
-2. 🌙 **Twitter Dark** - Dark theme with blue accents  
-3. 💜 **Violet Bloom Light** - Warm light theme with violet accents
-4. 🔮 **Violet Bloom Dark** - Rich dark theme with violet accents
-
-All themes are accessible via the **Theme Switcher** (palette icon) in the dashboard header.
-
-### Theme Files
-- `src/lib/themes.ts` - Theme definitions and configurations
-- `src/components/multi-theme-provider.tsx` - Theme context provider
-- `src/components/theme-switcher.tsx` - Theme selector UI
-- `src/app/globals.css` - All 4 theme CSS variable definitions
+This repo implements the **EducAItors Design System** (sourced from the Claude Design handoff bundle, `educaitors-design-system`). Every color, font, and repeating component goes through tokens defined in one place so the product can be re-skinned or re-branded without touching screens.
 
 ---
 
-## Component Library
+## Where everything lives
 
-**Always use shadcn/ui components**. Never build custom components when shadcn equivalents exist.
-
-### Available Components
-
-**Layout Components:**
-- Card
-- Separator
-- Sheet
-- Sidebar
-- Skeleton
-
-**Interactive Components:**
-- Button
-- Avatar
-- Dropdown Menu
-- Tooltip
-- Input
-
-### Component Installation
-
-```bash
-# Add new shadcn components
-npx shadcn@latest add <component-name>
-
-# Example
-npx shadcn@latest add badge
-```
+| Concern | File | Purpose |
+|---|---|---|
+| CSS variables (colors, spacing, radius, shadows, tracking) | `src/app/globals.css` | Theme blocks for `violet-light` (aka `brand-light`), `violet-dark`, `twitter-light`, `twitter-dark`. Also semantic `--status-*` and `--category-*` tokens shared across themes. |
+| Editorial utility classes | `src/app/globals.css` (bottom) | `.eyebrow`, `.kicker`, `.ds-label`, `.tabular`, `.num-display` |
+| TypeScript token accessors | `src/lib/design-tokens.ts` | Maps semantic keys (`'success'`, `'high'`, `'Computer Science'`, …) to Tailwind classes that reference CSS variables. |
+| Theme definitions + default | `src/lib/themes.ts` | Theme list used by the switcher. Default is `violet-light` (Brand Light). |
+| DS primitives (badges, dots, stat numbers) | `src/components/ui/` | `status-badge.tsx`, `category-badge.tsx`, `color-dot.tsx`, `confidence-badge.tsx`, `stat-number.tsx` |
+| Lint enforcement | `eslint.config.mjs` | Flags hardcoded hex, named Tailwind hues, `uppercase`, `text-[Npx]`, inline color/font styles. |
 
 ---
 
-## Design Tokens
+## Themes
 
-### Violet Bloom Colors (oklch format)
+Four variants wired up, but **`violet-light` (Brand Light) is canonical**:
 
-| Token | Light | Dark | Usage |
-|-------|-------|------|-------|
-| `--background` | `oklch(0.9940 0 0)` | `oklch(0.2223 0.0060 271.1393)` | Page background |
-| `--foreground` | `oklch(0 0 0)` | `oklch(0.9551 0 0)` | Primary text |
-| `--primary` | `oklch(0.5393 0.2713 286.7462)` | `oklch(0.6132 0.2294 291.7437)` | Buttons, links, accent |
-| `--primary-foreground` | `oklch(1.0000 0 0)` | `oklch(1.0000 0 0)` | Text on primary |
-| `--secondary` | `oklch(0.9540 0.0063 255.4755)` | `oklch(0.2940 0.0130 272.9312)` | Secondary buttons |
-| `--secondary-foreground` | `oklch(0.1344 0 0)` | `oklch(0.9551 0 0)` | Text on secondary |
-| `--muted` | `oklch(0.9702 0 0)` | `oklch(0.2940 0.0130 272.9312)` | Background accents |
-| `--muted-foreground` | `oklch(0.4386 0 0)` | `oklch(0.7058 0 0)` | Subtle text |
-| `--accent` | `oklch(0.9393 0.0288 266.3680)` | `oklch(0.2795 0.0368 260.0310)` | Highlights, hover states |
-| `--accent-foreground` | `oklch(0.5445 0.1903 259.4848)` | `oklch(0.7857 0.1153 246.6596)` | Text on accent |
-| `--destructive` | `oklch(0.6290 0.1902 23.0704)` | `oklch(0.7106 0.1661 22.2162)` | Errors, alerts |
-| `--destructive-foreground` | `oklch(1.0000 0 0)` | `oklch(1.0000 0 0)` | Text on destructive |
-| `--border` | `oklch(0.9300 0.0094 286.2156)` | `oklch(0.3289 0.0092 268.3843)` | Borders, dividers |
-| `--input` | `oklch(0.9401 0 0)` | `oklch(0.3289 0.0092 268.3843)` | Input borders |
-| `--ring` | `oklch(0 0 0)` | `oklch(0.6132 0.2294 291.7437)` | Focus states |
-| `--card` | `oklch(0.9940 0 0)` | `oklch(0.2568 0.0076 274.6528)` | Card backgrounds |
-| `--card-foreground` | `oklch(0 0 0)` | `oklch(0.9551 0 0)` | Card text |
-| `--popover` | `oklch(0.9911 0 0)` | `oklch(0.2568 0.0076 274.6528)` | Popover backgrounds |
-| `--popover-foreground` | `oklch(0 0 0)` | `oklch(0.9551 0 0)` | Popover text |
+| Key | Label in UI | Primary | Font |
+|---|---|---|---|
+| `violet-light` | Brand Light | `#21508c` navy | Inter |
+| `violet-dark` | Violet Bloom Dark | violet | Inter |
+| `twitter-light` | Twitter Light | blue | Open Sans |
+| `twitter-dark` | Twitter Dark | blue | Open Sans |
 
-### Chart Colors
-
-| Token | Light | Dark | Usage |
-|-------|-------|------|-------|
-| `--chart-1` | `oklch(0.7459 0.1483 156.4499)` | `oklch(0.8003 0.1821 151.7110)` | Chart primary |
-| `--chart-2` | `oklch(0.5393 0.2713 286.7462)` | `oklch(0.6132 0.2294 291.7437)` | Chart secondary (violet) |
-| `--chart-3` | `oklch(0.7336 0.1758 50.5517)` | `oklch(0.8077 0.1035 19.5706)` | Chart tertiary |
-| `--chart-4` | `oklch(0.5828 0.1809 259.7276)` | `oklch(0.6691 0.1569 260.1063)` | Chart quaternary |
-| `--chart-5` | `oklch(0.5590 0 0)` | `oklch(0.7058 0 0)` | Chart neutral |
-
-### Sidebar Colors
-
-| Token | Light | Dark |
-|-------|-------|------|
-| `--sidebar` | `oklch(0.9777 0.0051 247.8763)` | `oklch(0.2011 0.0039 286.0396)` |
-| `--sidebar-foreground` | `oklch(0 0 0)` | `oklch(0.9551 0 0)` |
-| `--sidebar-primary` | `oklch(0 0 0)` | `oklch(0.6132 0.2294 291.7437)` |
-| `--sidebar-primary-foreground` | `oklch(1.0000 0 0)` | `oklch(1.0000 0 0)` |
-| `--sidebar-accent` | `oklch(0.9401 0 0)` | `oklch(0.2940 0.0130 272.9312)` |
-| `--sidebar-accent-foreground` | `oklch(0 0 0)` | `oklch(0.6132 0.2294 291.7437)` |
-| `--sidebar-border` | `oklch(0.9401 0 0)` | `oklch(0.3289 0.0092 268.3843)` |
-| `--sidebar-ring` | `oklch(0 0 0)` | `oklch(0.6132 0.2294 291.7437)` |
-
-### Typography
-
-```css
---font-sans: "Plus Jakarta Sans", sans-serif;
---font-mono: "IBM Plex Mono", monospace;
---font-serif: "Lora", serif;
-
-/* Tracking - Negative letter-spacing for modern look */
---tracking-normal: -0.025em;
---tracking-tight: -0.05em;
---tracking-tighter: -0.075em;
---tracking-wide: 0em;
---tracking-wider: 0.025em;
---tracking-widest: 0.075em;
-```
-
-### Spacing
-
-```css
-/* Base spacing unit - Slightly larger than standard */
---spacing: 0.27rem; /* ~4.3px */
-```
-
-Use Tailwind spacing classes:
-- `p-4` = ~17px
-- `gap-4` = ~17px
-- `space-y-4` = vertical ~17px gaps
-
-### Border Radius
-
-```css
---radius: 1.4rem; /* ~22px - More rounded aesthetic */
---radius-sm: calc(var(--radius) * 0.6);  /* ~13px */
---radius-md: calc(var(--radius) * 0.8);  /* ~18px */
---radius-lg: var(--radius);              /* ~22px */
---radius-xl: calc(var(--radius) * 1.4);  /* ~31px */
---radius-2xl: calc(var(--radius) * 1.8); /* ~40px */
-```
-
-### Shadows
-
-```css
---shadow-color: hsl(0 0% 0%);
---shadow-opacity: 0.16;
---shadow-blur: 3px;
---shadow-offset-y: 2px;
-
---shadow-2xs: 0px 2px 3px 0px hsl(0 0% 0% / 0.08);
---shadow-xs: 0px 2px 3px 0px hsl(0 0% 0% / 0.08);
---shadow-sm: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 1px 2px -1px hsl(0 0% 0% / 0.16);
---shadow: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 1px 2px -1px hsl(0 0% 0% / 0.16);
---shadow-md: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 2px 4px -1px hsl(0 0% 0% / 0.16);
---shadow-lg: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 4px 6px -1px hsl(0 0% 0% / 0.16);
---shadow-xl: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 8px 10px -1px hsl(0 0% 0% / 0.16);
---shadow-2xl: 0px 2px 3px 0px hsl(0 0% 0% / 0.40);
-```
+`<html data-theme="violet-light">` is set in `src/app/layout.tsx` so SSR renders brand colors from the first byte.
 
 ---
 
-## Theme Support
+## Typography
 
-### Modes
-- **Light**: Near-white backgrounds (`oklch(0.9940 0 0)`), vibrant violet primary
-- **Dark**: Deep slate backgrounds (`oklch(0.2223 0.0060 271.1393)`), soft violet primary
-- **System**: Auto-detects based on OS preference
+- **Inter** is the single font family for all four themes' `--font-sans`, `--font-serif`, `--font-mono`.
+- Loaded via `next/font/google` in `src/app/layout.tsx`. Weights 300–700.
+- For numbers/IDs/counts, apply the `.tabular` class (`font-variant-numeric: tabular-nums`). Don't reach for a monospace font.
+- For editorial eyebrows/kickers, use the `.eyebrow` or `.kicker` class — 12px, 600 weight, moderate tracking, sentence case. **No UPPERCASE anywhere in the product.**
+- For big stat numbers, use `<StatNumber value={…} />` or the `.num-display` class.
 
-### Implementation
+---
 
-Always use CSS variables, never hardcoded colors:
+## Color
+
+### Semantic tokens (defined in `globals.css`, consumed via `design-tokens.ts`)
+
+| Token | Usage |
+|---|---|
+| `--primary`, `--primary-foreground` | Primary CTAs, links, active states |
+| `--background`, `--foreground` | Page surface + body text |
+| `--card`, `--card-foreground` | Card surface + card text |
+| `--muted`, `--muted-foreground` | Subtle fills + secondary text |
+| `--accent`, `--accent-foreground` | Hover highlights |
+| `--border`, `--input` | Hairlines and input borders |
+| `--ring` | Focus rings |
+| `--status-success` / `--status-success-bg` | Completion, positive state |
+| `--status-warning` / `--status-warning-bg` | In-progress, attention |
+| `--status-error` / `--status-error-bg` | Errors, overdue |
+| `--status-info` / `--status-info-bg` | Informational |
+| `--category-1` … `--category-6` (+ `-bg`) | Department/type hues. Never pick a raw Tailwind hue — use these slots. |
+
+### How to pick a color (consumer side)
 
 ```tsx
-// ✅ CORRECT
-<div className="bg-background text-foreground">
-  <Button className="bg-primary text-primary-foreground">
+import { statusStyles, categoryStyles, confidenceStyles } from "@/lib/design-tokens";
 
-// ❌ WRONG
-<div className="bg-white text-black">
-  <Button className="bg-purple-600 text-white">
+// Simple surface
+<div className="bg-card text-foreground ring-1 ring-foreground/10 rounded-xl p-4">…</div>
+
+// Status
+<span className={cn("rounded-full px-2 py-0.5", statusStyles.success.bg, statusStyles.success.text)}>
+  Complete
+</span>
+
+// Category
+<span className={cn("rounded-full px-2 py-0.5", categoryStyles["Computer Science"].bg, categoryStyles["Computer Science"].text)}>
+  CS
+</span>
+
+// Confidence
+<span className={cn("rounded-full px-2 py-0.5", confidenceStyles.high.bg, confidenceStyles.high.text)}>
+  High
+</span>
 ```
 
-### Container Component Pattern
-
-Wrap content in containers with semantic classes:
+**Or** use the DS primitives that wrap this:
 
 ```tsx
-<Card className="bg-card text-card-foreground shadow-lg">
-  <CardContent>
-    <p className="text-muted-foreground">Subtitle text</p>
-  </CardContent>
-</Card>
+import { StatusBadge } from "@/components/ui/status-badge";
+import { CategoryBadge } from "@/components/ui/category-badge";
+import { ConfidenceBadge } from "@/components/ui/confidence-badge";
+import { ColorDot } from "@/components/ui/color-dot";
+import { StatNumber } from "@/components/ui/stat-number";
+
+<StatusBadge status="calibrated" />
+<CategoryBadge category="Computer Science" />
+<ConfidenceBadge level="high" />
+<ColorDot color={{ kind: "workflow", value: "overdue" }} />
+<StatNumber value={24} suffix="/ 45" />
 ```
 
-### Theme Toggle
+---
 
-Already implemented in `src/components/theme-toggle.tsx`. Use this component for theme switching.
+## DO and DON'T
+
+**DO**
+
+- Use `bg-primary`, `text-foreground`, `bg-muted`, `text-muted-foreground`, `border-border`, `ring-ring`.
+- Use `statusStyles` / `categoryStyles` / `confidenceStyles` from `src/lib/design-tokens.ts`.
+- Use DS primitives (`StatusBadge`, `CategoryBadge`, `ColorDot`, `ConfidenceBadge`, `StatNumber`).
+- Use `.eyebrow` / `.kicker` for small editorial labels (sentence case).
+- Use `.tabular` for any number in a data row/cell.
+
+**DON'T**
+
+- No `text-[Npx]` — use `text-xs`, `text-sm`, `text-base`, `text-lg`, `text-xl`.
+- No `uppercase` class — forbidden by the system.
+- No `tracking-[0.Nem]` — use `tracking-tight`, `tracking-wider`, `tracking-widest`.
+- No hex literals (`#21508c`) or named Tailwind hues (`bg-slate-500`, `text-red-600`) in app code.
+- No `rgba(…)` or `rgb(…)` literals.
+- No inline `style={{ color, background, fontFamily, fontSize }}` for design tokens.
+
+ESLint will warn on all of the above (`eslint.config.mjs`).
 
 ---
 
-## Best Practices
+## Adding a new status or category
 
-1. **Always use semantic tokens**
-   - Use `bg-background`, not white/slate
-   - Use `text-foreground`, not text-black/white
-
-2. **Use shadcn components over custom HTML**
-   - Use `<Button />`, not `<button />`
-   - Use `<Card />`, not `<div className="border" />`
-
-3. **Proper spacing**
-   - Base unit is ~4.3px
-   - Common patterns: `gap-4`, `p-6`, `space-y-4`
-
-4. **Consistent radius**
-   - Cards: `rounded-lg` or default Card radius (1.4rem)
-   - Buttons: Component handles this automatically
-   - Large surfaces: `rounded-xl`
-
-5. **Respect dark mode**
-   - Test both light and dark modes
-   - Violet Bloom uses deep slate in dark mode, not pure black
-   - Check muted text visibility in both modes
-
-6. **Typography**
-   - Use Plus Jakarta Sans for headings and body
-   - Negative letter-spacing (-0.025em) for modern, tight typography
-   - Body copy feels sophisticated and contemporary
-
-7. **Component props**
-   - Use built-in variant props for buttons: `variant="ghost"`, `size="sm"`
-   - Don't override with arbitrary classes when variants exist
+1. Add the CSS variable pair in `src/app/globals.css` under the "SEMANTIC STATUS + CATEGORY TOKENS" block (light + dark override).
+2. Add a key to `statusStyles` or `categoryStyles` in `src/lib/design-tokens.ts`.
+3. Consumers read it by key — no other code changes.
 
 ---
 
-## Violet Bloom Characteristics
+## Migration status
 
-**Visual Identity:**
-- Vibrant violet primary (#7C3AED equivalent in oklch)
-- Warm undertones throughout
-- Soft shadows with lower opacity for elegance
-- Larger border radius (1.4rem) for friendlier, modern feel
-- Tight letter-spacing (-0.025em) for sophistication
-
-**Contrast Ratios:**
-- High contrast in light mode (pure black text on off-white)
-- Excellent readability in dark mode (high lightness on deep slate)
-- Accessible color combinations built-in
+See `HARDCODED_VALUES_AUDIT.md` for the list of legacy files still carrying hardcoded values. This PR lands the token foundation and lint enforcement; follow-up PRs migrate files one at a time.
 
 ---
 
 ## Accessibility
 
-- Use semantic HTML elements within shadcn components
-- Include proper aria-labels where needed
-- Maintain focus indicators (ring tokens)
-- Ensure sufficient color contrast in both themes
-- WCAG AA compliance built into the theme
-
----
-
-## Migration Notes
-
-**From arbitrary values to tokens:**
-
-```css
-/* ❌ Before */
-.text-gray-600
-gap-[10px]
-bg-purple-600
-
-/* ✅ After */
-.text-muted-foreground
-gap-4 (~17px)
-bg-primary
-```
-
-**Custom components:**
-
-If you need custom UI, compose from shadcn primitives:
-
-```tsx
-import { Button } from "@/components/ui/button"
-
-export function CustomAction() {
-  return (
-    <Button variant="outline" size="sm">
-      Action
-    </Button>
-  )
-}
-```
-
----
-
-## Theme Installation
-
-```bash
-# Install Violet Bloom theme
-npx shadcn@latest add https://tweakcn.com/r/themes/violet-bloom.json
-
-# The theme will update src/app/globals.css with all variables
-# Update layout.tsx font import:
-# import { Plus_Jakarta_Sans } from "next/font/google"
-```
+- Focus rings via `--ring` (3px, offset 2px) — do not override.
+- Maintain 4.5:1 contrast. Semantic `--status-*-bg` tokens are intentionally tinted at 10% alpha so foreground hue is AA against any background.
+- Sentence-case only. Screen readers handle casing deliberately; all-caps is read letter-by-letter.

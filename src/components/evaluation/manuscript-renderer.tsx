@@ -2,19 +2,50 @@
 
 import { type ManuscriptElement } from "@/lib/manuscript-generator"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { criterionStyles, type CriterionKey } from "@/lib/design-tokens"
 
-export const CRITERION_COLORS: Record<number, { bg: string; border: string; hoverBg: string; badge: string; dot: string; text: string; bar: string; cardBg: string; cardBorder: string; label: string }> = {
-  1: { bg: "bg-yellow-100/80", border: "border-yellow-400", hoverBg: "hover:bg-yellow-200/80", badge: "bg-yellow-50", dot: "bg-yellow-500", text: "text-yellow-700", bar: "bg-yellow-400", cardBg: "bg-yellow-50/40", cardBorder: "border-yellow-200", label: "text-yellow-700" },
-  2: { bg: "bg-green-100/80",  border: "border-green-400",  hoverBg: "hover:bg-green-200/80",  badge: "bg-green-50",  dot: "bg-green-500",  text: "text-green-700",  bar: "bg-green-400",  cardBg: "bg-green-50/40",  cardBorder: "border-green-200",  label: "text-green-700"  },
-  3: { bg: "bg-blue-100/80",   border: "border-blue-400",   hoverBg: "hover:bg-blue-200/80",   badge: "bg-blue-50",   dot: "bg-blue-500",   text: "text-blue-700",   bar: "bg-blue-400",   cardBg: "bg-blue-50/40",   cardBorder: "border-blue-200",   label: "text-blue-700"   },
-  4: { bg: "bg-purple-100/80", border: "border-purple-400", hoverBg: "hover:bg-purple-200/80", badge: "bg-purple-50", dot: "bg-purple-500", text: "text-purple-700", bar: "bg-purple-400", cardBg: "bg-purple-50/40", cardBorder: "border-purple-200", label: "text-purple-700" },
+type CriterionColor = {
+  bg: string
+  border: string
+  hoverBg: string
+  badge: string
+  dot: string
+  text: string
+  bar: string
+  cardBg: string
+  cardBorder: string
+  label: string
 }
 
-const CRITERION_LABELS: Record<number, string> = {
-  1: "Problem Understanding & Direction",
-  2: "Iteration & Improvement",
-  3: "Documentation & Reproducibility",
-  4: "Technical Setup & Integration",
+const buildCriterionColor = (key: CriterionKey): CriterionColor => {
+  const style = criterionStyles[key]
+  return {
+    bg: style.bg,
+    border: style.border,
+    hoverBg: `hover:${style.bg}`,
+    badge: style.bg,
+    dot: style.dot,
+    text: style.text,
+    bar: style.dot,
+    cardBg: style.bg,
+    cardBorder: style.border,
+    label: style.text,
+  }
+}
+
+export const CRITERION_COLORS: Record<string, CriterionColor> = {
+  c1: buildCriterionColor("c1"),
+  c2: buildCriterionColor("c2"),
+  c3: buildCriterionColor("c3"),
+  c4: buildCriterionColor("c4"),
+}
+
+const CRITERION_LABELS: Record<string, string> = {
+  "c1": "Problem Understanding & Direction",
+  "c2": "Iteration & Improvement",
+  "c3": "Documentation & Reproducibility",
+  "c4": "Technical Setup & Integration",
 }
 
 function ConfidenceBars({ confidence }: { confidence: number }) {
@@ -24,21 +55,21 @@ function ConfidenceBars({ confidence }: { confidence: number }) {
       {[1, 2, 3].map((i) => (
         <div
           key={i}
-          className={`w-4 h-1.5 rounded-sm ${i <= filled ? "bg-green-500" : "bg-border"}`}
+          className={`w-4 h-1.5 rounded-sm ${i <= filled ? "bg-[color:var(--status-success)]" : "bg-border"}`}
         />
       ))}
     </div>
   )
 }
 
-function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterionId: number; id?: string }) {
+function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterionId: string; id?: string }) {
   const c = CRITERION_COLORS[criterionId] ?? CRITERION_COLORS[1]
   const label = CRITERION_LABELS[criterionId] ?? `Criterion ${criterionId}`
   return (
     <HoverCard>
       <HoverCardTrigger
         id={id}
-        className={`bg-amber-100/90 border-b-2 border-amber-400 border-dashed px-1 rounded cursor-pointer hover:bg-amber-200/80 transition-colors scroll-mt-20`}
+        className={`bg-[color:var(--status-warning-bg)]/90 border-b-2 border-[color:var(--status-warning)] border-dashed px-1 rounded cursor-pointer hover:bg-[color:var(--status-warning-bg)]/80 transition-colors scroll-mt-20`}
       >
         {text}
       </HoverCardTrigger>
@@ -46,10 +77,10 @@ function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterio
         <div className="space-y-2">
           <div className={`inline-flex items-center gap-2 px-2 py-1 ${c.badge} rounded-md`}>
             <div className={`w-2 h-2 rounded-full ${c.dot}`} />
-            <span className={`text-[9px] font-black uppercase tracking-widest ${c.text}`}>Your Evidence</span>
+            <span className={`eyebrow ${c.text}`}>Your Evidence</span>
           </div>
           <p className="text-sm font-bold text-popover-foreground">{label}</p>
-          <p className="text-[10px] text-muted-foreground italic">Manually mapped by instructor</p>
+          <p className="text-xs text-muted-foreground italic">Manually mapped by instructor</p>
         </div>
       </HoverCardContent>
     </HoverCard>
@@ -58,9 +89,9 @@ function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterio
 
 function splitByEvidence(
   text: string,
-  evidences: { id: string; text: string; criterionId: number }[]
-): Array<{ text: string; evidence?: { criterionId: number; id: string } }> {
-  let segments: Array<{ text: string; evidence?: { criterionId: number; id: string } }> = [{ text }]
+  evidences: { id: string; text: string; criterionId: string }[]
+): Array<{ text: string; evidence?: { criterionId: string; id: string } }> {
+  let segments: Array<{ text: string; evidence?: { criterionId: string; id: string } }> = [{ text }]
   for (const ev of evidences) {
     const next: typeof segments = []
     for (const seg of segments) {
@@ -83,17 +114,17 @@ function HighlightedSpan({
   confidence,
 }: {
   text: string
-  criterionId: number
+  criterionId: string
   confidence: number
 }) {
   const c = CRITERION_COLORS[criterionId] ?? CRITERION_COLORS[1]
   const label = CRITERION_LABELS[criterionId] ?? `Criterion ${criterionId}`
 
-  const descriptions: Record<number, string> = {
-    1: "This passage demonstrates clear framing of the problem context, user/task clarity, and primary objectives.",
-    2: "Demonstrates iterative thinking through progressive refinement with clear articulation of improvements.",
-    3: "Provides technical documentation with clear explanations that enable reproducibility of the approach.",
-    4: "Shows practical implementation capability with proper tool integration and configuration management.",
+  const descriptions: Record<string, string> = {
+    "c1": "This passage demonstrates clear framing of the problem context, user/task clarity, and primary objectives.",
+    "c2": "Demonstrates iterative thinking through progressive refinement with clear articulation of improvements.",
+    "c3": "Provides technical documentation with clear explanations that enable reproducibility of the approach.",
+    "c4": "Shows practical implementation capability with proper tool integration and configuration management.",
   }
 
   return (
@@ -107,7 +138,7 @@ function HighlightedSpan({
         <div className="space-y-3">
           <div className={`inline-flex items-center gap-2 px-2 py-1 ${c.badge} rounded-md`}>
             <div className={`w-2 h-2 rounded-full ${c.dot}`} />
-            <span className={`text-[9px] font-black uppercase tracking-widest ${c.text}`}>
+            <span className={`eyebrow ${c.text}`}>
               Evidence
             </span>
           </div>
@@ -118,7 +149,7 @@ function HighlightedSpan({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[9px] font-black uppercase tracking-widest text-popover-foreground/50">
+            <span className="eyebrow text-popover-foreground/50">
               AI Confidence
             </span>
             <ConfidenceBars confidence={confidence} />
@@ -139,11 +170,11 @@ function DiagramElement({
   return (
     <div className="my-6 border border-border/60 rounded-lg overflow-hidden">
       <div className="px-4 py-2 bg-muted/30 border-b border-border/40">
-        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+        <span className="eyebrow text-muted-foreground">
           {label}
         </span>
       </div>
-      <div className="p-6 bg-white min-h-[200px] flex items-center justify-center">
+      <div className="p-6 bg-background min-h-[200px] flex items-center justify-center">
         {diagramType === "er" && (
           <div className="grid grid-cols-3 gap-4 w-full max-w-sm">
             {[
@@ -151,18 +182,18 @@ function DiagramElement({
               { name: "Orders", fields: ["id", "user_id", "total"] },
               { name: "Products", fields: ["id", "sku", "price"] },
             ].map((t) => (
-              <div key={t.name} className="border border-blue-200 rounded bg-blue-50/50">
-                <div className="px-2 py-1 bg-blue-100 border-b border-blue-200 text-[10px] font-bold text-blue-800 text-center">
+              <div key={t.name} className="border border-[color:var(--status-info)]/30 rounded bg-[color:var(--status-info-bg)]/50">
+                <div className="px-2 py-1 bg-[color:var(--status-info-bg)] border-b border-[color:var(--status-info)]/30 text-xs font-bold text-[color:var(--status-info)] text-center">
                   {t.name}
                 </div>
                 {t.fields.map((f) => (
-                  <div key={f} className="px-2 py-0.5 text-[9px] text-foreground/70 font-mono border-b border-blue-100 last:border-0">
+                  <div key={f} className="px-2 py-0.5 text-xs text-foreground/70 font-mono border-b border-[color:var(--status-info)]/30 last:border-0">
                     {f}
                   </div>
                 ))}
               </div>
             ))}
-            <div className="col-span-3 flex justify-center gap-8 text-[9px] text-muted-foreground font-mono">
+            <div className="col-span-3 flex justify-center gap-8 text-xs text-muted-foreground font-mono">
               <span>Users ──1:N──▸ Orders</span>
               <span>Orders ──N:M──▸ Products</span>
             </div>
@@ -172,29 +203,29 @@ function DiagramElement({
           <div className="flex flex-col items-center gap-2 w-full max-w-xs">
             {["Client Request", "API Gateway", "Auth Middleware", "Controller", "Database"].map((step, i) => (
               <div key={step} className="flex flex-col items-center gap-1">
-                <div className="px-4 py-2 border border-slate-300 rounded-md bg-slate-50 text-[10px] font-bold text-foreground/80">
+                <div className="px-4 py-2 border border-border rounded-md bg-muted/40 text-xs font-bold text-foreground/80">
                   {step}
                 </div>
-                {i < 4 && <div className="w-px h-3 bg-slate-300" />}
+                {i < 4 && <div className="w-px h-3 bg-muted" />}
               </div>
             ))}
           </div>
         )}
         {diagramType === "architecture" && (
           <div className="flex flex-col items-center gap-3 w-full">
-            <div className="px-6 py-2 border border-amber-300 rounded-md bg-amber-50 text-[10px] font-bold text-amber-800">
+            <div className="px-6 py-2 border border-[color:var(--status-warning)]/30 rounded-md bg-[color:var(--status-warning-bg)] text-xs font-bold text-[color:var(--status-warning)]">
               API Gateway
             </div>
             <div className="flex gap-4">
               {["User Svc", "Order Svc", "Notify Svc"].map((svc) => (
-                <div key={svc} className="px-3 py-2 border border-green-300 rounded-md bg-green-50 text-[9px] font-bold text-green-800">
+                <div key={svc} className="px-3 py-2 border border-[color:var(--status-success)]/30 rounded-md bg-[color:var(--status-success-bg)] text-xs font-bold text-[color:var(--status-success)]">
                   {svc}
                 </div>
               ))}
             </div>
             <div className="flex gap-4">
               {["PostgreSQL", "Redis", "Kafka"].map((db) => (
-                <div key={db} className="px-3 py-1.5 border border-purple-300 rounded bg-purple-50 text-[9px] font-mono text-purple-800">
+                <div key={db} className="px-3 py-1.5 border border-[color:var(--category-2)]/30 rounded bg-[color:var(--category-2-bg)] text-xs font-mono text-[color:var(--category-2)]">
                   {db}
                 </div>
               ))}
@@ -211,7 +242,7 @@ export default function ManuscriptRenderer({
   userEvidence = [],
 }: {
   elements: ManuscriptElement[]
-  userEvidence?: { id: string; text: string; criterionId: number }[]
+  userEvidence?: { id: string; text: string; criterionId: string }[]
 }) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -258,12 +289,12 @@ export default function ManuscriptRenderer({
           case "code":
             return (
               <div key={i} className="my-4 rounded-lg overflow-hidden border border-border/40">
-                <div className="px-4 py-2 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">{el.language}</span>
-                  <span className="text-[9px] text-slate-500 font-mono">source</span>
+                <div className="px-4 py-2 bg-foreground border-b border-border flex items-center justify-between">
+                  <span className="eyebrow text-muted-foreground/70">{el.language}</span>
+                  <span className="text-xs text-muted-foreground font-mono">source</span>
                 </div>
-                <pre className="p-4 bg-slate-900 overflow-x-auto">
-                  <code className="text-sm text-green-400 font-mono leading-relaxed whitespace-pre">{el.code}</code>
+                <pre className="p-4 bg-foreground overflow-x-auto">
+                  <code className="text-sm text-[color:var(--status-success)] font-mono leading-relaxed whitespace-pre">{el.code}</code>
                 </pre>
               </div>
             )
@@ -271,29 +302,27 @@ export default function ManuscriptRenderer({
           case "table":
             return (
               <div key={i} className="my-6 overflow-hidden border border-border/50 rounded-lg">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="bg-muted/40 border-b border-border/50">
-                        {el.headers.map((h, hi) => (
-                          <th key={hi} className="px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {el.rows.map((row, ri) => (
-                        <tr key={ri} className="border-b border-border/30 last:border-0 hover:bg-muted/20 transition-colors">
-                          {row.map((cell, ci) => (
-                            <td key={ci} className="px-4 py-2 text-xs text-foreground/80">{cell}</td>
-                          ))}
-                        </tr>
+                <Table className="text-left">
+                  <TableHeader>
+                    <TableRow className="bg-muted/40 border-b border-border/50 hover:bg-muted/40">
+                      {el.headers.map((h, hi) => (
+                        <TableHead key={hi} className="eyebrow px-4 py-2.5 text-muted-foreground">{h}</TableHead>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {el.rows.map((row, ri) => (
+                      <TableRow key={ri} className="border-b border-border/30 last:border-0 hover:bg-muted/20">
+                        {row.map((cell, ci) => (
+                          <TableCell key={ci} className="px-4 py-2 text-xs text-foreground/80 whitespace-normal">{cell}</TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
                 {el.caption && (
                   <div className="px-4 py-2 bg-muted/20 border-t border-border/30">
-                    <span className="text-[9px] font-bold text-muted-foreground italic">{el.caption}</span>
+                    <span className="text-xs font-bold text-muted-foreground italic">{el.caption}</span>
                   </div>
                 )}
               </div>
@@ -330,7 +359,7 @@ export default function ManuscriptRenderer({
                   &ldquo;{el.text}&rdquo;
                 </p>
                 {el.source && (
-                  <p className="mt-2 text-[11px] font-bold text-muted-foreground/60 not-italic">
+                  <p className="mt-2 text-xs font-bold text-muted-foreground/60 not-italic">
                     — {el.source}
                   </p>
                 )}

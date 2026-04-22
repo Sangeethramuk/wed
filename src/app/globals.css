@@ -35,7 +35,7 @@
   --accent-foreground: oklch(0.6723 0.1606 244.9955);
   --destructive: oklch(0.6188 0.2376 25.7658);
   --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.9317 0.0118 231.6594);
+  --border: oklch(0.9100 0.0120 231.6594);
   --input: oklch(0.9809 0.0025 228.7836);
   --ring: oklch(0.6818 0.1584 243.3540);
   
@@ -87,6 +87,62 @@
   --tracking-wide: calc(var(--tracking-normal) + 0.025em);
   --tracking-wider: calc(var(--tracking-normal) + 0.05em);
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
+}
+
+/* ============================================
+   SEMANTIC STATUS + CATEGORY TOKENS
+   Shared across themes. Consumed by
+   src/lib/design-tokens.ts and DS primitives.
+   Override per-theme only if dark mode needs
+   different luminance.
+   ============================================ */
+:root {
+  --status-success: oklch(0.7064 0.1822 151.7125);
+  --status-success-bg: oklch(0.7064 0.1822 151.7125 / 0.1);
+  --status-warning: oklch(0.7336 0.1758 50.5517);
+  --status-warning-bg: oklch(0.7336 0.1758 50.5517 / 0.1);
+  --status-error: oklch(0.6290 0.1902 23.0704);
+  --status-error-bg: oklch(0.6290 0.1902 23.0704 / 0.1);
+  --status-info: oklch(0.6723 0.1606 244.9955);
+  --status-info-bg: oklch(0.6723 0.1606 244.9955 / 0.1);
+
+  --category-1: oklch(0.6723 0.1606 244.9955);
+  --category-1-bg: oklch(0.6723 0.1606 244.9955 / 0.1);
+  --category-2: oklch(0.5393 0.2713 286.7462);
+  --category-2-bg: oklch(0.5393 0.2713 286.7462 / 0.1);
+  --category-3: oklch(0.7064 0.1822 151.7125);
+  --category-3-bg: oklch(0.7064 0.1822 151.7125 / 0.1);
+  --category-4: oklch(0.6290 0.1902 23.0704);
+  --category-4-bg: oklch(0.6290 0.1902 23.0704 / 0.1);
+  --category-5: oklch(0.7336 0.1758 50.5517);
+  --category-5-bg: oklch(0.7336 0.1758 50.5517 / 0.1);
+  --category-6: oklch(0.6691 0.1569 260.1063);
+  --category-6-bg: oklch(0.6691 0.1569 260.1063 / 0.1);
+}
+
+[data-theme="twitter-dark"],
+[data-theme="violet-dark"] {
+  --status-success: oklch(0.8003 0.1821 151.7110);
+  --status-success-bg: oklch(0.8003 0.1821 151.7110 / 0.15);
+  --status-warning: oklch(0.8214 0.1600 82.5337);
+  --status-warning-bg: oklch(0.8214 0.1600 82.5337 / 0.15);
+  --status-error: oklch(0.7106 0.1661 22.2162);
+  --status-error-bg: oklch(0.7106 0.1661 22.2162 / 0.15);
+  --status-info: oklch(0.7857 0.1153 246.6596);
+  --status-info-bg: oklch(0.7857 0.1153 246.6596 / 0.15);
+
+  --category-1: oklch(0.7857 0.1153 246.6596);
+  --category-1-bg: oklch(0.7857 0.1153 246.6596 / 0.15);
+  --category-2: oklch(0.6132 0.2294 291.7437);
+  --category-2-bg: oklch(0.6132 0.2294 291.7437 / 0.15);
+  --category-3: oklch(0.8003 0.1821 151.7110);
+  --category-3-bg: oklch(0.8003 0.1821 151.7110 / 0.15);
+  --category-4: oklch(0.7106 0.1661 22.2162);
+  --category-4-bg: oklch(0.7106 0.1661 22.2162 / 0.15);
+  --category-5: oklch(0.8214 0.1600 82.5337);
+  --category-5-bg: oklch(0.8214 0.1600 82.5337 / 0.15);
+  --category-6: oklch(0.6691 0.1569 260.1063);
+  --category-6-bg: oklch(0.6691 0.1569 260.1063 / 0.15);
 }
 
 /* ============================================
@@ -150,14 +206,15 @@
 /* ============================================
    VIOLET BLOOM LIGHT THEME
    ============================================ */
-[data-theme="violet-light"] {
-  --background: oklch(0.9940 0 0);
+[data-theme="violet-light"],
+[data-theme="brand-light"] {
+  --background: oklch(0.9777 0.0051 247.8763);
   --foreground: oklch(0 0 0);
-  --card: oklch(0.9940 0 0);
+  --card: oklch(1.0000 0 0);
   --card-foreground: oklch(0 0 0);
-  --popover: oklch(0.9911 0 0);
+  --popover: oklch(1.0000 0 0);
   --popover-foreground: oklch(0 0 0);
-  --primary: oklch(0.5393 0.2713 286.7462);
+  --primary: #355F98;
   --primary-foreground: oklch(1.0000 0 0);
   --secondary: oklch(0.9540 0.0063 255.4755);
   --secondary-foreground: oklch(0.1344 0 0);
@@ -167,26 +224,26 @@
   --accent-foreground: oklch(0.5445 0.1903 259.4848);
   --destructive: oklch(0.6290 0.1902 23.0704);
   --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.9300 0.0094 286.2156);
+  --border: oklch(0.9100 0.0094 286.2156);
   --input: oklch(0.9401 0 0);
-  --ring: oklch(0 0 0);
+  --ring: #21508c;
   --chart-1: oklch(0.7459 0.1483 156.4499);
   --chart-2: oklch(0.5393 0.2713 286.7462);
   --chart-3: oklch(0.7336 0.1758 50.5517);
   --chart-4: oklch(0.5828 0.1809 259.7276);
   --chart-5: oklch(0.5590 0 0);
-  --sidebar: oklch(0.9777 0.0051 247.8763);
+  --sidebar: oklch(1.0000 0 0);
   --sidebar-foreground: oklch(0 0 0);
   --sidebar-primary: oklch(0 0 0);
   --sidebar-primary-foreground: oklch(1.0000 0 0);
-  --sidebar-accent: oklch(0.9401 0 0);
-  --sidebar-accent-foreground: oklch(0 0 0);
-  --sidebar-border: oklch(0.9401 0 0);
+  --sidebar-accent: oklch(0.9393 0.0288 266.3680);
+  --sidebar-accent-foreground: oklch(0.5445 0.1903 259.4848);
+  --sidebar-border: oklch(0.9300 0.0094 286.2156);
   --sidebar-ring: oklch(0 0 0);
   --destructive-foreground: oklch(1.0000 0 0);
-  --font-sans: "Plus Jakarta Sans", sans-serif;
-  --font-serif: "Lora", serif;
-  --font-mono: "IBM Plex Mono", monospace;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Inter", ui-monospace, monospace;
   --shadow-color: hsl(0 0% 0%);
   --shadow-opacity: 0.16;
   --shadow-blur: 3px;
@@ -249,9 +306,9 @@
   --sidebar-border: oklch(0.3289 0.0092 268.3843);
   --sidebar-ring: oklch(0.6132 0.2294 291.7437);
   --destructive-foreground: oklch(1.0000 0 0);
-  --font-sans: "Plus Jakarta Sans", sans-serif;
-  --font-serif: "Lora", serif;
-  --font-mono: "IBM Plex Mono", monospace;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Inter", ui-monospace, monospace;
   --shadow-color: hsl(0 0% 0%);
   --shadow-opacity: 0.16;
   --shadow-blur: 3px;
@@ -349,6 +406,27 @@
 }
 
 /* ============================================
+   SHELL SPACING TOKENS
+   Standard padding rhythm shared by sidebar,
+   topbar, and card primitives. Use via Tailwind
+   arbitrary syntax: `p-[var(--space-card)]`,
+   `px-[var(--space-shell-x)]`, etc.
+   - shell-x / shell-y: outer chrome padding
+     (sidebar header/footer, topbar, layout main)
+   - card: standard card content padding
+   - card-compact: tight cards (KPI tiles, list rows)
+   - stack: vertical gap between stacked elements
+   ============================================ */
+:root {
+  --space-shell-x: 1.5rem;     /* 24px — topbar / page horizontal inset */
+  --space-shell-y: 1rem;       /* 16px — topbar / sidebar vertical padding */
+  --space-card: 1.5rem;        /* 24px — hero card content padding (p-6) */
+  --space-card-compact: 1rem;  /* 16px — compact card content (p-4) */
+  --space-stack: 0.75rem;      /* 12px — stacked-element gap (gap-3) */
+  --space-stack-tight: 0.5rem; /* 8px — tight stacked gap (gap-2) */
+}
+
+/* ============================================
    BASE STYLES
    ============================================ */
 @layer base {
@@ -409,12 +487,59 @@ select,
   letter-spacing: normal;
 }
 
-/* Headings stay semibold */
-h1, h2, h3, h4, h5, h6 {
+/* H1/H2 are bold (page-level heading hierarchy);
+   H3-H6 remain semibold (section subheadings).
+   Aligns with the student-module reference where page titles
+   ("Dashboard", "Business Case Analysis") read with stronger weight. */
+h1, h2 {
+  font-weight: 700;
+}
+h3, h4, h5, h6 {
   font-weight: 600;
 }
 
 /* Allow explicit semibold/bold on specific semantic elements */
 strong, b {
   font-weight: 600;
+}
+
+/* ============================================
+   EDITORIAL UTILITY CLASSES
+   Sourced from the EducAItors design bundle.
+   Use these for eyebrows, kickers, labels,
+   tabular numerals and big number displays.
+   ============================================ */
+.eyebrow,
+.kicker {
+  font-size: 0.75rem;
+  line-height: 1;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.06em;
+}
+
+.eyebrow:not([class*="text-"]),
+.kicker:not([class*="text-"]) {
+  color: var(--muted-foreground);
+  opacity: 0.85;
+}
+
+.ds-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--foreground);
+  letter-spacing: var(--tracking-wider);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.num-display {
+  font-family: var(--font-sans);
+  font-weight: 900;
+  font-size: 2.5rem;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }

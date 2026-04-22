@@ -1,9 +1,47 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { SolutionStep } from '@/lib/feedback-generator';
 
 export type GradingPhase = 'selection' | 'blind' | 'delta' | 'desk' | 'feedback' | 'complete';
 export type FixType = 'f1' | 'f2' | 'f3' | 'f4';
 export type IntegrityStatus = 'clean' | 'suspicious' | 'manipulated';
+export type FeedbackTier = 'perfect' | 'minor' | 'gap' | 'major';
+export type AuthorshipState = 'ai_generated' | 'instructor_edited' | 'regenerated';
+
+export interface InternalNote {
+  id: string;
+  author: string;
+  role: string;
+  initials: string;
+  avatarColor: string;
+  text: string;
+  timestamp: string;
+  category: 'Medical Leave' | 'Academic Context' | 'Grading Decision' | 'Conduct' | 'Other';
+  isFlagged: boolean;
+  isOwn: boolean;
+}
+
+export interface CriterionFeedbackState {
+  criterionId: string;
+  tier: FeedbackTier;
+  tierLabel: string;
+  feedbackText: string;
+  thinkingPrompt?: string;
+  authorship: AuthorshipState;
+  isConfirmed: boolean;
+  isApproved: boolean;
+  regenCount: number;
+}
+
+export interface OverallFeedbackState {
+  studentId: string;
+  documentText: string;
+  originalDocumentText: string;
+  instructorNote: string;
+  solutionSteps?: SolutionStep[];
+  authorship: AuthorshipState;
+  isSubmitted: boolean;
+}
 
 export type CalibrationPhase =
   | 'not_started'
@@ -87,6 +125,250 @@ export interface CalibrationData {
   deltaThreshold: number;
   aggregateDelta: number;
 }
+
+// --- Default Mock Data ---
+
+export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
+  'se-101': {
+    id: 'se-101',
+    title: 'Software Engineering 101',
+    description: 'Focus: Ambiguous Rubric (Fix 1). High override rate on C3 will trigger Rubric Realignment.',
+    targetFix: 'f1',
+    students: [
+      {
+        id: 'rohan',
+        name: 'Rohan Verma',
+        roll: 'CS21B001',
+        status: 'manipulated',
+        integrityFlags: ['Hidden White Font', 'Injection-style language'],
+        isDoubleBlind: true,
+        progress: 0,
+        criteria: {
+          c1: { id: 'c1', name: 'Conceptual Accuracy', level: 3, confidence: 0.85, reasoning: 'AI evaluated visible text.', evidence: ['Normalization ensures reduncancy...'] },
+          c2: { id: 'c2', name: 'Logic Flow', level: 2, confidence: 0.9, reasoning: 'Structure matches rubric', evidence: ['First normal form requires...'] },
+          c3: { id: 'c3', name: 'Real-world Context', level: 1, confidence: 0.45, reasoning: 'Vague description in rubric', evidence: [] },
+        }
+      },
+      {
+        id: 'meghna',
+        name: 'Meghna Iyer',
+        roll: 'CS21B004',
+        status: 'clean',
+        isDoubleBlind: false,
+        progress: 0,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'Conceptual Accuracy', level: 4, confidence: 0.95, reasoning: 'Clear definition provided.', evidence: ['Normalization ensures...'] },
+          c2: { id: 'c2', name: 'Logic Flow', level: 3, confidence: 0.88, reasoning: 'Lossless join used.', evidence: ['Tables decomposed...'] },
+          c3: { id: 'c3', name: 'Real-world Context', level: 2, confidence: 0.7, reasoning: 'Adequate application.', evidence: [] },
+        }
+      }
+    ]
+  },
+  'dbms-202': {
+    id: 'dbms-202',
+    title: 'DBMS - Normalization',
+    description: 'Focus: AI Extraction failure (Fix 2). Hand-written OCR errors on Arjun\'s paper.',
+    targetFix: 'f2',
+    students: [
+      {
+        id: 'arjun',
+        name: 'Arjun Mehta',
+        roll: 'CS21B002',
+        status: 'suspicious',
+        integrityFlags: ['OCR Confidence Low'],
+        ocrHealth: 74,
+        isDoubleBlind: true,
+        progress: 0,
+        criteria: {
+          c1: { id: 'c1', name: 'Normal Forms', level: 3, confidence: 0.84, reasoning: 'Identified 1NF and 2NF', evidence: ['1NF requires atomic values'] },
+          c3: { id: 'c3', name: 'Transitive Deps', level: 1, confidence: 0.55, reasoning: 'OCR unclear on line 4', evidence: [] },
+        }
+      }
+    ]
+  },
+  'ds-303': {
+    id: 'ds-303',
+    title: 'Data Structures - Batch 3B',
+    description: 'Focus: Instructor Realignment (Fix 3). Fatigue detection after bulk-approving.',
+    targetFix: 'f3',
+    students: [
+      {
+        id: 'priya',
+        name: 'Priya Sharma',
+        roll: 'CS21B009',
+        status: 'clean',
+        isDoubleBlind: true,
+        progress: 0,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'Algorithm Efficiency', level: 3, confidence: 0.95, reasoning: 'Correct Big-O analysis.', evidence: ['Time complexity is O(n)...'] },
+          c2: { id: 'c2', name: 'Edge Case Handling', level: 2, confidence: 0.8, reasoning: 'Missed empty array case.', evidence: [] },
+        }
+      }
+    ]
+  },
+  'AI-ETH-01': {
+    id: 'AI-ETH-01',
+    title: 'AI Ethics - Term Project',
+    description: 'Evaluating ethical framework application and policy analysis deep-dives.',
+    targetFix: 'f1',
+    students: [
+      {
+        id: 'AI-001',
+        name: 'Arjun Sharma',
+        roll: 'AI24-001',
+        status: 'clean',
+        isDoubleBlind: true,
+        progress: 100,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'Ethical Framework Application', level: 5, confidence: 0.98, reasoning: 'Sophisticated multi-framework analysis.', evidence: [] },
+          c2: { id: 'c2', name: 'Policy Analysis Depth', level: 4, confidence: 0.92, reasoning: 'Strong policy literacy.', evidence: [] },
+          c3: { id: 'c3', name: 'Case Study Integration', level: 4, confidence: 0.94, reasoning: 'Well-integrated case study.', evidence: [] },
+          c4: { id: 'c4', name: 'Argumentative Coherence', level: 5, confidence: 0.99, reasoning: 'Exemplary argumentation.', evidence: [] },
+        }
+      },
+      {
+        id: 'AI-002',
+        name: 'Priya Iyer',
+        roll: 'AI24-002',
+        status: 'clean',
+        isDoubleBlind: true,
+        progress: 0,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'Ethical Framework Application', level: 3, confidence: 0.85, reasoning: 'Adequate single-framework analysis.', evidence: [] },
+          c2: { id: 'c2', name: 'Policy Analysis Depth', level: 3, confidence: 0.8, reasoning: 'Surface-level coverage.', evidence: [] },
+          c3: { id: 'c3', name: 'Case Study Integration', level: 4, confidence: 0.9, reasoning: 'Good case study use.', evidence: [] },
+          c4: { id: 'c4', name: 'Argumentative Coherence', level: 3, confidence: 0.82, reasoning: 'Satisfactory coherence.', evidence: [] },
+        }
+      }
+    ]
+  },
+  'SWE-PH2': {
+    id: 'SWE-PH2',
+    title: 'Software Engineering - Phase 2',
+    description: 'System Architecture and Code Logic assessment.',
+    targetFix: 'f1',
+    students: [
+      {
+        id: 'STU-101',
+        name: 'Vikram Singh',
+        roll: 'SE24-101',
+        status: 'clean',
+        isDoubleBlind: true,
+        progress: 100,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'System Architecture', level: 4, confidence: 0.95, reasoning: 'Architecture adheres to SOLID principles.', evidence: [] },
+          c2: { id: 'c2', name: 'Code Logic & Correctness', level: 3, confidence: 0.88, reasoning: 'Core logic functional, minor edge cases.', evidence: [] },
+          c3: { id: 'c3', name: 'API Design & Documentation', level: 4, confidence: 0.9, reasoning: 'API contract clearly defined.', evidence: [] },
+          c4: { id: 'c4', name: 'Testing Coverage', level: 5, confidence: 0.96, reasoning: 'Exceptional test coverage.', evidence: [] },
+        }
+      }
+    ]
+  },
+  'DB-Q1': {
+    id: 'DB-Q1',
+    title: 'Database Queries - Quiz 1',
+    description: 'Normalization and ERD accuracy.',
+    targetFix: 'f1',
+    students: [
+      {
+        id: 'DB-001',
+        name: 'Ananya Gupta',
+        roll: 'DB24-001',
+        status: 'clean',
+        isDoubleBlind: true,
+        progress: 100,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'Normal Form Analysis', level: 5, confidence: 0.99, reasoning: 'Complete and accurate analysis.', evidence: [] },
+          c2: { id: 'c2', name: 'ER Diagram Accuracy', level: 4, confidence: 0.92, reasoning: 'Diagram accurate with minor notation issues.', evidence: [] },
+          c3: { id: 'c3', name: 'Query Optimization', level: 4, confidence: 0.95, reasoning: 'Strong optimization strategy.', evidence: [] },
+        }
+      }
+    ]
+  },
+  'NW-CASE-01': {
+    id: 'NW-CASE-01',
+    title: 'Network Case Study',
+    description: 'SQL Design and Transaction Handling.',
+    targetFix: 'f1',
+    students: [
+      {
+        id: 'STU-101',
+        name: 'Rahul Malhotra',
+        roll: 'NW24-101',
+        status: 'clean',
+        isDoubleBlind: true,
+        progress: 100,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'Database Normalization', level: 4, confidence: 0.94, reasoning: 'Strong normalization analysis.', evidence: [] },
+          c2: { id: 'c2', name: 'SQL Query Design', level: 4, confidence: 0.9, reasoning: 'Efficient SQL with good joins.', evidence: [] },
+          c3: { id: 'c3', name: 'Transaction Handling', level: 3, confidence: 0.85, reasoning: 'Adequate coverage.', evidence: [] },
+        }
+      }
+    ]
+  },
+  'OS-LAB-03': {
+    id: 'OS-LAB-03',
+    title: 'Operating Systems — Lab Record 3',
+    description: 'System calls, Process management and Thread synchronization.',
+    targetFix: 'f1',
+    students: [
+      {
+        id: 'OS-001',
+        name: 'Amit Kumar',
+        roll: 'CS25-OS-001',
+        status: 'clean',
+        isDoubleBlind: true,
+        progress: 100,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'System Call Implementation', level: 4, confidence: 0.92, reasoning: 'Correct use of fork() and exec().', evidence: [] },
+          c2: { id: 'c2', name: 'Process Synchronization', level: 3, confidence: 0.85, reasoning: 'Slight race condition in shared memory.', evidence: [] },
+        }
+      },
+      {
+        id: 'OS-002',
+        name: 'Sunita Rao',
+        roll: 'CS25-OS-002',
+        status: 'clean',
+        isDoubleBlind: true,
+        progress: 0,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'System Call Implementation', level: 5, confidence: 0.98, reasoning: 'Perfect implementation.', evidence: [] },
+          c2: { id: 'c2', name: 'Process Synchronization', level: 5, confidence: 0.97, reasoning: 'Flawless semaphores.', evidence: [] },
+        }
+      }
+    ]
+  },
+  'WD-PROJ-02': {
+    id: 'WD-PROJ-02',
+    title: 'Web Development — Capstone Project',
+    description: 'Full-stack application building with React and Node.js.',
+    targetFix: 'f2',
+    students: [
+      {
+        id: 'WD-101',
+        name: 'Nikhil Mehta',
+        roll: 'IT25-WD-101',
+        status: 'clean',
+        isDoubleBlind: false,
+        progress: 100,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'Frontend Architecture', level: 4, confidence: 0.9, reasoning: 'Good component structure.', evidence: [] },
+          c2: { id: 'c2', name: 'API Design', level: 3, confidence: 0.8, reasoning: 'REST principles mostly followed.', evidence: [] },
+        }
+      }
+    ]
+  }
+};
 
 // --- Mock calibration seed data per assignment ---
 
@@ -332,6 +614,25 @@ interface GradingState {
   addEvidenceExchange: (assignmentId: string, paperId: string, criterionId: string, exchange: Omit<EvidenceExchange, 'id' | 'timestamp'>) => void;
   resolveScore: (assignmentId: string, paperId: string, criterionId: string, status: 'accepted' | 'resolved') => void;
   completeCalibration: (assignmentId: string) => void;
+
+  // Feedback & Notes State
+  internalNotes: Record<string, InternalNote[]>; // studentId -> notes
+  criterionFeedbacks: Record<string, Record<string, CriterionFeedbackState>>; // studentId -> criterionId -> feedback
+  overallFeedback: Record<string, OverallFeedbackState>; // studentId -> feedback
+
+  // Feedback Actions
+  addInternalNote: (studentId: string, note: Omit<InternalNote, 'id' | 'timestamp'>) => void;
+  confirmCriterionScore: (studentId: string, criterionId: string, data: Pick<CriterionFeedbackState, 'tier' | 'tierLabel' | 'feedbackText' | 'thinkingPrompt'>) => void;
+  updateCriterionFeedback: (studentId: string, criterionId: string, text: string) => void;
+  approveCriterionFeedback: (studentId: string, criterionId: string) => void;
+  regenerateCriterionFeedback: (studentId: string, criterionId: string, newText: string, newTier: FeedbackTier, newTierLabel: string) => void;
+  setOverallFeedback: (studentId: string, data: OverallFeedbackState) => void;
+  updateOverallFeedbackText: (studentId: string, text: string) => void;
+  setSolutionSteps: (studentId: string, steps: SolutionStep[]) => void;
+  updateSolutionStep: (studentId: string, criterionName: string, stepIndex: number, newText: string) => void;
+  mergeInstructorNote: (studentId: string, note: string) => void;
+  submitFinalFeedback: (studentId: string) => void;
+  syncAssignments: () => void;
 }
 
 export const useGradingStore = create<GradingState>()(
@@ -342,88 +643,11 @@ export const useGradingStore = create<GradingState>()(
       phase: 'selection',
       spotCheckActive: false,
       calibration: {},
+      internalNotes: {},
+      criterionFeedbacks: {},
+      overallFeedback: {},
 
-      assignments: {
-        'se-101': {
-          id: 'se-101',
-          title: 'Software Engineering 101',
-          description: 'Focus: Ambiguous Rubric (Fix 1). High override rate on C3 will trigger Rubric Realignment.',
-          targetFix: 'f1',
-          students: [
-            {
-              id: 'rohan',
-              name: 'Rohan Verma',
-              roll: 'CS21B001',
-              status: 'manipulated',
-              integrityFlags: ['Hidden White Font', 'Injection-style language'],
-              isDoubleBlind: true,
-              progress: 0,
-              criteria: {
-                c1: { id: 'c1', name: 'Conceptual Accuracy', level: 3, confidence: 0.85, reasoning: 'AI evaluated visible text.', evidence: ['Normalization ensures reduncancy...'] },
-                c2: { id: 'c2', name: 'Logic Flow', level: 2, confidence: 0.9, reasoning: 'Structure matches rubric', evidence: ['First normal form requires...'] },
-                c3: { id: 'c3', name: 'Real-world Context', level: 1, confidence: 0.45, reasoning: 'Vague description in rubric', evidence: [] },
-              }
-            },
-            {
-              id: 'meghna',
-              name: 'Meghna Iyer',
-              roll: 'CS21B004',
-              status: 'clean',
-              isDoubleBlind: false,
-              progress: 0,
-              integrityFlags: [],
-              criteria: {
-                c1: { id: 'c1', name: 'Conceptual Accuracy', level: 4, confidence: 0.95, reasoning: 'Clear definition provided.', evidence: ['Normalization ensures...'] },
-                c2: { id: 'c2', name: 'Logic Flow', level: 3, confidence: 0.88, reasoning: 'Lossless join used.', evidence: ['Tables decomposed...'] },
-                c3: { id: 'c3', name: 'Real-world Context', level: 2, confidence: 0.7, reasoning: 'Adequate application.', evidence: [] },
-              }
-            }
-          ]
-        },
-        'dbms-202': {
-          id: 'dbms-202',
-          title: 'DBMS - Normalization',
-          description: 'Focus: AI Extraction failure (Fix 2). Hand-written OCR errors on Arjun\'s paper.',
-          targetFix: 'f2',
-          students: [
-            {
-              id: 'arjun',
-              name: 'Arjun Mehta',
-              roll: 'CS21B002',
-              status: 'suspicious',
-              integrityFlags: ['OCR Confidence Low'],
-              ocrHealth: 74,
-              isDoubleBlind: true,
-              progress: 0,
-              criteria: {
-                c1: { id: 'c1', name: 'Normal Forms', level: 3, confidence: 0.84, reasoning: 'Identified 1NF and 2NF', evidence: ['1NF requires atomic values'] },
-                c3: { id: 'c3', name: 'Transitive Deps', level: 1, confidence: 0.55, reasoning: 'OCR unclear on line 4', evidence: [] },
-              }
-            }
-          ]
-        },
-        'ds-303': {
-          id: 'ds-303',
-          title: 'Data Structures - Batch 3B',
-          description: 'Focus: Instructor Realignment (Fix 3). Fatigue detection after bulk-approving.',
-          targetFix: 'f3',
-          students: [
-            {
-              id: 'priya',
-              name: 'Priya Sharma',
-              roll: 'CS21B009',
-              status: 'clean',
-              isDoubleBlind: true,
-              progress: 0,
-              integrityFlags: [],
-              criteria: {
-                c1: { id: 'c1', name: 'Algorithm Efficiency', level: 3, confidence: 0.95, reasoning: 'Correct Big-O analysis.', evidence: ['Time complexity is O(n)...'] },
-                c2: { id: 'c2', name: 'Edge Case Handling', level: 2, confidence: 0.8, reasoning: 'Missed empty array case.', evidence: [] },
-              }
-            }
-          ]
-        }
-      },
+      assignments: DEFAULT_ASSIGNMENTS,
 
       triggerSpotCheck: () => set({ spotCheckActive: true }),
       dismissSpotCheck: () => set({ spotCheckActive: false }),
@@ -529,7 +753,166 @@ export const useGradingStore = create<GradingState>()(
         if (!cal) return state;
         return { calibration: { ...state.calibration, [assignmentId]: { ...cal, phase: 'complete' } } };
       }),
+
+      // --- Feedback Actions ---
+      addInternalNote: (studentId, note) => set((state) => ({
+        internalNotes: {
+          ...state.internalNotes,
+          [studentId]: [
+            ...(state.internalNotes[studentId] || []),
+            {
+              ...note,
+              id: `note-${Date.now()}`,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            }
+          ]
+        },
+      })),
+
+      confirmCriterionScore: (studentId, criterionId, data) => set((state) => ({
+        criterionFeedbacks: {
+          ...state.criterionFeedbacks,
+          [studentId]: {
+            ...(state.criterionFeedbacks[studentId] || {}),
+            [criterionId]: {
+              ...data,
+              criterionId,
+              authorship: 'ai_generated',
+              isConfirmed: true,
+              isApproved: false,
+              regenCount: 0,
+            },
+          }
+        },
+      })),
+
+      updateCriterionFeedback: (studentId, criterionId, text) => set((state) => {
+        const studentFb = state.criterionFeedbacks[studentId] || {};
+        const fb = studentFb[criterionId];
+        if (!fb) return state;
+        return {
+          criterionFeedbacks: {
+            ...state.criterionFeedbacks,
+            [studentId]: {
+              ...studentFb,
+              [criterionId]: { ...fb, feedbackText: text, authorship: 'instructor_edited' },
+            }
+          },
+        };
+      }),
+
+      approveCriterionFeedback: (studentId, criterionId) => set((state) => {
+        const studentFb = state.criterionFeedbacks[studentId] || {};
+        const fb = studentFb[criterionId];
+        if (!fb) return state;
+        return {
+          criterionFeedbacks: {
+            ...state.criterionFeedbacks,
+            [studentId]: {
+              ...studentFb,
+              [criterionId]: { ...fb, isApproved: true },
+            }
+          },
+        };
+      }),
+
+      regenerateCriterionFeedback: (studentId, criterionId, newText, newTier, newTierLabel) => set((state) => {
+        const studentFb = state.criterionFeedbacks[studentId] || {};
+        const fb = studentFb[criterionId];
+        if (!fb || fb.regenCount >= 2) return state;
+        return {
+          criterionFeedbacks: {
+            ...state.criterionFeedbacks,
+            [studentId]: {
+              ...studentFb,
+              [criterionId]: {
+                ...fb,
+                feedbackText: newText,
+                tier: newTier,
+                tierLabel: newTierLabel,
+                regenCount: fb.regenCount + 1,
+                authorship: 'regenerated',
+              },
+            }
+          },
+        };
+      }),
+
+      setOverallFeedback: (studentId, data) => set((state) => ({
+        overallFeedback: {
+          ...state.overallFeedback,
+          [studentId]: data
+        },
+      })),
+
+      updateOverallFeedbackText: (studentId, text) => set((state) => {
+        const fb = state.overallFeedback[studentId];
+        if (!fb) return state;
+        return {
+          overallFeedback: {
+            ...state.overallFeedback,
+            [studentId]: { ...fb, documentText: text, authorship: 'instructor_edited' }
+          },
+        };
+      }),
+      setSolutionSteps: (studentId, steps) => set((state) => {
+        const fb = state.overallFeedback[studentId];
+        if (!fb) return state;
+        return {
+          overallFeedback: {
+            ...state.overallFeedback,
+            [studentId]: { ...fb, solutionSteps: steps }
+          },
+        };
+      }),
+      updateSolutionStep: (studentId, criterionName, stepIndex, newText) => set((state) => {
+        const fb = state.overallFeedback[studentId];
+        if (!fb || !fb.solutionSteps) return state;
+        const updated = fb.solutionSteps.map(s => {
+          if (s.criterionName !== criterionName) return s;
+          const updatedSteps = [...s.steps];
+          updatedSteps[stepIndex] = newText;
+          return { ...s, steps: updatedSteps };
+        });
+        return {
+          overallFeedback: {
+            ...state.overallFeedback,
+            [studentId]: { ...fb, solutionSteps: updated, authorship: 'instructor_edited' }
+          },
+        };
+      }),
+      mergeInstructorNote: (studentId, note) => set((state) => {
+        const fb = state.overallFeedback[studentId];
+        if (!fb) return state;
+        return {
+          overallFeedback: {
+            ...state.overallFeedback,
+            [studentId]: { ...fb, instructorNote: note }
+          },
+        };
+      }),
+
+      submitFinalFeedback: (studentId) => set((state) => {
+        const fb = state.overallFeedback[studentId];
+        if (!fb) return state;
+        return {
+          overallFeedback: {
+            ...state.overallFeedback,
+            [studentId]: { ...fb, isSubmitted: true }
+          },
+        };
+      }),
+
+      syncAssignments: () => set((state) => ({
+        assignments: {
+          ...DEFAULT_ASSIGNMENTS,
+          ...state.assignments
+        }
+      })),
     }),
-    { name: 'grading-hub-storage' }
+    { 
+      name: 'grading-hub-storage',
+      version: 3 // Bumped for structural change
+    }
   )
 );

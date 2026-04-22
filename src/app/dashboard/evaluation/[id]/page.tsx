@@ -48,6 +48,11 @@ import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { RevisionHistorySheet, RevisionEvent } from "@/components/evaluation/revision-history-sheet"
 import { FeedbackSummaryModal } from "@/components/evaluation/feedback-summary-modal"
+import { CriterionFeedbackCard } from "@/components/evaluation/feedback/criterion-feedback-card"
+import { FeedbackGenerating } from "@/components/evaluation/feedback/feedback-generating"
+import { InternalNotesPanel } from "@/components/evaluation/feedback/internal-notes-panel"
+import { generateCriterionFeedback } from "@/lib/feedback-generator"
+import { useGradingStore as useFeedbackStore } from "@/lib/store/grading-store"
 
 export default function GradingDesk({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -66,30 +71,48 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <div className="text-center space-y-2">
-          <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Redirecting to calibration…</p>
+          <div className="w-8 h-8 border-2 border-[color:var(--status-warning)] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="eyebrow text-muted-foreground/40">Redirecting to calibration…</p>
         </div>
       </div>
     )
   }
 
-  const [selectedSubmission, setSelectedSubmission] = useState("STU-102")
+  const { assignments, activeStudentId, setActiveStudent } = useGradingStore()
+  const assignment = assignments[id]
+  
+  // Resolve active student from multiple sources
+  const [selectedSubmission, setSelectedSubmission] = useState(() => {
+    // 1. Check if we have an active assignment/student in store
+    if (activeStudentId && assignment?.students.find(s => s.id === activeStudentId)) {
+      return activeStudentId
+    }
+    // 2. Fallback to first student
+    return assignment?.students[0]?.id || "STU-102"
+  })
+
+  // Sync with store
+  useEffect(() => {
+    if (selectedSubmission && selectedSubmission !== activeStudentId) {
+      setActiveStudent(selectedSubmission)
+    }
+  }, [selectedSubmission, activeStudentId, setActiveStudent])
   const [isFixed, setIsFixed] = useState(false)
   const [activeTab, setActiveTab] = useState<"rubric" | "feedback" | "integrity">("rubric")
   const [triageFilter, setTriageFilter] = useState<"all" | "critical" | "focus" | "verified">("all")
   const [showInsights, setShowInsights] = useState(true)
   const [isPaused, setIsPaused] = useState(false)
-  const [dismissedPoints, setDismissedPoints] = useState<number[]>([])
+  const [dismissedPoints, setDismissedPoints] = useState<string[]>([])
   const [gradedSubmissions, setGradedSubmissions] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [zoom, setZoom] = useState(100)
   const [showThumbnails, setShowThumbnails] = useState(true)
   const [selection, setSelection] = useState<{ text: string, x: number, y: number } | null>(null)
-  const [mappedEvidence, setMappedEvidence] = useState<{ id: string, text: string, criterionId: number }[]>([])
+  const [mappedEvidence, setMappedEvidence] = useState<{ id: string, text: string, criterionId: string }[]>([])
 
   // Override draft state management
   interface OverrideDraft {
-    criterionId: number
+    criterionId: string
     proposedScore: number
     aiScore: number
     direction: 'increase' | 'decrease' | 'same'
@@ -99,14 +122,15 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     reasoning: string
   }
 
-  const [overrideDrafts, setOverrideDrafts] = useState<Record<number, OverrideDraft>>({})
-  const [activeOverrideId, setActiveOverrideId] = useState<number | null>(null)
-  const [textSelectionMode, setTextSelectionMode] = useState<{ active: boolean, criterionId: number | null }>({ active: false, criterionId: null })
+  const [overrideDrafts, setOverrideDrafts] = useState<Record<string, OverrideDraft>>({})
+  const [activeOverrideId, setActiveOverrideId] = useState<string | null>(null)
+  const [textSelectionMode, setTextSelectionMode] = useState<{ active: boolean, criterionId: string | null }>({ active: false, criterionId: null })
   const [pendingTextSelection, setPendingTextSelection] = useState<{ text: string, page: number } | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [expandedRubricId, setExpandedRubricId] = useState<number>(1)
-  const [overrideReasoning, setOverrideReasoning] = useState<Record<number, string>>({})
-  const [recordingId, setRecordingId] = useState<number | null>(null)
+  const [expandedRubricId, setExpandedRubricId] = useState<string>("c1")
+  const [overrideReasoning, setOverrideReasoning] = useState<Record<string, string>>({})
+  const [generatingFeedbackFor, setGeneratingFeedbackFor] = useState<string | null>(null)
+  const [recordingId, setRecordingId] = useState<string | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
   const [revisionEvents, setRevisionEvents] = useState<RevisionEvent[]>([])
@@ -115,6 +139,23 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   // Feedback summary modal state
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false)
   const [overallFeedback, setOverallFeedback] = useState("")
+  
+  // AI Feedback flow state
+  const {
+    criterionFeedbacks,
+    confirmCriterionScore: confirmFeedbackAction,
+    updateCriterionFeedback: updateCriterionFeedbackAction,
+    approveCriterionFeedback: approveCriterionFeedbackAction,
+    regenerateCriterionFeedback: regenerateCriterionFeedbackAction,
+  } = useFeedbackStore()
+
+  // Keyed feedback for current student
+  const studentCriterionFeedbacks = criterionFeedbacks[selectedSubmission] || {}
+
+  const confirmFeedback = (cid: string, data: any) => confirmFeedbackAction(selectedSubmission, cid, data)
+  const updateCriterionFeedback = (cid: string, text: string) => updateCriterionFeedbackAction(selectedSubmission, cid, text)
+  const approveCriterionFeedback = (cid: string) => approveCriterionFeedbackAction(selectedSubmission, cid)
+  const regenerateCriterionFeedback = (cid: string, nt: string, ntier: any, nlbl: string) => regenerateCriterionFeedbackAction(selectedSubmission, cid, nt, ntier, nlbl)
 
   const manuscript = useMemo(() => generateManuscript(selectedSubmission), [selectedSubmission])
   const artifacts = useMemo(() => generateArtifacts(selectedSubmission), [selectedSubmission])
@@ -189,13 +230,13 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   const currentStudent = allSubmissions.find(s => s.id === selectedSubmission)
 
   const rubricPoints = [
-    { id: 1, type: "c1", label: "Problem Understanding & Direction", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the problem framing, user/task clarity, assumptions/constraints, outcomes/non-goals, and scoped use-case mapping is present, and 20% of the work has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
-    { id: 2, type: "c2", label: "Iteration & Improvement", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the iteration rationale, before/after evidence, and next-steps articulation is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
-    { id: 3, type: "c3", label: "Documentation & Reproducibility", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the setup/run steps, samples/expected outputs, troubleshooting, and limitations is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] },
-    { id: 4, type: "c4", label: "Technical Setup & Integration", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the tool/API integration, config documentation, runnable end-to-end execution, basic error handling, and test path is present, and 20% has issues.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] }
+    { id: "c1", type: "c1", label: "Problem Understanding & Direction", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the problem framing, user/task clarity, assumptions/constraints, outcomes/non-goals, and scoped use-case mapping is present, and 20% of the work has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
+    { id: "c2", type: "c2", label: "Iteration & Improvement", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the iteration rationale, before/after evidence, and next-steps articulation is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
+    { id: "c3", type: "c3", label: "Documentation & Reproducibility", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the setup/run steps, samples/expected outputs, troubleshooting, and limitations is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] },
+    { id: "c4", type: "c4", label: "Technical Setup & Integration", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the tool/API integration, config documentation, runnable end-to-end execution, basic error handling, and test path is present, and 20% has issues.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] }
   ]
 
-  const [criterionState, setCriterionState] = useState<Record<number, { score: number, isOverridden: boolean, feedback: string, confirmed: boolean }>>({})
+  const [criterionState, setCriterionState] = useState<Record<string, { score: number, isOverridden: boolean, feedback: string, confirmed: boolean }>>({})
 
   const calculateTotalScore = () => {
     return rubricPoints.reduce((total, point) => {
@@ -209,7 +250,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
   const totalMaxPoints = rubricPoints.reduce((sum, p) => sum + p.maxPoints, 0)
   const currentTotalScore = calculateTotalScore()  
-  const handleScoreConfirm = (id: number, aiScore: number) => {
+  const handleScoreConfirm = (id: string, aiScore: number) => {
     setCriterionState(prev => ({ ...prev, [id]: { ...prev[id], score: aiScore, isOverridden: false, confirmed: true } }))
     addRevisionEvent({
       type: 'score_confirmed',
@@ -221,7 +262,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     if (nextIndex < rubricPoints.length) setActiveRubricCriterionIdx(nextIndex)
   }
 
-  const handleOverrideScore = (id: number, newScore: number) => {
+  const handleOverrideScore = (id: string, newScore: number) => {
     setCriterionState(prev => ({ ...prev, [id]: { ...prev[id], score: newScore, isOverridden: true, confirmed: true } }))
   }
   
@@ -234,17 +275,17 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     }])
   }
 
-  const handleScoreLevelClick = (criterionId: number, proposedScore: number, aiScore: number) => {
+  const handleScoreLevelClick = (criterionId: string, proposedScore: number, aiScore: number) => {
     if (proposedScore === aiScore) {
       handleScoreConfirm(criterionId, aiScore)
       setActiveOverrideId(null)
       return
     }
     const direction = proposedScore > aiScore ? 'increase' : 'decrease'
-    setActiveOverrideId(criterionId)
+    setActiveOverrideId(criterionId as any)
     setOverrideDrafts(prev => ({
       ...prev,
-      [criterionId]: {
+      [criterionId as any]: {
         criterionId,
         proposedScore,
         aiScore,
@@ -256,7 +297,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     }))
   }
 
-  const handleUpdateDraft = (criterionId: number, updates: Partial<OverrideDraft>) => {
+  const handleUpdateDraft = (criterionId: string, updates: Partial<OverrideDraft>) => {
     setOverrideDrafts(prev => {
       const existing = prev[criterionId]
       if (!existing) return prev
@@ -264,7 +305,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     })
   }
 
-  const handleConfirmOverride = (criterionId: number) => {
+  const handleConfirmOverride = (criterionId: string) => {
     const draft = overrideDrafts[criterionId]
     if (!draft || draft.reasoning.length < 20) return
     setCriterionState(prev => ({
@@ -303,17 +344,17 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     setTextSelectionMode({ active: false, criterionId: null })
     setOverrideDrafts(prev => {
       const next = { ...prev }
-      delete next[criterionId]
+      delete next[criterionId as any]
       return next
     })
   }
 
-  const handleCancelOverride = (criterionId: number) => {
+  const handleCancelOverride = (criterionId: string) => {
     setActiveOverrideId(null)
     setTextSelectionMode({ active: false, criterionId: null })
   }
 
-  const handleLinkOverrideEvidence = (text: string, page: number, criterionId: number) => {
+  const handleLinkOverrideEvidence = (text: string, page: number, criterionId: string) => {
     const draft = overrideDrafts[criterionId]
     if (!draft) return
     const newEvidence = { id: `ov-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, text, page }
@@ -322,7 +363,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     setSelection(null)
   }
 
-  const handleRemoveOverrideEvidence = (criterionId: number, evidenceId: string) => {
+  const handleRemoveOverrideEvidence = (criterionId: string, evidenceId: string) => {
     const draft = overrideDrafts[criterionId]
     if (!draft) return
     handleUpdateDraft(criterionId, { linkedEvidence: draft.linkedEvidence.filter(e => e.id !== evidenceId) })
@@ -344,18 +385,33 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     { value: 'superficial', label: 'Superficial treatment despite appearances' },
   ] as const
   
-  const handleFeedbackChange = (id: number, text: string) => {
+  const handleFeedbackChange = (id: string, text: string) => {
     setCriterionState(prev => ({ ...prev, [id]: { ...prev[id], feedback: text } }))
   }
+
+  const handleConfirmAndGenerate = (pointId: string, pointLabel: string, score: number) => {
+    setGeneratingFeedbackFor(pointId as any)
+    const criterionKey = pointId
+    setTimeout(() => {
+      const fb = generateCriterionFeedback(pointLabel, Math.round(score / 2), [], '')
+      confirmFeedback(criterionKey, {
+        tier: fb.tier,
+        tierLabel: fb.tierLabel,
+        feedbackText: fb.feedbackText,
+        thinkingPrompt: fb.thinkingPrompt,
+      })
+      setGeneratingFeedbackFor(null)
+    }, 1800)
+  }
   
-  const handleDismiss = (id: number) => {
+  const handleDismiss = (id: string) => {
     setDismissedPoints(prev => [...prev, id])
   }
 
   // isSpotCheckActive + dismissSpotCheck come from grading store (triggered by header button)
   const [activeRubricCriterionIdx, setActiveRubricCriterionIdx] = useState(0)
   const [rubricAccordionOpen, setRubricAccordionOpen] = useState<Record<string, boolean>>({})
-  const [rubricReviewStripOpen, setRubricReviewStripOpen] = useState<Record<number, boolean>>({})
+  const [rubricReviewStripOpen, setRubricReviewStripOpen] = useState<Record<string, boolean>>({})
 
   const handleConfirmNext = () => {
     const currentSub = submissions.find(s => s.id === selectedSubmission)
@@ -375,14 +431,14 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     setTextSelectionMode({ active: false, criterionId: null })
   }
 
-  const handleMapEvidence = (criterionId: number) => {
+  const handleMapEvidence = (criterionId: string) => {
     if (selection) {
       setMappedEvidence(prev => [...prev, { id: Math.random().toString(), text: selection.text, criterionId }])
       setSelection(null)
     }
   }
 
-  const handleToggleRecording = (criterionId: number) => {
+  const handleToggleRecording = (criterionId: string) => {
     if (recordingId === criterionId) {
       // Stop recording
       recognitionRef.current?.stop()
@@ -435,7 +491,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     return (
       <div 
         id={`page-${index}`}
-        className={`bg-white shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-[#E6E1D6]/50 mx-auto transition-all duration-300 relative group/page ${textSelectionMode.active ? 'cursor-crosshair' : 'cursor-text'}`}
+        className={`bg-background shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-[#E6E1D6]/50 mx-auto transition-all duration-300 relative group/page ${textSelectionMode.active ? 'cursor-crosshair' : 'cursor-text'}`}
         onMouseUp={(e) => {
           const sel = window.getSelection()
           if (sel && sel.toString().trim().length > 0) {
@@ -483,15 +539,15 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
           marginBottom: "60px"
         }}
       >
-        <div className={`absolute inset-0 transition-all duration-300 pointer-events-none z-10 ${textSelectionMode.active ? 'ring-4 ring-blue-500/20 ring-inset bg-blue-500/[0.02]' : ''}`} />
+        <div className={`absolute inset-0 transition-all duration-300 pointer-events-none z-10 ${textSelectionMode.active ? 'ring-4 ring-blue-500/20 ring-inset bg-[color:var(--status-info)]/[0.02]' : ''}`} />
         <div className="absolute top-8 left-8 flex flex-col items-start gap-1">
-          <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary/40 group-hover/page:text-primary transition-colors">Digital Manuscript</span>
-          <span className="text-[10px] font-black uppercase tracking-widest text-[#E6E1D6] group-hover/page:text-slate-400 transition-colors">Folio {index} / {totalPages}</span>
+          <span className="eyebrow text-primary/40 group-hover/page:text-primary transition-colors">Digital Manuscript</span>
+          <span className="eyebrow text-[#E6E1D6] group-hover/page:text-muted-foreground/70 transition-colors">Folio {index} / {totalPages}</span>
         </div>
 
         {question && (
-             <div className="absolute top-8 right-8 text-[9px] font-black text-amber-500/40 uppercase tracking-widest flex items-center gap-2 group-hover/page:text-amber-500 transition-colors">
-                <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+             <div className="eyebrow absolute top-8 right-8 text-[color:var(--status-warning)]/40 flex items-center gap-2 group-hover/page:text-[color:var(--status-warning)] transition-colors">
+                <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--status-warning)]" />
                 {question.id}
              </div>
         )}
@@ -512,9 +568,9 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
           <div className="flex flex-col h-full border-r border-border">
              <div className="p-4 border-b border-border space-y-4">
                <div className="flex items-center justify-between">
-                 <h2 className="font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground/80">Triage Sidebar</h2>
+                 <h2 className="eyebrow text-muted-foreground/80">Triage Sidebar</h2>
                  <div className="flex flex-col items-end gap-1">
-                   <Badge variant="outline" className="rounded-full bg-background border-border text-[10px] font-black">
+                   <Badge variant="outline" className="rounded-full bg-background border-border text-xs font-semibold">
                      {gradedSubmissions.length} / {allSubmissions.length} Completed
                    </Badge>
                    <div className="w-32 h-1.5 bg-muted rounded-full overflow-hidden">
@@ -528,22 +584,30 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
               
               {/* Triage Categories */}
               <div className="grid grid-cols-4 gap-1 p-1 bg-muted/50 rounded-lg border border-border/50">
-                <button 
+                <Button
+                  variant={triageFilter === 'all' ? 'default' : 'ghost'}
+                  size="sm"
                   onClick={() => setTriageFilter("all")}
-                  className={`py-1 rounded-md text-[9px] font-black uppercase transition-all ${triageFilter === 'all' ? 'bg-background text-primary shadow-sm' : 'text-muted-foreground hover:bg-background/40'}`}
-                >ALL</button>
-                <button 
+                  className="w-full"
+                >All</Button>
+                <Button
+                  variant={triageFilter === 'critical' ? 'default' : 'ghost'}
+                  size="sm"
                   onClick={() => setTriageFilter("critical")}
-                  className={`py-1 rounded-md text-[9px] font-black uppercase transition-all ${triageFilter === 'critical' ? 'bg-red-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-background/40'}`}
-                >CRIT</button>
-                <button 
+                  className="w-full"
+                >Crit</Button>
+                <Button
+                  variant={triageFilter === 'focus' ? 'default' : 'ghost'}
+                  size="sm"
                   onClick={() => setTriageFilter("focus")}
-                  className={`py-1 rounded-md text-[9px] font-black uppercase transition-all ${triageFilter === 'focus' ? 'bg-amber-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-background/40'}`}
-                >FOCUS</button>
-                <button 
+                  className="w-full"
+                >Focus</Button>
+                <Button
+                  variant={triageFilter === 'verified' ? 'default' : 'ghost'}
+                  size="sm"
                   onClick={() => setTriageFilter("verified")}
-                  className={`py-1 rounded-md text-[9px] font-black uppercase transition-all ${triageFilter === 'verified' ? 'bg-green-600 text-white shadow-sm' : 'text-muted-foreground hover:bg-background/40'}`}
-                >VERI</button>
+                  className="w-full"
+                >Veri</Button>
               </div>
 
               <div className="relative">
@@ -557,24 +621,24 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                   s => s.category === "verified" && !gradedSubmissions.includes(s.id)
                 )
                 return pendingVerified.length > 0 ? (
-                  <button
+                  <Button
                     onClick={() => {
                       setGradedSubmissions(prev => [...new Set([...prev, ...pendingVerified.map(s => s.id)])])
                     }}
-                    className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white transition-all group/bulk"
+                    className="w-full justify-between"
                   >
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Bulk Approve All</span>
+                      <span>Bulk approve all</span>
                     </div>
-                    <span className="text-[10px] font-black bg-white/20 group-hover/bulk:bg-white/30 transition-colors px-2 py-0.5 rounded-full tabular-nums">
+                    <span className="tabular-nums">
                       {pendingVerified.length}
                     </span>
-                  </button>
+                  </Button>
                 ) : (
-                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-green-50 border border-green-200/60">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-green-600 shrink-0" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-green-700">All Verified Approved</span>
+                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[color:var(--status-success-bg)] border border-[color:var(--status-success)]/60">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[color:var(--status-success)] shrink-0" />
+                    <span className="eyebrow text-[color:var(--status-success)]">All Verified Approved</span>
                   </div>
                 )
               })()}
@@ -599,27 +663,27 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                     <div className="flex flex-col gap-1.5 flex-1">
                        <div className="flex items-center gap-2">
                          {gradedSubmissions.includes(sub.id) ? (
-                           <CheckCircle2 className="h-3 w-3 text-green-500" />
+                           <CheckCircle2 className="h-3 w-3 text-[color:var(--status-success)]" />
                          ) : (
                            <div className={`w-1.5 h-1.5 rounded-full ${
-                               sub.category === 'critical' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 
-                               sub.category === 'focus' ? 'bg-amber-500' : 'bg-green-500'
+                               sub.category === 'critical' ? 'bg-destructive shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 
+                               sub.category === 'focus' ? 'bg-[color:var(--status-warning)]' : 'bg-[color:var(--status-success)]'
                            }`} />
                          )}
-                         <span className={`font-bold tracking-tight text-[11px] uppercase tracking-widest ${selectedSubmission === sub.id ? 'text-primary' : 'text-foreground/70'} ${gradedSubmissions.includes(sub.id) ? 'line-through opacity-60' : ''}`}>{sub.name}</span>
+                         <span className={`eyebrow tracking-tight ${selectedSubmission === sub.id ? 'text-primary' : 'text-foreground/70'} ${gradedSubmissions.includes(sub.id) ? 'line-through opacity-60' : ''}`}>{sub.name}</span>
                          {selectedSubmission === sub.id && !gradedSubmissions.includes(sub.id) && <Sparkles className="h-2.5 w-2.5 text-primary" />}
-                         {gradedSubmissions.includes(sub.id) && <span className="text-[8px] font-black text-green-600 uppercase tracking-widest">Done</span>}
+                         {gradedSubmissions.includes(sub.id) && <span className="eyebrow text-[color:var(--status-success)]">Done</span>}
                        </div>
                        <div className="flex items-center gap-2 ml-3.5">
-                         <span className="text-[9px] font-black text-muted-foreground/40 tabular-nums">{sub.code}</span>
+                         <span className="text-xs font-semibold text-muted-foreground/40 tabular-nums">{sub.code}</span>
                          {!gradedSubmissions.includes(sub.id) && (
                            <>
-                             <span className="text-[10px] opacity-40">•</span>
+                             <span className="text-xs opacity-40">•</span>
                              <Tooltip>
                                  <TooltipTrigger>
-                                     <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-sm ${
-                                         (Object.values(sub.checkpoints).filter(Boolean).length) <= 2 ? 'bg-red-50 text-red-600' :
-                                         (Object.values(sub.checkpoints).filter(Boolean).length) <= 4 ? 'bg-amber-50 text-amber-600' :
+                                     <span className={`eyebrow px-1.5 py-0.5 rounded-sm ${
+                                         (Object.values(sub.checkpoints).filter(Boolean).length) <= 2 ? 'bg-[color:var(--status-error-bg)] text-[color:var(--status-error)]' :
+                                         (Object.values(sub.checkpoints).filter(Boolean).length) <= 4 ? 'bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)]' :
                                          'bg-primary/5 text-primary'
                                      }`}>
                                          Checkpoints: {Object.values(sub.checkpoints).filter(Boolean).length}/5
@@ -629,14 +693,14 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                     side="right"
                                     className="bg-popover text-popover-foreground border border-border shadow-xl p-3 space-y-2 min-w-[140px]"
                                   >
-                                      <div className="text-[10px] font-black uppercase tracking-widest text-popover-foreground/70 border-b border-border/50 pb-1.5 mb-1.5">
+                                      <div className="eyebrow text-popover-foreground/70 border-b border-border/50 pb-1.5 mb-1.5">
                                           Checkpoints
                                       </div>
                                       <div className="space-y-1">
                                           {Object.entries(sub.checkpoints).map(([key, passed]) => (
-                                              <div key={key} className="flex items-center justify-between gap-4 text-[11px]">
+                                              <div key={key} className="flex items-center justify-between gap-4 text-xs">
                                                   <span className="text-popover-foreground/80 capitalize">{key}</span>
-                                                  <span className={passed ? 'text-green-600' : 'text-red-500'}>
+                                                  <span className={passed ? 'text-[color:var(--status-success)]' : 'text-destructive'}>
                                                       {passed ? '✓' : '✗'}
                                                   </span>
                                               </div>
@@ -650,7 +714,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                      </div>
                      <div className="flex items-center gap-2">
                          {!gradedSubmissions.includes(sub.id) && sub.flags > 0 && (
-                           <Badge variant="destructive" className="h-5 px-1.5 rounded-md text-[9px] font-black">
+                           <Badge variant="destructive" className="h-5 px-1.5 rounded-md text-xs font-semibold">
                                {sub.flags}
                            </Badge>
                          )}
@@ -671,8 +735,8 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="flex flex-col">
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60 mb-0.5">Authoring Identity</span>
-                    <h2 className="text-sm font-black tracking-tight text-foreground uppercase">{currentStudent?.name || "Evaluating..."}</h2>
+                    <span className="eyebrow text-primary/60 mb-0.5">Authoring Identity</span>
+                    <h2 className="text-sm font-semibold tracking-tight text-foreground">{currentStudent?.name || "Evaluating..."}</h2>
                   </div>
                 </div>
                 
@@ -687,7 +751,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                       >
                         <History className="h-4.5 w-4.5" />
                         {revisionEvents.length > 0 && (
-                          <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-primary text-primary-foreground text-[7px] font-black flex items-center justify-center">{revisionEvents.length}</span>
+                          <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center">{revisionEvents.length}</span>
                         )}
                       </div>
                     </TooltipTrigger>
@@ -707,18 +771,19 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-0 left-0 right-0 z-30 bg-blue-600 text-white p-2 flex items-center justify-center gap-3"
+                    className="absolute top-0 left-0 right-0 z-30 bg-[color:var(--status-info)] text-primary-foreground p-2 flex items-center justify-center gap-3"
                   >
                     <LinkIcon className="h-3.5 w-3.5" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">
+                    <span className="eyebrow">
                       Select text to link as evidence for C{textSelectionMode.criterionId}
                     </span>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
                       onClick={() => setTextSelectionMode({ active: false, criterionId: null })}
-                      className="h-5 w-5 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
                     >
                       <X className="h-3 w-3" />
-                    </button>
+                    </Button>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -778,7 +843,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                   <div className="h-60 shrink-0 w-full flex items-center justify-center opacity-20 hover:opacity-100 transition-opacity">
                       <div className="flex flex-col items-center gap-4">
                         <CheckCircle2 className="h-12 w-12 text-primary" />
-                        <span className="text-xs font-black uppercase tracking-[0.5em]">Manuscript Verified</span>
+                        <span className="eyebrow text-xs">Manuscript Verified</span>
                       </div>
                   </div>
                 </div>
@@ -786,29 +851,31 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
               {/* Floating Bottom Pagination */}
               <div className="absolute bottom-10 left-1/2 -translate-x-1/2 px-6 py-2.5 rounded-full bg-secondary text-secondary-foreground shadow-2xl z-20 flex items-center gap-6 group transition-all hover:scale-105 border border-border/10 backdrop-blur-md">
-                <button 
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={() => {
                     const next = Math.max(1, currentPage - 1)
                     document.getElementById(`page-${next}`)?.scrollIntoView({ behavior: 'smooth' })
                   }}
-                  className="hover:text-primary transition-colors text-secondary-foreground/50"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                </button>
-                <div className="flex items-center gap-2 text-xs font-black tracking-widest">
+                </Button>
+                <div className="flex items-center gap-2 text-xs font-semibold tracking-widest">
                   <span className="text-primary">PAGE {currentPage}</span>
                   <span className="opacity-30">/</span>
                   <span className="opacity-50">{totalPages}</span>
                 </div>
-                <button 
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={() => {
                     const next = Math.min(totalPages, currentPage + 1)
                     document.getElementById(`page-${next}`)?.scrollIntoView({ behavior: 'smooth' })
                   }}
-                  className="hover:text-primary transition-colors text-secondary-foreground/50"
                 >
                   <ChevronRight className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -836,8 +903,8 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 {/* Sticky header */}
                 <div className="p-4 border-b border-border bg-background shrink-0 space-y-3">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-black tracking-tight text-foreground">Rubric evaluation</h2>
-                    <Badge variant="outline" className="rounded-full text-[10px] font-black px-2 h-5 bg-background">
+                    <h2 className="text-sm font-semibold tracking-tight text-foreground">Rubric evaluation</h2>
+                    <Badge variant="outline" className="rounded-full text-xs font-semibold px-2 h-5 bg-background">
                       {confirmedCount} of {rubricPoints.length} scored
                     </Badge>
                   </div>
@@ -847,16 +914,16 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                       const done = !!criterionState[p.id]?.confirmed
                       const active = idx === activeRubricCriterionIdx
                       return (
-                        <button key={p.id} onClick={() => setActiveRubricCriterionIdx(idx)} className="flex-1 flex flex-col items-center gap-1">
+                        <Button key={p.id} variant="ghost" size="sm" onClick={() => setActiveRubricCriterionIdx(idx)} className="flex-1 h-auto flex-col gap-1 py-1">
                           <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
                             done ? 'bg-foreground border-foreground' :
-                            active ? 'border-purple-500 bg-white' :
-                            'border-border bg-white'
+                            active ? 'border-[color:var(--category-2)]/30 bg-background' :
+                            'border-border bg-background'
                           }`}>
-                            {active && !done && <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />}
+                            {active && !done && <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--category-2)]" />}
                           </div>
-                          <span className={`text-[8px] font-bold transition-colors ${active ? 'text-foreground' : 'text-muted-foreground/50'}`}>C{p.id}</span>
-                        </button>
+                          <span className={`text-xs font-bold transition-colors ${active ? 'text-foreground' : 'text-muted-foreground/50'}`}>C{p.id}</span>
+                        </Button>
                       )
                     })}
                   </div>
@@ -865,26 +932,27 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 <ScrollArea className="flex-1 min-h-0">
                   <div className="p-4 space-y-3">
                     {point.status === 'REVIEW_NEEDED' && (
-                      <div className="rounded-lg bg-amber-50 border border-amber-200 overflow-hidden">
-                        <button
-                          className="w-full flex items-center justify-between p-3"
+                      <div className="rounded-lg bg-[color:var(--status-warning-bg)] border border-[color:var(--status-warning)]/30 overflow-hidden">
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-between"
                           onClick={() => setRubricReviewStripOpen(prev => ({ ...prev, [point.id]: !prev[point.id] }))}
                         >
                           <div className="flex items-center gap-2">
-                            <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-700">Review needed</span>
+                            <AlertCircle className="h-3.5 w-3.5 text-[color:var(--status-warning)] shrink-0" />
+                            <span className="eyebrow text-[color:var(--status-warning)]">Review needed</span>
                           </div>
-                          <ChevronDown className={`h-3.5 w-3.5 text-amber-500 transition-transform ${rubricReviewStripOpen[point.id] ? 'rotate-180' : ''}`} />
-                        </button>
+                          <ChevronDown className={`h-3.5 w-3.5 text-[color:var(--status-warning)] transition-transform ${rubricReviewStripOpen[point.id] ? 'rotate-180' : ''}`} />
+                        </Button>
                         {rubricReviewStripOpen[point.id] && (
                           <div className="px-3 pb-3">
-                            <p className="text-[10px] text-amber-700 leading-relaxed">{point.note}</p>
+                            <p className="text-xs text-[color:var(--status-warning)] leading-relaxed">{point.note}</p>
                           </div>
                         )}
                       </div>
                     )}
 
-                    <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden">
+                    <div className="rounded-xl border border-border bg-background shadow-sm overflow-hidden">
                       <div className="p-4 space-y-4">
                         <div>
                           <h3 className="text-sm font-bold text-foreground leading-tight">{point.label}</h3>
@@ -893,42 +961,39 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
                         <div className="space-y-2">
                           <div className="flex items-center gap-3">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Score</span>
+                            <span className="eyebrow text-muted-foreground">Score</span>
                             <div className="flex items-baseline gap-1">
-                              <span className="text-2xl font-black text-foreground tabular-nums">{(state.score ?? point.aiScore).toFixed(1)}</span>
+                              <span className="text-2xl font-semibold text-foreground tabular-nums">{(state.score ?? point.aiScore).toFixed(1)}</span>
                               <span className="text-sm text-muted-foreground">/{point.maxPoints}</span>
                             </div>
-                            <span className="text-[9px] text-muted-foreground ml-auto">Adjust:</span>
+                            <span className="text-xs text-muted-foreground ml-auto">Adjust:</span>
                           </div>
                           <div className="flex gap-1.5">
                             {point.levels.map(lvl => {
                               const isDraftSelected = isOverride && draft.proposedScore === lvl.points
                               const isCurrentConfirmed = state.confirmed && state.score === lvl.points
                               const isAiDefault = lvl.points === point.aiScore && !state.confirmed && !isOverride
+                              const selected = isDraftSelected || isCurrentConfirmed || isAiDefault
                               return (
-                                <button
+                                <Button
                                   key={lvl.val}
+                                  variant={selected ? "default" : "outline"}
+                                  size="sm"
                                   onClick={() => handleScoreLevelClick(point.id, lvl.points, point.aiScore)}
-                                  className={`flex-1 py-2 border rounded-md text-[10px] font-bold transition-all ${
-                                    isDraftSelected
-                                      ? 'bg-amber-500 text-white border-amber-500'
-                                      : isCurrentConfirmed || isAiDefault
-                                      ? 'bg-foreground text-background border-foreground'
-                                      : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground'
-                                  }`}
+                                  className="flex-1"
                                 >
                                   {lvl.points}pts
-                                </button>
+                                </Button>
                               )
                             })}
                           </div>
                         </div>
 
                         {isOverride && (
-                          <div className="border border-amber-200 rounded-lg bg-amber-50/50 p-3 space-y-3">
-                            <div className={`flex items-center gap-2 ${isIncrease ? 'text-green-700' : 'text-red-700'}`}>
+                          <div className="border border-[color:var(--status-warning)]/30 rounded-lg bg-[color:var(--status-warning-bg)]/50 p-3 space-y-3">
+                            <div className={`flex items-center gap-2 ${isIncrease ? 'text-[color:var(--status-success)]' : 'text-[color:var(--status-error)]'}`}>
                               {isIncrease ? <ArrowUp className="h-3.5 w-3.5 shrink-0" /> : <ArrowDown className="h-3.5 w-3.5 shrink-0" />}
-                              <span className="text-[10px] font-black">
+                              <span className="text-xs font-semibold">
                                 Proposing {draft.proposedScore}pts ({isIncrease ? '↑' : '↓'}{Math.abs(draft.proposedScore - draft.aiScore).toFixed(1)} from AI&apos;s {draft.aiScore}pts)
                               </span>
                             </div>
@@ -942,7 +1007,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                   setTextSelectionMode({ active: false, criterionId: null })
                                 }
                               }}
-                              className="w-full text-[11px] rounded border border-amber-200 bg-white p-2 text-foreground focus:outline-none focus:ring-1 focus:ring-amber-300"
+                              className="w-full text-xs rounded border border-[color:var(--status-warning)]/30 bg-background p-2 text-foreground focus:outline-none focus:ring-1 focus:ring-amber-300"
                             >
                               <option value="">Select a reason&hellip;</option>
                               {overrideReasons.map(r => (
@@ -950,42 +1015,42 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                               ))}
                             </select>
                             {draft.reasonCategory === 'found_more_evidence' && (
-                              <div className="p-2.5 rounded-lg bg-blue-50 border border-blue-200">
-                                <p className="text-[10px] text-blue-700/80 leading-relaxed mb-2">Highlight text in the manuscript to link as evidence.</p>
+                              <div className="p-2.5 rounded-lg bg-[color:var(--status-info-bg)] border border-[color:var(--status-info)]/30">
+                                <p className="text-xs text-[color:var(--status-info)]/80 leading-relaxed mb-2">Highlight text in the manuscript to link as evidence.</p>
                                 {draft.linkedEvidence.length > 0 && (
                                   <div className="space-y-1.5 mb-2">
                                     {draft.linkedEvidence.map((ev, i) => (
-                                      <div key={ev.id} className="flex items-start gap-2 p-2 rounded bg-white border border-blue-100 group/ev">
-                                        <span className="text-[9px] font-mono font-bold text-blue-600 shrink-0">E{i + 1}</span>
-                                        <p className="text-[10px] font-serif italic text-foreground/70 flex-1 leading-relaxed">&quot;{ev.text.length > 60 ? ev.text.substring(0, 60) + '...' : ev.text}&quot;</p>
-                                        <button onClick={() => handleRemoveOverrideEvidence(point.id, ev.id)} className="opacity-0 group-hover/ev:opacity-100 transition-opacity shrink-0">
-                                          <X className="h-3 w-3 text-red-400 hover:text-red-600" />
-                                        </button>
+                                      <div key={ev.id} className="flex items-start gap-2 p-2 rounded bg-background border border-[color:var(--status-info)]/30 group/ev">
+                                        <span className="text-xs font-mono font-bold text-[color:var(--status-info)] shrink-0">E{i + 1}</span>
+                                        <p className="text-xs font-serif italic text-foreground/70 flex-1 leading-relaxed">&quot;{ev.text.length > 60 ? ev.text.substring(0, 60) + '...' : ev.text}&quot;</p>
+                                        <Button variant="ghost" size="icon-xs" onClick={() => handleRemoveOverrideEvidence(point.id, ev.id)} className="opacity-0 group-hover/ev:opacity-100 transition-opacity shrink-0">
+                                          <X className="h-3 w-3 text-destructive hover:text-[color:var(--status-error)]" />
+                                        </Button>
                                       </div>
                                     ))}
                                   </div>
                                 )}
                                 {draft.linkedEvidence.length === 0 && (
-                                  <p className="text-[9px] text-blue-500/60 italic">No evidence linked yet</p>
+                                  <p className="text-xs text-[color:var(--status-info)]/60 italic">No evidence linked yet</p>
                                 )}
                               </div>
                             )}
                             <div className="space-y-1">
                               <div className="flex items-center justify-between">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Explain your override</span>
-                                <span className={`text-[9px] font-mono ${draft.reasoning.length >= 20 ? 'text-green-600' : 'text-amber-500'}`}>{draft.reasoning.length}/20</span>
+                                <span className="eyebrow text-muted-foreground">Explain your override</span>
+                                <span className={`text-xs font-mono ${draft.reasoning.length >= 20 ? 'text-[color:var(--status-success)]' : 'text-[color:var(--status-warning)]'}`}>{draft.reasoning.length}/20</span>
                               </div>
                               <textarea
                                 value={draft.reasoning}
                                 onChange={e => handleUpdateDraft(point.id, { reasoning: e.target.value })}
                                 placeholder={isIncrease ? 'Describe what the AI missed...' : "Explain what's wrong with the AI's interpretation..."}
-                                className="w-full h-20 rounded-lg border border-amber-200 bg-white p-2.5 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-amber-300 text-foreground/80 placeholder:text-xs placeholder:text-muted-foreground/40"
+                                className="w-full h-20 rounded-lg border border-[color:var(--status-warning)]/30 bg-background p-2.5 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-amber-300 text-foreground/80 placeholder:text-xs placeholder:text-muted-foreground/40"
                               />
                             </div>
                             {!isOverrideValid && draft.reasonCategory && (
-                              <div className="flex items-center gap-2 p-2 rounded bg-amber-50 border border-amber-200">
-                                <AlertCircle className="h-3 w-3 text-amber-500 shrink-0" />
-                                <span className="text-[10px] text-amber-700">
+                              <div className="flex items-center gap-2 p-2 rounded bg-[color:var(--status-warning-bg)] border border-[color:var(--status-warning)]/30">
+                                <AlertCircle className="h-3 w-3 text-[color:var(--status-warning)] shrink-0" />
+                                <span className="text-xs text-[color:var(--status-warning)]">
                                   {draft.reasoning.length < 20
                                     ? 'At least 20 characters required.'
                                     : draft.reasonCategory === 'found_more_evidence' && draft.linkedEvidence.length === 0
@@ -995,59 +1060,129 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                               </div>
                             )}
                             <div className="flex gap-2">
-                              <Button variant="ghost" size="sm" onClick={() => handleCancelOverride(point.id)}
-                                className="h-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-muted">
+                              <Button variant="outline" size="sm" onClick={() => handleCancelOverride(point.id)}>
                                 Cancel
                               </Button>
                               <Button size="sm" onClick={() => handleConfirmOverride(point.id)} disabled={!isOverrideValid}
-                                className="h-8 flex-1 text-[10px] font-black uppercase tracking-widest bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:pointer-events-none">
-                                Confirm Override
+                                className="flex-1">
+                                Confirm override
                               </Button>
                             </div>
                           </div>
                         )}
 
-                        <div className="space-y-1.5">
-                          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Feedback</span>
-                          <textarea
-                            value={state.feedback || ''}
-                            onChange={e => handleFeedbackChange(point.id, e.target.value)}
-                            placeholder="Add specific feedback for this criterion..."
-                            className="w-full h-20 rounded-lg border border-border bg-muted/5 p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground/80 placeholder:text-xs"
-                          />
-                        </div>
+                        {/* Pre-filled Feedback — seamless review & edit */}
+                        {(() => {
+                          const criterionKey = point.id
+                          const storeFb = studentCriterionFeedbacks[criterionKey]
+                          const isGenerating = generatingFeedbackFor === point.id
+                          
+                          // Consistently use suggested or stored feedback
+                          const currentScore = state.score ?? point.aiScore
+                          const suggestedFb = !storeFb ? generateCriterionFeedback(point.label, Math.round(currentScore / 2), [], '') : null
+                          
+                          const fb = storeFb || {
+                            ...suggestedFb,
+                            authorship: 'ai_generated' as const,
+                            isConfirmed: false,
+                            isApproved: false,
+                            regenCount: 0,
+                          }
+
+                          return (
+                            <div className="space-y-4">
+                              {isGenerating ? (
+                                <FeedbackGenerating />
+                              ) : (
+                                <CriterionFeedbackCard
+                                  tier={fb.tier as any}
+                                  tierLabel={fb.tierLabel}
+                                  feedbackText={fb.feedbackText}
+                                  thinkingPrompt={fb.thinkingPrompt}
+                                  authorship={fb.authorship}
+                                  isApproved={fb.isApproved}
+                                  regenCount={fb.regenCount}
+                                  onEdit={(text) => {
+                                    // Implicit adoption on edit
+                                    if (!storeFb) {
+                                      confirmFeedback(criterionKey, {
+                                        tier: fb.tier as any,
+                                        tierLabel: fb.tierLabel,
+                                        feedbackText: text,
+                                        thinkingPrompt: fb.thinkingPrompt,
+                                      })
+                                    } else {
+                                      updateCriterionFeedback(criterionKey, text)
+                                    }
+                                  }}
+                                  onRegenerate={() => {
+                                    const regen = generateCriterionFeedback(point.label, Math.round(currentScore / 2), [], '')
+                                    if (!storeFb) {
+                                       // If not yet in store, just adopt the regen
+                                       confirmFeedback(criterionKey, {
+
+                                        tier: regen.tier as any,
+                                        tierLabel: regen.tierLabel,
+                                        feedbackText: regen.feedbackText,
+                                        thinkingPrompt: regen.thinkingPrompt,
+                                      })
+                                    } else {
+                                      regenerateCriterionFeedback(criterionKey, regen.feedbackText, regen.tier as any, regen.tierLabel)
+                                    }
+                                  }}
+                                  onApprove={() => {
+                                    // Explicit adoption on confirm
+                                    if (!storeFb) {
+                                      confirmFeedback(criterionKey, {
+
+                                        tier: fb.tier as any,
+                                        tierLabel: fb.tierLabel,
+                                        feedbackText: fb.feedbackText,
+                                        thinkingPrompt: fb.thinkingPrompt,
+                                      })
+                                    }
+                                    approveCriterionFeedback(criterionKey)
+                                  }}
+                                />
+                              )}
+                            </div>
+                          )
+                        })()}
                       </div>
                     </div>
 
-                    <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden">
-                      <button
+                    <div className="rounded-xl border border-border bg-background shadow-sm overflow-hidden">
+                      <Button
+                        variant="ghost"
                         onClick={() => setRubricAccordionOpen(prev => ({ ...prev, [`evidence-${point.id}`]: !prev[`evidence-${point.id}`] }))}
-                        className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+                        className="w-full justify-between"
                       >
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        <span className="eyebrow text-muted-foreground">
                           Evidence ({pointEvidence.length} linked)
                         </span>
                         <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${rubricAccordionOpen[`evidence-${point.id}`] ? 'rotate-180' : ''}`} />
-                      </button>
+                      </Button>
                       {rubricAccordionOpen[`evidence-${point.id}`] && (
                         <div className="px-4 pb-4 space-y-4">
                           {pointEvidence.length === 0 ? (
-                            <div className="border-2 border-dashed border-purple-200 rounded-lg p-6 text-center bg-purple-50/30">
-                              <p className="text-[10px] text-purple-400 font-bold leading-relaxed uppercase tracking-widest">No evidence linked yet</p>
-                              <p className="text-[9px] text-purple-300 italic mt-1">Select text in the manuscript to map it here</p>
+                            <div className="border-2 border-dashed border-[color:var(--category-2)]/30 rounded-lg p-6 text-center bg-[color:var(--category-2-bg)]/30">
+                              <p className="eyebrow text-[color:var(--category-2)] leading-relaxed">No evidence linked yet</p>
+                              <p className="text-xs text-[color:var(--category-2)] italic mt-1">Select text in the manuscript to map it here</p>
                             </div>
                           ) : (
                             <div className="flex flex-wrap gap-2 py-1">
                               {pointEvidence.map((ev, i) => (
                                 <Tooltip key={ev.id}>
                                   <TooltipTrigger render={
-                                    <button
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
                                       onClick={() => scrollToEvidence(ev.id)}
-                                      className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-border hover:border-primary hover:bg-primary/5 transition-all active:scale-95 shadow-sm"
+                                      className="group"
                                     />
                                   }>
                                       <div className="w-1.5 h-1.5 rounded-full bg-primary group-hover:animate-pulse" />
-                                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">
+                                      <span className="eyebrow text-muted-foreground group-hover:text-primary transition-colors">
                                         Evidence #{i+1}
                                       </span>
                                       <div 
@@ -1056,15 +1191,15 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                           e.stopPropagation()
                                           setMappedEvidence(prev => prev.filter(e => e.id !== ev.id))
                                         }}
-                                        className="ml-1 opacity-0 group-hover:opacity-100 p-0.5 hover:bg-red-50 rounded-full transition-all"
+                                        className="ml-1 opacity-0 group-hover:opacity-100 p-0.5 hover:bg-[color:var(--status-error-bg)] rounded-full transition-all"
                                       >
-                                        <X className="h-2.5 w-2.5 text-red-400 hover:text-red-600" />
+                                        <X className="h-2.5 w-2.5 text-destructive hover:text-[color:var(--status-error)]" />
                                       </div>
                                   </TooltipTrigger>
                                   <TooltipContent side="bottom" className="max-w-xs p-3 z-[100] bg-popover text-popover-foreground border border-border shadow-xl">
                                     <div className="space-y-1">
-                                      <span className="text-[9px] font-black uppercase tracking-widest text-primary/60">Source Text</span>
-                                      <p className="text-[11px] font-serif italic leading-relaxed">
+                                      <span className="eyebrow text-primary/60">Source Text</span>
+                                      <p className="text-xs font-serif italic leading-relaxed">
                                         &ldquo;{ev.text || "No text available"}&rdquo;
                                       </p>
                                     </div>
@@ -1073,36 +1208,35 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                               ))}
                             </div>
                           )}
-                          <button 
+                          <Button
+                            variant={textSelectionMode.active && textSelectionMode.criterionId === point.id ? "default" : "outline"}
+                            size="sm"
                             onClick={() => setTextSelectionMode({ active: true, criterionId: point.id })}
-                            className={`w-full border-2 border-dashed rounded-xl p-3 text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-                              textSelectionMode.active && textSelectionMode.criterionId === point.id
-                                ? 'bg-primary border-primary text-white shadow-lg'
-                                : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground'
-                            }`}
+                            className="w-full border-dashed"
                           >
                             <LinkIcon className={`h-3.5 w-3.5 ${textSelectionMode.active && textSelectionMode.criterionId === point.id ? 'animate-bounce' : ''}`} />
-                            {textSelectionMode.active && textSelectionMode.criterionId === point.id ? 'Selecting Evidence...' : '+ Add Evidence'}
-                          </button>
+                            {textSelectionMode.active && textSelectionMode.criterionId === point.id ? 'Selecting evidence...' : '+ Add evidence'}
+                          </Button>
                         </div>
                       )}
                     </div>
 
-                    <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden">
-                      <button
+                    <div className="rounded-xl border border-border bg-background shadow-sm overflow-hidden">
+                      <Button
+                        variant="ghost"
                         onClick={() => setRubricAccordionOpen(prev => ({ ...prev, [`reasoning-${point.id}`]: !prev[`reasoning-${point.id}`] }))}
-                        className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+                        className="w-full justify-between"
                       >
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">AI reasoning</span>
+                        <span className="eyebrow text-muted-foreground">AI reasoning</span>
                         <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${rubricAccordionOpen[`reasoning-${point.id}`] ? 'rotate-180' : ''}`} />
-                      </button>
+                      </Button>
                       {rubricAccordionOpen[`reasoning-${point.id}`] && (
                         <div className="px-4 pb-4 space-y-2">
                           <p className="text-xs font-serif italic text-muted-foreground leading-relaxed">{point.reasoning}</p>
                           <div className="flex flex-wrap gap-1.5">
-                            <Badge className="text-[9px] bg-green-50 text-green-700 border-green-200 border shadow-none">{point.aiScoreLabel}</Badge>
+                            <Badge className="text-xs bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30 border shadow-none">{point.aiScoreLabel}</Badge>
                             {point.status === 'REVIEW_NEEDED' && (
-                              <Badge className="text-[9px] bg-amber-50 text-amber-700 border-amber-200 border shadow-none">Review needed</Badge>
+                              <Badge className="text-xs bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30 border shadow-none">Review needed</Badge>
                             )}
                           </div>
                         </div>
@@ -1111,14 +1245,17 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                   </div>
                 </ScrollArea>
 
+                {/* Internal Notes */}
+                <InternalNotesPanel />
+
                 <div className="p-4 border-t border-border bg-background shrink-0 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Total</p>
+                      <p className="eyebrow text-muted-foreground">Total</p>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-xl font-black tracking-tighter text-foreground tabular-nums">{Math.round((currentTotalScore / totalMaxPoints) * 100)}</span>
+                        <span className="text-xl font-semibold tracking-tight text-foreground tabular-nums">{Math.round((currentTotalScore / totalMaxPoints) * 100)}</span>
                         <span className="text-xs text-muted-foreground font-bold">/ 100</span>
-                        <span className="text-[10px] text-muted-foreground/50 ml-1">({currentTotalScore.toFixed(1)}/{totalMaxPoints}pts)</span>
+                        <span className="text-xs text-muted-foreground/50 ml-1">({currentTotalScore.toFixed(1)}/{totalMaxPoints}pts)</span>
                       </div>
                     </div>
                   </div>
@@ -1128,7 +1265,6 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                       size="sm"
                       disabled={activeRubricCriterionIdx === 0}
                       onClick={() => setActiveRubricCriterionIdx(i => i - 1)}
-                      className="h-9 text-[10px] font-black uppercase tracking-widest text-muted-foreground disabled:opacity-30"
                     >
                       Previous
                     </Button>
@@ -1136,7 +1272,6 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                       variant="outline"
                       size="sm"
                       onClick={() => handleScoreConfirm(point.id, state.score ?? point.aiScore)}
-                      className="h-9 text-[10px] font-black uppercase tracking-widest border-border"
                     >
                       Save
                     </Button>
@@ -1145,25 +1280,19 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                         size="sm"
                         disabled={!allConfirmed}
                         onClick={() => {
-                          if (!gradedSubmissions.includes(selectedSubmission)) {
-                            setGradedSubmissions(prev => [...new Set([...prev, selectedSubmission])])
-                          }
-                          const nextUngraded = submissions.find(s => !gradedSubmissions.includes(s.id) && s.id !== selectedSubmission)
-                          if (nextUngraded) {
-                            setSelectedSubmission(nextUngraded.id)
-                            setIsFixed(false)
-                            setCurrentPage(1)
+                          if (allConfirmed) {
+                            router.push(`/dashboard/evaluation/${id}/feedback`)
                           }
                         }}
-                        className="h-9 flex-1 text-[10px] font-black uppercase tracking-widest bg-foreground text-background hover:bg-foreground/90 disabled:opacity-40 disabled:pointer-events-none"
+                        className="flex-1"
                       >
-                        {allConfirmed ? 'Submit Grade →' : `· ${rubricPoints.length - confirmedCount} remaining`}
+                        {allConfirmed ? 'Overall feedback →' : `· ${rubricPoints.length - confirmedCount} remaining`}
                       </Button>
                     ) : (
                       <Button
                         size="sm"
                         onClick={() => setActiveRubricCriterionIdx(i => i + 1)}
-                        className="h-9 flex-1 text-[10px] font-black uppercase tracking-widest bg-foreground text-background hover:bg-foreground/90"
+                        className="flex-1"
                       >
                         Next criterion
                       </Button>
@@ -1192,17 +1321,17 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               className="w-full max-w-md"
             >
-              <Card className="shadow-[0_40px_100px_-12px_rgba(0,0,0,0.2)] border-border bg-card overflow-hidden rounded-3xl">
+              <Card className="shadow-[0_40px_100px_-12px_rgba(0,0,0,0.2)] border-border bg-card overflow-hidden rounded-2xl">
                 <div className="h-2.5 w-full bg-primary shadow-[0_4px_12px_rgba(var(--primary),0.3)]" />
                 <CardContent className="p-16 text-center space-y-8">
-                  <div className="p-6 w-fit mx-auto rounded-3xl bg-accent text-primary shadow-inner">
+                  <div className="p-6 w-fit mx-auto rounded-2xl bg-accent text-primary shadow-inner">
                     <History className="h-10 w-10" />
                   </div>
                   <div className="space-y-3">
                     <h3 className="text-3xl font-serif italic tracking-tight text-foreground">Session Suspended</h3>
                     <p className="text-muted-foreground text-sm leading-relaxed px-4 font-medium italic">"Evaluation environment securely cached. Your current calibration metrics and annotations have been preserved in absolute state."</p>
                   </div>
-                  <Button onClick={() => setIsPaused(false)} className="w-full rounded-2xl h-14 bg-primary text-primary-foreground font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]">Resume Academic Review</Button>
+                  <Button size="lg" onClick={() => setIsPaused(false)} className="w-full">Resume academic review</Button>
                 </CardContent>
               </Card>
             </motion.div>
@@ -1223,37 +1352,40 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 initial={{ opacity: 0, scale: 0.9, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                className="fixed z-[100] bg-white border border-blue-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-xl p-4 flex flex-col gap-3 w-80 backdrop-blur-md"
+                className="fixed z-[100] bg-background border border-[color:var(--status-info)]/30 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-xl p-4 flex flex-col gap-3 w-80 backdrop-blur-md"
                 style={{ left: selection.x, top: selection.y, transform: 'translate(-50%, -110%)' }}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <LinkIcon className="h-3.5 w-3.5 text-blue-600" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-700">Link to C{activeCriterion.id}</span>
+                    <LinkIcon className="h-3.5 w-3.5 text-[color:var(--status-info)]" />
+                    <span className="eyebrow text-[color:var(--status-info)]">Link to C{activeCriterion.id}</span>
                   </div>
-                  <span className="text-[9px] font-black text-blue-400 tabular-nums">Folio {currentPage}</span>
+                  <span className="text-xs font-semibold text-[color:var(--status-info)] tabular-nums">Folio {currentPage}</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-blue-50 border border-blue-100">
-                  <p className="text-[11px] font-serif italic text-foreground/70 leading-relaxed">
+                <div className="p-2.5 rounded-lg bg-[color:var(--status-info-bg)] border border-[color:var(--status-info)]/30">
+                  <p className="text-xs font-serif italic text-foreground/70 leading-relaxed">
                     &ldquo;{selection.text.length > 100 ? selection.text.substring(0, 100) + '...' : selection.text}&rdquo;
                   </p>
                 </div>
-                <p className="text-[10px] text-muted-foreground/60">
-                  Link this text as evidence for <span className="font-bold text-blue-700">C{activeCriterion.id} — {activeCriterion.label}</span>?
+                <p className="text-xs text-muted-foreground/60">
+                  Link this text as evidence for <span className="font-bold text-[color:var(--status-info)]">C{activeCriterion.id} — {activeCriterion.label}</span>?
                 </p>
                 <div className="flex gap-2">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setSelection(null)}
-                    className="flex-1 p-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-muted border border-border transition-all"
+                    className="flex-1"
                   >
                     No, dismiss
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    size="sm"
                     onClick={() => handleLinkOverrideEvidence(selection.text, currentPage, textSelectionMode.criterionId!)}
-                    className="flex-1 p-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-blue-600 text-white hover:bg-blue-700 transition-all"
+                    className="flex-1"
                   >
                     Yes, link it
-                  </button>
+                  </Button>
                 </div>
               </motion.div>
             )
@@ -1264,15 +1396,15 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
               initial={{ opacity: 0, scale: 0.9, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 10 }}
-              className="fixed z-[100] bg-white border border-border shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-xl p-3 flex flex-col gap-2 w-72 backdrop-blur-md"
+              className="fixed z-[100] bg-background border border-border shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-xl p-3 flex flex-col gap-2 w-72 backdrop-blur-md"
               style={{ left: selection.x, top: selection.y, transform: 'translate(-50%, -110%)' }}
             >
               <div className="flex items-center justify-between px-2 pb-2 border-b border-border/80 mb-1">
                 <div className="flex items-center gap-2">
                     <LinkIcon className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Link Evidence</span>
+                    <span className="eyebrow text-muted-foreground">Link Evidence</span>
                 </div>
-                <span className="text-[9px] font-black text-primary/40 tabular-nums">Folio {currentPage}</span>
+                <span className="text-xs font-semibold text-primary/40 tabular-nums">Folio {currentPage}</span>
               </div>
               <div className="flex flex-col gap-1 max-h-[300px] overflow-y-auto pr-1">
                 {rubricPoints.map(point => (
@@ -1291,20 +1423,22 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                     className="w-full text-left p-2.5 rounded-lg hover:bg-primary/5 transition-all flex flex-col gap-0.5 group/btn cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-black tracking-tight text-foreground group-hover/btn:text-primary transition-colors">{point.label}</span>
+                        <span className="text-xs font-semibold tracking-tight text-foreground group-hover/btn:text-primary transition-colors">{point.label}</span>
                         <ArrowUpRight className="h-3 w-3 opacity-0 group-hover/btn:opacity-100 transition-all text-primary" />
                     </div>
-                    <span className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-[0.2em]">Criterion {point.id}</span>
+                    <span className="eyebrow text-muted-foreground/50">Criterion {point.id}</span>
                   </div>
                 ))}
               </div>
               <Separator className="bg-border/50 my-1" />
-              <button 
-               onClick={() => setSelection(null)}
-               className="w-full text-center p-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelection(null)}
+                className="w-full"
               >
-                 Dismiss
-              </button>
+                Dismiss
+              </Button>
             </motion.div>
           )
         })()}

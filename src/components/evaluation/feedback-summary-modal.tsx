@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
+import { statusStyles } from "@/lib/design-tokens"
 import { 
   X, 
   Mic, 
@@ -58,10 +59,10 @@ export function FeedbackSummaryModal({
   const percentage = Math.round((totalScore / maxScore) * 100)
 
   const getPerformanceLevel = (pct: number) => {
-    if (pct >= 90) return { label: "Excellent", color: "text-green-600", bg: "bg-green-50" }
-    if (pct >= 75) return { label: "Good", color: "text-blue-600", bg: "bg-blue-50" }
-    if (pct >= 60) return { label: "Satisfactory", color: "text-amber-600", bg: "bg-amber-50" }
-    return { label: "Needs Improvement", color: "text-red-600", bg: "bg-red-50" }
+    if (pct >= 90) return { label: "Excellent", color: statusStyles.success.text, bg: statusStyles.success.bg }
+    if (pct >= 75) return { label: "Good", color: statusStyles.info.text, bg: statusStyles.info.bg }
+    if (pct >= 60) return { label: "Satisfactory", color: statusStyles.warning.text, bg: statusStyles.warning.bg }
+    return { label: "Needs Improvement", color: statusStyles.error.text, bg: statusStyles.error.bg }
   }
 
   const performance = getPerformanceLevel(percentage)
@@ -140,15 +141,15 @@ Review the feedback for each criterion above and focus on the specific areas men
           className="fixed inset-0 z-[100] bg-background"
         >
           {/* Header */}
-          <div className="h-16 border-b border-border bg-white flex items-center justify-between px-6">
+          <div className="h-16 border-b border-border bg-background flex items-center justify-between px-6">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                   <MessageSquare className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-black tracking-tight">Final Feedback Summary</h2>
-                  <p className="text-[10px] text-muted-foreground">{studentName}</p>
+                  <h2 className="text-sm font-semibold tracking-tight">Final Feedback Summary</h2>
+                  <p className="text-xs text-muted-foreground">{studentName}</p>
                 </div>
               </div>
             </div>
@@ -156,10 +157,10 @@ Review the feedback for each criterion above and focus on the specific areas men
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <div className="flex items-baseline gap-2 justify-end">
-                  <span className="text-2xl font-black tracking-tighter">{percentage}</span>
+                  <span className="text-2xl font-semibold tracking-tight">{percentage}</span>
                   <span className="text-sm font-bold text-muted-foreground/50">/ 100</span>
                 </div>
-                <Badge className={`${performance.bg} ${performance.color} border-0 text-[9px] font-black uppercase tracking-wider`}>
+                <Badge className={`${performance.bg} ${performance.color} border-0 text-xs font-semibold tracking-wider`}>
                   {performance.label}
                 </Badge>
               </div>
@@ -173,8 +174,8 @@ Review the feedback for each criterion above and focus on the specific areas men
           <div className="h-[calc(100vh-64px)] flex">
             {/* Left Panel - Criteria Summary */}
             <div className="w-[45%] border-r border-border bg-muted/20">
-              <div className="p-4 border-b border-border bg-white">
-                <h3 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+              <div className="p-4 border-b border-border bg-background">
+                <h3 className="eyebrow text-muted-foreground">
                   Criterion Feedback ({criteria.length})
                 </h3>
               </div>
@@ -186,11 +187,11 @@ Review the feedback for each criterion above and focus on the specific areas men
                         <div className="flex-1">
                           <h4 className="text-sm font-bold tracking-tight">{criterion.label}</h4>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-[9px] font-black">
+                            <Badge variant="outline" className="text-xs font-semibold">
                               {criterion.score.toFixed(1)} / {criterion.maxPoints} pts
                             </Badge>
                             {criterion.isOverridden && (
-                              <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-[8px] font-black">
+                              <Badge className="bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30 text-xs font-semibold">
                                 Overridden from {criterion.aiScore}
                               </Badge>
                             )}
@@ -205,7 +206,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                           </p>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground/50">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground/50">
                           <AlertCircle className="h-3 w-3" />
                           <span>No feedback provided</span>
                         </div>
@@ -217,12 +218,12 @@ Review the feedback for each criterion above and focus on the specific areas men
             </div>
 
             {/* Right Panel - Overall Feedback */}
-            <div className="flex-1 flex flex-col bg-white">
+            <div className="flex-1 flex flex-col bg-background">
               <div className="p-4 border-b border-border">
-                <h3 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                <h3 className="eyebrow text-muted-foreground">
                   Overall Feedback
                 </h3>
-                <p className="text-[10px] text-muted-foreground/70 mt-1">
+                <p className="text-xs text-muted-foreground/70 mt-1">
                   Provide a comprehensive summary of the student's performance
                 </p>
               </div>
@@ -240,11 +241,11 @@ Review the feedback for each criterion above and focus on the specific areas men
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="absolute bottom-4 left-4 right-4 bg-white border border-primary/20 rounded-lg p-4 shadow-lg"
+                      className="absolute bottom-4 left-4 right-4 bg-background border border-primary/20 rounded-lg p-4 shadow-lg"
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <Lightbulb className="h-4 w-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-primary">AI Suggestions</span>
+                        <span className="eyebrow text-primary">AI Suggestions</span>
                       </div>
                       <ul className="space-y-1.5">
                         {suggestions.map((suggestion, idx) => (
@@ -271,17 +272,17 @@ Review the feedback for each criterion above and focus on the specific areas men
                       variant="outline"
                       size="sm"
                       onClick={isRecording ? handleStopRecording : handleStartRecording}
-                      className={`h-9 gap-2 ${isRecording ? 'bg-red-50 text-red-600 border-red-200' : ''}`}
+                      className={`h-9 gap-2 ${isRecording ? 'bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] border-[color:var(--status-error)]/30' : ''}`}
                     >
                       {isRecording ? (
                         <>
                           <MicOff className="h-4 w-4" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">Stop Recording</span>
+                          <span className="eyebrow">Stop Recording</span>
                         </>
                       ) : (
                         <>
                           <Mic className="h-4 w-4" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">Record</span>
+                          <span className="eyebrow">Record</span>
                         </>
                       )}
                     </Button>
@@ -296,12 +297,12 @@ Review the feedback for each criterion above and focus on the specific areas men
                       {isStructuring ? (
                         <>
                           <div className="h-3 w-3 border border-primary border-t-transparent rounded-full animate-spin" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">Structuring...</span>
+                          <span className="eyebrow">Structuring...</span>
                         </>
                       ) : (
                         <>
                           <Sparkles className="h-4 w-4" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">AI Structure</span>
+                          <span className="eyebrow">AI Structure</span>
                         </>
                       )}
                     </Button>
@@ -313,7 +314,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                       className="h-9 gap-2"
                     >
                       <Lightbulb className="h-4 w-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Get Suggestions</span>
+                      <span className="eyebrow">Get Suggestions</span>
                     </Button>
                   </div>
 
@@ -323,7 +324,7 @@ Review the feedback for each criterion above and focus on the specific areas men
                     className="h-9 px-6 gap-2"
                   >
                     <Send className="h-4 w-4" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Submit Feedback</span>
+                    <span className="eyebrow">Submit Feedback</span>
                   </Button>
                 </div>
               </div>

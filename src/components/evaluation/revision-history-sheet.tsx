@@ -20,6 +20,7 @@ import {
   User,
   Bot,
 } from "lucide-react"
+import { statusStyles } from "@/lib/design-tokens"
 
 export type RevisionEventType =
   | "override"
@@ -32,7 +33,7 @@ export interface RevisionEvent {
   id: string
   type: RevisionEventType
   timestamp: Date
-  criterionId: number
+  criterionId: string
   criterionLabel: string
   actor: "instructor" | "ai"
   details: {
@@ -64,37 +65,38 @@ const EVENT_CONFIG: Record<
   override: {
     label: "Score Override",
     icon: AlertTriangle,
-    color: "text-amber-700",
-    bgColor: "bg-amber-50",
-    borderColor: "border-amber-200",
+    color: statusStyles.warning.text,
+    bgColor: statusStyles.warning.bg,
+    borderColor: statusStyles.warning.border,
   },
   score_confirmed: {
     label: "Score Confirmed",
     icon: CheckCircle2,
-    color: "text-green-700",
-    bgColor: "bg-green-50",
-    borderColor: "border-green-200",
+    color: statusStyles.success.text,
+    bgColor: statusStyles.success.bg,
+    borderColor: statusStyles.success.border,
   },
   evidence_mapped: {
     label: "Evidence Mapped",
     icon: Link2,
-    color: "text-blue-700",
-    bgColor: "bg-blue-50",
-    borderColor: "border-blue-200",
+    color: statusStyles.info.text,
+    bgColor: statusStyles.info.bg,
+    borderColor: statusStyles.info.border,
   },
   evidence_removed: {
     label: "Evidence Removed",
     icon: Trash2,
-    color: "text-red-700",
-    bgColor: "bg-red-50",
-    borderColor: "border-red-200",
+    color: statusStyles.error.text,
+    bgColor: statusStyles.error.bg,
+    borderColor: statusStyles.error.border,
   },
   feedback_edited: {
     label: "Feedback Edited",
     icon: MessageSquare,
-    color: "text-purple-700",
-    bgColor: "bg-purple-50",
-    borderColor: "border-purple-200",
+    // TODO: no purple token in statusStyles; keep literal until a palette slot is defined
+    color: "text-[color:var(--category-2)]",
+    bgColor: "bg-[color:var(--category-2-bg)]",
+    borderColor: "border-[color:var(--category-2)]/30",
   },
 }
 
@@ -134,22 +136,22 @@ function EventCard({ event }: { event: RevisionEvent }) {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className={`text-[10px] font-black uppercase tracking-widest ${config.color}`}>
+            <span className={`eyebrow ${config.color}`}>
               {config.label}
             </span>
             <Badge
               variant="outline"
-              className={`h-4 px-1.5 text-[8px] font-bold rounded-sm ${config.bgColor} ${config.color} ${config.borderColor} border`}
+              className={`h-4 px-1.5 text-xs font-bold rounded-sm ${config.bgColor} ${config.color} ${config.borderColor} border`}
             >
-              C{event.criterionId}
+              {String(event.criterionId).toUpperCase()}
             </Badge>
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground/50">
             <Clock className="h-2.5 w-2.5" />
-            <span className="text-[9px] font-mono tabular-nums">
+            <span className="text-xs font-mono tabular-nums">
               {formatTime(event.timestamp)}
             </span>
-            <span className="text-[8px] text-muted-foreground/30">
+            <span className="text-xs text-muted-foreground/30">
               ({formatRelativeTime(event.timestamp)})
             </span>
           </div>
@@ -161,12 +163,12 @@ function EventCard({ event }: { event: RevisionEvent }) {
           ) : (
             <Bot className="h-3 w-3 text-muted-foreground/60" />
           )}
-          <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">
+          <span className="eyebrow text-muted-foreground/60">
             {event.actor === "instructor" ? "Instructor" : "AI System"}
           </span>
         </div>
 
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+        <p className="text-xs font-bold text-muted-foreground tracking-wider">
           {event.criterionLabel}
         </p>
 
@@ -185,12 +187,12 @@ function EventCard({ event }: { event: RevisionEvent }) {
                 {event.details.newScore}
               </span>
             )}
-            <span className="text-[9px] text-muted-foreground/50 ml-auto">pts</span>
+            <span className="text-xs text-muted-foreground/50 ml-auto">pts</span>
           </div>
         )}
 
         {event.type === "override" && event.details.reasoning && (
-          <div className="py-1.5 px-3 rounded-md bg-amber-50/50 border border-amber-100 text-xs italic text-amber-800/70 leading-relaxed">
+          <div className="py-1.5 px-3 rounded-md bg-[color:var(--status-warning-bg)]/50 border border-[color:var(--status-warning)]/30 text-xs italic text-[color:var(--status-warning)]/70 leading-relaxed">
             {event.details.reasoning}
           </div>
         )}
@@ -200,8 +202,8 @@ function EventCard({ event }: { event: RevisionEvent }) {
             <div
               className={`py-1.5 px-3 rounded-md border text-xs italic leading-relaxed ${
                 event.type === "evidence_mapped"
-                  ? "bg-blue-50/50 border-blue-100 text-blue-800/70"
-                  : "bg-red-50/50 border-red-100 text-red-800/70"
+                  ? "bg-[color:var(--status-info-bg)]/50 border-[color:var(--status-info)]/30 text-[color:var(--status-info)]/70"
+                  : "bg-[color:var(--status-error-bg)]/50 border-[color:var(--status-error)]/30 text-[color:var(--status-error)]/70"
               }`}
             >
               &ldquo;{event.details.evidenceText.length > 120
@@ -211,7 +213,7 @@ function EventCard({ event }: { event: RevisionEvent }) {
           )}
 
         {event.type === "feedback_edited" && event.details.feedbackSnippet && (
-          <div className="py-1.5 px-3 rounded-md bg-purple-50/50 border border-purple-100 text-xs italic text-purple-800/70 leading-relaxed">
+          <div className="py-1.5 px-3 rounded-md bg-[color:var(--category-2-bg)]/50 border border-[color:var(--category-2)]/30 text-xs italic text-[color:var(--category-2)]/70 leading-relaxed">
             {event.details.feedbackSnippet.length > 150
               ? event.details.feedbackSnippet.slice(0, 150) + "..."
               : event.details.feedbackSnippet}
@@ -253,17 +255,17 @@ export function RevisionHistorySheet({
                 <Clock className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <SheetTitle className="text-sm font-black uppercase tracking-widest">
+                <SheetTitle className="eyebrow text-sm">
                   Revision History
                 </SheetTitle>
-                <SheetDescription className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/60">
+                <SheetDescription className="eyebrow text-muted-foreground/60">
                   Audit trail for {studentName}
                 </SheetDescription>
               </div>
             </div>
             <Badge
               variant="outline"
-              className="h-6 px-2 text-[9px] font-black rounded-full"
+              className="h-6 px-2 text-xs font-semibold rounded-full"
             >
               {events.length} {events.length === 1 ? "event" : "events"}
             </Badge>
@@ -277,7 +279,7 @@ export function RevisionHistorySheet({
                   <Badge
                     key={type}
                     variant="outline"
-                    className={`h-5 px-2 text-[8px] font-bold uppercase tracking-wider rounded-full ${config.bgColor} ${config.color} ${config.borderColor} border`}
+                    className={`h-5 px-2 text-xs font-bold tracking-wider rounded-full ${config.bgColor} ${config.color} ${config.borderColor} border`}
                   >
                     {config.label} ({count})
                   </Badge>
@@ -290,14 +292,14 @@ export function RevisionHistorySheet({
         {events.length === 0 ? (
           <div className="flex-1 flex items-center justify-center p-8">
             <div className="text-center space-y-4">
-              <div className="h-16 w-16 rounded-2xl bg-muted/30 flex items-center justify-center mx-auto">
+              <div className="h-16 w-16 rounded-xl bg-muted/30 flex items-center justify-center mx-auto">
                 <Clock className="h-8 w-8 text-muted-foreground/20" />
               </div>
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/40">
+                <p className="eyebrow text-xs text-muted-foreground/40">
                   No revisions yet
                 </p>
-                <p className="text-[10px] text-muted-foreground/30 mt-1 leading-relaxed">
+                <p className="text-xs text-muted-foreground/30 mt-1 leading-relaxed">
                   Override scores, map evidence, or edit feedback to build an audit trail
                 </p>
               </div>
@@ -317,7 +319,7 @@ export function RevisionHistorySheet({
 
         {events.length > 0 && (
           <div className="p-4 border-t border-border bg-muted/10">
-            <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40">
+            <div className="eyebrow flex items-center justify-between text-muted-foreground/40">
               <span>
                 First event at{" "}
                 {sortedEvents[sortedEvents.length - 1]?.timestamp.toLocaleTimeString(

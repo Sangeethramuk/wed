@@ -1,330 +1,374 @@
 "use client"
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { STUDENTS, STUDENT_ORDER } from '@/lib/data/re-evaluation-data'
 import { useReEvalStore } from '@/lib/store/re-evaluation-store'
-import { BriefingModal } from '@/components/re-evaluation/briefing-modal'
+import { 
+  RefreshCcw, 
+  AlertCircle, 
+  Clock, 
+  CheckCircle2, 
+  ChevronRight, 
+  Users, 
+  Sparkles,
+  PlayCircle,
+  Calendar,
+  Layers,
+  ArrowRight,
+  BookOpen
+} from 'lucide-react'
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
 
-const TOTAL = 7
-const INITIAL_RESOLVED = 12
+const GLOBAL_KPIS = [
+  { label: 'Awaiting Response', value: 13, sub: 'Across 5 assignments', accent: '#EF4444' },
+  { label: 'SLA Breached', value: 3, sub: 'Respond now', accent: '#F59E0B' },
+  { label: 'Institutional Review', value: 1, sub: 'Awaiting HOD', accent: '#FBBF24' },
+  { label: 'Resolved This Batch', value: 12, sub: 'Closed window', accent: '#10B981' },
+]
 
-const CONCERN_STYLES = {
-  red:    { bg: '#FEF2F2', border: '#FECACA', text: '#EF4444' },
-  orange: { bg: '#FFF7ED', border: '#FED7AA', text: '#92400E' },
-  blue:   { bg: '#EFF6FF', border: '#BFDBFE', text: '#3B82F6' },
-}
+type WorkflowState = 'IN_PROGRESS' | 'READY' | 'WINDOW_OPEN' | 'COMPLETED'
 
-const STATUS_STYLES = {
-  overdue: { bg: '#EF4444', color: '#fff', label: 'Overdue' },
-  pending: { bg: '#F1F5F9', color: '#94A3B8', label: 'Pending', border: '#CBD5E1' },
-  new:     { bg: '#ECFDF5', color: '#065F46', label: 'New', border: '#A7F3D0' },
-}
+const ASSIGNMENTS = [
+  {
+    id: 'dsa-a1',
+    code: 'CS301',
+    subject: 'DSA',
+    batch: 'Batch 4',
+    title: 'DSA Assignment 1',
+    workflowState: 'IN_PROGRESS' as WorkflowState,
+    pendingCount: 7,
+    overdueCount: 2,
+    firstRequest: '4 days ago',
+    latestRequest: '51 hrs ago',
+    appealWindow: 'Window closed',
+    resolvedCount: 5,
+    totalCount: 12,
+    url: '/dashboard/re-evaluation/triage'
+  },
+  {
+    id: 'os-l3',
+    code: 'CS205',
+    subject: 'OS',
+    batch: 'Batch 2',
+    title: 'OS Lab 3',
+    workflowState: 'IN_PROGRESS' as WorkflowState,
+    pendingCount: 2,
+    overdueCount: 1,
+    firstRequest: '3 days ago',
+    latestRequest: '2 days ago',
+    appealWindow: 'Window closed',
+    resolvedCount: 2,
+    totalCount: 4,
+    url: '#'
+  },
+  {
+    id: 'dsa-mid',
+    code: 'CS301',
+    subject: 'DSA',
+    batch: 'Batch 3',
+    title: 'DSA Mid-Term Exam',
+    workflowState: 'READY' as WorkflowState,
+    pendingCount: 3,
+    overdueCount: 0,
+    firstRequest: '6 days ago',
+    latestRequest: '3 days ago',
+    appealWindow: 'Closed recently',
+    resolvedCount: 9,
+    totalCount: 12,
+    url: '#'
+  },
+  {
+    id: 'networks-q1',
+    code: 'CS410',
+    subject: 'Networks',
+    batch: 'Batch 1',
+    title: 'Networks Quiz 1',
+    workflowState: 'WINDOW_OPEN' as WorkflowState,
+    pendingCount: 1,
+    overdueCount: 0,
+    firstRequest: '18 hrs ago',
+    latestRequest: '18 hrs ago',
+    appealWindow: 'Closes in 2 days',
+    resolvedCount: 0,
+    totalCount: 1,
+    url: '#'
+  },
+  {
+    id: 'math-end',
+    code: 'MA204',
+    subject: 'Engineering Maths',
+    batch: 'Multiple batches',
+    title: 'Engineering Mathematics',
+    workflowState: 'WINDOW_OPEN' as WorkflowState,
+    pendingCount: 4,
+    overdueCount: 0,
+    firstRequest: '2 days ago',
+    latestRequest: '5 hrs ago',
+    appealWindow: 'Closes in 5 days',
+    resolvedCount: 0,
+    totalCount: 4,
+    shared: '3 faculty',
+    url: '#'
+  },
+  {
+    id: 'db-sys',
+    code: 'CS305',
+    subject: 'DBMS',
+    batch: 'Batch 1',
+    title: 'Database Systems Final',
+    workflowState: 'COMPLETED' as WorkflowState,
+    pendingCount: 0,
+    overdueCount: 0,
+    firstRequest: '12 days ago',
+    latestRequest: '8 days ago',
+    appealWindow: 'Closed',
+    resolvedCount: 15,
+    totalCount: 15,
+    url: '#'
+  }
+]
 
-export default function ReEvaluationPage() {
+export default function ReEvaluationDashboard() {
   const router = useRouter()
-  const { getStatus, hodPendingIds, resolvedIds } = useReEvalStore()
-  const [briefingId, setBriefingId] = useState<string | null>(null)
+  const { hodPendingIds, resolvedIds } = useReEvalStore()
 
-  const pending = TOTAL - resolvedIds.length - hodPendingIds.length
-  const resolved = INITIAL_RESOLVED + resolvedIds.length
-  const hodCount = hodPendingIds.length
-  const done = resolvedIds.length + hodPendingIds.length
-  const progressPct = Math.round((done / TOTAL) * 100)
+  // Dynamic stats for the main assignment
+  const dsaPending = 7 - resolvedIds.length - hodPendingIds.length
+  const dsaResolved = 5 + resolvedIds.length
 
-  const orderedStudents = [
-    ...STUDENT_ORDER.filter((id) => getStatus(id) === 'pending'),
-    ...STUDENT_ORDER.filter((id) => getStatus(id) === 'hod'),
-    ...STUDENT_ORDER.filter((id) => getStatus(id) === 'resolved'),
-  ]
+  const groupedAssignments = {
+    IN_PROGRESS: ASSIGNMENTS.filter(a => a.workflowState === 'IN_PROGRESS'),
+    READY: ASSIGNMENTS.filter(a => a.workflowState === 'READY'),
+    WINDOW_OPEN: ASSIGNMENTS.filter(a => a.workflowState === 'WINDOW_OPEN'),
+    COMPLETED: ASSIGNMENTS.filter(a => a.workflowState === 'COMPLETED'),
+  }
 
   return (
-    <div className="space-y-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      {/* Page header */}
-      <div className="flex items-start justify-between mb-5">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Re-evaluation Requests</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            CS301 · DSA Batch 4 · Results released Mon 9:00 AM · Appeal window closes Sunday night
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {pending > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold" style={{ background: '#FEF2F2', color: '#EF4444', border: '1px solid #FECACA' }}>
-              ⏱ 2 waiting over 48 hours
+    <div className="flex flex-col min-h-[calc(100vh-8rem)] relative bg-[#F8FAFC]/30">
+      {/* Header Section — Sticky with blur matching Pre-evaluation */}
+      <div className="sticky top-0 z-50 bg-background/60 backdrop-blur-md pt-6 pb-8 border-b border-border/10">
+        <div className="max-w-6xl mx-auto w-full px-4">
+          <div className="flex items-start justify-between mb-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="eyebrow text-muted-foreground/40">IIM Bangalore</span>
+                <span className="text-muted-foreground/20 text-xs">·</span>
+                <span className="eyebrow text-primary/80">Re-Evaluation Module</span>
+              </div>
+              <h1 className="text-4xl font-semibold tracking-tight secondary-text">Manage your workload</h1>
             </div>
-          )}
-          <button
-            className="px-3.5 py-1.5 rounded-lg text-[12px] font-medium transition-colors hover:bg-accent"
-            style={{ border: '1.5px solid #CBD5E1', background: 'transparent', color: '#475569', cursor: 'pointer', fontFamily: 'inherit' }}
-          >
-            Download full record
-          </button>
-        </div>
-      </div>
+            
+            <div className="flex flex-col items-end gap-3">
+              <div className="eyebrow text-muted-foreground/40 flex items-center gap-2">
+                <Clock className="h-3 w-3 opacity-50" />
+                Last updated 2 mins ago
+              </div>
+            </div>
+          </div>
 
-      {/* KPI cards */}
-      <div className="grid grid-cols-4 gap-2.5 mb-4">
-        <KpiCard label="Pending" value={pending} sub="Awaiting your response" accent="#EF4444" />
-        <KpiCard label="Due today" value={2} sub="Over 48 hrs — respond now" accent="#F59E0B" />
-        <KpiCard label="Awaiting HOD" value={hodCount} sub="Under institutional review" accent="#FBBF24" />
-        <KpiCard label="Resolved" value={resolved} sub="This batch" accent="#10B981" />
-      </div>
-
-      {/* Progress */}
-      <div className="flex items-center gap-2.5 mb-4">
-        <span className="text-[12px] text-muted-foreground whitespace-nowrap">
-          {pending} request{pending !== 1 ? 's' : ''} remaining
-        </span>
-        <div className="flex-1 h-1.5 rounded-full" style={{ background: '#E2E8F0' }}>
-          <div
-            className="h-1.5 rounded-full transition-all duration-500"
-            style={{ width: `${progressPct}%`, background: '#6B5FC4' }}
-          />
-        </div>
-        <span className="text-[12px] font-semibold text-muted-foreground whitespace-nowrap">{done} / {TOTAL}</span>
-      </div>
-
-      {/* Table */}
-      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #E2E8F0' }}>
-        {/* Header */}
-        <div
-          className="grid text-[10px] font-bold uppercase tracking-[0.07em]"
-          style={{
-            gridTemplateColumns: '200px 160px 110px 1fr 85px 125px 120px',
-            background: '#F1F5F9',
-            borderBottom: '1px solid #CBD5E1',
-            color: '#94A3B8',
-          }}
-        >
-          {['Student', 'Assignment · Criterion', 'Concern', 'Student reasoning', 'Submitted', 'Status', ''].map((h, i) => (
-            <div key={i} className="px-3 py-2.5" style={{ borderRight: i < 6 ? '1px solid #E2E8F0' : 'none' }}>{h}</div>
-          ))}
-        </div>
-
-        {/* Rows */}
-        {orderedStudents.map((id) => {
-          const st = STUDENTS[id]
-          const status = getStatus(id)
-          const cs = CONCERN_STYLES[st.concernVariant]
-
-          return (
-            <div key={id} className="relative" style={{ borderBottom: '1px solid #E2E8F0' }}>
-              <div
-                className="grid"
-                style={{
-                  gridTemplateColumns: '200px 160px 110px 1fr 85px 125px 120px',
-                  minHeight: 70,
-                  background: st.rowBg ?? '#fff',
-                }}
-              >
-                {/* Student */}
-                <div className="flex items-stretch p-0" style={{ borderRight: '1px solid #E2E8F0' }}>
-                  <div className="w-0.5 flex-shrink-0 self-stretch" style={{ background: st.accentColor }} />
-                  <div className="px-3 py-2.5 flex flex-col justify-center gap-1 flex-1">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
-                        style={{
-                          background: st.isNew ? '#EFF6FF' : st.ageStatus === 'overdue' ? '#FEF2F2' : '#F1F5F9',
-                          border: `1px solid ${st.isNew ? '#BFDBFE' : st.ageStatus === 'overdue' ? '#FECACA' : '#E2E8F0'}`,
-                          color: st.isNew ? '#3B82F6' : st.ageStatus === 'overdue' ? '#EF4444' : '#64748B',
-                        }}
-                      >
-                        {st.name.split(' ').map((n) => n[0]).join('')}
-                      </div>
-                      <div>
-                        <div className="text-[13px] font-bold flex items-center gap-1.5" style={{ color: '#1E293B' }}>
-                          {st.name}
-                          {st.isNew && <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: '#3B7FE8' }} />}
-                        </div>
-                        <div className="text-[10px]" style={{ color: '#94A3B8', fontFamily: 'monospace' }}>{st.rollId}</div>
-                      </div>
-                    </div>
-                    {st.isCluster && (
-                      <span
-                        className="self-start text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-[0.04em]"
-                        style={{ background: '#FFF7ED', color: '#92400E', border: '1px solid #FED7AA' }}
-                      >
-                        C2 cluster
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Assignment · Criterion */}
-                <div className="px-3 py-2.5 flex flex-col justify-center gap-1" style={{ borderRight: '1px solid #E2E8F0' }}>
-                  <div className="text-[12px] font-medium" style={{ color: '#1E293B' }}>{st.assign}</div>
-                  <span
-                    className="self-start text-[11px] font-bold px-2 py-0.5 rounded-full"
-                    style={{ background: '#EDE9FB', color: '#6B5FC4', border: '1px solid #C4BDF0' }}
-                  >
-                    {st.critShort} · {st.origScore} / {st.maxScore}
-                  </span>
-                </div>
-
-                {/* Concern */}
-                <div className="px-3 py-2.5 flex flex-col justify-center gap-1" style={{ borderRight: '1px solid #E2E8F0' }}>
-                  <div className="text-[12px]" style={{ color: '#475569' }}>{st.concern}</div>
-                  <span
-                    className="self-start text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-[0.04em]"
-                    style={{ background: cs.bg, color: cs.text, border: `1px solid ${cs.border}` }}
-                  >
-                    {st.concernType}
-                  </span>
-                </div>
-
-                {/* Student reasoning */}
-                <div className="px-3 py-2.5 flex items-center" style={{ borderRight: '1px solid #E2E8F0' }}>
-                  <div
-                    className="text-[12px] leading-relaxed overflow-hidden"
-                    style={{
-                      color: '#475569',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical' as const,
-                    }}
-                  >
-                    {st.sv}
-                  </div>
-                </div>
-
-                {/* Submitted */}
-                <div className="px-3 py-2.5 flex flex-col justify-center" style={{ borderRight: '1px solid #E2E8F0' }}>
-                  <div
-                    className="text-[11px] font-bold"
-                    style={{ color: st.ageStatus === 'overdue' ? '#EF4444' : st.ageStatus === 'new' ? '#475569' : '#92400E' }}
-                  >
-                    {st.ageLabel}
-                  </div>
-                  <div className="text-[10px] capitalize" style={{ color: '#94A3B8' }}>
-                    {st.ageStatus === 'overdue' ? 'Overdue' : st.ageStatus === 'new' ? 'New' : 'Pending'}
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div className="px-3 py-2.5 flex items-center" style={{ borderRight: '1px solid #E2E8F0' }}>
-                  <StatusPill status={status} ageStatus={st.ageStatus} />
-                </div>
-
-                {/* Action */}
-                <div className="px-3 py-2.5 flex items-center justify-center">
-                  {status === 'pending' && (
-                    <button
-                      onClick={() => setBriefingId(id)}
-                      className="px-4 py-1.5 rounded-lg text-[11px] font-bold text-white transition-colors"
-                      style={{ background: '#6B5FC4', border: 'none', cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 2px 6px rgba(107,95,196,.35)' }}
-                    >
-                      Review now →
-                    </button>
-                  )}
-                  {status === 'hod' && (
-                    <button
-                      onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                      className="px-4 py-1.5 rounded-lg text-[11px] font-medium transition-colors hover:bg-slate-50"
-                      style={{ border: '1.5px solid #CBD5E1', background: '#fff', color: '#475569', cursor: 'pointer', fontFamily: 'inherit' }}
-                    >
-                      View →
-                    </button>
-                  )}
+          <div className="grid grid-cols-4 gap-3">
+            {GLOBAL_KPIS.map((kpi, i) => (
+              <div key={i} className="group px-4 py-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-all flex flex-col justify-center">
+                <span className="eyebrow text-muted-foreground/50">{kpi.label}</span>
+                <div className="flex items-baseline gap-1.5 mt-1">
+                  <span className="text-xl font-semibold tracking-tight" style={{ color: kpi.accent }}>{kpi.value}</span>
+                  <span className="text-xs font-bold text-muted-foreground/30">{kpi.sub}</span>
                 </div>
               </div>
-
-              {/* Resolved overlay */}
-              {status === 'resolved' && (
-                <div
-                  className="absolute inset-0 flex items-center px-4 gap-2.5 text-[12px] font-semibold pointer-events-none"
-                  style={{ background: 'rgba(240,253,244,.96)', color: '#065F46', zIndex: 5 }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                    <circle cx="10" cy="10" r="9" stroke="#10B981" strokeWidth="1.5" />
-                    <path d="M6 10l3 3 5-5" stroke="#10B981" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  Resolved · Student notified
-                </div>
-              )}
-
-              {/* HOD overlay */}
-              {status === 'hod' && (
-                <div
-                  className="absolute inset-0 flex items-center px-4 gap-2 text-[12px] font-semibold pointer-events-none"
-                  style={{ background: 'rgba(255,251,235,.95)', color: '#92400E', zIndex: 5 }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M8 2l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="#F59E0B" strokeWidth="1.3" strokeLinejoin="round" />
-                  </svg>
-                  Awaiting HOD approval · Dr. R. Kumar · Student notified once HOD approves
-                  <button
-                    onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                    className="ml-auto pointer-events-auto px-3 py-1 rounded text-[11px] font-semibold"
-                    style={{ background: '#FEF3DC', border: '1px solid #FDE68A', color: '#92400E', cursor: 'pointer', fontFamily: 'inherit' }}
-                  >
-                    View →
-                  </button>
-                </div>
-              )}
-            </div>
-          )
-        })}
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Briefing modal */}
-      {briefingId && (
-        <BriefingModal
-          studentId={briefingId}
-          onClose={() => setBriefingId(null)}
-          onStart={() => {
-            setBriefingId(null)
-            router.push(`/dashboard/re-evaluation/${briefingId}`)
-          }}
-        />
-      )}
+      {/* Main Content Sections */}
+      <div className="max-w-6xl mx-auto w-full pb-20 px-4 pt-6 space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        
+        {/* 1. IN PROGRESS */}
+        <Section 
+          title="In Progress" 
+          subtitle="Continue review sessions for active re-evaluation queues"
+          icon={<PlayCircle className="h-3.5 w-3.5" />}
+          count={groupedAssignments.IN_PROGRESS.length}
+          accent="primary"
+        >
+          <div className="grid grid-cols-3 gap-4">
+            {groupedAssignments.IN_PROGRESS.map(assignment => {
+              const isDsa = assignment.id === 'dsa-a1'
+              return (
+                <AssignmentCard 
+                  key={assignment.id} 
+                  {...assignment} 
+                  pendingCount={isDsa ? dsaPending : assignment.pendingCount}
+                  resolvedCount={isDsa ? dsaResolved : assignment.resolvedCount}
+                  cta="Continue Review"
+                  onClick={() => assignment.url !== '#' && router.push(assignment.url)}
+                />
+              )
+            })}
+          </div>
+        </Section>
+
+        {/* 2. READY FOR REVIEW */}
+        <Section 
+          title="Ready for Review" 
+          subtitle="Appeal window closed. Final queues ready for your attention."
+          icon={<Layers className="h-3.5 w-3.5" />}
+          count={groupedAssignments.READY.length}
+          accent="amber"
+        >
+          <div className="grid grid-cols-3 gap-4">
+            {groupedAssignments.READY.map(assignment => (
+              <AssignmentCard 
+                key={assignment.id} 
+                {...assignment} 
+                resolvedCount={0}
+                cta="Start Review"
+                onClick={() => assignment.url !== '#' && router.push(assignment.url)}
+              />
+            ))}
+          </div>
+        </Section>
+
+        {/* 3. WINDOW OPEN */}
+        <Section 
+          title="Request Window Open" 
+          subtitle="Upcoming workload. Students currently submitting appeals."
+          icon={<Calendar className="h-3.5 w-3.5" />}
+          count={groupedAssignments.WINDOW_OPEN.length}
+          accent="slate"
+        >
+          <div className="grid grid-cols-3 gap-4">
+            {groupedAssignments.WINDOW_OPEN.map(assignment => (
+              <AssignmentCard 
+                key={assignment.id} 
+                {...assignment} 
+                variant="outline"
+              />
+            ))}
+          </div>
+        </Section>
+
+        {/* 4. COMPLETED */}
+        <Section 
+          title="Completed" 
+          subtitle="All requests resolved for this window."
+          icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+          count={groupedAssignments.COMPLETED.length}
+          accent="emerald"
+        >
+          <div className="grid grid-cols-3 gap-4 opacity-60 grayscale-[0.5] hover:opacity-100 hover:grayscale-0 transition-all">
+            {groupedAssignments.COMPLETED.map(assignment => (
+              <AssignmentCard 
+                key={assignment.id} 
+                {...assignment} 
+                cta="View History"
+                variant="ghost"
+              />
+            ))}
+          </div>
+        </Section>
+
+      </div>
     </div>
   )
 }
 
-function KpiCard({ label, value, sub, accent }: { label: string; value: number; sub: string; accent: string }) {
+function Section({ title, subtitle, icon, count, accent, children }: any) {
+  const accentColors: any = {
+    primary: 'text-primary bg-primary/5 border-primary/10',
+    amber: 'text-[color:var(--status-warning)] bg-[color:var(--status-warning)]/5 border-[color:var(--status-warning)]/10',
+    slate: 'text-muted-foreground bg-foreground/5 border-border/10',
+    emerald: 'text-[color:var(--status-success)] bg-[color:var(--status-success)]/5 border-[color:var(--status-success)]/10',
+  }
+  
   return (
-    <div className="rounded-xl p-3.5" style={{ background: '#fff', border: '1px solid #E2E8F0', borderLeft: `3px solid ${accent}`, boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1" style={{ color: '#94A3B8' }}>{label}</div>
-      <div className="text-[24px] font-extrabold tracking-tight leading-tight" style={{ color: accent }}>{value}</div>
-      <div className="text-[11px] mt-1" style={{ color: '#94A3B8' }}>{sub}</div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <div className={`p-1 rounded-lg border ${accentColors[accent]}`}>
+              {icon}
+            </div>
+            <h2 className="eyebrow text-muted-foreground/70">{title} ({count})</h2>
+          </div>
+          <p className="text-xs font-bold text-muted-foreground/30 pl-8">{subtitle}</p>
+        </div>
+      </div>
+      {children}
     </div>
   )
 }
 
-function StatusPill({ status, ageStatus }: { status: 'pending' | 'hod' | 'resolved'; ageStatus: string }) {
-  if (status === 'resolved') {
-    return (
-      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em]" style={{ background: '#ECFDF5', color: '#065F46', border: '1px solid #A7F3D0' }}>
-        Resolved
-      </span>
-    )
-  }
-  if (status === 'hod') {
-    return (
-      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em]" style={{ background: '#FFFBEB', color: '#92400E', border: '1px solid #FDE68A' }}>
-        Awaiting HOD
-      </span>
-    )
-  }
-  if (ageStatus === 'overdue') {
-    return (
-      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em] text-white" style={{ background: '#EF4444', border: '1px solid #EF4444' }}>
-        Overdue
-      </span>
-    )
-  }
-  if (ageStatus === 'new') {
-    return (
-      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em]" style={{ background: '#ECFDF5', color: '#065F46', border: '1px solid #A7F3D0' }}>
-        New
-      </span>
-    )
-  }
+function AssignmentCard({
+  code, subject, batch, title, pendingCount, overdueCount, appealWindow, resolvedCount, totalCount, shared, cta, variant = "default", onClick
+}: any) {
+  const progressPct = Math.round((resolvedCount / totalCount) * 100)
+  
   return (
-    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em]" style={{ background: '#F1F5F9', color: '#94A3B8', border: '1px solid #CBD5E1' }}>
-      Pending
-    </span>
+    <Card 
+      className="group relative overflow-hidden cursor-pointer hover:border-primary/20 transition-all border-border/20 bg-card/20 backdrop-blur-sm rounded-xl p-4 flex flex-col shadow-none min-h-[220px]"
+      onClick={onClick}
+    >
+      <div className="absolute top-4 right-4 z-10">
+        {overdueCount > 0 ? (
+          <Badge variant="outline" className="eyebrow text-xs border-destructive/20 text-[color:var(--status-error)]/70 bg-destructive/[0.04] rounded-md px-1.5 py-0">
+            {overdueCount} Overdue
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="eyebrow text-xs border-border/30 text-muted-foreground/60 rounded-md px-1.5 py-0">
+             {appealWindow}
+          </Badge>
+        )}
+      </div>
+
+      <div className="space-y-3 flex-1 flex flex-col">
+        <div>
+          <div className="p-1.5 w-fit rounded-lg bg-primary/5 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 border border-primary/10 mb-3">
+            <BookOpen className="h-4 w-4" />
+          </div>
+          <h3 className="text-sm font-semibold tracking-tight line-clamp-1 text-[#1E293B]">{title}</h3>
+          <div className="eyebrow flex items-center gap-1 text-xs text-muted-foreground/50 mt-0.5">
+            {code} <span className="opacity-40">•</span> {subject} <span className="opacity-40">•</span> {batch}
+          </div>
+        </div>
+
+        <div className="mt-auto space-y-3">
+          <div className="flex items-end justify-between pt-3 border-t border-border/10">
+            <div className="space-y-0.5">
+              <span className="eyebrow text-xs text-muted-foreground/30">Workload</span>
+              <div className="text-xs font-semibold text-foreground/80">{pendingCount} Pending</div>
+            </div>
+            <div className="space-y-0.5 text-right">
+              <span className="eyebrow text-xs text-muted-foreground/30">Progress</span>
+              <div className="text-xs font-semibold text-muted-foreground">{resolvedCount}/{totalCount}</div>
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <Progress value={progressPct} className="h-0.5 bg-primary/5" />
+            <div className="eyebrow flex items-center justify-between text-xs text-muted-foreground/40">
+              <span>{progressPct}% Resolved</span>
+              <div className="flex items-center gap-1">
+                 {shared && <Users className="h-2 w-2" />}
+                 <span>{shared || ''}</span>
+              </div>
+            </div>
+          </div>
+
+          {cta && (
+            <div className="flex items-center justify-end pt-1">
+              <div className="eyebrow flex items-center gap-1 text-primary/70 group-hover:text-primary transition-colors">
+                {cta}
+                <ArrowRight className="h-2 w-2 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className={`absolute bottom-0 left-0 w-full h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left ${overdueCount > 0 ? 'bg-destructive' : 'bg-primary'}`} />
+    </Card>
   )
 }

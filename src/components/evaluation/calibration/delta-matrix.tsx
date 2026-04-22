@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { useGradingStore } from "@/lib/store/grading-store"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { AlertCircle, ArrowRight, CheckCircle2, TrendingUp } from "lucide-react"
 
 export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
@@ -32,9 +33,9 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
     scores.find(s => s.paperId === paperId && s.criterionId === criterionId)
 
   const cellStyle = (delta: number) => {
-    if (delta === 0) return "bg-green-50 text-green-700"
-    if (delta === 1) return "bg-amber-50 text-amber-700"
-    return "bg-red-50 text-red-700"
+    if (delta === 0) return "bg-[color:var(--status-success-bg)] text-[color:var(--status-success)]"
+    if (delta === 1) return "bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)]"
+    return "bg-[color:var(--status-error-bg)] text-[color:var(--status-error)]"
   }
 
   const deltaIndicator = (delta: number) =>
@@ -42,13 +43,13 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
 
   const deltaBadgeClass = (delta: number) =>
     delta >= 3
-      ? "bg-red-50 text-red-700 border-red-200"
-      : "bg-amber-50 text-amber-700 border-amber-200"
+      ? "bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] border-[color:var(--status-error)]/30"
+      : "bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30"
 
   const deltaNumClass = (delta: number) =>
     delta >= 3
-      ? "bg-red-100 text-red-700 border-red-200"
-      : "bg-amber-100 text-amber-700 border-amber-200"
+      ? "bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] border-[color:var(--status-error)]/30"
+      : "bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30"
 
   const handleStart = () => {
     if (isCalibrated) {
@@ -62,25 +63,25 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-5 animate-in fade-in duration-500">
 
       {/* Header card */}
-      <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-sm space-y-4">
-        <h2 className="text-[17px] font-bold tracking-tight">Review &amp; Align Your Scores</h2>
+      <div className="bg-background border border-border/60 rounded-xl p-5 shadow-sm space-y-4">
+        <h2 className="text-lg font-bold tracking-tight">Review &amp; Align Your Scores</h2>
 
         {discrepancies.length > 0 ? (
-          <div className="flex items-start gap-3 bg-red-50 border border-red-200/70 rounded-xl px-4 py-3">
-            <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 bg-[color:var(--status-error-bg)] border border-[color:var(--status-error)]/30/70 rounded-xl px-4 py-3">
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-red-700">
+              <p className="text-sm font-semibold text-[color:var(--status-error)]">
                 Your grading differs from AI on {discrepancies.length} items
               </p>
-              <p className="text-xs text-red-500/80">
+              <p className="text-xs text-destructive/80">
                 Start with the most impactful differences — sorted by score gap
               </p>
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3 bg-green-50 border border-green-200/70 rounded-xl px-4 py-3">
-            <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
-            <p className="text-sm font-semibold text-green-700">
+          <div className="flex items-center gap-3 bg-[color:var(--status-success-bg)] border border-[color:var(--status-success)]/30/70 rounded-xl px-4 py-3">
+            <CheckCircle2 className="h-4 w-4 text-[color:var(--status-success)] shrink-0" />
+            <p className="text-sm font-semibold text-[color:var(--status-success)]">
               Your grading aligns with the AI baseline — ready to proceed
             </p>
           </div>
@@ -100,9 +101,9 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
 
       {/* Discrepancy list sorted by gap */}
       {discrepancies.length > 0 && (
-        <div className="bg-white border border-border/60 rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-background border border-border/60 rounded-xl overflow-hidden shadow-sm">
           <div className="px-4 py-2.5 border-b border-border/40">
-            <span className="text-[11px] font-black uppercase tracking-[0.12em] text-muted-foreground/60">
+            <span className="eyebrow text-muted-foreground/60">
               Discrepancy items · sorted by gap
             </span>
           </div>
@@ -117,17 +118,17 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
                   onClick={handleStart}
                   className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors cursor-pointer"
                 >
-                  <div className={`w-[22px] h-[22px] rounded-full text-[10px] font-black flex items-center justify-center shrink-0 border ${deltaNumClass(score.delta)}`}>
+                  <div className={`w-[22px] h-[22px] rounded-full text-xs font-semibold flex items-center justify-center shrink-0 border ${deltaNumClass(score.delta)}`}>
                     {deltaIndicator(score.delta)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{criterion?.name}</p>
-                    <p className="text-[11px] font-mono text-muted-foreground/60">{paper?.anonymizedLabel}</p>
+                    <p className="text-xs font-mono text-muted-foreground/60">{paper?.anonymizedLabel}</p>
                   </div>
-                  <span className="text-[11px] font-mono text-muted-foreground/70 shrink-0">
+                  <span className="text-xs font-mono text-muted-foreground/70 shrink-0">
                     {score.instructorLevel} vs {score.aiLevel}
                   </span>
-                  <Badge className={`text-[10px] font-black border shadow-none shrink-0 ${deltaBadgeClass(score.delta)}`}>
+                  <Badge className={`text-xs font-semibold border shadow-none shrink-0 ${deltaBadgeClass(score.delta)}`}>
                     +{score.delta}
                   </Badge>
                 </div>
@@ -138,62 +139,60 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
       )}
 
       {/* Score matrix */}
-      <div className="bg-white border border-border/60 rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-background border border-border/60 rounded-xl overflow-hidden shadow-sm">
         <div className="px-4 py-2.5 border-b border-border/40 flex items-center justify-between">
-          <span className="text-[11px] font-black uppercase tracking-[0.12em] text-muted-foreground/60">Score matrix</span>
-          <span className="text-[11px] font-mono text-muted-foreground/40">yours / AI</span>
+          <span className="eyebrow text-muted-foreground/60">Score matrix</span>
+          <span className="text-xs font-mono text-muted-foreground/40">yours / AI</span>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr className="border-b border-border/30 bg-muted/20">
-                <th className="text-left px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-muted-foreground/50 min-w-[120px]">
-                  Criterion
-                </th>
-                {papers.map(p => (
-                  <th
-                    key={p.paperId}
-                    className="px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 text-center min-w-[70px]"
-                  >
-                    {p.anonymizedLabel.replace('Paper #', 'P')}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {criteria.map(criterion => (
-                <tr key={criterion.id} className="border-b border-border/20 last:border-0 hover:bg-muted/10 transition-colors">
-                  <td className="px-4 py-2.5 text-xs font-medium text-muted-foreground/80">{criterion.name}</td>
-                  {papers.map(p => {
-                    const score = getScore(p.paperId, criterion.id)
-                    const delta = score?.delta ?? 0
-                    return (
-                      <td key={p.paperId} className="px-3 py-2.5 text-center">
-                        <div className={`inline-flex flex-col items-center rounded-md px-2 py-1 ${cellStyle(delta)}`}>
-                          <span className="text-xs font-black font-mono leading-tight">
-                            {score?.instructorLevel || "—"}
-                          </span>
-                          <span className="text-[9px] font-mono opacity-60 leading-tight">
-                            {score?.aiLevel ?? "—"}
-                          </span>
-                        </div>
-                      </td>
-                    )
-                  })}
-                </tr>
+        <Table className="border-collapse">
+          <TableHeader>
+            <TableRow className="border-b border-border/30 bg-muted/20 hover:bg-muted/20">
+              <TableHead className="eyebrow text-left px-4 py-2.5 text-muted-foreground/50 min-w-[120px] whitespace-normal">
+                Criterion
+              </TableHead>
+              {papers.map(p => (
+                <TableHead
+                  key={p.paperId}
+                  className="eyebrow px-3 py-2.5 text-muted-foreground/50 text-center min-w-[70px]"
+                >
+                  {p.anonymizedLabel.replace('Paper #', 'P')}
+                </TableHead>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {criteria.map(criterion => (
+              <TableRow key={criterion.id} className="border-b border-border/20 last:border-0 hover:bg-muted/10">
+                <TableCell className="px-4 py-2.5 text-xs font-medium text-muted-foreground/80 whitespace-normal">{criterion.name}</TableCell>
+                {papers.map(p => {
+                  const score = getScore(p.paperId, criterion.id)
+                  const delta = score?.delta ?? 0
+                  return (
+                    <TableCell key={p.paperId} className="px-3 py-2.5 text-center">
+                      <div className={`inline-flex flex-col items-center rounded-md px-2 py-1 ${cellStyle(delta)}`}>
+                        <span className="text-xs font-semibold font-mono leading-tight">
+                          {score?.instructorLevel || "—"}
+                        </span>
+                        <span className="text-xs font-mono opacity-60 leading-tight">
+                          {score?.aiLevel ?? "—"}
+                        </span>
+                      </div>
+                    </TableCell>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
         <div className="flex gap-4 px-4 py-2.5 border-t border-border/30 bg-muted/10">
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
-            <div className="w-2 h-2 rounded-full bg-green-500" />Match
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
+            <div className="w-2 h-2 rounded-full bg-[color:var(--status-success)]" />Match
           </div>
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
-            <div className="w-2 h-2 rounded-full bg-amber-500" />±1 gap
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
+            <div className="w-2 h-2 rounded-full bg-[color:var(--status-warning)]" />±1 gap
           </div>
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
-            <div className="w-2 h-2 rounded-full bg-red-500" />±2+ gap
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
+            <div className="w-2 h-2 rounded-full bg-destructive" />±2+ gap
           </div>
         </div>
       </div>

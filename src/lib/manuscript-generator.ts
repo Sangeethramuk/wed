@@ -43,7 +43,7 @@ function randInt(rng: () => number, min: number, max: number): number {
 
 export type ManuscriptElement =
   | { type: "heading"; text: string; level: number }
-  | { type: "paragraph"; text: string; highlight?: { criterionId: number; confidence: number } }
+  | { type: "paragraph"; text: string; highlight?: { criterionId: string; confidence: number } }
   | { type: "code"; language: string; code: string }
   | { type: "table"; headers: string[]; rows: string[][]; caption?: string }
   | { type: "bulletList"; items: string[] }
@@ -106,66 +106,66 @@ const TITLE_APPROACHES = [
 
 // ── Page 1: System Architecture & Design Patterns (Q1) ────────────────────────
 
-const P1_PARAGRAPHS: { text: string; highlightable?: { criterionId: number; confidence: number } }[] = [
+const P1_PARAGRAPHS: { text: string; highlightable?: { criterionId: string; confidence: number } }[] = [
   {
     text: "The system architecture follows a strict separation of concerns, ensuring that the presentation layer, business logic, and data access layers operate independently. This decoupling allows for independent scaling and testing of each component, reducing the risk of cascading failures across the system.",
-    highlightable: { criterionId: 1, confidence: 0.92 },
+    highlightable: { criterionId: "c1", confidence: 0.92 },
   },
   {
     text: "By adopting the Model-View-Controller paradigm, we enforce a unidirectional data flow where user interactions are captured by the Controller, processed by the Model, and reflected in the View. This pattern significantly reduces state management complexity in large-scale applications.",
-    highlightable: { criterionId: 1, confidence: 0.87 },
+    highlightable: { criterionId: "c1", confidence: 0.87 },
   },
   {
     text: "The application leverages a layered architecture where each tier communicates only with its immediate neighbors. The presentation tier handles HTTP request routing, the application tier encapsulates business rules, and the persistence tier manages database transactions through an ORM abstraction.",
-    highlightable: { criterionId: 1, confidence: 0.78 },
+    highlightable: { criterionId: "c1", confidence: 0.78 },
   },
   {
     text: "Microservices decomposition was chosen over a monolithic approach to enable independent deployment cycles. Each service owns its data store and communicates via asynchronous message queues, reducing temporal coupling between domains.",
-    highlightable: { criterionId: 2, confidence: 0.85 },
+    highlightable: { criterionId: "c2", confidence: 0.85 },
   },
   {
     text: "The initial prototype was built as a single deployable unit, but after identifying bounded contexts through domain-driven design workshops, the team iteratively extracted services. This incremental refactoring approach minimized disruption to existing functionality while improving system modularity.",
-    highlightable: { criterionId: 2, confidence: 0.91 },
+    highlightable: { criterionId: "c2", confidence: 0.91 },
   },
   {
     text: "Dependency injection is applied at the composition root, allowing concrete implementations to be swapped without modifying dependent modules. This facilitates unit testing through mock substitution and supports the open-closed principle for extending system behavior.",
-    highlightable: { criterionId: 3, confidence: 0.88 },
+    highlightable: { criterionId: "c3", confidence: 0.88 },
   },
   {
     text: "The repository pattern abstracts data access behind generic interfaces, enabling the domain layer to remain agnostic of the underlying storage technology. This abstraction proved critical when migrating from a relational database to a document store mid-project.",
-    highlightable: { criterionId: 3, confidence: 0.83 },
+    highlightable: { criterionId: "c3", confidence: 0.83 },
   },
   {
     text: "We employed the observer pattern to implement real-time event propagation across services. When an order is placed, the inventory service, notification service, and analytics pipeline are all notified through a centralized event bus without direct service-to-service calls.",
-    highlightable: { criterionId: 4, confidence: 0.79 },
+    highlightable: { criterionId: "c4", confidence: 0.79 },
   },
   {
     text: "The strategy pattern is used extensively for algorithm selection at runtime. Payment processing, for instance, delegates to a strategy implementation based on the provider type, allowing new payment gateways to be added without modifying existing code paths.",
-    highlightable: { criterionId: 4, confidence: 0.74 },
+    highlightable: { criterionId: "c4", confidence: 0.74 },
   },
   {
     text: "Hexagonal architecture principles were applied to isolate the domain core from external concerns. Ports define the contract for inbound and outbound interactions, while adapters provide framework-specific implementations, ensuring the business logic remains testable in isolation.",
-    highlightable: { criterionId: 1, confidence: 0.81 },
+    highlightable: { criterionId: "c1", confidence: 0.81 },
   },
   {
     text: "Circuit breaker patterns were introduced at service boundaries after observing cascading failures during peak load. The Hystrix-inspired implementation monitors failure thresholds and opens the circuit to prevent downstream overload, with automatic recovery through periodic health checks.",
-    highlightable: { criterionId: 2, confidence: 0.76 },
+    highlightable: { criterionId: "c2", confidence: 0.76 },
   },
   {
     text: "The system originally used a shared database anti-pattern, which created tight coupling between services. After refactoring to a database-per-service model, each microservice could evolve its schema independently, reducing coordination overhead during deployments.",
-    highlightable: { criterionId: 2, confidence: 0.94 },
+    highlightable: { criterionId: "c2", confidence: 0.94 },
   },
   {
     text: "Interface segregation was enforced throughout the codebase, ensuring that no client depends on methods it does not use. This resulted in finer-grained interfaces that are easier to implement and test, particularly in the notification and reporting subsystems.",
-    highlightable: { criterionId: 3, confidence: 0.72 },
+    highlightable: { criterionId: "c3", confidence: 0.72 },
   },
   {
     text: "The facade pattern simplifies interaction with complex subsystems. A PaymentFacade exposes a single charge() method that internally orchestrains fraud detection, card tokenization, gateway routing, and receipt generation, shielding the caller from implementation complexity.",
-    highlightable: { criterionId: 4, confidence: 0.86 },
+    highlightable: { criterionId: "c4", confidence: 0.86 },
   },
   {
     text: "Event sourcing captures all state changes as an immutable sequence of events. This allows the system to reconstruct any past state for debugging or auditing, and enables CQRS read models that are optimized for specific query patterns without impacting write performance.",
-    highlightable: { criterionId: 1, confidence: 0.69 },
+    highlightable: { criterionId: "c1", confidence: 0.69 },
   },
 ]
 
@@ -290,54 +290,54 @@ const P1_BLOCK_QUOTES: { text: string; source?: string }[] = [
 
 // ── Page 2: Implementation Details (Q2) ──────────────────────────────────────
 
-const P2_PARAGRAPHS: { text: string; highlightable?: { criterionId: number; confidence: number } }[] = [
+const P2_PARAGRAPHS: { text: string; highlightable?: { criterionId: string; confidence: number } }[] = [
   {
     text: "The REST API follows resource-oriented conventions where each endpoint maps to a domain entity. PUT requests enforce idempotency through conditional ETag headers, while POST requests return 201 Created with a Location header pointing to the newly created resource.",
-    highlightable: { criterionId: 4, confidence: 0.88 },
+    highlightable: { criterionId: "c4", confidence: 0.88 },
   },
   {
     text: "Database schema design employs third normal form for transactional tables while using denormalized materialized views for read-heavy query paths. This hybrid approach balances write consistency with read performance, reducing the need for complex JOIN operations at query time.",
-    highlightable: { criterionId: 3, confidence: 0.82 },
+    highlightable: { criterionId: "c3", confidence: 0.82 },
   },
   {
     text: "Middleware pipeline processes requests through a chain of responsibility pattern. Authentication middleware validates JWT tokens, authorization middleware enforces role-based access control, and rate limiting middleware applies sliding window counters per client IP.",
-    highlightable: { criterionId: 4, confidence: 0.91 },
+    highlightable: { criterionId: "c4", confidence: 0.91 },
   },
   {
     text: "The team initially used a monolithic ORM for all database operations, which led to N+1 query problems in the reporting module. After profiling, we replaced the ORM with raw SQL for complex aggregations and introduced DataLoader for batched foreign key lookups.",
-    highlightable: { criterionId: 2, confidence: 0.86 },
+    highlightable: { criterionId: "c2", confidence: 0.86 },
   },
   {
     text: "Foreign key constraints and unique indexes enforce referential integrity at the database level. Cascading deletes are prohibited in favor of soft-delete flags, enabling audit trails and data recovery without compromising consistency guarantees.",
-    highlightable: { criterionId: 3, confidence: 0.79 },
+    highlightable: { criterionId: "c3", confidence: 0.79 },
   },
   {
     text: "The authentication controller validates incoming JWT tokens by verifying the signature against the public key fetched from the identity provider's JWKS endpoint. Token rotation is handled automatically with a 5-minute overlap window during key transitions.",
-    highlightable: { criterionId: 4, confidence: 0.93 },
+    highlightable: { criterionId: "c4", confidence: 0.93 },
   },
   {
     text: "Database migrations are managed through versioned SQL scripts executed in strict sequential order. Each migration runs within a transaction where supported, and rollback scripts are maintained for zero-downtime deployment scenarios.",
-    highlightable: { criterionId: 3, confidence: 0.77 },
+    highlightable: { criterionId: "c3", confidence: 0.77 },
   },
   {
     text: "Edge cases handled in the API layer include: malformed JSON payloads with detailed validation errors, pagination boundary conditions, concurrent update conflicts resolved through optimistic locking, and graceful degradation when downstream services are unavailable.",
-    highlightable: { criterionId: 2, confidence: 0.84 },
+    highlightable: { criterionId: "c2", confidence: 0.84 },
   },
   {
     text: "The event-driven integration layer uses Apache Kafka as the message broker with exactly-once delivery semantics. Consumer groups enable parallel processing while partition key routing ensures ordering guarantees within an aggregate instance.",
-    highlightable: { criterionId: 4, confidence: 0.71 },
+    highlightable: { criterionId: "c4", confidence: 0.71 },
   },
   {
     text: "Connection pooling is configured with a maximum of 20 connections per service instance, with idle timeout set to 30 seconds. This prevents connection exhaustion under load while maintaining sufficient throughput for peak traffic conditions.",
-    highlightable: { criterionId: 3, confidence: 0.68 },
+    highlightable: { criterionId: "c3", confidence: 0.68 },
   },
   {
     text: "The original implementation used synchronous HTTP calls for inter-service communication, resulting in a 3-second latency chain for composite operations. Refactoring to asynchronous event-driven communication reduced end-to-end latency to under 400ms for the same workflows.",
-    highlightable: { criterionId: 2, confidence: 0.92 },
+    highlightable: { criterionId: "c2", confidence: 0.92 },
   },
   {
     text: "Rate limiting is implemented using a token bucket algorithm with configurable thresholds per endpoint. The public API allows 100 requests per minute, while internal service-to-service calls are limited to 1000 per minute to prevent cascade failures.",
-    highlightable: { criterionId: 4, confidence: 0.75 },
+    highlightable: { criterionId: "c4", confidence: 0.75 },
   },
 ]
 
@@ -480,54 +480,54 @@ const P2_BLOCK_QUOTES: { text: string; source?: string }[] = [
 
 // ── Page 3: Testing & Quality (Q3) ───────────────────────────────────────────
 
-const P3_PARAGRAPHS: { text: string; highlightable?: { criterionId: number; confidence: number } }[] = [
+const P3_PARAGRAPHS: { text: string; highlightable?: { criterionId: string; confidence: number } }[] = [
   {
     text: "Unit tests cover 87% of business logic branches, with the remaining 13% comprising edge cases that are cost-prohibitive to reproduce. Test suites are organized by domain module, and each test follows the Arrange-Act-Assert pattern for consistency and readability.",
-    highlightable: { criterionId: 3, confidence: 0.94 },
+    highlightable: { criterionId: "c3", confidence: 0.94 },
   },
   {
     text: "Integration tests verify end-to-end workflows by spinning up ephemeral Docker containers with real database instances. Tests run against actual PostgreSQL and Redis instances rather than mocks, ensuring that SQL queries and connection handling behave identically to production.",
-    highlightable: { criterionId: 3, confidence: 0.87 },
+    highlightable: { criterionId: "c3", confidence: 0.87 },
   },
   {
     text: "The CI/CD pipeline executes the full test suite on every pull request, blocking merges if any test fails. Code coverage reports are generated using Istanbul and published as PR comments, ensuring visibility into coverage deltas for each change.",
-    highlightable: { criterionId: 3, confidence: 0.82 },
+    highlightable: { criterionId: "c3", confidence: 0.82 },
   },
   {
     text: "Load tests were conducted using Locust with 500 concurrent users simulating realistic traffic patterns. The system maintained sub-200ms P95 latency under normal load, with graceful degradation observed at 3x capacity before circuit breakers activated.",
-    highlightable: { criterionId: 4, confidence: 0.79 },
+    highlightable: { criterionId: "c4", confidence: 0.79 },
   },
   {
     text: "Mutation testing was introduced to evaluate test effectiveness. The Stryker framework injected 1,247 mutations into the codebase, and the test suite killed 1,089 of them, yielding an 87.3% mutation score. The surviving mutants were concentrated in logging and error formatting code.",
-    highlightable: { criterionId: 2, confidence: 0.88 },
+    highlightable: { criterionId: "c2", confidence: 0.88 },
   },
   {
     text: "Contract tests between services use Pact to verify that consumers and providers agree on API schemas. Consumer-side tests generate pact files that are verified against the provider's actual API, preventing breaking changes from propagating across service boundaries.",
-    highlightable: { criterionId: 4, confidence: 0.91 },
+    highlightable: { criterionId: "c4", confidence: 0.91 },
   },
   {
     text: "Code review is mandatory for all changes, with a minimum of two approvals required before merge. Reviewers check for correctness, readability, security implications, and test coverage adequacy using a standardized checklist documented in the engineering wiki.",
-    highlightable: { criterionId: 3, confidence: 0.76 },
+    highlightable: { criterionId: "c3", confidence: 0.76 },
   },
   {
     text: "After the initial release, we discovered that 40% of production bugs originated from untested error handling paths. The team then systematically added failure scenario tests using chaos engineering techniques, injecting network latency and service failures in staging environments.",
-    highlightable: { criterionId: 2, confidence: 0.93 },
+    highlightable: { criterionId: "c2", confidence: 0.93 },
   },
   {
     text: "Static analysis is integrated into the build pipeline through ESLint and SonarQube. The codebase maintains zero critical or major code smells, and technical debt ratio is tracked weekly as a team health metric in the sprint retrospective.",
-    highlightable: { criterionId: 3, confidence: 0.73 },
+    highlightable: { criterionId: "c3", confidence: 0.73 },
   },
   {
     text: "The testing pyramid guides our investment: 60% unit tests for fast feedback, 25% integration tests for cross-module verification, and 15% end-to-end tests for critical user journeys. This distribution optimizes for both speed and confidence in the deployment pipeline.",
-    highlightable: { criterionId: 3, confidence: 0.85 },
+    highlightable: { criterionId: "c3", confidence: 0.85 },
   },
   {
     text: "End-to-end tests use Playwright to simulate real user interactions across browser contexts. These tests cover the five critical user journeys identified by product management, including order placement, payment processing, and refund handling.",
-    highlightable: { criterionId: 4, confidence: 0.67 },
+    highlightable: { criterionId: "c4", confidence: 0.67 },
   },
   {
     text: "Property-based testing with fast-check generates random inputs to discover edge cases that manual test design misses. This approach uncovered a timestamp parsing bug that only manifested for dates after 2038 due to integer overflow in a legacy library.",
-    highlightable: { criterionId: 2, confidence: 0.82 },
+    highlightable: { criterionId: "c2", confidence: 0.82 },
   },
 ]
 
@@ -647,54 +647,54 @@ const P3_BLOCK_QUOTES: { text: string; source?: string }[] = [
 
 // ── Page 4: Deployment & Maintenance (Q4) ────────────────────────────────────
 
-const P4_PARAGRAPHS: { text: string; highlightable?: { criterionId: number; confidence: number } }[] = [
+const P4_PARAGRAPHS: { text: string; highlightable?: { criterionId: string; confidence: number } }[] = [
   {
     text: "Containerization with Docker ensures environment parity between development, staging, and production. Multi-stage builds reduce image size from 1.2GB to 180MB by separating the build environment from the runtime, minimizing the attack surface and deployment time.",
-    highlightable: { criterionId: 4, confidence: 0.92 },
+    highlightable: { criterionId: "c4", confidence: 0.92 },
   },
   {
     text: "Kubernetes orchestration manages service deployment with horizontal pod autoscaling based on CPU and memory metrics. The cluster maintains a minimum of 3 replicas per service for high availability, with pod disruption budgets ensuring zero-downtime during rolling updates.",
-    highlightable: { criterionId: 4, confidence: 0.87 },
+    highlightable: { criterionId: "c4", confidence: 0.87 },
   },
   {
     text: "Monitoring is implemented using Prometheus for metrics collection and Grafana for visualization. Dashboards track request latency, error rates, throughput, and resource utilization across all services, with PagerDuty integration for alerting on SLO violations.",
-    highlightable: { criterionId: 3, confidence: 0.83 },
+    highlightable: { criterionId: "c3", confidence: 0.83 },
   },
   {
     text: "The deployment pipeline uses a canary strategy where new versions receive 5% of traffic initially, progressing to 25%, 50%, and 100% over 30 minutes. Automated rollback triggers if the error rate exceeds 0.1% above baseline at any stage.",
-    highlightable: { criterionId: 2, confidence: 0.89 },
+    highlightable: { criterionId: "c2", confidence: 0.89 },
   },
   {
     text: "API versioning follows the URI path convention (/api/v1, /api/v2) with a deprecation period of 6 months per version. Sunset headers notify consumers of upcoming removals, and the developer portal maintains migration guides for each version transition.",
-    highlightable: { criterionId: 3, confidence: 0.78 },
+    highlightable: { criterionId: "c3", confidence: 0.78 },
   },
   {
     text: "Structured logging using the JSON format enables centralized log aggregation through the ELK stack. Each log entry includes a correlation ID that traces the request path across service boundaries, enabling end-to-end request debugging without manual log correlation.",
-    highlightable: { criterionId: 3, confidence: 0.86 },
+    highlightable: { criterionId: "c3", confidence: 0.86 },
   },
   {
     text: "After a production incident where a misconfigured health check caused a cascading restart, the team implemented chaos engineering practices. Weekly game days simulate network partitions, pod evictions, and dependency failures to verify system resilience.",
-    highlightable: { criterionId: 2, confidence: 0.94 },
+    highlightable: { criterionId: "c2", confidence: 0.94 },
   },
   {
     text: "Infrastructure as code is managed through Terraform with state stored in an S3 backend. All infrastructure changes go through the same pull request review process as application code, ensuring auditability and peer review of capacity and security changes.",
-    highlightable: { criterionId: 4, confidence: 0.81 },
+    highlightable: { criterionId: "c4", confidence: 0.81 },
   },
   {
     text: "Scalability testing revealed that the order service becomes CPU-bound at 2,000 requests per second. Horizontal scaling to 8 pods with connection pooling resolved the bottleneck, and the system now sustains 5,000 RPS with P99 latency under 500ms.",
-    highlightable: { criterionId: 4, confidence: 0.73 },
+    highlightable: { criterionId: "c4", confidence: 0.73 },
   },
   {
     text: "The documentation is generated from source code using TypeDoc for the API reference and Docusaurus for the developer portal. Documentation is deployed automatically on every merge to main, ensuring the published docs always reflect the current API state.",
-    highlightable: { criterionId: 3, confidence: 0.77 },
+    highlightable: { criterionId: "c3", confidence: 0.77 },
   },
   {
     text: "Blue-green deployments were evaluated but rejected in favor of canary releases due to the cost of maintaining duplicate production infrastructure. The canary approach provides the same safety guarantees with 50% lower infrastructure spend during deployments.",
-    highlightable: { criterionId: 2, confidence: 0.85 },
+    highlightable: { criterionId: "c2", confidence: 0.85 },
   },
   {
     text: "Secret management uses HashiCorp Vault with dynamic database credentials that rotate every 24 hours. Applications request credentials at startup through the Vault agent sidecar, eliminating hardcoded secrets from configuration files and environment variables.",
-    highlightable: { criterionId: 4, confidence: 0.91 },
+    highlightable: { criterionId: "c4", confidence: 0.91 },
   },
 ]
 
@@ -877,7 +877,7 @@ const REFERENCES = [
 // ── Page Builder ──────────────────────────────────────────────────────────────
 
 interface PageContentPool {
-  paragraphs: { text: string; highlightable?: { criterionId: number; confidence: number } }[]
+  paragraphs: { text: string; highlightable?: { criterionId: string; confidence: number } }[]
   codeBlocks: { language: string; code: string }[]
   tables: { headers: string[]; rows: string[][]; caption?: string }[]
   bulletLists: string[][]

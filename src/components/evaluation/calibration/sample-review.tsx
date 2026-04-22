@@ -22,7 +22,7 @@ export function SampleReview({ assignmentId }: { assignmentId: string }) {
       <div className="w-full max-w-lg space-y-8">
 
         <div className="space-y-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/60">
+          <p className="eyebrow font-semibold text-muted-foreground/60">
             Independent Review
           </p>
           <h2 className="text-3xl font-semibold tracking-tight leading-snug">
@@ -30,7 +30,7 @@ export function SampleReview({ assignmentId }: { assignmentId: string }) {
           </h2>
         </div>
 
-        <Card className="p-6 space-y-4 border border-border/40 bg-background shadow-sm">
+        <Card className="p-6 space-y-4">
           <p className="text-sm text-foreground/80 leading-relaxed">
             For the next {papers.length} submissions, the AI score is hidden. Grade them based only on what you read.
           </p>
@@ -43,10 +43,11 @@ export function SampleReview({ assignmentId }: { assignmentId: string }) {
         </Card>
 
         <Button
+          size="lg"
           onClick={handleBegin}
-          className="w-full h-12 text-sm font-medium rounded-md bg-foreground text-background hover:bg-foreground/90"
+          className="w-full"
         >
-          Begin <ArrowRight className="ml-1.5 h-4 w-4" />
+          Begin <ArrowRight />
         </Button>
 
       </div>

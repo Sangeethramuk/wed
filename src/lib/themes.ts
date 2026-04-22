@@ -22,10 +22,10 @@ export const themes: ThemeConfig[] = [
     description: "Dark theme with blue accents",
   },
   {
-    name: "Violet Bloom Light",
+    name: "Brand Light",
     variant: "violet-light",
     icon: "💜",
-    description: "Warm light theme with violet accents",
+    description: "EducAItors brand — navy on near-white",
   },
   {
     name: "Violet Bloom Dark",
@@ -35,4 +35,4 @@ export const themes: ThemeConfig[] = [
   },
 ];
 
-export const defaultTheme: ThemeVariant = "twitter-light";
+export const defaultTheme: ThemeVariant = "violet-light";

@@ -2,13 +2,15 @@
 
 import { useRef, useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { STUDENTS, BRIEFINGS } from '@/lib/data/re-evaluation-data'
+import { STUDENTS, BRIEFINGS, verdictKind, confidenceKind, auditEventKind } from '@/lib/data/re-evaluation-data'
+import { statusStyles, confidenceStyles, type StatusKey } from '@/lib/design-tokens'
+import { cn } from '@/lib/utils'
 
-const FLAG_STYLES = {
-  red:   { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', dot: '#EF4444' },
-  amber: { bg: '#FFFBEB', border: '#FDE68A', text: '#92400E', dot: '#F59E0B' },
-  blue:  { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', dot: '#3B7FE8' },
-  green: { bg: '#F0FDF4', border: '#BBF7D0', text: '#166534', dot: '#22C55E' },
+const FLAG_KINDS: Record<'red' | 'amber' | 'blue' | 'green', StatusKey> = {
+  red: 'error',
+  amber: 'warning',
+  blue: 'info',
+  green: 'success',
 }
 
 type Props = {
@@ -20,11 +22,15 @@ type Props = {
 export function BriefingModal({ studentId, onClose, onStart }: Props) {
   const bodyRef = useRef<HTMLDivElement>(null)
   const [scrolled, setScrolled] = useState(false)
-  const [accOpen, setAccOpen] = useState<Record<string, boolean>>({})
+  const [isNavigating, setIsNavigating] = useState(false)
+  const [accOpen, setAccOpen] = useState<Record<string, boolean>>({
+    timeline: false,
+    evidence: false
+  })
 
   useEffect(() => {
     setScrolled(false)
-    setAccOpen({})
+    setAccOpen({ timeline: false, evidence: false })
     if (bodyRef.current) bodyRef.current.scrollTop = 0
   }, [studentId])
 
@@ -35,9 +41,16 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
   }, [onClose])
 
   const handleScroll = () => {
-    if (scrolled || !bodyRef.current) return
-    const el = bodyRef.current
-    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 80) setScrolled(true)
+    if (bodyRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = bodyRef.current
+      if (scrollTop + clientHeight >= scrollHeight - 20) setScrolled(true)
+    }
+  }
+
+  const handleStart = () => {
+    if (!onStart || isNavigating) return
+    setIsNavigating(true)
+    onStart()
   }
 
   const toggleAcc = (key: string) =>
@@ -50,45 +63,55 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
 
   const canStart = scrolled || onStart === null
 
+  // Synthesize intelligence summaries based on data
+  const isCredible = st.verdict.toLowerCase().includes('valid') || st.verdict.toLowerCase().includes('mismatch')
+  const caseSummary = brf.aiSummaryParagraphs[0]
+  const caseInsight = brf.aiSummaryParagraphs[1]
+
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[400] flex items-center justify-center"
-        style={{ background: 'rgba(15,17,27,.55)', backdropFilter: 'blur(3px)' }}
+        className="fixed inset-0 z-[400] flex items-center justify-center p-4 overflow-hidden bg-foreground/40 backdrop-blur-md"
         onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.97, y: 16 }}
+          initial={{ opacity: 0, scale: 0.98, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.97, y: 8 }}
-          transition={{ duration: 0.18, ease: 'easeOut' }}
-          style={{ width: 680, maxWidth: 'calc(100vw - 32px)', maxHeight: '88vh', boxShadow: '0 24px 64px rgba(0,0,0,.22), 0 4px 16px rgba(0,0,0,.1)' }}
-          className="bg-white rounded-2xl flex flex-col overflow-hidden"
+          exit={{ opacity: 0, scale: 0.98, y: 8 }}
+          transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+          style={{ width: 720, maxWidth: '100%', maxHeight: '92vh' }}
+          className="bg-card border border-border/10 rounded-2xl flex flex-col overflow-hidden relative shadow-2xl"
         >
           {/* Header */}
-          <div className="px-6 pt-5 pb-0 flex-shrink-0">
-            <div className="flex items-start justify-between mb-1">
+          <div className="px-8 pt-8 pb-4 flex-shrink-0 bg-background/20">
+            <div className="flex items-start justify-between">
               <div>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#1A1D27' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="size-6 rounded-lg flex items-center justify-center flex-shrink-0 bg-primary/10 border border-primary/20">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="text-primary">
+                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
-                  <span className="text-[11px] font-bold tracking-[0.08em] uppercase" style={{ color: '#6B7280' }}>AI Case Briefing</span>
+                  <span className="eyebrow text-primary/60">AI Case Briefing</span>
                 </div>
-                <div className="text-[18px] font-bold tracking-tight" style={{ color: '#111827' }}>{st.name}</div>
-                <div className="text-[12px] mt-0.5" style={{ color: '#9CA3AF' }}>{st.rollId} · {st.assign} · {st.crit}</div>
+                <h2 className="text-3xl font-semibold tracking-tight secondary-text flex items-center gap-3">
+                  {st.name}
+                  {st.isNew && <span className="size-2 rounded-full bg-primary" />}
+                </h2>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="eyebrow text-muted-foreground/40">{st.rollId}</span>
+                  <span className="text-muted-foreground/20 text-xs">·</span>
+                  <span className="eyebrow text-muted-foreground/40">{st.assign}</span>
+                  <span className="text-muted-foreground/20 text-xs">·</span>
+                  <span className="eyebrow text-primary/40">{st.crit}</span>
+                </div>
               </div>
               <button
                 onClick={onClose}
-                className="w-8 h-8 flex items-center justify-center rounded-lg flex-shrink-0 transition-colors hover:bg-gray-200"
-                style={{ background: '#F3F4F6', border: 'none', cursor: 'pointer', color: '#6B7280' }}
+                className="size-8 flex items-center justify-center rounded-xl bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
+                <XIcon className="size-4" />
               </button>
             </div>
           </div>
@@ -97,176 +120,252 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
           <div
             ref={bodyRef}
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto px-6 pt-4 pb-0"
+            className="flex-1 overflow-y-auto px-8 py-4 space-y-8"
             style={{ scrollbarWidth: 'thin' }}
           >
-            {/* AI Summary */}
-            <div className="rounded-xl p-4 mb-3.5" style={{ background: '#F8FAFC', border: '1.5px solid #E5E7EB' }}>
-              <div className="flex items-center gap-2 mb-2.5">
-                <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: '#111827' }}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+            {/* 1. Executive Case Briefing */}
+            <section>
+              <div className="rounded-2xl p-6 bg-primary/[0.03] border border-primary/10 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                  <ShieldCheckIcon className="size-20" />
                 </div>
-                <span className="text-[11px] font-bold tracking-[0.07em] uppercase" style={{ color: '#374151' }}>What you need to know</span>
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="size-5 rounded-md flex items-center justify-center bg-primary/20">
+                    <ZapIcon className="size-3 text-primary" />
+                  </div>
+                  <span className="eyebrow text-primary/80">Intelligence Summary</span>
+                </div>
+                <div className="space-y-4 relative z-10">
+                  <p className="text-sm font-bold leading-tight text-foreground">
+                    {isCredible ? "Credible dispute detected." : "Low-validity request."} {caseSummary}
+                  </p>
+                  <p className="text-sm leading-relaxed font-medium text-muted-foreground italic">
+                    "{caseInsight}"
+                  </p>
+                </div>
               </div>
-              <div className="space-y-2.5">
-                {brf.aiSummaryParagraphs.map((p, i) => (
-                  <p key={i} className="text-[13px] leading-relaxed" style={{ color: '#1F2937' }}>{p}</p>
-                ))}
-              </div>
+            </section>
+
+            {/* 2. Reconstruction of Original Grading */}
+            <section className="space-y-4">
+               <div className="eyebrow text-muted-foreground/30">Case Reconstruction</div>
+               <div className="flex items-center justify-between gap-1.5 p-1.5 bg-muted/10 rounded-2xl border border-border/5">
+                  {/* AI Evaluation */}
+                  <div className="flex-1 flex flex-col items-center justify-center py-2.5 px-3 rounded-xl bg-background/50 border border-background min-w-0">
+                    <span className="eyebrow text-muted-foreground/40 mb-1 whitespace-nowrap">AI Evaluation</span>
+                    <div className="text-lg font-semibold tracking-tight text-muted-foreground">
+                      {Math.max(0, st.origScore - (st.hasOverride ? 1 : 0))}/10
+                    </div>
+                  </div>
+
+                  <div className="flex-shrink-0 text-muted-foreground/20 px-0.5">
+                    <ArrowRightIcon className="size-3.5" />
+                  </div>
+
+                  {/* Manual Override */}
+                  <div className={cn("flex-1 flex flex-col items-center justify-center py-2.5 px-3 rounded-xl border min-w-0", st.hasOverride ? cn(statusStyles.warning.bg, statusStyles.warning.border) : 'bg-background/30 border-dashed opacity-50')}>
+                    <span className={cn("eyebrow mb-1 whitespace-nowrap", st.hasOverride ? statusStyles.warning.text : 'text-muted-foreground/40')}>
+                      {st.hasOverride ? 'Instructor Override' : 'No Override'}
+                    </span>
+                    <div className={cn("text-lg font-semibold tracking-tight", st.hasOverride ? statusStyles.warning.text : 'text-muted-foreground')}>
+                      {st.hasOverride ? `+1 pt` : '--'}
+                    </div>
+                  </div>
+
+                  <div className="flex-shrink-0 text-muted-foreground/20 px-0.5">
+                    <ArrowRightIcon className="size-3.5" />
+                  </div>
+
+                  {/* Final Score */}
+                  <div className="flex-1 flex flex-col items-center justify-center py-2.5 px-3 rounded-xl bg-primary border border-primary shadow-lg shadow-primary/20 min-w-0">
+                    <span className="eyebrow text-primary-foreground/60 mb-1 whitespace-nowrap">Released Score</span>
+                    <div className="text-lg font-semibold tracking-tight text-primary-foreground">
+                      {st.origScore}/10
+                    </div>
+                  </div>
+               </div>
+               {st.hasOverride && (
+                 <div className={cn("px-4 py-3 rounded-xl border flex items-start gap-3", statusStyles.warning.bg, statusStyles.warning.border)}>
+                   <InfoIcon className={cn("size-4 mt-0.5", statusStyles.warning.text)} />
+                   <p className={cn("text-xs leading-relaxed font-medium", statusStyles.warning.text)}>
+                     Instructor previously acknowledged additional evidence on {st.critShort} but stopped at {st.origScore}/10. The student argues the adjustment was insufficient.
+                   </p>
+                 </div>
+               )}
+            </section>
+
+            {/* 3. The Dispute Context */}
+            <div className="grid grid-cols-2 gap-6">
+              <section className="space-y-4">
+                <div className="eyebrow text-muted-foreground/30">Why student appealed</div>
+                <div className={cn("rounded-2xl p-5 h-full border", statusStyles.info.bg, statusStyles.info.border)}>
+                  <div className={cn("eyebrow mb-2.5 opacity-60", statusStyles.info.text)}>Student Reasoning</div>
+                  <div className="text-sm font-medium leading-relaxed italic text-foreground mb-4">"{st.sv}"</div>
+                  <div className={cn("flex items-center gap-2 pt-3 border-t", statusStyles.info.border)}>
+                    <div className={cn("size-1.5 rounded-full", statusStyles[verdictKind(st.vcolor)].dot)} />
+                    <span className="eyebrow text-muted-foreground/50">{st.verdict}</span>
+                  </div>
+                </div>
+              </section>
+
+              <section className="space-y-4">
+                <div className="eyebrow text-muted-foreground/30">Actionable focus</div>
+                <div className="rounded-2xl p-5 bg-foreground border border-foreground h-full flex flex-col justify-between">
+                  <div>
+                    <div className="eyebrow text-background/30 mb-3">What to check first</div>
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-3">
+                        <CheckIcon className="size-3.5 text-primary mt-0.5" />
+                        <span className="text-xs font-bold text-background/90">Verify cited lines: {st.evidence}</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <CheckIcon className="size-3.5 text-primary mt-0.5" />
+                        <span className="text-xs font-bold text-background/90">Reassess {st.critShort} rubric depth</span>
+                      </li>
+                      {st.isCluster && (
+                        <li className="flex items-start gap-3">
+                          <CheckIcon className="size-3.5 text-primary mt-0.5" />
+                          <span className="text-xs font-bold text-background/90">Check for rubric ambiguity</span>
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                  <div className="pt-4 mt-4 border-t border-background/5 flex items-center justify-between">
+                    <span className="eyebrow text-background/20">Target Decision</span>
+                    <span className="text-xs font-semibold text-primary tracking-tight">± {isCredible ? '1.5' : '0'} pts Est.</span>
+                  </div>
+                </div>
+              </section>
             </div>
 
-            {/* Flags */}
-            {brf.flags.length > 0 && (
-              <div className="mb-3.5">
-                <div className="text-[11px] font-bold tracking-[0.07em] uppercase mb-2" style={{ color: '#9CA3AF' }}>Signals to check</div>
-                <div className="flex flex-col gap-1.5">
-                  {brf.flags.map((f, i) => {
-                    const fc = FLAG_STYLES[f.type]
-                    return (
-                      <div key={i} className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg" style={{ background: fc.bg, border: `1px solid ${fc.border}` }}>
-                        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1" style={{ background: fc.dot }} />
-                        <span className="text-[12px] leading-snug" style={{ color: fc.text }}>{f.text}</span>
+            {/* 4. Intelligence Signals */}
+            <section className="space-y-4">
+              <div className="eyebrow text-muted-foreground/30">Intelligence Signals</div>
+              <div className="flex flex-col gap-2">
+                {brf.flags.map((f, i) => {
+                  const kind = FLAG_KINDS[f.type as keyof typeof FLAG_KINDS] ?? 'neutral'
+                  const s = statusStyles[kind]
+                  return (
+                    <div key={i} className={cn("flex items-start gap-3 px-4 py-3 rounded-xl border transition-colors", s.bg, s.border)}>
+                      <div className={cn("size-1.5 rounded-full flex-shrink-0 mt-1.5", s.dot)} />
+                      <span className={cn("text-xs font-bold leading-tight", s.text)}>{f.text}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+
+            {/* 5. Metrics & Patterns */}
+            <section className="grid grid-cols-3 gap-3">
+                <div className="rounded-2xl p-4 bg-card/30 border border-border/10 flex flex-col justify-center">
+                  <span className="eyebrow text-muted-foreground/50">AI Confidence</span>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <div className={cn("size-2 rounded-full", confidenceStyles[confidenceKind(st.confLabel)].dot)} />
+                    <span className="text-sm font-semibold tracking-tight text-foreground">{st.confScore}</span>
+                  </div>
+                  <span className="eyebrow text-muted-foreground/30 mt-0.5">{st.confLabel} at grading</span>
+                </div>
+                
+                <div className="rounded-2xl p-4 bg-card/30 border border-border/10 flex flex-col justify-center">
+                  <span className="eyebrow text-muted-foreground/50">Student History</span>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="text-sm font-semibold tracking-tight text-foreground">1st appeal</span>
+                  </div>
+                  <span className="eyebrow text-muted-foreground/30 mt-0.5">This Semester</span>
+                </div>
+
+                <div className="rounded-2xl p-4 bg-card/30 border border-border/10 flex flex-col justify-center">
+                  <span className="eyebrow text-muted-foreground/50">Batch Impact</span>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="text-sm font-semibold tracking-tight text-foreground">{st.isCluster ? '4 cases' : 'Isolated'}</span>
+                  </div>
+                  <span className="eyebrow text-muted-foreground/30 mt-0.5">Cluster size</span>
+                </div>
+            </section>
+
+            {/* 6. Expandable Sections */}
+            <section className="space-y-2">
+              <Accordion
+                id="timeline"
+                open={!!accOpen['timeline']}
+                onToggle={() => toggleAcc('timeline')}
+                label="Full Case Timeline"
+                icon={<ClockIcon className="size-4" />}
+              >
+                <div className="space-y-4 py-2">
+                  {brf.auditTrail.map((entry, i) => (
+                    <div key={i} className="flex gap-4 group/item">
+                      <div className="flex flex-col items-center">
+                        <div className={cn("size-2 rounded-full ring-4 ring-muted/5 group-hover/item:ring-primary/10 transition-all", statusStyles[auditEventKind(entry.color)].dot)} />
+                        {i < brf.auditTrail.length - 1 && <div className="w-px flex-1 my-1 bg-border/20" />}
                       </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Key facts grid */}
-            <div className="grid grid-cols-3 gap-2 mb-3.5">
-              <div className="rounded-xl p-3" style={{ background: '#fff', border: '1px solid #E5E7EB' }}>
-                <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1" style={{ color: '#9CA3AF' }}>Original score</div>
-                <div className="text-[20px] font-extrabold tracking-tight leading-tight" style={{ color: '#111827' }}>{st.origScore} / {st.maxScore}</div>
-                <div className="text-[11px] mt-0.5" style={{ color: '#9CA3AF' }}>{st.crit}</div>
-              </div>
-              <div className="rounded-xl p-3" style={{ background: '#fff', border: '1px solid #E5E7EB' }}>
-                <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1" style={{ color: '#9CA3AF' }}>AI confidence</div>
-                <div className="text-[14px] font-bold flex items-center gap-1.5 mb-0.5" style={{ color: '#111827' }}>
-                  <span className="w-2 h-2 rounded-full inline-block" style={{ background: st.confColor }} />
-                  {st.confLabel} · {st.confScore}
-                </div>
-                <div className="text-[11px]" style={{ color: '#9CA3AF' }}>{st.hasOverride ? 'Override on record' : 'No prior override'}</div>
-              </div>
-              <div className="rounded-xl p-3" style={{ background: '#fff', border: '1px solid #E5E7EB' }}>
-                <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1" style={{ color: '#9CA3AF' }}>Waiting</div>
-                <div className="text-[14px] font-bold" style={{ color: '#111827' }}>{st.wait}</div>
-                <div className="text-[11px]" style={{ color: '#9CA3AF' }}>{brf.requestType}</div>
-              </div>
-            </div>
-
-            {/* Student's argument */}
-            <div className="rounded-xl p-3.5 mb-3.5" style={{ background: '#EFF6FF', border: '1px solid #BFDBFE' }}>
-              <div className="text-[10px] font-bold tracking-[0.07em] uppercase mb-1.5" style={{ color: '#1D4ED8' }}>Student's argument</div>
-              <div className="text-[13px] leading-relaxed italic" style={{ color: '#1E3A5F' }}>{st.sv}</div>
-              <div className="mt-2 flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full" style={{ background: st.vcolor }} />
-                <span className="text-[11px]" style={{ color: '#374151' }}>{st.verdict}</span>
-              </div>
-            </div>
-
-            {/* Collapsible: Grading evidence */}
-            <Accordion
-              id="evidence"
-              open={!!accOpen['evidence']}
-              onToggle={() => toggleAcc('evidence')}
-              label="Evidence used in original grading"
-              icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" /></svg>}
-            >
-              <div className="space-y-2">
-                {brf.gradingEvidenceLines.map((line, i) => (
-                  <p key={i} className="text-[13px] leading-relaxed" style={{ color: '#374151' }}>{line}</p>
-                ))}
-              </div>
-            </Accordion>
-
-            {/* Collapsible: Audit trail */}
-            <Accordion
-              id="audit"
-              open={!!accOpen['audit']}
-              onToggle={() => toggleAcc('audit')}
-              label="Grading audit trail"
-              icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#374151" strokeWidth="1.6" /><path d="M12 7v5l3 3" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" /></svg>}
-            >
-              <div>
-                {brf.auditTrail.map((entry, i) => (
-                  <div key={i} className="flex gap-2.5 py-2" style={{ borderBottom: i < brf.auditTrail.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
-                    <div className="flex flex-col items-center gap-0">
-                      <div className="w-2 h-2 rounded-full flex-shrink-0 mt-0.5" style={{ background: entry.color }} />
-                      {i < brf.auditTrail.length - 1 && <div className="w-px flex-1 my-1" style={{ background: '#E5E7EB' }} />}
+                      <div className="flex-1 -mt-1 pb-4 border-b border-border/5">
+                        <div className="text-xs font-bold text-foreground">{entry.event}</div>
+                        <div className="eyebrow text-muted-foreground/30 mt-1">{entry.time}</div>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <div className="text-[12px] leading-snug" style={{ color: '#374151' }}>{entry.event}</div>
-                      <div className="text-[11px] mt-0.5" style={{ color: '#9CA3AF' }}>{entry.time}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Accordion>
+                  ))}
+                </div>
+              </Accordion>
 
-            {/* Collapsible: Cluster context */}
-            {brf.hasCluster && (
-              <div className="rounded-xl overflow-hidden mb-2" style={{ border: '1px solid #FDE68A' }}>
-                <button
-                  onClick={() => toggleAcc('cluster')}
-                  className="w-full flex items-center justify-between px-3.5 py-3 cursor-pointer"
-                  style={{ background: '#FFFBEB', border: 'none' }}
-                >
-                  <div className="flex items-center gap-2">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="#92400E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    <span className="text-[13px] font-semibold" style={{ color: '#92400E' }}>Pattern — multiple students raised this</span>
-                  </div>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ transform: accOpen['cluster'] ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s', color: '#92400E' }}>
-                    <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-                {accOpen['cluster'] && (
-                  <div className="px-3.5 pb-3.5 pt-3" style={{ background: '#FFFBEB', borderTop: '1px solid #FDE68A' }}>
-                    <p className="text-[13px] leading-relaxed" style={{ color: '#78350F' }}>{brf.clusterText}</p>
-                  </div>
-                )}
-              </div>
-            )}
+              <Accordion
+                id="evidence"
+                open={!!accOpen['evidence']}
+                onToggle={() => toggleAcc('evidence')}
+                label="Evidence used in original grading"
+                icon={<FileIcon className="size-4" />}
+              >
+                <div className="space-y-3 py-2">
+                  {brf.gradingEvidenceLines.map((line, i) => (
+                    <p key={i} className="text-xs leading-relaxed text-muted-foreground border-l-2 border-primary/10 pl-4">{line}</p>
+                  ))}
+                </div>
+              </Accordion>
+            </section>
 
             <div className="h-24" />
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-3.5 flex items-center justify-between flex-shrink-0" style={{ borderTop: '1px solid #E5E7EB', background: '#fff' }}>
-            <div className="flex items-center gap-2">
+          <div className="px-8 py-5 flex items-center justify-between flex-shrink-0 bg-background/60 backdrop-blur-md border-t border-border/10">
+            <div className="flex items-center gap-4">
               <button
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg text-[13px] font-medium transition-colors hover:bg-gray-50"
-                style={{ border: '1.5px solid #E5E7EB', background: '#fff', color: '#374151', cursor: 'pointer', fontFamily: 'inherit' }}
+                className="eyebrow group flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-muted-foreground border border-border/30 bg-card/50 hover:bg-card hover:border-border transition-all"
               >
-                ← Back to list
+                {onStart ? <ChevronLeftIcon className="size-3 group-hover:-translate-x-0.5 transition-transform" /> : <XIcon className="size-3 group-hover:scale-110 transition-transform" />}
+                {onStart ? 'Back to list' : 'Close Briefing'}
               </button>
               {!scrolled && onStart && (
-                <div className="flex items-center gap-1 text-[11px]" style={{ color: '#9CA3AF' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                  Scroll to read full briefing
+                <div className="eyebrow flex items-center gap-1.5 text-muted-foreground/30 animate-pulse">
+                  <ArrowDownIcon className="size-3" />
+                  Scroll to briefing
                 </div>
               )}
             </div>
             {onStart && (
               <button
-                onClick={canStart ? onStart : undefined}
-                disabled={!canStart}
-                className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-all"
-                style={{
-                  border: 'none',
-                  background: canStart ? '#111827' : '#E5E7EB',
-                  color: canStart ? '#fff' : '#9CA3AF',
-                  cursor: canStart ? 'pointer' : 'not-allowed',
-                  fontFamily: 'inherit',
-                }}
+                onClick={canStart && !isNavigating ? handleStart : undefined}
+                disabled={!canStart || isNavigating}
+                className={`eyebrow group/btn flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl transition-all min-w-[180px] ${
+                  canStart && !isNavigating
+                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 translate-y-0 active:scale-[0.98]'
+                    : isNavigating
+                      ? 'bg-primary/80 text-primary-foreground cursor-wait shadow-lg shadow-primary/15'
+                      : 'bg-muted/50 text-muted-foreground/50 border border-border/10 opacity-50 cursor-not-allowed'
+                }`}
               >
-                Start Re-Evaluation
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                {isNavigating ? (
+                  <>
+                    <div className="size-3 border-2 border-primary-foreground/20 border-t-primary-foreground rounded-full animate-spin" />
+                    Opening Workspace...
+                  </>
+                ) : (
+                  <>
+                    Start Re-Evaluation
+                    <ChevronLeftIcon className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -282,25 +381,124 @@ function Accordion({
   id: string; open: boolean; onToggle: () => void; label: string; icon: React.ReactNode; children: React.ReactNode
 }) {
   return (
-    <div className="rounded-xl overflow-hidden mb-2" style={{ border: '1px solid #E5E7EB' }}>
+    <div className={`rounded-2xl overflow-hidden border border-border/10 transition-all ${open ? 'bg-card/30' : 'bg-card/5 hover:bg-card/10'}`}>
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-3.5 py-3 cursor-pointer transition-colors hover:bg-gray-50"
-        style={{ background: '#fff', border: 'none' }}
+        className="w-full flex items-center justify-between px-5 py-4 cursor-pointer"
       >
-        <div className="flex items-center gap-2">
-          {icon}
-          <span className="text-[13px] font-semibold" style={{ color: '#111827' }}>{label}</span>
+        <div className="flex items-center gap-3">
+          <div className={`size-5 flex items-center justify-center ${open ? 'text-primary' : 'text-muted-foreground/30'}`}>
+            {icon}
+          </div>
+          <span className="eyebrow text-foreground">{label}</span>
         </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s', color: '#9CA3AF' }}>
-          <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <ChevronDownIcon className={`size-4 transition-transform duration-300 text-muted-foreground/30 ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div className="px-3.5 pb-3.5 pt-3" style={{ background: '#FAFAFA', borderTop: '1px solid #F3F4F6' }}>
-          {children}
+        <div className="px-5 pb-5 pt-0 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="pt-4 border-t border-border/10">
+            {children}
+          </div>
         </div>
       )}
     </div>
+  )
+}
+
+// Minimal Icons
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  )
+}
+
+function ChevronLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M15 18l-6-6 6-6" />
+    </svg>
+  )
+}
+
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  )
+}
+
+function ArrowRightIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M5 12h14M12 5l7 7-7 7" />
+    </svg>
+  )
+}
+
+function ArrowDownIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M12 5v14M5 12l7 7-7 7" />
+    </svg>
+  )
+}
+
+function ZapIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+    </svg>
+  )
+}
+
+function ShieldCheckIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+      <path d="M9 12l2 2 4-4"></path>
+    </svg>
+  )
+}
+
+function InfoIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="16" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+    </svg>
+  )
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+  )
+}
+
+function ClockIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+  )
+}
+
+function FileIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+      <polyline points="14 2 14 8 20 8"></polyline>
+      <line x1="16" y1="13" x2="8" y2="13"></line>
+      <line x1="16" y1="17" x2="8" y2="17"></line>
+      <polyline points="10 9 9 9 8 9"></polyline>
+    </svg>
   )
 }

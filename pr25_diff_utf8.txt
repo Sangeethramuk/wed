@@ -1,0 +1,2917 @@
+﻿diff --git a/src/app/dashboard/re-evaluation/[id]/page.tsx b/src/app/dashboard/re-evaluation/[id]/page.tsx
+index fa68b55..306eeed 100644
+--- a/src/app/dashboard/re-evaluation/[id]/page.tsx
++++ b/src/app/dashboard/re-evaluation/[id]/page.tsx
+@@ -1,6 +1,6 @@
+ "use client"
+ 
+-import { useState, useRef, useEffect, useCallback } from 'react'
++import { useState, useRef, useEffect } from 'react'
+ import { useRouter, useParams } from 'next/navigation'
+ import { STUDENTS, AI_REVALS } from '@/lib/data/re-evaluation-data'
+ import { useReEvalStore } from '@/lib/store/re-evaluation-store'
+@@ -47,7 +47,6 @@ export default function ReEvalWorkspacePage() {
+ 
+   const rpScrollRef = useRef<HTMLDivElement>(null)
+ 
+-  // Reset when student changes
+   useEffect(() => {
+     setWsState('active')
+     setSubmittedVariant(null)
+@@ -62,7 +61,7 @@ export default function ReEvalWorkspacePage() {
+ 
+   if (!st || !aiReval) {
+     return (
+-      <div className="-m-4 flex items-center justify-center" style={{ height: 'calc(100vh - 3.5rem)' }}>
++      <div className="flex items-center justify-center min-h-[400px]">
+         <p className="text-muted-foreground">Student not found.</p>
+       </div>
+     )
+@@ -82,10 +81,7 @@ export default function ReEvalWorkspacePage() {
+     if (d === 'uphold') { setPickedScore(null); setAcctReason(null) }
+   }
+ 
+-  const handlePickScore = (s: number) => {
+-    setPickedScore(s)
+-  }
+-
++  const handlePickScore = (s: number) => setPickedScore(s)
+   const handlePickAcct = (key: string) => setAcctReason(key)
+ 
+   const handleSubmit = () => {
+@@ -93,11 +89,9 @@ export default function ReEvalWorkspacePage() {
+     if (rpScrollRef.current) rpScrollRef.current.scrollTop = 0
+ 
+     if (decision === 'uphold') {
+-      // Uphold: show lightweight confirm state
+       setWsState('compare')
+       setComparing(false)
+     } else {
+-      // Adjust: run AI re-eval
+       setWsState('compare')
+       setComparing(true)
+       setTimeout(() => setComparing(false), 2200)
+@@ -118,596 +112,484 @@ export default function ReEvalWorkspacePage() {
+     }
+   }
+ 
+-  const handleBack = () => router.push('/dashboard/re-evaluation')
++  const handleBack = () => router.push('/dashboard/re-evaluation/triage')
+ 
+   const instScore = pickedScore ?? st.origScore
+   const aiScore = aiReval.score
+   const agree = Math.abs(instScore - aiScore) <= 1
+ 
+   return (
+-    <div
+-      className="-m-4 flex flex-col bg-background"
+-      style={{ height: 'calc(100vh - 3.5rem)' }}
+-    >
+-      {/* Topbar */}
+-      <div
+-        className="flex items-center px-5 gap-0 flex-shrink-0"
+-        style={{ background: '#fff', borderBottom: '1px solid #E2E8F0', height: 52, boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}
+-      >
+-        <button
+-          onClick={handleBack}
+-          className="flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-lg transition-colors hover:bg-slate-50 flex-shrink-0"
+-          style={{ border: '1.5px solid #CBD5E1', background: '#fff', color: '#475569', cursor: 'pointer', fontFamily: 'inherit' }}
+-        >
+-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+-          Re-evaluation Requests
+-        </button>
+-        <span className="mx-2 text-[#CBD5E1]">┬À</span>
+-        <span className="text-[14px] font-bold whitespace-nowrap" style={{ color: '#1E293B' }}>{st.name}</span>
+-        <span className="mx-2 text-[#CBD5E1]">┬À</span>
+-        <span className="text-[12px] whitespace-nowrap" style={{ color: '#94A3B8' }}>{st.rollId} ┬À {st.assign}</span>
+-        <span
+-          className="ml-2 text-[11px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0"
+-          style={{ background: '#EDE9FB', color: '#6B5FC4', border: '1px solid #C4BDF0' }}
+-        >
+-          {st.crit}
+-        </span>
+-        <div className="ml-auto flex items-center gap-2">
++    <div className="flex flex-col h-[calc(100vh-2rem)] bg-slate-50/50 rounded-2xl border border-border/10 overflow-hidden shadow-sm">
++      {/* Institutional Topbar */}
++      <div className="h-16 px-6 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-border/10 flex-shrink-0 z-50">
++        <div className="flex items-center gap-6">
++          <button
++            onClick={handleBack}
++            className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-all group"
++          >
++            <ChevronLeftIcon className="size-3 group-hover:-translate-x-0.5 transition-transform" />
++            Re-evaluation Requests
++          </button>
++          
++          <div className="w-px h-6 bg-border/10" />
++          
++          <div className="flex items-center gap-3">
++            <h1 className="text-lg font-black tracking-tighter text-slate-800 flex items-center gap-2">
++              {st.name}
++              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-2 py-0.5 bg-muted/50 rounded-md">
++                {st.rollId}
++              </span>
++            </h1>
++          </div>
++        </div>
++
++        <div className="flex items-center gap-4">
++          <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground/40 pr-4 border-r border-border/10">
++            <span>{st.assign}</span>
++            <span className="text-muted-foreground/20">┬À</span>
++            <span className="text-primary/60">{st.crit}</span>
++          </div>
+           <button
+             onClick={() => setBriefingOpen(true)}
+-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all hover:border-purple-400 hover:text-purple-600"
+-            style={{ border: '1.5px solid #CBD5E1', background: '#fff', color: '#475569', cursor: 'pointer', fontFamily: 'inherit' }}
++            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/[0.03] border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/[0.08] transition-all shadow-sm"
+           >
+-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+-            Case Briefing
++            <BriefcaseIcon className="size-3.5" />
++            AI Case Briefing
+           </button>
+         </div>
+       </div>
+ 
+-      {/* Content area */}
+-      <div className="flex flex-1 overflow-hidden">
+-
+-        {/* Left panel: submission viewer */}
+-        <div className="flex flex-col overflow-hidden" style={{ width: '58%', borderRight: '1px solid #E2E8F0' }}>
+-          {/* Left header */}
+-          <div
+-            className="flex items-center gap-2.5 px-4 py-2.5 flex-shrink-0"
+-            style={{ background: '#fff', borderBottom: '1px solid #E2E8F0' }}
+-          >
+-            <span className="text-[11px] font-bold uppercase tracking-[0.07em]" style={{ color: '#94A3B8' }}>Original Submission</span>
+-            <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid #CBD5E1', background: '#F1F5F9' }}>
+-              {(['scan', 'ocr'] as const).map((v) => (
+-                <button
+-                  key={v}
+-                  onClick={() => setView(v)}
+-                  className="px-3 py-1.5 text-[11px] font-medium transition-all"
+-                  style={{
+-                    background: view === v ? '#fff' : 'transparent',
+-                    color: view === v ? '#6B5FC4' : '#94A3B8',
+-                    fontWeight: view === v ? 600 : 400,
+-                    border: 'none',
+-                    cursor: 'pointer',
+-                    fontFamily: 'inherit',
+-                    boxShadow: view === v ? '0 1px 3px rgba(0,0,0,.07)' : 'none',
+-                  }}
+-                >
+-                  {v === 'scan' ? 'Original scan' : 'Extracted text'}
+-                </button>
+-              ))}
++      {/* Workspace Area */}
++      <div className="flex flex-1 overflow-hidden min-h-0">
++        {/* Left Panel: Submission Viewer */}
++        <div className="flex-1 flex flex-col bg-slate-50/80 overflow-hidden relative">
++          <div className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white shadow-sm z-10 flex-shrink-0">
++            <div className="flex items-center gap-4">
++              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Submission Viewer</span>
++              <div className="flex bg-muted/40 p-1 rounded-xl border border-border/5">
++                {(['scan', 'ocr'] as const).map((v) => (
++                  <button
++                    key={v}
++                    onClick={() => setView(v)}
++                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
++                      view === v ? 'bg-white text-primary shadow-sm' : 'text-muted-foreground/60 hover:text-muted-foreground'
++                    }`}
++                  >
++                    {v === 'scan' ? 'Original Scan' : 'Extracted Text'}
++                  </button>
++                ))}
++              </div>
+             </div>
+-            <div className="flex items-center gap-1.5 ml-auto">
+-              {['ÔÇ╣', 'ÔÇ║'].map((ch, i) => (
+-                <div key={i} className="w-6 h-6 rounded flex items-center justify-center cursor-pointer hover:bg-slate-100 text-[13px]" style={{ border: '1px solid #E2E8F0', background: '#fff', color: '#475569' }}>{ch}</div>
+-              ))}
+-              <span className="text-[12px]" style={{ color: '#94A3B8' }}>Page 2 of 3</span>
++            <div className="flex items-center gap-3">
++               <div className="flex items-center gap-1">
++                 <button className="size-7 flex items-center justify-center rounded-lg border border-border/10 hover:bg-white transition-colors text-muted-foreground">
++                   <ChevronLeftIcon className="size-3.5" />
++                 </button>
++                 <button className="size-7 flex items-center justify-center rounded-lg border border-border/10 hover:bg-white transition-colors text-muted-foreground">
++                   <ChevronLeftIcon className="size-3.5 rotate-180" />
++                 </button>
++               </div>
++               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Page 2 of 3</span>
+             </div>
+           </div>
+ 
+-          {/* Paper content */}
+-          <div className="flex-1 overflow-y-auto p-5" style={{ background: '#F1F5F9' }}>
++          <div className="flex-1 overflow-y-auto p-8" style={{ scrollbarWidth: 'thin' }}>
+             {view === 'scan' ? (
+-              <div className="rounded-lg p-7" style={{ background: '#fff', border: '1px solid #E2E8F0', fontFamily: 'Georgia, serif', fontSize: 13, lineHeight: 1.9, color: '#2C2C2C', boxShadow: '0 4px 16px rgba(0,0,0,.09)' }}>
+-                <div className="font-bold mb-1" style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#1E293B' }}>{st.rollId} ┬À {st.name} ┬À {st.assign}</div>
+-                <div className="mb-3.5 pb-2.5 text-[11px]" style={{ fontFamily: 'Inter, sans-serif', color: '#94A3B8', borderBottom: '1px solid #E2E8F0' }}>Submitted 1 April 2026 ┬À Page 2 of 3 ┬À Graded 3 April 2026</div>
+-                <div className="text-[10px] font-bold uppercase tracking-[0.08em] mb-2" style={{ fontFamily: 'Inter, sans-serif', color: '#94A3B8' }}>Algorithm Design ÔÇö continued from page 1</div>
+-                {[
+-                  [10, 'The primary sort uses merge sort with O(n log n) complexity.'],
+-                  [11, 'Before entering the main sort routine, the input array is'],
+-                  [12, 'validated. This covers three separate conditions that'],
+-                  [13, 'represent common real-world failure modes in production'],
+-                  [14, 'systems handling unsorted data streams.'],
+-                ].map(([n, t]) => (
+-                  <div key={n} className="relative pl-7 mb-0.5">
+-                    <span className="absolute left-0 top-0.5 text-[10px] w-5 text-right" style={{ color: '#CBD5E1', fontFamily: 'monospace' }}>{n}</span>
+-                    {t}
++              <div className="max-w-2xl mx-auto rounded-2xl bg-white border border-slate-200 shadow-xl shadow-slate-200/50 p-10 font-serif text-[14px] leading-[1.8] text-slate-800 relative ring-1 ring-slate-900/5">
++                <div className="flex items-center justify-between mb-8 pb-4 border-b border-border/5">
++                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 font-sans">
++                    {st.rollId} ┬À {st.name} ┬À {st.assign}
+                   </div>
+-                ))}
+-                {/* Highlighted section */}
+-                <div className="my-2 -mx-7 px-7 py-2 relative" style={{ background: '#FEF3C7', borderLeft: '3px solid #F59E0B' }}>
+-                  <div className="absolute -top-2 left-7 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.05em]" style={{ background: '#F59E0B', fontFamily: 'Inter, sans-serif' }}>
+-                    Student cited ┬À {st.evidence}
++                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/20 font-sans">
++                    Submitted 1 April 2026
+                   </div>
++                </div>
++                
++                <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/30 mb-6 font-sans">
++                  Algorithm Design ÔÇö Continued from page 1
++                </div>
++
++                <div className="space-y-1">
+                   {[
+-                    [15, <><strong>Case 1 ÔÇö Empty array:</strong> If input length is zero,</>],
+-                    [16, 'the function returns ÔêÆ1 immediately before any sort.'],
+-                    [17, <><strong>Case 2 ÔÇö Single element:</strong> Array of length 1</>],
+-                    [18, 'is already sorted; returned as-is.'],
+-                    [19, <><strong>Case 3 ÔÇö Negative values:</strong> Absolute value</>],
+-                    [20, 'comparison used before sort to maintain ordering.'],
++                    [10, 'The primary sort uses merge sort with O(n log n) complexity.'],
++                    [11, 'Before entering the main sort routine, the input array is'],
++                    [12, 'validated. This covers three separate conditions that'],
++                    [13, 'represent common real-world failure modes in production'],
++                    [14, 'systems handling unsorted data streams.'],
+                   ].map(([n, t]) => (
+-                    <div key={n as number} className="relative pl-7 mb-0.5">
+-                      <span className="absolute left-0 top-0.5 text-[10px] w-5 text-right" style={{ color: '#CBD5E1', fontFamily: 'monospace' }}>{n}</span>
+-                      {t}
++                    <div key={n as number} className="flex gap-6 group">
++                      <span className="w-6 text-right text-[10px] font-mono text-muted-foreground/20 group-hover:text-muted-foreground/40 transition-colors pt-1">{n}</span>
++                      <p className="flex-1">{t}</p>
+                     </div>
+                   ))}
+-                </div>
+-                {[
+-                  [21, 'All three guards execute in O(1) before the sort begins.'],
+-                  [22, 'This ensures no unnecessary computation on trivially'],
+-                  [23, 'solvable inputs. Follows defensive programming principles'],
+-                  [24, 'from Week 4 lecture notes.'],
+-                  [25, 'Full implementation is in the code block on page 3.'],
+-                ].map(([n, t]) => (
+-                  <div key={n} className="relative pl-7 mb-0.5">
+-                    <span className="absolute left-0 top-0.5 text-[10px] w-5 text-right" style={{ color: '#CBD5E1', fontFamily: 'monospace' }}>{n}</span>
+-                    {t}
++
++                  {/* Highlighted Student Evidence */}
++                  <div className="relative my-4 -mx-10 px-10 py-6 bg-amber-50 border-l-4 border-amber-500">
++                    <div className="absolute -top-3 left-10 px-3 py-1 rounded-full bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest font-sans shadow-lg shadow-amber-500/20">
++                      Student Cited ┬À {st.evidence}
++                    </div>
++                    <div className="space-y-1">
++                      {[
++                        [15, <><strong>Case 1 ÔÇö Empty array:</strong> If input length is zero,</>],
++                        [16, 'the function returns ÔêÆ1 immediately before any sort.'],
++                        [17, <><strong>Case 2 ÔÇö Single element:</strong> Array of length 1</>],
++                        [18, 'is already sorted; returned as-is.'],
++                        [19, <><strong>Case 3 ÔÇö Negative values:</strong> Absolute value</>],
++                        [20, 'comparison used before sort to maintain ordering.'],
++                      ].map(([n, t]) => (
++                        <div key={n as number} className="flex gap-6">
++                          <span className="w-6 text-right text-[10px] font-mono text-amber-500/30 pt-1">{n}</span>
++                          <p className="flex-1">{t}</p>
++                        </div>
++                      ))}
++                    </div>
+                   </div>
+-                ))}
++
++                  {[
++                    [21, 'All three guards execute in O(1) before the sort begins.'],
++                    [22, 'This ensures no unnecessary computation on trivially'],
++                    [23, 'solvable inputs. Follows defensive programming principles'],
++                    [24, 'from Week 4 lecture notes.'],
++                    [25, 'Full implementation is in the code block on page 3.'],
++                  ].map(([n, t]) => (
++                    <div key={n as number} className="flex gap-6 group">
++                      <span className="w-6 text-right text-[10px] font-mono text-muted-foreground/20 group-hover:text-muted-foreground/40 transition-colors pt-1">{n}</span>
++                      <p className="flex-1">{t}</p>
++                    </div>
++                  ))}
++                </div>
+               </div>
+             ) : (
+-              <div className="rounded-lg p-5" style={{ background: '#fff', border: '1px solid #E2E8F0', fontFamily: 'JetBrains Mono, monospace', fontSize: 12, lineHeight: 1.9, color: '#475569' }}>
+-                <div className="rounded-lg px-3 py-2 mb-3.5 text-[11px]" style={{ background: '#FFF7ED', border: '1px solid #FED7AA', color: '#92400E', fontFamily: 'Inter, sans-serif' }}>
+-                  ÔÜá This is what the system read. Red sections were misread.
++              <div className="max-w-2xl mx-auto rounded-2xl bg-slate-900 border border-slate-800 p-8 font-mono text-[13px] leading-relaxed text-slate-400">
++                <div className="flex items-center gap-3 mb-6 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 font-sans">
++                  <InfoIcon className="size-4" />
++                  <span className="text-[11px] font-bold">This is the extracted machine text. Red sections indicate lower confidence.</span>
++                </div>
++                <div className="space-y-1">
++                  <div>15 &nbsp;<strong className="text-white">Case 1 ÔÇö Empty array: returns ÔêÆ1 before sort.</strong></div>
++                  <div>17 &nbsp;<strong className="text-white">Case 2 ÔÇö Single element: returned as-is.</strong></div>
++                  <div className="flex items-center gap-2">
++                    <span>19 &nbsp;All</span>
++                    <span className="bg-red-500/20 text-red-400 px-1 rounded line-through decoration-red-400/50">three guards</span>
++                    <span className="text-red-400 opacity-80">[thr33 gu?rds]</span>
++                    <span>in O(1).</span>
++                  </div>
+                 </div>
+-                <div>15 &nbsp;<strong style={{ color: '#1E293B' }}>Case 1 ÔÇö Empty array: returns ÔêÆ1 before sort.</strong></div>
+-                <div>17 &nbsp;<strong style={{ color: '#1E293B' }}>Case 2 ÔÇö Single element: returned as-is.</strong></div>
+-                <div>19 &nbsp;All <span style={{ background: '#FEF2F2', color: '#EF4444', padding: '0 3px', textDecoration: 'line-through' }}>three guards</span><span style={{ color: '#EF4444' }}> [thr33 gu?rds]</span> in O(1).</div>
+               </div>
+             )}
+           </div>
+         </div>
+ 
+-        {/* Right panel: decision area */}
+-        <div className="flex flex-col overflow-hidden" style={{ width: '42%', background: '#F8FAFC' }}>
+-          {/* Context strip */}
+-          <div
+-            className="flex items-stretch flex-shrink-0"
+-            style={{ background: '#fff', borderBottom: '1.5px solid #CBD5E1', padding: '11px 16px', boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}
+-          >
+-            <ContextBlock label="Original score">
+-              <div className="text-[18px] font-extrabold tracking-tight" style={{ color: '#6B5FC4' }}>{st.origScore} / {st.maxScore}</div>
+-              <div className="text-[10px] mt-0.5" style={{ color: '#94A3B8' }}>{st.crit}</div>
+-            </ContextBlock>
+-            <ContextBlock label="Evidence used at grading">
+-              <div className="text-[11px] leading-snug font-medium" style={{ color: '#1E293B' }}>{st.gradingEvidence}</div>
+-            </ContextBlock>
+-            <ContextBlock label="Confidence ┬À Prior action" noBorder>
+-              <div className="flex items-center gap-1 text-[12px] font-semibold" style={{ color: '#1E293B' }}>
+-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: st.confColor }} />
+-                {st.confLabel} ┬À {st.confScore}
++        {/* Right Panel: Decision Area */}
++        <div className="w-[480px] flex-shrink-0 flex flex-col bg-slate-50 overflow-hidden border-l border-slate-200 relative z-10 shadow-[-4px_0_24px_rgba(0,0,0,0.05)]">
++          {/* Intelligence Header: KPI Strip */}
++          <div className="flex border-b border-slate-200 bg-white shadow-sm flex-shrink-0 relative z-20">
++            <KPIBlock label="Original Score" className="flex-[0.9] border-r border-slate-200/60">
++              <div className="text-lg font-black tracking-tighter" style={{ color: st.accentColor }}>{st.origScore}<span className="text-muted-foreground/30 font-bold ml-1">/ {st.maxScore}</span></div>
++              <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">{st.critShort}</div>
++            </KPIBlock>
++            <KPIBlock label="Evidence Used" className="flex-[1.4] border-r border-slate-200/60">
++              <div className="text-[10px] font-bold text-slate-600 leading-tight line-clamp-2">"{st.gradingEvidence}"</div>
++              <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1">At Grading</div>
++            </KPIBlock>
++            <KPIBlock label="Confidence" className="flex-[0.9]">
++              <div className="flex items-center gap-1.5">
++                <div className="size-2 rounded-full" style={{ background: st.confColor }} />
++                <span className="text-[13px] font-black tracking-tighter text-slate-800">{st.confScore}</span>
+               </div>
+-              <div className="text-[10px] mt-0.5 leading-snug" style={{ color: '#94A3B8' }}>
+-                {st.hasOverride ? 'You overrode the original evaluation on this submission' : 'No prior override on this submission'}
+-              </div>
+-            </ContextBlock>
++              <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1 whitespace-nowrap">{st.hasOverride ? 'Prior Override' : 'System Default'}</div>
++            </KPIBlock>
+           </div>
+ 
+-          {/* Scrollable right content */}
+-          <div ref={rpScrollRef} className="flex-1 overflow-y-auto px-3.5 pb-4" style={{ scrollbarWidth: 'thin' }}>
+-
+-            {/* STATE: active */}
++          <div ref={rpScrollRef} className="flex-1 overflow-y-auto px-6 py-6 space-y-6" style={{ scrollbarWidth: 'thin' }}>
+             {wsState === 'active' && (
+-              <div>
+-                {/* Student request zone */}
+-                <Zone label="What the student is asking" className="mt-3.5">
+-                  <div className="grid grid-cols-2 rounded-lg overflow-hidden mb-2.5" style={{ border: '1px solid #E2E8F0', background: '#fff' }}>
+-                    <DataCell label="Criterion">
+-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#EDE9FB', color: '#6B5FC4', border: '1px solid #C4BDF0' }}>
+-                        {st.critShort} ┬À {st.origScore} / {st.maxScore}
+-                      </span>
+-                    </DataCell>
+-                    <DataCell label="Evidence location" noBorder>
+-                      <span className="text-[11px] font-medium px-1.5 py-0.5 rounded" style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', fontFamily: 'monospace' }}>
+-                        ­ƒôä {st.evidence}
+-                      </span>
+-                    </DataCell>
+-                  </div>
+-                  <div className="relative rounded-lg p-3 mb-2.5 text-[12px] leading-relaxed" style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#475569' }}>
+-                    <span className="absolute -top-2 left-3 text-[9px] font-bold uppercase tracking-[0.06em] text-white px-1.5 py-0.5 rounded-full" style={{ background: '#3B82F6' }}>Student says</span>
+-                    {st.sv}
+-                  </div>
+-                  <div className="flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-full w-fit" style={{ background: '#fff', border: '1px solid #E2E8F0', color: '#475569' }}>
+-                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: st.vcolor }} />
+-                    {st.verdict}
+-                  </div>
+-                </Zone>
+-
+-                {/* Decision zone */}
+-                <div className="rounded-xl mb-2.5 overflow-hidden" style={{ background: '#fff', border: '1.5px solid #CBD5E1', boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}>
+-                  <div className="px-3.5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid #E2E8F0' }}>
+-                    <div className="flex items-center gap-1.5">
+-                      <div className="w-0.5 h-3 rounded" style={{ background: '#6B5FC4' }} />
+-                      <span className="text-[11px] font-bold uppercase tracking-[0.08em]" style={{ color: '#94A3B8' }}>Your decision</span>
++              <>
++                {/* Section: Student Dispute */}
++                <section className="space-y-3">
++                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Intelligence Layer</div>
++                  <div className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
++                    <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
++                      <div className="flex items-center justify-between">
++                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Disputed Reasoning</span>
++                         <span className="px-2 py-0.5 rounded bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest">
++                           {st.evidence}
++                         </span>
++                      </div>
++                    </div>
++                    <div className="p-5 space-y-4">
++                      <div className="relative rounded-xl p-4 bg-primary/[0.03] border border-primary/10">
++                        <div className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-primary text-white text-[8px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">
++                          Student Perspective
++                        </div>
++                        <p className="text-[13px] font-medium leading-relaxed italic text-slate-700">
++                          "{st.sv}"
++                        </p>
++                      </div>
++                      <div className="flex items-center gap-2 text-[11px] font-bold text-emerald-600 px-3 py-2 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
++                        <div className="size-1.5 rounded-full bg-emerald-500" />
++                        {st.verdict}
++                      </div>
+                     </div>
+-                    <span className="text-[11px]" style={{ color: '#94A3B8' }}>
+-                      {decision === 'uphold' ? `Your written reason explains the grade to ${st.first} directly` : decision === 'adjust' ? 'Select a score and confirm why it is changing' : 'Choose one option below'}
+-                    </span>
+                   </div>
+-                  <div className="p-2 space-y-1.5">
+-                    {/* Option A: Uphold */}
++                </section>
++
++                {/* Section: Your Decision */}
++                <section className="space-y-4">
++                  <div className="flex items-center justify-between">
++                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Action Hub</div>
++                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/30">Decision Workspace</span>
++                  </div>
++
++                  <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-2 space-y-2">
+                     <DecisionOption
+                       active={decision === 'uphold'}
+                       variant="uphold"
+                       label="Grade upheld after review"
+-                      desc="Original score stands"
++                      desc="Original score correctly reflects work"
+                       onClick={() => handlePickDecision('uphold')}
+                     >
+-                      <p className="text-[12px] leading-relaxed" style={{ color: '#065F46' }}>
++                      <p className="text-[12px] leading-relaxed text-slate-600">
+                         The original grade correctly reflects the work. Your written reason below will be sent to the student explaining why the grade stands.
+                       </p>
+                     </DecisionOption>
+ 
+-                    {/* Option B: Adjust */}
+                     <DecisionOption
+                       active={decision === 'adjust'}
+                       variant="adjust"
+                       label="Score adjusted"
+-                      desc="Requires HOD approval"
++                      desc="Requires HOD review & approval"
+                       onClick={() => handlePickDecision('adjust')}
+                     >
+-                      {/* Score change row */}
+-                      <div className="flex items-center gap-2.5 mb-3 p-2.5 rounded-lg" style={{ background: 'rgba(107,95,196,.08)' }}>
+-                        <div className="flex flex-col items-center">
+-                          <div className="text-[9px] font-semibold uppercase tracking-[0.06em] mb-0.5" style={{ color: '#94A3B8' }}>Current score</div>
+-                          <div className="text-[26px] font-extrabold leading-tight" style={{ color: '#475569' }}>{st.origScore}</div>
+-                          <div className="text-[11px]" style={{ color: '#94A3B8' }}>/ {st.maxScore}</div>
+-                        </div>
+-                        <div className="text-[18px]" style={{ color: '#CBD5E1' }}>ÔåÆ</div>
+-                        <div className="flex flex-col items-center">
+-                          <div className="text-[9px] font-semibold uppercase tracking-[0.06em] mb-0.5" style={{ color: '#6B5FC4' }}>Proposed score</div>
+-                          {pickedScore ? (
+-                            <>
+-                              <div className="text-[26px] font-extrabold leading-tight" style={{ color: '#6B5FC4' }}>{pickedScore}</div>
+-                              <div className="text-[11px]" style={{ color: '#C4BDF0' }}>/ {st.maxScore}</div>
+-                            </>
+-                          ) : (
+-                            <div className="text-[13px] italic" style={{ color: '#CBD5E1' }}>Select below</div>
+-                          )}
++                      <div className="space-y-5 py-2">
++                        {/* Score Picker UI */}
++                        <div className="flex items-center gap-6 p-4 rounded-xl bg-slate-50 border border-slate-100">
++                           <div className="flex flex-col items-center">
++                              <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mb-1">Current</span>
++                              <div className="text-3xl font-black tracking-tighter text-slate-400">{st.origScore}</div>
++                           </div>
++                           <ArrowRightIcon className="size-4 text-muted-foreground/20" />
++                           <div className="flex flex-col items-center flex-1">
++                              <span className="text-[8px] font-black uppercase tracking-widest text-primary/60 mb-1">Proposed New Score</span>
++                              <div className="flex gap-1 flex-wrap justify-center mt-2">
++                                {Array.from({ length: st.maxScore + 1 }, (_, i) => i).map((s) => {
++                                  const isOrig = s === st.origScore
++                                  const isPicked = s === pickedScore
++                                  return (
++                                    <button
++                                      key={s}
++                                      onClick={isOrig ? undefined : () => handlePickScore(s)}
++                                      disabled={isOrig}
++                                      className={`size-8 rounded-lg text-[11px] font-black transition-all ${
++                                        isPicked 
++                                          ? 'bg-primary text-white shadow-lg shadow-primary/20' 
++                                          : isOrig 
++                                            ? 'bg-muted/30 text-muted-foreground/30 cursor-not-allowed border border-dashed border-border/10' 
++                                            : 'bg-white border border-border/10 text-slate-600 hover:border-primary/40 hover:text-primary'
++                                      }`}
++                                    >
++                                      {s}
++                                    </button>
++                                  )
++                                })}
++                              </div>
++                           </div>
+                         </div>
+-                      </div>
+ 
+-                      {/* Score buttons */}
+-                      <div className="mb-3">
+-                        <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1.5" style={{ color: '#94A3B8' }}>Select a new score</div>
+-                        <div className="flex gap-1.5 flex-wrap">
+-                          {Array.from({ length: st.maxScore }, (_, i) => i + 1).map((s) => {
+-                            const isOrig = s === st.origScore
+-                            const isPicked = s === pickedScore
+-                            return (
+-                              <button
+-                                key={s}
+-                                onClick={isOrig ? undefined : () => handlePickScore(s)}
+-                                disabled={isOrig}
+-                                className="w-8 h-8 rounded-lg text-[13px] font-semibold flex items-center justify-center transition-all"
+-                                style={{
+-                                  border: isPicked ? 'none' : isOrig ? '1.5px dashed #CBD5E1' : '1.5px solid #CBD5E1',
+-                                  background: isPicked ? '#6B5FC4' : isOrig ? '#F1F5F9' : '#fff',
+-                                  color: isPicked ? '#fff' : isOrig ? '#94A3B8' : '#475569',
+-                                  cursor: isOrig ? 'not-allowed' : 'pointer',
+-                                  boxShadow: isPicked ? '0 2px 8px rgba(107,95,196,.4)' : 'none',
+-                                  fontFamily: 'inherit',
+-                                }}
+-                              >
+-                                {s}
+-                              </button>
+-                            )
+-                          })}
+-                        </div>
+-                      </div>
+-
+-                      {/* Accountability reasons */}
+-                      {pickedScore !== null && (
+-                        <div style={{ borderTop: '1px solid #C4BDF0', paddingTop: 12 }}>
+-                          <div className="text-[11px] font-bold mb-2" style={{ color: '#6B5FC4' }}>
+-                            Ô£ª Why is this score changing? <span className="font-normal opacity-80 text-[10px]">(required)</span>
+-                          </div>
+-                          <div className="space-y-1.5">
+-                            {ACCT_REASONS.map((r) => {
+-                              const picked = acctReason === r.key
+-                              return (
+-                                <div
+-                                  key={r.key}
+-                                  onClick={() => handlePickAcct(r.key)}
+-                                  className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all text-[12px]"
+-                                  style={{
+-                                    border: picked ? '1.5px solid #6B5FC4' : '1.5px solid #E2E8F0',
+-                                    background: picked ? '#6B5FC4' : '#fff',
+-                                    color: picked ? '#fff' : '#475569',
+-                                  }}
+-                                >
+-                                  <div
+-                                    className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0"
+-                                    style={{ border: `2px solid ${picked ? 'rgba(255,255,255,.7)' : '#CBD5E1'}`, background: picked ? 'rgba(255,255,255,.3)' : '#fff' }}
++                        {/* Rationale Logic */}
++                        {pickedScore !== null && (
++                          <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
++                            <div className="text-[10px] font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
++                              <ZapIcon className="size-3" />
++                              Why is this score changing?
++                            </div>
++                            <div className="grid grid-cols-1 gap-2">
++                              {ACCT_REASONS.map((r) => {
++                                const selected = acctReason === r.key
++                                return (
++                                  <button
++                                    key={r.key}
++                                    onClick={() => handlePickAcct(r.key)}
++                                    className={`flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all ${
++                                      selected 
++                                        ? 'bg-primary/5 border-primary/40 text-primary' 
++                                        : 'bg-white border-border/10 text-slate-600 hover:border-border/30'
++                                    }`}
+                                   >
+-                                    {picked && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+-                                  </div>
+-                                  {r.label}
+-                                </div>
+-                              )
+-                            })}
++                                    <span className="text-[11px] font-bold">{r.label}</span>
++                                    <div className={`size-3.5 rounded-full border-2 flex items-center justify-center ${selected ? 'border-primary' : 'border-border/10'}`}>
++                                      {selected && <div className="size-1.5 rounded-full bg-primary" />}
++                                    </div>
++                                  </button>
++                                )
++                              })}
++                            </div>
+                           </div>
+-                        </div>
+-                      )}
++                        )}
++                      </div>
+                     </DecisionOption>
+                   </div>
+-                </div>
++                </section>
+ 
+-                {/* Reason zone */}
+-                <div className="rounded-xl p-3.5 mb-2.5" style={{ background: '#fff', border: '2px solid #C4BDF0', boxShadow: '0 0 0 4px #EDE9FB' }}>
+-                  <div className="flex items-center justify-between mb-1.5">
+-                    <div className="flex items-center gap-1.5 text-[12px] font-bold" style={{ color: '#1E293B' }}>
+-                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 12.5V14h1.5l8.87-8.87-1.5-1.5L2 12.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /><path d="M12.87 2.13a1 1 0 010 1.41l-1 1-1.41-1.41 1-1a1 1 0 011.41 0z" stroke="currentColor" strokeWidth="1.4" /></svg>
+-                      Your written reason
+-                      <span className="text-white text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: '#EF4444', letterSpacing: '.05em' }}>REQUIRED</span>
+-                    </div>
+-                    <span className="text-[11px]" style={{ color: '#94A3B8' }}>{reasonText.length} / 500</span>
++                {/* Section: Rationale */}
++                <section className="space-y-3">
++                  <div className="flex items-center justify-between">
++                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Official Record</div>
+                   </div>
+-                  <div className="text-[11px] mb-2 leading-snug" style={{ color: '#94A3B8' }}>
+-                    {decision === 'adjust'
+-                      ? 'This reason will be reviewed by HOD before the student is notified. Write it as a formal explanation.'
+-                      : `This will be shared with ${st.first} and kept on record.`}
+-                  </div>
+-                  <textarea
+-                    value={reasonText}
+-                    onChange={(e) => setReasonText(e.target.value)}
+-                    maxLength={500}
+-                    rows={4}
+-                    placeholder={`e.g. I reviewed ${st.evidence}. Your edge case analysis is clearly demonstratedÔÇª`}
+-                    className="w-full rounded-lg px-3 py-2.5 text-[12px] leading-relaxed resize-y outline-none transition-all"
+-                    style={{
+-                      border: '1.5px solid #CBD5E1',
+-                      fontFamily: 'Inter, sans-serif',
+-                      color: '#1E293B',
+-                      background: '#fff',
+-                    }}
+-                    onFocus={(e) => { e.target.style.borderColor = '#6B5FC4'; e.target.style.boxShadow = '0 0 0 3px rgba(107,95,196,.12)' }}
+-                    onBlur={(e) => { e.target.style.borderColor = '#CBD5E1'; e.target.style.boxShadow = 'none' }}
+-                  />
+-                  <div className="h-1 rounded-full my-2 overflow-hidden" style={{ background: '#E2E8F0' }}>
+-                    <div
+-                      className="h-full rounded-full transition-all duration-300"
+-                      style={{
+-                        width: `${reasonPct}%`,
+-                        background: reasonLen === 0 ? '#CBD5E1' : reasonLen < REASON_MIN ? '#F59E0B' : '#10B981',
+-                      }}
++                  <div className="rounded-2xl bg-white border-2 border-primary/20 shadow-sm p-5 space-y-4">
++                    <div className="flex items-center justify-between">
++                      <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-slate-800">
++                        <EditIcon className="size-3.5" />
++                        Decision Rationale
++                        <span className="px-1.5 py-0.5 rounded bg-red-500 text-white text-[8px] font-black tracking-[0.1em]">REQUIRED</span>
++                      </div>
++                      <span className="text-[10px] font-black tracking-widest text-muted-foreground/30">{reasonLen} / 500</span>
++                    </div>
++                    <textarea
++                      value={reasonText}
++                      onChange={(e) => setReasonText(e.target.value)}
++                      placeholder={`e.g. I reviewed Page 2 - Lines 15-20. Your edge case analysis is clearly demonstratedÔÇª`}
++                      className="w-full h-32 bg-slate-50/50 border border-border/10 rounded-xl p-4 text-[13px] font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all resize-none"
+                     />
++                    <div className="flex items-center justify-between gap-4">
++                      <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
++                        <div 
++                          className={`h-full transition-all duration-500 ${reasonLen >= REASON_MIN ? 'bg-emerald-500' : 'bg-primary'}`}
++                          style={{ width: `${reasonPct}%` }}
++                        />
++                      </div>
++                      <span className={`text-[9px] font-black uppercase tracking-widest whitespace-nowrap ${reasonLen >= REASON_MIN ? 'text-emerald-600' : 'text-muted-foreground/40'}`}>
++                        {reasonLen < REASON_MIN ? `${REASON_MIN - reasonLen} more needed` : 'Ready to submit'}
++                      </span>
++                    </div>
+                   </div>
+-                  <div className="text-[11px]" style={{ color: reasonLen < REASON_MIN ? '#94A3B8' : '#065F46' }}>
+-                    {reasonLen === 0
+-                      ? 'Select a decision above to begin.'
+-                      : reasonLen < REASON_MIN
+-                      ? `${REASON_MIN - reasonLen} more character${REASON_MIN - reasonLen === 1 ? '' : 's'} needed.`
+-                      : 'Reason complete ÔÇö ready to submit.'}
+-                  </div>
+-                </div>
+-
+-                <div style={{ height: 80 }} />
+-              </div>
++                </section>
++                <div className="h-20" />
++              </>
+             )}
+ 
+-            {/* STATE: compare */}
+             {wsState === 'compare' && (
+-              <div className="mt-3.5">
+-                <div className="rounded-xl p-3.5 mb-2.5" style={{ background: '#fff', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}>
+-                  <div className="flex items-center gap-2 mb-1.5">
+-                    {comparing && (
+-                      <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ border: '2px solid #E2E8F0', borderTopColor: '#6B5FC4', animation: 'spin .7s linear infinite' }} />
++              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
++                <div className="rounded-2xl p-6 bg-white border border-border/10 shadow-sm space-y-4">
++                  <div className="flex items-center gap-3">
++                    {comparing ? (
++                      <div className="size-5 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
++                    ) : (
++                      <div className="size-5 rounded-full bg-emerald-500 flex items-center justify-center">
++                        <CheckIcon className="size-3 text-white" />
++                      </div>
+                     )}
+-                    <div className="text-[14px] font-bold" style={{ color: '#1E293B' }}>
+-                      {decision === 'uphold'
+-                        ? 'Grade upheld ÔÇö confirming routing'
+-                        : comparing
+-                        ? 'Running independent AI re-evaluationÔÇª'
+-                        : agree ? 'Assessment complete ÔÇö both agree' : 'Assessment complete ÔÇö assessments diverge'}
+-                    </div>
+-                  </div>
+-                  <div className="text-[12px]" style={{ color: '#94A3B8' }}>
+-                    {decision === 'uphold'
+-                      ? `No score change. Your written reason will be sent to ${st.first} directly. HOD will receive a copy for records.`
+-                      : comparing
+-                      ? 'Reviewing the cited evidence independently before routing to HOD.'
+-                      : agree
+-                      ? 'Both reach the same conclusion. HOD will receive this for acknowledgement.'
+-                      : `The two assessments differ by ${Math.abs(instScore - aiScore)} point${Math.abs(instScore - aiScore) === 1 ? '' : 's'}. HOD will review both.`}
++                    <h3 className="text-lg font-black tracking-tighter">
++                      {comparing ? 'Synthesizing Parallel Review...' : 'AI Re-evaluation Completed'}
++                    </h3>
+                   </div>
++                  <p className="text-[13px] text-slate-500 leading-relaxed">
++                    {comparing 
++                      ? "System is independently assessing the cited evidence based on updated rubric context to provide a neutral comparison point for the HOD."
++                      : agree 
++                        ? "Both assessments are aligned. Your decision is backed by the system's re-evaluation logic."
++                        : "The two assessments show a divergence. This case will be flagged for active HOD arbitration."}
++                  </p>
+                 </div>
+ 
+                 {!comparing && decision === 'adjust' && (
+-                  <>
+-                    {/* Comparison cards */}
+-                    <div className="grid grid-cols-2 gap-2 mb-2.5">
+-                      {[
+-                        { label: 'Your decision', score: instScore, reason: REASON_LABELS[acctReason ?? ''] ?? acctReason ?? '', agree },
+-                        { label: 'AI re-evaluation', score: aiScore, reason: aiReval.reason, agree },
+-                      ].map((c, i) => (
+-                        <div
+-                          key={i}
+-                          className="rounded-xl p-3"
+-                          style={{
+-                            background: agree ? '#ECFDF5' : '#FEF2F2',
+-                            border: `1.5px solid ${agree ? '#A7F3D0' : '#FECACA'}`,
+-                          }}
+-                        >
+-                          <div className="text-[10px] font-bold uppercase tracking-[0.07em] mb-1.5" style={{ color: agree ? '#065F46' : '#B91C1C' }}>{c.label}</div>
+-                          <div className="text-[22px] font-extrabold tracking-tight mb-1" style={{ color: agree ? '#065F46' : '#B91C1C' }}>{c.score} / {st.maxScore}</div>
+-                          <div className="text-[11px] leading-snug" style={{ color: agree ? '#065F46' : '#B91C1C', opacity: 0.85 }}>{c.reason}</div>
+-                        </div>
+-                      ))}
+-                    </div>
+-
+-                    {/* Verdict banner */}
+-                    <div
+-                      className="rounded-xl p-3 flex items-start gap-2.5 mb-2.5"
+-                      style={{ background: agree ? '#ECFDF5' : '#FEF2F2', border: `1.5px solid ${agree ? '#A7F3D0' : '#FECACA'}` }}
+-                    >
+-                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: agree ? '#10B981' : '#EF4444' }}>
+-                        {agree
+-                          ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L19 7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+-                          : <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16v.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" /></svg>
+-                        }
+-                      </div>
+-                      <div>
+-                        <div className="text-[13px] font-bold mb-0.5" style={{ color: agree ? '#065F46' : '#B91C1C' }}>
+-                          {agree ? `Both agree ÔÇö ${instScore}/${st.maxScore}` : `Assessments diverge ÔÇö ${instScore} vs ${aiScore}/${st.maxScore}`}
+-                        </div>
+-                        <div className="text-[12px] leading-snug" style={{ color: agree ? '#065F46' : '#B91C1C', opacity: 0.85 }}>
+-                          {agree ? 'HOD will receive this for standard acknowledgement.' : `A ${Math.abs(instScore - aiScore)}-point difference. HOD must actively review both before deciding.`}
+-                        </div>
+-                      </div>
+-                    </div>
+-                  </>
++                  <div className="grid grid-cols-2 gap-4">
++                    <CompareCard label="Your Decision" score={instScore} reason={REASON_LABELS[acctReason ?? ''] ?? 'Rationale provided'} />
++                    <CompareCard label="AI System" score={aiScore} reason={aiReval.reason} variant="primary" />
++                  </div>
+                 )}
+ 
+-                {/* HOD routing */}
+                 {!comparing && (
+-                  <div className="rounded-xl p-3 mb-2.5" style={{ background: '#fff', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}>
+-                    <div className="flex items-center gap-1.5 mb-2 text-[12px] font-bold" style={{ color: '#1E293B' }}>
+-                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" /></svg>
+-                      What happens next
++                  <div className="rounded-2xl border border-border/10 bg-white overflow-hidden shadow-sm">
++                    <div className="px-5 py-4 bg-slate-50/50 border-b border-border/5">
++                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Next Actions & Routing</span>
++                    </div>
++                    <div className="p-5 space-y-4">
++                       {[
++                         { n: 1, label: 'Submitted to', val: 'Dr. R. Kumar ┬À Head of Department' },
++                         { n: 2, label: 'Routing Logic', val: agree ? 'Auto-approval queue (High confidence)' : 'Manual Arbitration (Divergence detected)' },
++                         { n: 3, label: 'Student Update', val: 'Notified only after HOD final signature' },
++                       ].map(item => (
++                         <div key={item.n} className="flex gap-4 group">
++                           <div className="size-6 rounded-lg bg-muted flex items-center justify-center text-[10px] font-black text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">{item.n}</div>
++                           <div className="flex-1 -mt-0.5">
++                             <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 mb-0.5">{item.label}</div>
++                             <div className="text-[12px] font-bold text-slate-700">{item.val}</div>
++                           </div>
++                         </div>
++                       ))}
+                     </div>
+-                    {[
+-                      { n: 1, label: 'Submitted to', val: 'Dr. R. Kumar ┬À Head of Department ┬À CS301' },
+-                      {
+-                        n: 2, label: 'HOD receives',
+-                        val: decision === 'uphold'
+-                          ? 'A copy of your decision and written reason, for records only. No action required from HOD.'
+-                          : agree ? 'Both agreeing scores, your reason, and full audit trail.' : 'Both diverging scores, your reason, and full audit trail. HOD must actively review.',
+-                      },
+-                      {
+-                        n: 3, label: 'Student',
+-                        val: decision === 'uphold'
+-                          ? `${st.first} will be notified directly now with your written reason.`
+-                          : agree ? 'Not notified until HOD approves.' : 'Not notified until HOD makes a final decision.',
+-                      },
+-                      { n: 4, label: 'You', val: 'Can move to the next case now.' },
+-                    ].map((row) => (
+-                      <div key={row.n} className="flex items-start gap-2 py-1.5 text-[12px]" style={{ borderBottom: row.n < 4 ? '1px solid #E2E8F0' : 'none', color: '#475569' }}>
+-                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0" style={{ background: '#EDE9FB', color: '#6B5FC4' }}>{row.n}</div>
+-                        <div><span className="font-semibold" style={{ color: '#1E293B', minWidth: 80, display: 'inline-block' }}>{row.label}</span> {row.val}</div>
+-                      </div>
+-                    ))}
+                   </div>
+                 )}
+-
+-                <div style={{ height: 80 }} />
++                <div className="h-20" />
+               </div>
+             )}
+ 
+-            {/* STATE: submitted */}
+             {wsState === 'submitted' && (
+-              <div className="mt-3.5">
+-                {submittedVariant === 'agree' && (
+-                  <SubmittedCard isCheckIcon title="Submitted to HOD for approval" color="#065F46" bg="#ECFDF5" border="#A7F3D0" iconBg="#10B981">
+-                    <p className="text-[12px] leading-relaxed mb-2" style={{ color: '#065F46', opacity: 0.85 }}>Both assessments agree. <strong>{st.first}</strong> will be notified once HOD approves.</p>
+-                    <TLRow dot="#10B981">Your decision: <strong>{st.origScore} ÔåÆ {pickedScore}/{st.maxScore}</strong></TLRow>
+-                    <TLRow dot="#10B981">AI re-evaluation: <strong>{aiScore}/{st.maxScore}</strong> ┬À agrees</TLRow>
+-                    <TLRow dot="#10B981">Submitted to Dr. R. Kumar ┬À HOD</TLRow>
+-                    <TLRow dot="#CBD5E1" light>Awaiting HOD approval</TLRow>
+-                    <button onClick={handleBack} className="w-full py-3 rounded-lg text-[13px] font-bold text-white transition-colors mt-2" style={{ background: '#10B981', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+-                      Review next case ÔåÆ
+-                    </button>
+-                  </SubmittedCard>
+-                )}
+-                {submittedVariant === 'disagree' && (
+-                  <SubmittedCard isCheckIcon={false} title="Submitted ÔÇö assessments diverge" color="#92400E" bg="#FFFBEB" border="#FDE68A" iconBg="#F59E0B">
+-                    <p className="text-[12px] leading-relaxed mb-2" style={{ color: '#92400E', opacity: 0.9 }}>HOD will review both. <strong>{st.first}</strong> not notified until HOD decides.</p>
+-                    <TLRow dot="#F59E0B">Your score: <strong>{pickedScore}/{st.maxScore}</strong></TLRow>
+-                    <TLRow dot="#F59E0B">AI re-evaluation: <strong>{aiScore}/{st.maxScore}</strong> ┬À diverges</TLRow>
+-                    <TLRow dot="#F59E0B">HOD must review both and decide</TLRow>
+-                    <button onClick={handleBack} className="w-full py-3 rounded-lg text-[13px] font-bold text-white transition-colors mt-2" style={{ background: '#F59E0B', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+-                      Review next case ÔåÆ
+-                    </button>
+-                  </SubmittedCard>
+-                )}
+-                {submittedVariant === 'uphold' && (
+-                  <SubmittedCard isCheckIcon title="Decision confirmed ÔÇö grade upheld" color="#065F46" bg="#ECFDF5" border="#A7F3D0" iconBg="#10B981">
+-                    <p className="text-[12px] leading-relaxed mb-2" style={{ color: '#065F46', opacity: 0.85 }}><strong>{st.first}</strong> is being notified now. HOD has received a copy for records.</p>
+-                    <TLRow dot="#10B981">Grade upheld ┬À original score stands</TLRow>
+-                    <TLRow dot="#10B981">HOD notified for records ÔÇö no action required</TLRow>
+-                    <TLRow dot="#10B981">Student notification: sending now</TLRow>
+-                    <button onClick={handleBack} className="w-full py-3 rounded-lg text-[13px] font-bold text-white transition-colors mt-2" style={{ background: '#10B981', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+-                      Review next case ÔåÆ
+-                    </button>
+-                  </SubmittedCard>
+-                )}
+-              </div>
++               <div className="flex flex-col items-center justify-center py-12 space-y-8 animate-in zoom-in-95 duration-500">
++                  <div className="size-20 rounded-full bg-emerald-500 flex items-center justify-center shadow-2xl shadow-emerald-500/20">
++                    <CheckIcon className="size-10 text-white" />
++                  </div>
++                  <div className="text-center space-y-2">
++                    <h2 className="text-3xl font-black tracking-tighter">Review Submitted</h2>
++                    <p className="text-[13px] text-muted-foreground font-medium">Successfully routed to HOD dashboard for final approval.</p>
++                  </div>
++                  <div className="w-full max-w-sm p-6 rounded-2xl bg-white border border-border/10 shadow-sm space-y-4">
++                     <div className="flex items-center justify-between text-[11px] font-bold">
++                       <span className="text-muted-foreground/40">Student</span>
++                       <span className="text-slate-800">{st.name}</span>
++                     </div>
++                     <div className="flex items-center justify-between text-[11px] font-bold">
++                       <span className="text-muted-foreground/40">Decision</span>
++                       <span className="text-emerald-600">{decision === 'uphold' ? 'Grade Upheld' : `Adjusted to ${pickedScore}/10`}</span>
++                     </div>
++                     <div className="flex items-center justify-between text-[11px] font-bold">
++                       <span className="text-muted-foreground/40">Routing</span>
++                       <span className="text-primary">Standard HOD Approval</span>
++                     </div>
++                  </div>
++                  <button 
++                    onClick={handleBack}
++                    className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-slate-900 text-white text-[12px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-900/10"
++                  >
++                    Return to Triage Desk
++                    <ArrowRightIcon className="size-4" />
++                  </button>
++               </div>
+             )}
+           </div>
+ 
+-          {/* Bottom bar */}
++          {/* Sticky Actions Bar */}
+           {wsState !== 'submitted' && (
+-            <div
+-              className="flex items-center justify-between gap-3 px-4 py-3 flex-shrink-0"
+-              style={{ background: '#fff', borderTop: '1.5px solid #CBD5E1', boxShadow: '0 -2px 8px rgba(0,0,0,.05)' }}
+-            >
+-              <button
+-                onClick={handleBack}
+-                className="px-4 py-2 rounded-lg text-[13px] font-medium transition-colors hover:bg-slate-50"
+-                style={{ border: '1.5px solid #CBD5E1', background: '#fff', color: '#475569', cursor: 'pointer', fontFamily: 'inherit' }}
+-              >
+-                Save as draft
+-              </button>
+-              <div className="flex flex-col items-end gap-1">
+-                {wsState === 'active' ? (
+-                  <>
+-                    <button
+-                      onClick={handleSubmit}
+-                      disabled={!isSubmitEnabled}
+-                      className="px-5 py-2.5 rounded-lg text-[13px] font-bold text-white transition-all"
+-                      style={{
+-                        border: 'none',
+-                        background: isSubmitEnabled ? '#6B5FC4' : '#E2E8F0',
+-                        color: isSubmitEnabled ? '#fff' : '#94A3B8',
+-                        cursor: isSubmitEnabled ? 'pointer' : 'not-allowed',
+-                        boxShadow: isSubmitEnabled ? '0 2px 8px rgba(107,95,196,.35)' : 'none',
+-                        fontFamily: 'inherit',
+-                      }}
+-                    >
+-                      Submit decision ÔåÆ
+-                    </button>
+-                    <span className="text-[10px]" style={{ color: '#94A3B8' }}>
+-                      {!decision ? 'Select a decision above to continue' : decision === 'adjust' && !pickedScore ? 'Select a proposed new score' : decision === 'adjust' && !acctReason ? 'Select why the score is changing' : reasonLen < REASON_MIN ? `${REASON_MIN - reasonLen} more character${REASON_MIN - reasonLen === 1 ? '' : 's'} needed` : decision === 'adjust' ? 'HOD will review before student is notified' : 'Student will be notified directly'}
+-                    </span>
+-                  </>
+-                ) : (
+-                  <>
+-                    <button
+-                      onClick={comparing ? undefined : handleConfirmCompare}
+-                      disabled={comparing}
+-                      className="px-5 py-2.5 rounded-lg text-[13px] font-bold text-white transition-all"
+-                      style={{
+-                        border: 'none',
+-                        background: comparing ? '#E2E8F0' : '#6B5FC4',
+-                        color: comparing ? '#94A3B8' : '#fff',
+-                        cursor: comparing ? 'not-allowed' : 'pointer',
+-                        boxShadow: comparing ? 'none' : '0 2px 8px rgba(107,95,196,.35)',
+-                        fontFamily: 'inherit',
+-                      }}
+-                    >
+-                      Confirm submission ÔåÆ
+-                    </button>
+-                    <span className="text-[10px]" style={{ color: '#94A3B8' }}>
+-                      {comparing ? 'Waiting for AI re-evaluationÔÇª' : agree || decision === 'uphold' ? 'HOD can approve with one action' : 'HOD must review both assessments'}
+-                    </span>
+-                  </>
+-                )}
+-              </div>
++            <div className="h-20 px-8 flex items-center justify-between bg-white/60 backdrop-blur-md border-t border-border/10 flex-shrink-0 relative z-10">
++               <button
++                 onClick={handleBack}
++                 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all"
++               >
++                 <XIcon className="size-3.5" />
++                 Cancel Review
++               </button>
++               <div className="flex items-center gap-4">
++                  <button className="px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 border border-border/30 bg-card/50 hover:bg-white hover:border-border transition-all">
++                    Save as Draft
++                  </button>
++                  <button
++                    onClick={wsState === 'active' ? handleSubmit : handleConfirmCompare}
++                    disabled={(wsState === 'active' && !isSubmitEnabled) || (wsState === 'compare' && comparing)}
++                    className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
++                      (wsState === 'active' && isSubmitEnabled) || (wsState === 'compare' && !comparing)
++                        ? 'bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95'
++                        : 'bg-muted/50 text-muted-foreground/40 cursor-not-allowed opacity-50'
++                    }`}
++                  >
++                    {wsState === 'active' ? 'Finalize Decision' : 'Confirm & Route'}
++                  </button>
++               </div>
+             </div>
+           )}
+         </div>
+       </div>
+ 
+-      {/* Briefing modal (workspace mode ÔÇö no start button) */}
++      {/* Case Briefing Modal */}
+       {briefingOpen && (
+         <BriefingModal
+           studentId={studentId}
+@@ -716,105 +598,133 @@ export default function ReEvalWorkspacePage() {
+         />
+       )}
+ 
+-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
++      <style jsx global>{`
++        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
++      `}</style>
+     </div>
+   )
+ }
+ 
+-// Sub-components
++// Visual Sub-components
+ 
+-function ContextBlock({ label, children, noBorder }: { label: string; children: React.ReactNode; noBorder?: boolean }) {
++function KPIBlock({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+   return (
+-    <div className="flex flex-col gap-0.5 flex-1 px-3" style={{ borderRight: noBorder ? 'none' : '1px solid #E2E8F0' }}>
+-      <div className="text-[9px] font-bold uppercase tracking-[0.07em]" style={{ color: '#94A3B8' }}>{label}</div>
++    <div className={`flex flex-col gap-1 p-4 bg-white ${className || ''}`}>
++      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/30">{label}</span>
+       {children}
+     </div>
+   )
+ }
+ 
+-function Zone({ label, children, className = '' }: { label: string; children: React.ReactNode; className?: string }) {
++function DecisionOption({ active, variant, label, desc, onClick, children }: { active: boolean; variant: 'uphold' | 'adjust'; label: string; desc: string; onClick: () => void; children: React.ReactNode }) {
++  const isUphold = variant === 'uphold'
+   return (
+-    <div className={`rounded-xl p-3.5 mb-2.5 ${className}`} style={{ background: '#fff', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}>
+-      <div className="flex items-center gap-1.5 mb-2.5">
+-        <div className="w-0.5 h-3 rounded" style={{ background: '#6B5FC4' }} />
+-        <span className="text-[10px] font-bold uppercase tracking-[0.08em]" style={{ color: '#94A3B8' }}>{label}</span>
++    <div 
++      onClick={onClick}
++      className={`rounded-xl border-2 transition-all cursor-pointer overflow-hidden ${
++        active 
++          ? isUphold ? 'border-emerald-500 bg-emerald-500/5' : 'border-primary bg-primary/5 shadow-md shadow-primary/5' 
++          : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
++      }`}
++    >
++      <div className={`px-5 py-4 flex items-center justify-between ${active ? isUphold ? 'bg-emerald-500 text-white' : 'bg-primary text-white' : ''}`}>
++         <div className="flex items-center gap-3">
++            <div className={`size-4 rounded-full border-2 flex items-center justify-center ${active ? 'border-white' : 'border-slate-300'}`}>
++               {active && <div className="size-2 rounded-full bg-white" />}
++            </div>
++            <div className="flex flex-col">
++               <span className="text-[12px] font-black uppercase tracking-widest">{label}</span>
++               <span className={`text-[10px] font-medium opacity-70 ${active ? '' : 'text-muted-foreground'}`}>{desc}</span>
++            </div>
++         </div>
++         {active && <CheckIcon className="size-4" />}
+       </div>
+-      {children}
++      {active && (
++        <div className="p-5 bg-white animate-in slide-in-from-top-2 duration-300">
++          {children}
++        </div>
++      )}
+     </div>
+   )
+ }
+ 
+-function DataCell({ label, children, noBorder }: { label: string; children: React.ReactNode; noBorder?: boolean }) {
++function CompareCard({ label, score, reason, variant }: { label: string; score: number; reason: string; variant?: 'primary' }) {
++  const isPrimary = variant === 'primary'
+   return (
+-    <div className="p-2" style={{ borderRight: noBorder ? 'none' : '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
+-      <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1" style={{ color: '#94A3B8' }}>{label}</div>
+-      <div className="flex items-center gap-1 flex-wrap">{children}</div>
++    <div className={`rounded-2xl p-5 border ${isPrimary ? 'bg-primary/5 border-primary/20' : 'bg-slate-50 border-border/10'}`}>
++       <span className={`text-[9px] font-black uppercase tracking-widest ${isPrimary ? 'text-primary' : 'text-muted-foreground/40'}`}>{label}</span>
++       <div className={`text-2xl font-black tracking-tighter my-1 ${isPrimary ? 'text-primary' : 'text-slate-800'}`}>{score}<span className="text-muted-foreground/30 font-bold ml-1 text-base">/ 10</span></div>
++       <p className="text-[11px] font-medium text-slate-500 leading-snug line-clamp-2">{reason}</p>
+     </div>
+   )
+ }
+ 
+-function DecisionOption({
+-  active, variant, label, desc, onClick, children,
+-}: {
+-  active: boolean; variant: 'uphold' | 'adjust'; label: string; desc: string; onClick: () => void; children: React.ReactNode
+-}) {
+-  const COLORS = {
+-    uphold: { bg: '#10B981', activeBg: '#ECFDF5', activeBorder: '#10B981', activeHead: '#10B981' },
+-    adjust: { bg: '#6B5FC4', activeBg: '#EDE9FB', activeBorder: '#6B5FC4', activeHead: '#6B5FC4' },
+-  }
+-  const c = COLORS[variant]
++// Icons
++function ChevronLeftIcon({ className }: { className?: string }) {
+   return (
+-    <div
+-      onClick={onClick}
+-      className="rounded-lg overflow-hidden cursor-pointer transition-all"
+-      style={{ border: `2px solid ${active ? c.activeBorder : '#E2E8F0'}`, background: active ? c.activeBg : '#F8FAFC' }}
+-    >
+-      <div
+-        className="flex items-center gap-2.5 px-3 py-2.5 transition-colors"
+-        style={{ background: active ? c.activeHead : '#F1F5F9' }}
+-      >
+-        <div
+-          className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
+-          style={{ border: `2px solid ${active ? 'rgba(255,255,255,.7)' : '#CBD5E1'}`, background: active ? 'rgba(255,255,255,.3)' : '#fff' }}
+-        >
+-          {active && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+-        </div>
+-        <div className="text-[13px] font-semibold flex-1" style={{ color: active ? '#fff' : '#1E293B' }}>{label}</div>
+-        <div className="text-[11px]" style={{ color: active ? 'rgba(255,255,255,.8)' : '#94A3B8' }}>{desc}</div>
+-      </div>
+-      {active && (
+-        <div className="px-3.5 py-3" style={{ background: '#fff' }}>{children}</div>
+-      )}
+-    </div>
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <path d="M15 18l-6-6 6-6" />
++    </svg>
+   )
+ }
+ 
+-function SubmittedCard({
+-  isCheckIcon, title, color, bg, border, iconBg, children,
+-}: {
+-  isCheckIcon: boolean; title: string; color: string; bg: string; border: string; iconBg: string; children: React.ReactNode
+-}) {
++function BriefcaseIcon({ className }: { className?: string }) {
+   return (
+-    <div className="rounded-xl p-5 text-center" style={{ background: bg, border: `1.5px solid ${border}` }}>
+-      <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3.5" style={{ background: iconBg }}>
+-        {isCheckIcon
+-          ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L19 7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+-          : <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16v.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" /></svg>
+-        }
+-      </div>
+-      <div className="text-[16px] font-bold mb-3" style={{ color }}>{title}</div>
+-      <div className="rounded-lg px-3 py-2 mb-3 text-left" style={{ background: 'rgba(255,255,255,.65)' }}>
+-        {children}
+-      </div>
+-    </div>
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
++      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
++    </svg>
+   )
+ }
+ 
+-function TLRow({ dot, children, light }: { dot: string; children: React.ReactNode; light?: boolean }) {
++function XIcon({ className }: { className?: string }) {
+   return (
+-    <div className="flex items-start gap-2 py-1.5 text-[12px]" style={{ borderBottom: '1px solid rgba(0,0,0,.06)' }}>
+-      <div className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1" style={{ background: dot }} />
+-      <div style={{ color: light ? '#94A3B8' : 'inherit' }}>{children}</div>
+-    </div>
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <line x1="18" y1="6" x2="6" y2="18"></line>
++      <line x1="6" y1="6" x2="18" y2="6"></line>
++    </svg>
++  )
++}
++
++function ArrowRightIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <path d="M5 12h14M12 5l7 7-7 7" />
++    </svg>
++  )
++}
++
++function CheckIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <polyline points="20 6 9 17 4 12"></polyline>
++    </svg>
++  )
++}
++
++function InfoIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <circle cx="12" cy="12" r="10"></circle>
++      <line x1="12" y1="16" x2="12" y2="12"></line>
++      <line x1="12" y1="8" x2="12.01" y2="8"></line>
++    </svg>
++  )
++}
++
++function ZapIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
++    </svg>
++  )
++}
++
++function EditIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
++      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
++    </svg>
+   )
+ }
+diff --git a/src/app/dashboard/re-evaluation/page.tsx b/src/app/dashboard/re-evaluation/page.tsx
+index aa8ce94..7ecd997 100644
+--- a/src/app/dashboard/re-evaluation/page.tsx
++++ b/src/app/dashboard/re-evaluation/page.tsx
+@@ -1,330 +1,374 @@
+ "use client"
+ 
+-import { useState } from 'react'
+ import { useRouter } from 'next/navigation'
+-import { STUDENTS, STUDENT_ORDER } from '@/lib/data/re-evaluation-data'
+ import { useReEvalStore } from '@/lib/store/re-evaluation-store'
+-import { BriefingModal } from '@/components/re-evaluation/briefing-modal'
++import { 
++  RefreshCcw, 
++  AlertCircle, 
++  Clock, 
++  CheckCircle2, 
++  ChevronRight, 
++  Users, 
++  Sparkles,
++  PlayCircle,
++  Calendar,
++  Layers,
++  ArrowRight,
++  BookOpen
++} from 'lucide-react'
++import { Badge } from "@/components/ui/badge"
++import { Button } from "@/components/ui/button"
++import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
++import { Progress } from "@/components/ui/progress"
+ 
+-const TOTAL = 7
+-const INITIAL_RESOLVED = 12
++const GLOBAL_KPIS = [
++  { label: 'Awaiting Response', value: 13, sub: 'Across 5 assignments', accent: '#EF4444' },
++  { label: 'SLA Breached', value: 3, sub: 'Respond now', accent: '#F59E0B' },
++  { label: 'Institutional Review', value: 1, sub: 'Awaiting HOD', accent: '#FBBF24' },
++  { label: 'Resolved This Batch', value: 12, sub: 'Closed window', accent: '#10B981' },
++]
+ 
+-const CONCERN_STYLES = {
+-  red:    { bg: '#FEF2F2', border: '#FECACA', text: '#EF4444' },
+-  orange: { bg: '#FFF7ED', border: '#FED7AA', text: '#92400E' },
+-  blue:   { bg: '#EFF6FF', border: '#BFDBFE', text: '#3B82F6' },
+-}
++type WorkflowState = 'IN_PROGRESS' | 'READY' | 'WINDOW_OPEN' | 'COMPLETED'
+ 
+-const STATUS_STYLES = {
+-  overdue: { bg: '#EF4444', color: '#fff', label: 'Overdue' },
+-  pending: { bg: '#F1F5F9', color: '#94A3B8', label: 'Pending', border: '#CBD5E1' },
+-  new:     { bg: '#ECFDF5', color: '#065F46', label: 'New', border: '#A7F3D0' },
+-}
++const ASSIGNMENTS = [
++  {
++    id: 'dsa-a1',
++    code: 'CS301',
++    subject: 'DSA',
++    batch: 'Batch 4',
++    title: 'DSA Assignment 1',
++    workflowState: 'IN_PROGRESS' as WorkflowState,
++    pendingCount: 7,
++    overdueCount: 2,
++    firstRequest: '4 days ago',
++    latestRequest: '51 hrs ago',
++    appealWindow: 'Window closed',
++    resolvedCount: 5,
++    totalCount: 12,
++    url: '/dashboard/re-evaluation/triage'
++  },
++  {
++    id: 'os-l3',
++    code: 'CS205',
++    subject: 'OS',
++    batch: 'Batch 2',
++    title: 'OS Lab 3',
++    workflowState: 'IN_PROGRESS' as WorkflowState,
++    pendingCount: 2,
++    overdueCount: 1,
++    firstRequest: '3 days ago',
++    latestRequest: '2 days ago',
++    appealWindow: 'Window closed',
++    resolvedCount: 2,
++    totalCount: 4,
++    url: '#'
++  },
++  {
++    id: 'dsa-mid',
++    code: 'CS301',
++    subject: 'DSA',
++    batch: 'Batch 3',
++    title: 'DSA Mid-Term Exam',
++    workflowState: 'READY' as WorkflowState,
++    pendingCount: 3,
++    overdueCount: 0,
++    firstRequest: '6 days ago',
++    latestRequest: '3 days ago',
++    appealWindow: 'Closed recently',
++    resolvedCount: 9,
++    totalCount: 12,
++    url: '#'
++  },
++  {
++    id: 'networks-q1',
++    code: 'CS410',
++    subject: 'Networks',
++    batch: 'Batch 1',
++    title: 'Networks Quiz 1',
++    workflowState: 'WINDOW_OPEN' as WorkflowState,
++    pendingCount: 1,
++    overdueCount: 0,
++    firstRequest: '18 hrs ago',
++    latestRequest: '18 hrs ago',
++    appealWindow: 'Closes in 2 days',
++    resolvedCount: 0,
++    totalCount: 1,
++    url: '#'
++  },
++  {
++    id: 'math-end',
++    code: 'MA204',
++    subject: 'Engineering Maths',
++    batch: 'Multiple batches',
++    title: 'Engineering Mathematics',
++    workflowState: 'WINDOW_OPEN' as WorkflowState,
++    pendingCount: 4,
++    overdueCount: 0,
++    firstRequest: '2 days ago',
++    latestRequest: '5 hrs ago',
++    appealWindow: 'Closes in 5 days',
++    resolvedCount: 0,
++    totalCount: 4,
++    shared: '3 faculty',
++    url: '#'
++  },
++  {
++    id: 'db-sys',
++    code: 'CS305',
++    subject: 'DBMS',
++    batch: 'Batch 1',
++    title: 'Database Systems Final',
++    workflowState: 'COMPLETED' as WorkflowState,
++    pendingCount: 0,
++    overdueCount: 0,
++    firstRequest: '12 days ago',
++    latestRequest: '8 days ago',
++    appealWindow: 'Closed',
++    resolvedCount: 15,
++    totalCount: 15,
++    url: '#'
++  }
++]
+ 
+-export default function ReEvaluationPage() {
++export default function ReEvaluationDashboard() {
+   const router = useRouter()
+-  const { getStatus, hodPendingIds, resolvedIds } = useReEvalStore()
+-  const [briefingId, setBriefingId] = useState<string | null>(null)
++  const { hodPendingIds, resolvedIds } = useReEvalStore()
+ 
+-  const pending = TOTAL - resolvedIds.length - hodPendingIds.length
+-  const resolved = INITIAL_RESOLVED + resolvedIds.length
+-  const hodCount = hodPendingIds.length
+-  const done = resolvedIds.length + hodPendingIds.length
+-  const progressPct = Math.round((done / TOTAL) * 100)
++  // Dynamic stats for the main assignment
++  const dsaPending = 7 - resolvedIds.length - hodPendingIds.length
++  const dsaResolved = 5 + resolvedIds.length
+ 
+-  const orderedStudents = [
+-    ...STUDENT_ORDER.filter((id) => getStatus(id) === 'pending'),
+-    ...STUDENT_ORDER.filter((id) => getStatus(id) === 'hod'),
+-    ...STUDENT_ORDER.filter((id) => getStatus(id) === 'resolved'),
+-  ]
++  const groupedAssignments = {
++    IN_PROGRESS: ASSIGNMENTS.filter(a => a.workflowState === 'IN_PROGRESS'),
++    READY: ASSIGNMENTS.filter(a => a.workflowState === 'READY'),
++    WINDOW_OPEN: ASSIGNMENTS.filter(a => a.workflowState === 'WINDOW_OPEN'),
++    COMPLETED: ASSIGNMENTS.filter(a => a.workflowState === 'COMPLETED'),
++  }
+ 
+   return (
+-    <div className="space-y-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
+-      {/* Page header */}
+-      <div className="flex items-start justify-between mb-5">
+-        <div>
+-          <h1 className="text-2xl font-bold tracking-tight">Re-evaluation Requests</h1>
+-          <p className="text-sm text-muted-foreground mt-0.5">
+-            CS301 ┬À DSA Batch 4 ┬À Results released Mon 9:00 AM ┬À Appeal window closes Sunday night
+-          </p>
+-        </div>
+-        <div className="flex items-center gap-2 flex-shrink-0">
+-          {pending > 0 && (
+-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold" style={{ background: '#FEF2F2', color: '#EF4444', border: '1px solid #FECACA' }}>
+-              ÔÅ▒ 2 waiting over 48 hours
++    <div className="flex flex-col min-h-[calc(100vh-8rem)] relative bg-[#F8FAFC]/30">
++      {/* Header Section ÔÇö Sticky with blur matching Pre-evaluation */}
++      <div className="sticky top-0 z-50 bg-background/60 backdrop-blur-md pt-6 pb-8 border-b border-border/10">
++        <div className="max-w-6xl mx-auto w-full px-4">
++          <div className="flex items-start justify-between mb-6">
++            <div className="space-y-3">
++              <div className="flex items-center gap-2">
++                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">IIM Bangalore</span>
++                <span className="text-muted-foreground/20 text-[9px]">┬À</span>
++                <span className="text-[10px] font-black uppercase tracking-widest text-primary/80">Re-Evaluation Module</span>
++              </div>
++              <h1 className="text-4xl font-black tracking-tighter secondary-text">Manage your workload</h1>
+             </div>
+-          )}
+-          <button
+-            className="px-3.5 py-1.5 rounded-lg text-[12px] font-medium transition-colors hover:bg-accent"
+-            style={{ border: '1.5px solid #CBD5E1', background: 'transparent', color: '#475569', cursor: 'pointer', fontFamily: 'inherit' }}
+-          >
+-            Download full record
+-          </button>
+-        </div>
+-      </div>
+-
+-      {/* KPI cards */}
+-      <div className="grid grid-cols-4 gap-2.5 mb-4">
+-        <KpiCard label="Pending" value={pending} sub="Awaiting your response" accent="#EF4444" />
+-        <KpiCard label="Due today" value={2} sub="Over 48 hrs ÔÇö respond now" accent="#F59E0B" />
+-        <KpiCard label="Awaiting HOD" value={hodCount} sub="Under institutional review" accent="#FBBF24" />
+-        <KpiCard label="Resolved" value={resolved} sub="This batch" accent="#10B981" />
+-      </div>
++            
++            <div className="flex flex-col items-end gap-3">
++              <div className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest flex items-center gap-2">
++                <Clock className="h-3 w-3 opacity-50" />
++                Last updated 2 mins ago
++              </div>
++            </div>
++          </div>
+ 
+-      {/* Progress */}
+-      <div className="flex items-center gap-2.5 mb-4">
+-        <span className="text-[12px] text-muted-foreground whitespace-nowrap">
+-          {pending} request{pending !== 1 ? 's' : ''} remaining
+-        </span>
+-        <div className="flex-1 h-1.5 rounded-full" style={{ background: '#E2E8F0' }}>
+-          <div
+-            className="h-1.5 rounded-full transition-all duration-500"
+-            style={{ width: `${progressPct}%`, background: '#6B5FC4' }}
+-          />
++          <div className="grid grid-cols-4 gap-3">
++            {GLOBAL_KPIS.map((kpi, i) => (
++              <div key={i} className="group px-4 py-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-all flex flex-col justify-center">
++                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">{kpi.label}</span>
++                <div className="flex items-baseline gap-1.5 mt-1">
++                  <span className="text-xl font-black tracking-tighter" style={{ color: kpi.accent }}>{kpi.value}</span>
++                  <span className="text-[10px] font-bold text-muted-foreground/30">{kpi.sub}</span>
++                </div>
++              </div>
++            ))}
++          </div>
+         </div>
+-        <span className="text-[12px] font-semibold text-muted-foreground whitespace-nowrap">{done} / {TOTAL}</span>
+       </div>
+ 
+-      {/* Table */}
+-      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #E2E8F0' }}>
+-        {/* Header */}
+-        <div
+-          className="grid text-[10px] font-bold uppercase tracking-[0.07em]"
+-          style={{
+-            gridTemplateColumns: '200px 160px 110px 1fr 85px 125px 120px',
+-            background: '#F1F5F9',
+-            borderBottom: '1px solid #CBD5E1',
+-            color: '#94A3B8',
+-          }}
++      {/* Main Content Sections */}
++      <div className="max-w-6xl mx-auto w-full pb-20 px-4 pt-6 space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-300">
++        
++        {/* 1. IN PROGRESS */}
++        <Section 
++          title="In Progress" 
++          subtitle="Continue review sessions for active re-evaluation queues"
++          icon={<PlayCircle className="h-3.5 w-3.5" />}
++          count={groupedAssignments.IN_PROGRESS.length}
++          accent="primary"
+         >
+-          {['Student', 'Assignment ┬À Criterion', 'Concern', 'Student reasoning', 'Submitted', 'Status', ''].map((h, i) => (
+-            <div key={i} className="px-3 py-2.5" style={{ borderRight: i < 6 ? '1px solid #E2E8F0' : 'none' }}>{h}</div>
+-          ))}
+-        </div>
+-
+-        {/* Rows */}
+-        {orderedStudents.map((id) => {
+-          const st = STUDENTS[id]
+-          const status = getStatus(id)
+-          const cs = CONCERN_STYLES[st.concernVariant]
+-
+-          return (
+-            <div key={id} className="relative" style={{ borderBottom: '1px solid #E2E8F0' }}>
+-              <div
+-                className="grid"
+-                style={{
+-                  gridTemplateColumns: '200px 160px 110px 1fr 85px 125px 120px',
+-                  minHeight: 70,
+-                  background: st.rowBg ?? '#fff',
+-                }}
+-              >
+-                {/* Student */}
+-                <div className="flex items-stretch p-0" style={{ borderRight: '1px solid #E2E8F0' }}>
+-                  <div className="w-0.5 flex-shrink-0 self-stretch" style={{ background: st.accentColor }} />
+-                  <div className="px-3 py-2.5 flex flex-col justify-center gap-1 flex-1">
+-                    <div className="flex items-center gap-2">
+-                      <div
+-                        className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+-                        style={{
+-                          background: st.isNew ? '#EFF6FF' : st.ageStatus === 'overdue' ? '#FEF2F2' : '#F1F5F9',
+-                          border: `1px solid ${st.isNew ? '#BFDBFE' : st.ageStatus === 'overdue' ? '#FECACA' : '#E2E8F0'}`,
+-                          color: st.isNew ? '#3B82F6' : st.ageStatus === 'overdue' ? '#EF4444' : '#64748B',
+-                        }}
+-                      >
+-                        {st.name.split(' ').map((n) => n[0]).join('')}
+-                      </div>
+-                      <div>
+-                        <div className="text-[13px] font-bold flex items-center gap-1.5" style={{ color: '#1E293B' }}>
+-                          {st.name}
+-                          {st.isNew && <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: '#3B7FE8' }} />}
+-                        </div>
+-                        <div className="text-[10px]" style={{ color: '#94A3B8', fontFamily: 'monospace' }}>{st.rollId}</div>
+-                      </div>
+-                    </div>
+-                    {st.isCluster && (
+-                      <span
+-                        className="self-start text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-[0.04em]"
+-                        style={{ background: '#FFF7ED', color: '#92400E', border: '1px solid #FED7AA' }}
+-                      >
+-                        C2 cluster
+-                      </span>
+-                    )}
+-                  </div>
+-                </div>
+-
+-                {/* Assignment ┬À Criterion */}
+-                <div className="px-3 py-2.5 flex flex-col justify-center gap-1" style={{ borderRight: '1px solid #E2E8F0' }}>
+-                  <div className="text-[12px] font-medium" style={{ color: '#1E293B' }}>{st.assign}</div>
+-                  <span
+-                    className="self-start text-[11px] font-bold px-2 py-0.5 rounded-full"
+-                    style={{ background: '#EDE9FB', color: '#6B5FC4', border: '1px solid #C4BDF0' }}
+-                  >
+-                    {st.critShort} ┬À {st.origScore} / {st.maxScore}
+-                  </span>
+-                </div>
+-
+-                {/* Concern */}
+-                <div className="px-3 py-2.5 flex flex-col justify-center gap-1" style={{ borderRight: '1px solid #E2E8F0' }}>
+-                  <div className="text-[12px]" style={{ color: '#475569' }}>{st.concern}</div>
+-                  <span
+-                    className="self-start text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-[0.04em]"
+-                    style={{ background: cs.bg, color: cs.text, border: `1px solid ${cs.border}` }}
+-                  >
+-                    {st.concernType}
+-                  </span>
+-                </div>
++          <div className="grid grid-cols-3 gap-4">
++            {groupedAssignments.IN_PROGRESS.map(assignment => {
++              const isDsa = assignment.id === 'dsa-a1'
++              return (
++                <AssignmentCard 
++                  key={assignment.id} 
++                  {...assignment} 
++                  pendingCount={isDsa ? dsaPending : assignment.pendingCount}
++                  resolvedCount={isDsa ? dsaResolved : assignment.resolvedCount}
++                  cta="Continue Review"
++                  onClick={() => assignment.url !== '#' && router.push(assignment.url)}
++                />
++              )
++            })}
++          </div>
++        </Section>
+ 
+-                {/* Student reasoning */}
+-                <div className="px-3 py-2.5 flex items-center" style={{ borderRight: '1px solid #E2E8F0' }}>
+-                  <div
+-                    className="text-[12px] leading-relaxed overflow-hidden"
+-                    style={{
+-                      color: '#475569',
+-                      display: '-webkit-box',
+-                      WebkitLineClamp: 2,
+-                      WebkitBoxOrient: 'vertical' as const,
+-                    }}
+-                  >
+-                    {st.sv}
+-                  </div>
+-                </div>
+-
+-                {/* Submitted */}
+-                <div className="px-3 py-2.5 flex flex-col justify-center" style={{ borderRight: '1px solid #E2E8F0' }}>
+-                  <div
+-                    className="text-[11px] font-bold"
+-                    style={{ color: st.ageStatus === 'overdue' ? '#EF4444' : st.ageStatus === 'new' ? '#475569' : '#92400E' }}
+-                  >
+-                    {st.ageLabel}
+-                  </div>
+-                  <div className="text-[10px] capitalize" style={{ color: '#94A3B8' }}>
+-                    {st.ageStatus === 'overdue' ? 'Overdue' : st.ageStatus === 'new' ? 'New' : 'Pending'}
+-                  </div>
+-                </div>
+-
+-                {/* Status */}
+-                <div className="px-3 py-2.5 flex items-center" style={{ borderRight: '1px solid #E2E8F0' }}>
+-                  <StatusPill status={status} ageStatus={st.ageStatus} />
+-                </div>
++        {/* 2. READY FOR REVIEW */}
++        <Section 
++          title="Ready for Review" 
++          subtitle="Appeal window closed. Final queues ready for your attention."
++          icon={<Layers className="h-3.5 w-3.5" />}
++          count={groupedAssignments.READY.length}
++          accent="amber"
++        >
++          <div className="grid grid-cols-3 gap-4">
++            {groupedAssignments.READY.map(assignment => (
++              <AssignmentCard 
++                key={assignment.id} 
++                {...assignment} 
++                resolvedCount={0}
++                cta="Start Review"
++                onClick={() => assignment.url !== '#' && router.push(assignment.url)}
++              />
++            ))}
++          </div>
++        </Section>
+ 
+-                {/* Action */}
+-                <div className="px-3 py-2.5 flex items-center justify-center">
+-                  {status === 'pending' && (
+-                    <button
+-                      onClick={() => setBriefingId(id)}
+-                      className="px-4 py-1.5 rounded-lg text-[11px] font-bold text-white transition-colors"
+-                      style={{ background: '#6B5FC4', border: 'none', cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 2px 6px rgba(107,95,196,.35)' }}
+-                    >
+-                      Review now ÔåÆ
+-                    </button>
+-                  )}
+-                  {status === 'hod' && (
+-                    <button
+-                      onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
+-                      className="px-4 py-1.5 rounded-lg text-[11px] font-medium transition-colors hover:bg-slate-50"
+-                      style={{ border: '1.5px solid #CBD5E1', background: '#fff', color: '#475569', cursor: 'pointer', fontFamily: 'inherit' }}
+-                    >
+-                      View ÔåÆ
+-                    </button>
+-                  )}
+-                </div>
+-              </div>
++        {/* 3. WINDOW OPEN */}
++        <Section 
++          title="Request Window Open" 
++          subtitle="Upcoming workload. Students currently submitting appeals."
++          icon={<Calendar className="h-3.5 w-3.5" />}
++          count={groupedAssignments.WINDOW_OPEN.length}
++          accent="slate"
++        >
++          <div className="grid grid-cols-3 gap-4">
++            {groupedAssignments.WINDOW_OPEN.map(assignment => (
++              <AssignmentCard 
++                key={assignment.id} 
++                {...assignment} 
++                variant="outline"
++              />
++            ))}
++          </div>
++        </Section>
+ 
+-              {/* Resolved overlay */}
+-              {status === 'resolved' && (
+-                <div
+-                  className="absolute inset-0 flex items-center px-4 gap-2.5 text-[12px] font-semibold pointer-events-none"
+-                  style={{ background: 'rgba(240,253,244,.96)', color: '#065F46', zIndex: 5 }}
+-                >
+-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+-                    <circle cx="10" cy="10" r="9" stroke="#10B981" strokeWidth="1.5" />
+-                    <path d="M6 10l3 3 5-5" stroke="#10B981" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+-                  </svg>
+-                  Resolved ┬À Student notified
+-                </div>
+-              )}
++        {/* 4. COMPLETED */}
++        <Section 
++          title="Completed" 
++          subtitle="All requests resolved for this window."
++          icon={<CheckCircle2 className="h-3.5 w-3.5" />}
++          count={groupedAssignments.COMPLETED.length}
++          accent="emerald"
++        >
++          <div className="grid grid-cols-3 gap-4 opacity-60 grayscale-[0.5] hover:opacity-100 hover:grayscale-0 transition-all">
++            {groupedAssignments.COMPLETED.map(assignment => (
++              <AssignmentCard 
++                key={assignment.id} 
++                {...assignment} 
++                cta="View History"
++                variant="ghost"
++              />
++            ))}
++          </div>
++        </Section>
+ 
+-              {/* HOD overlay */}
+-              {status === 'hod' && (
+-                <div
+-                  className="absolute inset-0 flex items-center px-4 gap-2 text-[12px] font-semibold pointer-events-none"
+-                  style={{ background: 'rgba(255,251,235,.95)', color: '#92400E', zIndex: 5 }}
+-                >
+-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+-                    <path d="M8 2l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="#F59E0B" strokeWidth="1.3" strokeLinejoin="round" />
+-                  </svg>
+-                  Awaiting HOD approval ┬À Dr. R. Kumar ┬À Student notified once HOD approves
+-                  <button
+-                    onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
+-                    className="ml-auto pointer-events-auto px-3 py-1 rounded text-[11px] font-semibold"
+-                    style={{ background: '#FEF3DC', border: '1px solid #FDE68A', color: '#92400E', cursor: 'pointer', fontFamily: 'inherit' }}
+-                  >
+-                    View ÔåÆ
+-                  </button>
+-                </div>
+-              )}
+-            </div>
+-          )
+-        })}
+       </div>
+-
+-      {/* Briefing modal */}
+-      {briefingId && (
+-        <BriefingModal
+-          studentId={briefingId}
+-          onClose={() => setBriefingId(null)}
+-          onStart={() => {
+-            setBriefingId(null)
+-            router.push(`/dashboard/re-evaluation/${briefingId}`)
+-          }}
+-        />
+-      )}
+     </div>
+   )
+ }
+ 
+-function KpiCard({ label, value, sub, accent }: { label: string; value: number; sub: string; accent: string }) {
++function Section({ title, subtitle, icon, count, accent, children }: any) {
++  const accentColors: any = {
++    primary: 'text-primary bg-primary/5 border-primary/10',
++    amber: 'text-amber-600 bg-amber-500/5 border-amber-500/10',
++    slate: 'text-slate-600 bg-slate-500/5 border-slate-500/10',
++    emerald: 'text-emerald-600 bg-emerald-500/5 border-emerald-500/10',
++  }
++  
+   return (
+-    <div className="rounded-xl p-3.5" style={{ background: '#fff', border: '1px solid #E2E8F0', borderLeft: `3px solid ${accent}`, boxShadow: '0 1px 3px rgba(0,0,0,.07)' }}>
+-      <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1" style={{ color: '#94A3B8' }}>{label}</div>
+-      <div className="text-[24px] font-extrabold tracking-tight leading-tight" style={{ color: accent }}>{value}</div>
+-      <div className="text-[11px] mt-1" style={{ color: '#94A3B8' }}>{sub}</div>
++    <div className="space-y-4">
++      <div className="flex items-center justify-between">
++        <div className="space-y-0.5">
++          <div className="flex items-center gap-2">
++            <div className={`p-1 rounded-lg border ${accentColors[accent]}`}>
++              {icon}
++            </div>
++            <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">{title} ({count})</h2>
++          </div>
++          <p className="text-[11px] font-bold text-muted-foreground/30 pl-8">{subtitle}</p>
++        </div>
++      </div>
++      {children}
+     </div>
+   )
+ }
+ 
+-function StatusPill({ status, ageStatus }: { status: 'pending' | 'hod' | 'resolved'; ageStatus: string }) {
+-  if (status === 'resolved') {
+-    return (
+-      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em]" style={{ background: '#ECFDF5', color: '#065F46', border: '1px solid #A7F3D0' }}>
+-        Resolved
+-      </span>
+-    )
+-  }
+-  if (status === 'hod') {
+-    return (
+-      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em]" style={{ background: '#FFFBEB', color: '#92400E', border: '1px solid #FDE68A' }}>
+-        Awaiting HOD
+-      </span>
+-    )
+-  }
+-  if (ageStatus === 'overdue') {
+-    return (
+-      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em] text-white" style={{ background: '#EF4444', border: '1px solid #EF4444' }}>
+-        Overdue
+-      </span>
+-    )
+-  }
+-  if (ageStatus === 'new') {
+-    return (
+-      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em]" style={{ background: '#ECFDF5', color: '#065F46', border: '1px solid #A7F3D0' }}>
+-        New
+-      </span>
+-    )
+-  }
++function AssignmentCard({
++  code, subject, batch, title, pendingCount, overdueCount, appealWindow, resolvedCount, totalCount, shared, cta, variant = "default", onClick
++}: any) {
++  const progressPct = Math.round((resolvedCount / totalCount) * 100)
++  
+   return (
+-    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-[0.04em]" style={{ background: '#F1F5F9', color: '#94A3B8', border: '1px solid #CBD5E1' }}>
+-      Pending
+-    </span>
++    <Card 
++      className="group relative overflow-hidden cursor-pointer hover:border-primary/20 transition-all border-border/20 bg-card/20 backdrop-blur-sm rounded-2xl p-4 flex flex-col shadow-none min-h-[220px]"
++      onClick={onClick}
++    >
++      <div className="absolute top-4 right-4 z-10">
++        {overdueCount > 0 ? (
++          <Badge variant="outline" className="text-[7px] font-black uppercase tracking-widest border-red-500/20 text-red-600/70 bg-red-500/[0.04] rounded-md px-1.5 py-0">
++            {overdueCount} Overdue
++          </Badge>
++        ) : (
++          <Badge variant="outline" className="text-[7px] font-black uppercase tracking-widest border-border/30 text-muted-foreground/60 rounded-md px-1.5 py-0">
++             {appealWindow}
++          </Badge>
++        )}
++      </div>
++
++      <div className="space-y-3 flex-1 flex flex-col">
++        <div>
++          <div className="p-1.5 w-fit rounded-lg bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300 border border-primary/10 mb-3">
++            <BookOpen className="h-4 w-4" />
++          </div>
++          <h3 className="text-[14px] font-black tracking-tight line-clamp-1 text-[#1E293B]">{title}</h3>
++          <div className="flex items-center gap-1 text-[7px] font-black uppercase tracking-widest text-muted-foreground/50 mt-0.5">
++            {code} <span className="opacity-40">ÔÇó</span> {subject} <span className="opacity-40">ÔÇó</span> {batch}
++          </div>
++        </div>
++
++        <div className="mt-auto space-y-3">
++          <div className="flex items-end justify-between pt-3 border-t border-border/10">
++            <div className="space-y-0.5">
++              <span className="text-[6px] uppercase font-black tracking-widest text-muted-foreground/30">Workload</span>
++              <div className="text-[10px] font-black text-foreground/80">{pendingCount} Pending</div>
++            </div>
++            <div className="space-y-0.5 text-right">
++              <span className="text-[6px] uppercase font-black tracking-widest text-muted-foreground/30">Progress</span>
++              <div className="text-[10px] font-black text-muted-foreground">{resolvedCount}/{totalCount}</div>
++            </div>
++          </div>
++
++          <div className="space-y-1">
++            <Progress value={progressPct} className="h-0.5 bg-primary/5" />
++            <div className="flex items-center justify-between text-[6px] font-black uppercase tracking-widest text-muted-foreground/40">
++              <span>{progressPct}% Resolved</span>
++              <div className="flex items-center gap-1">
++                 {shared && <Users className="h-2 w-2" />}
++                 <span>{shared || ''}</span>
++              </div>
++            </div>
++          </div>
++
++          {cta && (
++            <div className="flex items-center justify-end pt-1">
++              <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-primary/70 group-hover:text-primary transition-colors">
++                {cta}
++                <ArrowRight className="h-2 w-2 group-hover:translate-x-0.5 transition-transform" />
++              </div>
++            </div>
++          )}
++        </div>
++      </div>
++
++      <div className={`absolute bottom-0 left-0 w-full h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left ${overdueCount > 0 ? 'bg-red-500' : 'bg-primary'}`} />
++    </Card>
+   )
+ }
+diff --git a/src/app/dashboard/re-evaluation/triage/page.tsx b/src/app/dashboard/re-evaluation/triage/page.tsx
+new file mode 100644
+index 0000000..171e39a
+--- /dev/null
++++ b/src/app/dashboard/re-evaluation/triage/page.tsx
+@@ -0,0 +1,336 @@
++"use client"
++
++import { useState } from 'react'
++import { useRouter } from 'next/navigation'
++import { ChevronLeft, Download } from 'lucide-react'
++import { STUDENTS, STUDENT_ORDER } from '@/lib/data/re-evaluation-data'
++import { useReEvalStore } from '@/lib/store/re-evaluation-store'
++import { BriefingModal } from '@/components/re-evaluation/briefing-modal'
++
++const TOTAL = 7
++const INITIAL_RESOLVED = 12
++
++const CONCERN_STYLES = {
++  red:    { bg: '#FEF2F2', border: '#FECACA', text: '#EF4444' },
++  orange: { bg: '#FFF7ED', border: '#FED7AA', text: '#92400E' },
++  blue:   { bg: '#EFF6FF', border: '#BFDBFE', text: '#3B82F6' },
++}
++
++const STATUS_STYLES = {
++  overdue: { bg: '#EF4444', color: '#fff', label: 'Overdue' },
++  pending: { bg: '#F1F5F9', color: '#94A3B8', label: 'Pending', border: '#CBD5E1' },
++  new:     { bg: '#ECFDF5', color: '#065F46', label: 'New', border: '#A7F3D0' },
++}
++
++export default function ReEvaluationPage() {
++  const router = useRouter()
++  const { getStatus, hodPendingIds, resolvedIds } = useReEvalStore()
++  const [briefingId, setBriefingId] = useState<string | null>(null)
++
++  const pending = TOTAL - resolvedIds.length - hodPendingIds.length
++  const resolved = INITIAL_RESOLVED + resolvedIds.length
++  const hodCount = hodPendingIds.length
++  const done = resolvedIds.length + hodPendingIds.length
++  const progressPct = Math.round((done / TOTAL) * 100)
++
++  const GLOBAL_KPIS = [
++    { label: 'Pending', value: pending, sub: 'Awaiting your response', accent: '#EF4444' },
++    { label: 'Due Today', value: 2, sub: 'Over 48 hrs ÔÇö respond', accent: '#F59E0B' },
++    { label: 'Awaiting HOD', value: hodCount, sub: 'Institutional review', accent: '#FBBF24' },
++    { label: 'Resolved', value: resolved, sub: 'This batch total', accent: '#10B981' },
++  ]
++
++  const orderedStudents = [
++    ...STUDENT_ORDER.filter((id) => getStatus(id) === 'pending'),
++    ...STUDENT_ORDER.filter((id) => getStatus(id) === 'hod'),
++    ...STUDENT_ORDER.filter((id) => getStatus(id) === 'resolved'),
++  ]
++
++  return (
++    <div className="flex flex-col min-h-[calc(100vh-8rem)] relative bg-[#F8FAFC]/30">
++      {/* Header Section ÔÇö Sticky with blur matching Pre-evaluation */}
++      <div className="sticky top-0 z-50 bg-background/60 backdrop-blur-md pt-6 pb-6 border-b border-border/10">
++        <div className="max-w-6xl mx-auto w-full px-4">
++          <div className="flex items-center gap-4 mb-4">
++            <button
++              onClick={() => router.push('/dashboard/re-evaluation')}
++              className="group flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 hover:text-primary transition-all"
++            >
++              <ChevronLeft className="size-3 group-hover:-translate-x-0.5 transition-transform" />
++              Back to Assignments
++            </button>
++          </div>
++
++          <div className="flex items-start justify-between mb-8">
++            <div className="space-y-3">
++              <div className="flex items-center gap-2">
++                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">IIM Bangalore</span>
++                <span className="text-muted-foreground/20 text-[9px]">┬À</span>
++                <span className="text-[10px] font-black uppercase tracking-widest text-primary/80">DSA ┬À Batch 4</span>
++                <span className="text-muted-foreground/20 text-[9px]">┬À</span>
++                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Re-Evaluation Desk</span>
++              </div>
++              <h1 className="text-4xl font-black tracking-tighter secondary-text">Review Requests</h1>
++              <div className="flex items-center gap-2 pt-1">
++                <p className="text-[11px] text-muted-foreground opacity-60 font-medium">
++                  Results released Mon 9:00 AM ┬À Appeal window closes Sunday night
++                </p>
++              </div>
++            </div>
++            
++            <div className="flex flex-col items-end gap-3">
++              <button
++                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/30 bg-card/50 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-card hover:border-border transition-all"
++              >
++                <Download className="size-3" />
++                Download Record
++              </button>
++            </div>
++          </div>
++
++          <div className="grid grid-cols-4 gap-3">
++            {GLOBAL_KPIS.map((kpi, i) => (
++              <div key={i} className="group px-4 py-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-all flex flex-col justify-center">
++                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">{kpi.label}</span>
++                <div className="flex items-baseline gap-1.5 mt-1">
++                  <span className="text-xl font-black tracking-tighter" style={{ color: kpi.accent }}>{kpi.value}</span>
++                  <span className="text-[10px] font-bold text-muted-foreground/30">{kpi.sub}</span>
++                </div>
++              </div>
++            ))}
++          </div>
++          
++        </div>
++      </div>
++
++      {/* Main Content Sections */}
++      <div className="max-w-6xl mx-auto w-full pb-20 px-4 pt-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
++        
++        {/* Table Container */}
++        <div className="rounded-2xl border border-border/10 bg-card/10 backdrop-blur-sm overflow-hidden">
++          {/* Header */}
++          <div
++            className="grid text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40"
++            style={{
++              gridTemplateColumns: '220px 180px 130px 1fr 100px 140px 140px',
++              background: 'rgba(var(--muted), 0.05)',
++              borderBottom: '1px solid rgba(var(--border), 0.1)',
++            }}
++          >
++            {['Student', 'Assignment ┬À Criterion', 'Concern', 'Student reasoning', 'Submitted', 'Status', 'Action'].map((h, i) => (
++              <div key={i} className="px-4 py-4">{h}</div>
++            ))}
++          </div>
++
++        {/* Rows */}
++        {orderedStudents.map((id) => {
++          const st = STUDENTS[id]
++          const status = getStatus(id)
++          const cs = CONCERN_STYLES[st.concernVariant]
++
++          return (
++            <div key={id} className="relative group/row" style={{ borderBottom: '1px solid rgba(var(--border), 0.1)' }}>
++              <div
++                className="grid hover:bg-muted/5 transition-colors"
++                style={{
++                  gridTemplateColumns: '220px 180px 130px 1fr 100px 140px 140px',
++                  minHeight: 80,
++                  background: st.rowBg ?? 'transparent',
++                }}
++              >
++                {/* Student */}
++                <div className="flex items-stretch p-0" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
++                  <div className="w-1 flex-shrink-0 self-stretch" style={{ background: st.accentColor }} />
++                  <div className="px-4 py-4 flex flex-col justify-center gap-1.5 flex-1">
++                    <div className="flex items-center gap-3">
++                      <div
++                        className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black flex-shrink-0"
++                        style={{
++                          background: st.isNew ? '#EFF6FF' : st.ageStatus === 'overdue' ? '#FEF2F2' : '#F8FAFC',
++                          border: `1px solid ${st.isNew ? '#BFDBFE' : st.ageStatus === 'overdue' ? '#FECACA' : 'rgba(var(--border), 0.1)'}`,
++                          color: st.isNew ? '#3B82F6' : st.ageStatus === 'overdue' ? '#EF4444' : '#64748B',
++                        }}
++                      >
++                        {st.name.split(' ').map((n) => n[0]).join('')}
++                      </div>
++                      <div className="flex flex-col gap-1">
++                        <div>
++                          <div className="text-[13px] font-black tracking-tight flex items-center gap-1.5 text-[#1E293B]">
++                            {st.name}
++                            {st.isNew && <span className="w-1.5 h-1.5 rounded-full inline-block bg-primary" />}
++                          </div>
++                          <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">{st.rollId}</div>
++                        </div>
++                        {st.isCluster && (
++                          <span className="self-start text-[8px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-amber-500/5 text-amber-600 border border-amber-500/10 w-fit">
++                            C2 cluster
++                          </span>
++                        )}
++                      </div>
++                    </div>
++                  </div>
++                </div>
++
++                {/* Assignment ┬À Criterion */}
++                <div className="px-4 py-4 flex flex-col justify-center gap-1.5" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
++                  <div className="text-[12px] font-black tracking-tight text-[#1E293B]">{st.assign}</div>
++                  <span className="self-start text-[9px] font-black px-2 py-0.5 rounded-md bg-primary/5 text-primary border border-primary/10 uppercase tracking-widest">
++                    {st.critShort} ┬À {st.origScore}/{st.maxScore}
++                  </span>
++                </div>
++
++                {/* Concern */}
++                <div className="px-4 py-4 flex flex-col justify-center gap-1.5" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
++                  <div className="text-[12px] font-bold text-slate-600">{st.concern}</div>
++                  <span
++                    className="self-start text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-widest"
++                    style={{ background: cs.bg, color: cs.text, border: `1px solid ${cs.border}` }}
++                  >
++                    {st.concernType}
++                  </span>
++                </div>
++
++                {/* Student reasoning */}
++                <div className="px-4 py-4 flex items-center" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
++                  <div
++                    className="text-[11px] font-medium leading-relaxed overflow-hidden text-slate-500 italic"
++                    style={{
++                      display: '-webkit-box',
++                      WebkitLineClamp: 2,
++                      WebkitBoxOrient: 'vertical' as const,
++                    }}
++                  >
++                    "{st.sv}"
++                  </div>
++                </div>
++
++                {/* Submitted */}
++                <div className="px-4 py-4 flex flex-col justify-center" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
++                  <div
++                    className="text-[10px] font-black tracking-tighter"
++                    style={{ color: st.ageStatus === 'overdue' ? '#EF4444' : st.ageStatus === 'new' ? '#64748B' : '#92400E' }}
++                  >
++                    {st.ageLabel}
++                  </div>
++                  <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/30">
++                    {st.ageStatus === 'overdue' ? 'Overdue' : st.ageStatus === 'new' ? 'New' : 'Pending'}
++                  </div>
++                </div>
++
++                {/* Status */}
++                <div className="px-4 py-4 flex items-center" style={{ borderRight: '1px solid rgba(var(--border), 0.05)' }}>
++                  <StatusPill status={status} ageStatus={st.ageStatus} />
++                </div>
++
++                {/* Action */}
++                <div className="px-4 py-4 flex items-center justify-center">
++                  {status === 'pending' && (
++                    <button
++                      onClick={() => setBriefingId(id)}
++                      className="group/btn flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white bg-primary hover:bg-primary/90 transition-all shadow-[0_2px_10px_rgba(var(--primary),0.2)]"
++                    >
++                      Review now
++                      <ChevronLeft className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
++                    </button>
++                  )}
++                  {status === 'hod' && (
++                    <button
++                      onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
++                      className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-muted-foreground border border-border/30 bg-card/50 hover:bg-card hover:border-border transition-all"
++                    >
++                      View ÔåÆ
++                    </button>
++                  )}
++                </div>
++              </div>
++
++              {/* Resolved overlay */}
++              {status === 'resolved' && (
++                <div
++                  className="absolute inset-0 flex items-center px-4 gap-2.5 text-[12px] font-semibold pointer-events-none"
++                  style={{ background: 'rgba(240,253,244,.96)', color: '#065F46', zIndex: 5 }}
++                >
++                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
++                    <circle cx="10" cy="10" r="9" stroke="#10B981" strokeWidth="1.5" />
++                    <path d="M6 10l3 3 5-5" stroke="#10B981" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
++                  </svg>
++                  Resolved ┬À Student notified
++                </div>
++              )}
++
++              {/* HOD overlay */}
++              {status === 'hod' && (
++                <div
++                  className="absolute inset-0 flex items-center px-4 gap-2 text-[12px] font-semibold pointer-events-none"
++                  style={{ background: 'rgba(255,251,235,.95)', color: '#92400E', zIndex: 5 }}
++                >
++                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
++                    <path d="M8 2l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="#F59E0B" strokeWidth="1.3" strokeLinejoin="round" />
++                  </svg>
++                  Awaiting HOD approval ┬À Dr. R. Kumar ┬À Student notified once HOD approves
++                  <button
++                    onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
++                    className="ml-auto pointer-events-auto px-3 py-1 rounded text-[11px] font-semibold"
++                    style={{ background: '#FEF3DC', border: '1px solid #FDE68A', color: '#92400E', cursor: 'pointer', fontFamily: 'inherit' }}
++                  >
++                    View ÔåÆ
++                  </button>
++                </div>
++              )}
++            </div>
++          )
++        })}
++      </div>
++
++      {/* Briefing modal */}
++      {briefingId && (
++        <BriefingModal
++          studentId={briefingId}
++          onClose={() => setBriefingId(null)}
++          onStart={() => {
++            // Allow smooth navigation by keeping the modal open while routing
++            router.push(`/dashboard/re-evaluation/${briefingId}`)
++          }}
++        />
++      )}
++      </div>
++    </div>
++  )
++}
++
++
++function StatusPill({ status, ageStatus }: { status: 'pending' | 'hod' | 'resolved'; ageStatus: string }) {
++  if (status === 'resolved') {
++    return (
++      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-emerald-500/5 text-emerald-600 border border-emerald-500/10">
++        Resolved
++      </span>
++    )
++  }
++  if (status === 'hod') {
++    return (
++      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-amber-500/5 text-amber-600 border border-amber-500/10">
++        Awaiting HOD
++      </span>
++    )
++  }
++  if (ageStatus === 'overdue') {
++    return (
++      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-red-500 text-white">
++        Overdue
++      </span>
++    )
++  }
++  if (ageStatus === 'new') {
++    return (
++      <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-blue-500/5 text-blue-600 border border-blue-500/10">
++        New
++      </span>
++    )
++  }
++  return (
++    <span className="text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest bg-slate-500/5 text-slate-500 border border-slate-500/10">
++      Pending
++    </span>
++  )
++}
+diff --git a/src/components/re-evaluation/briefing-modal.tsx b/src/components/re-evaluation/briefing-modal.tsx
+index 1f706ee..9e0f2b9 100644
+--- a/src/components/re-evaluation/briefing-modal.tsx
++++ b/src/components/re-evaluation/briefing-modal.tsx
+@@ -5,10 +5,10 @@ import { AnimatePresence, motion } from 'framer-motion'
+ import { STUDENTS, BRIEFINGS } from '@/lib/data/re-evaluation-data'
+ 
+ const FLAG_STYLES = {
+-  red:   { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', dot: '#EF4444' },
+-  amber: { bg: '#FFFBEB', border: '#FDE68A', text: '#92400E', dot: '#F59E0B' },
+-  blue:  { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', dot: '#3B7FE8' },
+-  green: { bg: '#F0FDF4', border: '#BBF7D0', text: '#166534', dot: '#22C55E' },
++  red:   { bg: 'rgba(239, 68, 68, 0.03)', border: 'rgba(239, 68, 68, 0.1)', text: '#EF4444', dot: '#EF4444' },
++  amber: { bg: 'rgba(245, 158, 11, 0.03)', border: 'rgba(245, 158, 11, 0.1)', text: '#B45309', dot: '#F59E0B' },
++  blue:  { bg: 'rgba(59, 130, 246, 0.03)', border: 'rgba(59, 130, 246, 0.1)', text: '#3B82F6', dot: '#3B82F6' },
++  green: { bg: 'rgba(16, 185, 129, 0.03)', border: 'rgba(16, 185, 129, 0.1)', text: '#059669', dot: '#10B981' },
+ }
+ 
+ type Props = {
+@@ -20,11 +20,15 @@ type Props = {
+ export function BriefingModal({ studentId, onClose, onStart }: Props) {
+   const bodyRef = useRef<HTMLDivElement>(null)
+   const [scrolled, setScrolled] = useState(false)
+-  const [accOpen, setAccOpen] = useState<Record<string, boolean>>({})
++  const [isNavigating, setIsNavigating] = useState(false)
++  const [accOpen, setAccOpen] = useState<Record<string, boolean>>({
++    timeline: false,
++    evidence: false
++  })
+ 
+   useEffect(() => {
+     setScrolled(false)
+-    setAccOpen({})
++    setAccOpen({ timeline: false, evidence: false })
+     if (bodyRef.current) bodyRef.current.scrollTop = 0
+   }, [studentId])
+ 
+@@ -35,9 +39,16 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
+   }, [onClose])
+ 
+   const handleScroll = () => {
+-    if (scrolled || !bodyRef.current) return
+-    const el = bodyRef.current
+-    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 80) setScrolled(true)
++    if (bodyRef.current) {
++      const { scrollTop, scrollHeight, clientHeight } = bodyRef.current
++      if (scrollTop + clientHeight >= scrollHeight - 20) setScrolled(true)
++    }
++  }
++
++  const handleStart = () => {
++    if (!onStart || isNavigating) return
++    setIsNavigating(true)
++    onStart()
+   }
+ 
+   const toggleAcc = (key: string) =>
+@@ -50,45 +61,56 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
+ 
+   const canStart = scrolled || onStart === null
+ 
++  // Synthesize intelligence summaries based on data
++  const isCredible = st.verdict.toLowerCase().includes('valid') || st.verdict.toLowerCase().includes('mismatch')
++  const caseSummary = brf.aiSummaryParagraphs[0]
++  const caseInsight = brf.aiSummaryParagraphs[1]
++
+   return (
+-    <AnimatePresence>
++    <AnimatePresence mode="wait">
+       <motion.div
+         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+-        className="fixed inset-0 z-[400] flex items-center justify-center"
+-        style={{ background: 'rgba(15,17,27,.55)', backdropFilter: 'blur(3px)' }}
++        className="fixed inset-0 z-[400] flex items-center justify-center p-4 overflow-hidden"
++        style={{ background: 'rgba(15,17,27,.45)', backdropFilter: 'blur(8px)' }}
+         onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+       >
+         <motion.div
+-          initial={{ opacity: 0, scale: 0.97, y: 16 }}
++          initial={{ opacity: 0, scale: 0.98, y: 12 }}
+           animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.97, y: 8 }}
+-          transition={{ duration: 0.18, ease: 'easeOut' }}
+-          style={{ width: 680, maxWidth: 'calc(100vw - 32px)', maxHeight: '88vh', boxShadow: '0 24px 64px rgba(0,0,0,.22), 0 4px 16px rgba(0,0,0,.1)' }}
+-          className="bg-white rounded-2xl flex flex-col overflow-hidden"
++          exit={{ opacity: 0, scale: 0.98, y: 8 }}
++          transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
++          style={{ width: 720, maxWidth: '100%', maxHeight: '92vh', boxShadow: '0 32px 64px -12px rgba(0,0,0,0.3)' }}
++          className="bg-card border border-border/10 rounded-3xl flex flex-col overflow-hidden relative"
+         >
+           {/* Header */}
+-          <div className="px-6 pt-5 pb-0 flex-shrink-0">
+-            <div className="flex items-start justify-between mb-1">
++          <div className="px-8 pt-8 pb-4 flex-shrink-0 bg-background/20">
++            <div className="flex items-start justify-between">
+               <div>
+-                <div className="flex items-center gap-2 mb-1.5">
+-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#1A1D27' }}>
+-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+-                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
++                <div className="flex items-center gap-2.5 mb-3">
++                  <div className="size-6 rounded-lg flex items-center justify-center flex-shrink-0 bg-primary/10 border border-primary/20">
++                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="text-primary">
++                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                     </svg>
+                   </div>
+-                  <span className="text-[11px] font-bold tracking-[0.08em] uppercase" style={{ color: '#6B7280' }}>AI Case Briefing</span>
++                  <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary/60">AI Case Briefing</span>
++                </div>
++                <h2 className="text-3xl font-black tracking-tighter secondary-text flex items-center gap-3">
++                  {st.name}
++                  {st.isNew && <span className="size-2 rounded-full bg-primary" />}
++                </h2>
++                <div className="flex items-center gap-2 mt-2">
++                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{st.rollId}</span>
++                  <span className="text-muted-foreground/20 text-[9px]">┬À</span>
++                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{st.assign}</span>
++                  <span className="text-muted-foreground/20 text-[9px]">┬À</span>
++                  <span className="text-[10px] font-black uppercase tracking-widest text-primary/40">{st.crit}</span>
+                 </div>
+-                <div className="text-[18px] font-bold tracking-tight" style={{ color: '#111827' }}>{st.name}</div>
+-                <div className="text-[12px] mt-0.5" style={{ color: '#9CA3AF' }}>{st.rollId} ┬À {st.assign} ┬À {st.crit}</div>
+               </div>
+               <button
+                 onClick={onClose}
+-                className="w-8 h-8 flex items-center justify-center rounded-lg flex-shrink-0 transition-colors hover:bg-gray-200"
+-                style={{ background: '#F3F4F6', border: 'none', cursor: 'pointer', color: '#6B7280' }}
++                className="size-8 flex items-center justify-center rounded-xl bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all"
+               >
+-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+-                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+-                </svg>
++                <XIcon className="size-4" />
+               </button>
+             </div>
+           </div>
+@@ -97,176 +119,251 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
+           <div
+             ref={bodyRef}
+             onScroll={handleScroll}
+-            className="flex-1 overflow-y-auto px-6 pt-4 pb-0"
++            className="flex-1 overflow-y-auto px-8 py-4 space-y-8"
+             style={{ scrollbarWidth: 'thin' }}
+           >
+-            {/* AI Summary */}
+-            <div className="rounded-xl p-4 mb-3.5" style={{ background: '#F8FAFC', border: '1.5px solid #E5E7EB' }}>
+-              <div className="flex items-center gap-2 mb-2.5">
+-                <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: '#111827' }}>
+-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+-                    <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+-                  </svg>
++            {/* 1. Executive Case Briefing */}
++            <section>
++              <div className="rounded-2xl p-6 bg-primary/[0.03] border border-primary/10 relative overflow-hidden group">
++                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
++                  <ShieldCheckIcon className="size-20" />
++                </div>
++                <div className="flex items-center gap-2.5 mb-4">
++                  <div className="size-5 rounded-md flex items-center justify-center bg-primary/20">
++                    <ZapIcon className="size-3 text-primary" />
++                  </div>
++                  <span className="text-[10px] font-black uppercase tracking-widest text-primary/80">Intelligence Summary</span>
++                </div>
++                <div className="space-y-4 relative z-10">
++                  <p className="text-[15px] font-bold leading-tight text-slate-800">
++                    {isCredible ? "Credible dispute detected." : "Low-validity request."} {caseSummary}
++                  </p>
++                  <p className="text-[13px] leading-relaxed font-medium text-slate-600 italic">
++                    "{caseInsight}"
++                  </p>
+                 </div>
+-                <span className="text-[11px] font-bold tracking-[0.07em] uppercase" style={{ color: '#374151' }}>What you need to know</span>
+-              </div>
+-              <div className="space-y-2.5">
+-                {brf.aiSummaryParagraphs.map((p, i) => (
+-                  <p key={i} className="text-[13px] leading-relaxed" style={{ color: '#1F2937' }}>{p}</p>
+-                ))}
+               </div>
+-            </div>
++            </section>
+ 
+-            {/* Flags */}
+-            {brf.flags.length > 0 && (
+-              <div className="mb-3.5">
+-                <div className="text-[11px] font-bold tracking-[0.07em] uppercase mb-2" style={{ color: '#9CA3AF' }}>Signals to check</div>
+-                <div className="flex flex-col gap-1.5">
+-                  {brf.flags.map((f, i) => {
+-                    const fc = FLAG_STYLES[f.type]
+-                    return (
+-                      <div key={i} className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg" style={{ background: fc.bg, border: `1px solid ${fc.border}` }}>
+-                        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1" style={{ background: fc.dot }} />
+-                        <span className="text-[12px] leading-snug" style={{ color: fc.text }}>{f.text}</span>
+-                      </div>
+-                    )
+-                  })}
++            {/* 2. Reconstruction of Original Grading */}
++            <section className="space-y-4">
++               <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">Case Reconstruction</div>
++               <div className="flex items-center justify-between gap-1.5 p-1.5 bg-muted/10 rounded-2xl border border-border/5">
++                  {/* AI Evaluation */}
++                  <div className="flex-1 flex flex-col items-center justify-center py-2.5 px-3 rounded-xl bg-white/50 border border-white min-w-0">
++                    <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mb-1 whitespace-nowrap">AI Evaluation</span>
++                    <div className="text-lg font-black tracking-tighter text-slate-400">
++                      {Math.max(0, st.origScore - (st.hasOverride ? 1 : 0))}/10
++                    </div>
++                  </div>
++
++                  <div className="flex-shrink-0 text-muted-foreground/20 px-0.5">
++                    <ArrowRightIcon className="size-3.5" />
++                  </div>
++
++                  {/* Manual Override */}
++                  <div className={`flex-1 flex flex-col items-center justify-center py-2.5 px-3 rounded-xl border min-w-0 ${st.hasOverride ? 'bg-amber-50/50 border-amber-200/50' : 'bg-white/30 border-dashed opacity-50'}`}>
++                    <span className={`text-[8px] font-black uppercase tracking-widest mb-1 whitespace-nowrap ${st.hasOverride ? 'text-amber-600' : 'text-muted-foreground/40'}`}>
++                      {st.hasOverride ? 'Instructor Override' : 'No Override'}
++                    </span>
++                    <div className={`text-lg font-black tracking-tighter ${st.hasOverride ? 'text-amber-600' : 'text-slate-400'}`}>
++                      {st.hasOverride ? `+1 pt` : '--'}
++                    </div>
++                  </div>
++
++                  <div className="flex-shrink-0 text-muted-foreground/20 px-0.5">
++                    <ArrowRightIcon className="size-3.5" />
++                  </div>
++
++                  {/* Final Score */}
++                  <div className="flex-1 flex flex-col items-center justify-center py-2.5 px-3 rounded-xl bg-primary border border-primary shadow-lg shadow-primary/20 min-w-0">
++                    <span className="text-[8px] font-black uppercase tracking-widest text-white/60 mb-1 whitespace-nowrap">Released Score</span>
++                    <div className="text-lg font-black tracking-tighter text-white">
++                      {st.origScore}/10
++                    </div>
++                  </div>
++               </div>
++               {st.hasOverride && (
++                 <div className="px-4 py-3 rounded-xl bg-amber-500/[0.03] border border-amber-500/10 flex items-start gap-3">
++                   <InfoIcon className="size-4 text-amber-500 mt-0.5" />
++                   <p className="text-[11px] leading-relaxed text-amber-700 font-medium">
++                     Instructor previously acknowledged additional evidence on {st.critShort} but stopped at {st.origScore}/10. The student argues the adjustment was insufficient.
++                   </p>
++                 </div>
++               )}
++            </section>
++
++            {/* 3. The Dispute Context */}
++            <div className="grid grid-cols-2 gap-6">
++              <section className="space-y-4">
++                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">Why student appealed</div>
++                <div className="rounded-2xl p-5 bg-blue-500/[0.03] border border-blue-500/10 h-full">
++                  <div className="text-[9px] font-black uppercase tracking-widest text-blue-600/60 mb-2.5">Student Reasoning</div>
++                  <div className="text-[13px] font-medium leading-relaxed italic text-slate-700 mb-4">"{st.sv}"</div>
++                  <div className="flex items-center gap-2 pt-3 border-t border-blue-500/10">
++                    <div className="size-1.5 rounded-full" style={{ background: st.vcolor }} />
++                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">{st.verdict}</span>
++                  </div>
+                 </div>
+-              </div>
+-            )}
++              </section>
+ 
+-            {/* Key facts grid */}
+-            <div className="grid grid-cols-3 gap-2 mb-3.5">
+-              <div className="rounded-xl p-3" style={{ background: '#fff', border: '1px solid #E5E7EB' }}>
+-                <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1" style={{ color: '#9CA3AF' }}>Original score</div>
+-                <div className="text-[20px] font-extrabold tracking-tight leading-tight" style={{ color: '#111827' }}>{st.origScore} / {st.maxScore}</div>
+-                <div className="text-[11px] mt-0.5" style={{ color: '#9CA3AF' }}>{st.crit}</div>
+-              </div>
+-              <div className="rounded-xl p-3" style={{ background: '#fff', border: '1px solid #E5E7EB' }}>
+-                <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1" style={{ color: '#9CA3AF' }}>AI confidence</div>
+-                <div className="text-[14px] font-bold flex items-center gap-1.5 mb-0.5" style={{ color: '#111827' }}>
+-                  <span className="w-2 h-2 rounded-full inline-block" style={{ background: st.confColor }} />
+-                  {st.confLabel} ┬À {st.confScore}
++              <section className="space-y-4">
++                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">Actionable focus</div>
++                <div className="rounded-2xl p-5 bg-slate-900 border border-slate-800 h-full flex flex-col justify-between">
++                  <div>
++                    <div className="text-[9px] font-black uppercase tracking-widest text-white/30 mb-3">What to check first</div>
++                    <ul className="space-y-3">
++                      <li className="flex items-start gap-3">
++                        <CheckIcon className="size-3.5 text-primary mt-0.5" />
++                        <span className="text-[12px] font-bold text-white/90">Verify cited lines: {st.evidence}</span>
++                      </li>
++                      <li className="flex items-start gap-3">
++                        <CheckIcon className="size-3.5 text-primary mt-0.5" />
++                        <span className="text-[12px] font-bold text-white/90">Reassess {st.critShort} rubric depth</span>
++                      </li>
++                      {st.isCluster && (
++                        <li className="flex items-start gap-3">
++                          <CheckIcon className="size-3.5 text-primary mt-0.5" />
++                          <span className="text-[12px] font-bold text-white/90">Check for rubric ambiguity</span>
++                        </li>
++                      )}
++                    </ul>
++                  </div>
++                  <div className="pt-4 mt-4 border-t border-white/5 flex items-center justify-between">
++                    <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Target Decision</span>
++                    <span className="text-[11px] font-black text-primary tracking-tighter">┬▒ {isCredible ? '1.5' : '0'} pts Est.</span>
++                  </div>
+                 </div>
+-                <div className="text-[11px]" style={{ color: '#9CA3AF' }}>{st.hasOverride ? 'Override on record' : 'No prior override'}</div>
+-              </div>
+-              <div className="rounded-xl p-3" style={{ background: '#fff', border: '1px solid #E5E7EB' }}>
+-                <div className="text-[10px] font-semibold uppercase tracking-[0.06em] mb-1" style={{ color: '#9CA3AF' }}>Waiting</div>
+-                <div className="text-[14px] font-bold" style={{ color: '#111827' }}>{st.wait}</div>
+-                <div className="text-[11px]" style={{ color: '#9CA3AF' }}>{brf.requestType}</div>
+-              </div>
++              </section>
+             </div>
+ 
+-            {/* Student's argument */}
+-            <div className="rounded-xl p-3.5 mb-3.5" style={{ background: '#EFF6FF', border: '1px solid #BFDBFE' }}>
+-              <div className="text-[10px] font-bold tracking-[0.07em] uppercase mb-1.5" style={{ color: '#1D4ED8' }}>Student's argument</div>
+-              <div className="text-[13px] leading-relaxed italic" style={{ color: '#1E3A5F' }}>{st.sv}</div>
+-              <div className="mt-2 flex items-center gap-1.5">
+-                <div className="w-1.5 h-1.5 rounded-full" style={{ background: st.vcolor }} />
+-                <span className="text-[11px]" style={{ color: '#374151' }}>{st.verdict}</span>
++            {/* 4. Intelligence Signals */}
++            <section className="space-y-4">
++              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">Intelligence Signals</div>
++              <div className="flex flex-col gap-2">
++                {brf.flags.map((f, i) => {
++                  const fc = FLAG_STYLES[f.type]
++                  return (
++                    <div key={i} className="flex items-start gap-3 px-4 py-3 rounded-xl border transition-colors" style={{ background: fc.bg, borderColor: fc.border }}>
++                      <div className="size-1.5 rounded-full flex-shrink-0 mt-1.5" style={{ background: fc.dot }} />
++                      <span className="text-[12px] font-bold leading-tight" style={{ color: fc.text }}>{f.text}</span>
++                    </div>
++                  )
++                })}
+               </div>
+-            </div>
++            </section>
+ 
+-            {/* Collapsible: Grading evidence */}
+-            <Accordion
+-              id="evidence"
+-              open={!!accOpen['evidence']}
+-              onToggle={() => toggleAcc('evidence')}
+-              label="Evidence used in original grading"
+-              icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" /></svg>}
+-            >
+-              <div className="space-y-2">
+-                {brf.gradingEvidenceLines.map((line, i) => (
+-                  <p key={i} className="text-[13px] leading-relaxed" style={{ color: '#374151' }}>{line}</p>
+-                ))}
+-              </div>
+-            </Accordion>
+-
+-            {/* Collapsible: Audit trail */}
+-            <Accordion
+-              id="audit"
+-              open={!!accOpen['audit']}
+-              onToggle={() => toggleAcc('audit')}
+-              label="Grading audit trail"
+-              icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#374151" strokeWidth="1.6" /><path d="M12 7v5l3 3" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" /></svg>}
+-            >
+-              <div>
+-                {brf.auditTrail.map((entry, i) => (
+-                  <div key={i} className="flex gap-2.5 py-2" style={{ borderBottom: i < brf.auditTrail.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+-                    <div className="flex flex-col items-center gap-0">
+-                      <div className="w-2 h-2 rounded-full flex-shrink-0 mt-0.5" style={{ background: entry.color }} />
+-                      {i < brf.auditTrail.length - 1 && <div className="w-px flex-1 my-1" style={{ background: '#E5E7EB' }} />}
+-                    </div>
+-                    <div className="flex-1">
+-                      <div className="text-[12px] leading-snug" style={{ color: '#374151' }}>{entry.event}</div>
+-                      <div className="text-[11px] mt-0.5" style={{ color: '#9CA3AF' }}>{entry.time}</div>
+-                    </div>
++            {/* 5. Metrics & Patterns */}
++            <section className="grid grid-cols-3 gap-3">
++                <div className="rounded-2xl p-4 bg-card/30 border border-border/10 flex flex-col justify-center">
++                  <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">AI Confidence</span>
++                  <div className="flex items-center gap-1.5 mt-1">
++                    <div className="size-2 rounded-full" style={{ background: st.confColor }} />
++                    <span className="text-[13px] font-black tracking-tighter text-slate-800">{st.confScore}</span>
+                   </div>
+-                ))}
+-              </div>
+-            </Accordion>
+-
+-            {/* Collapsible: Cluster context */}
+-            {brf.hasCluster && (
+-              <div className="rounded-xl overflow-hidden mb-2" style={{ border: '1px solid #FDE68A' }}>
+-                <button
+-                  onClick={() => toggleAcc('cluster')}
+-                  className="w-full flex items-center justify-between px-3.5 py-3 cursor-pointer"
+-                  style={{ background: '#FFFBEB', border: 'none' }}
+-                >
+-                  <div className="flex items-center gap-2">
+-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="#92400E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+-                    <span className="text-[13px] font-semibold" style={{ color: '#92400E' }}>Pattern ÔÇö multiple students raised this</span>
++                  <span className="text-[9px] font-bold text-muted-foreground/30 mt-0.5 uppercase tracking-widest">{st.confLabel} at grading</span>
++                </div>
++                
++                <div className="rounded-2xl p-4 bg-card/30 border border-border/10 flex flex-col justify-center">
++                  <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Student History</span>
++                  <div className="flex items-baseline gap-1 mt-1">
++                    <span className="text-[13px] font-black tracking-tighter text-slate-800">1st appeal</span>
+                   </div>
+-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ transform: accOpen['cluster'] ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s', color: '#92400E' }}>
+-                    <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+-                  </svg>
+-                </button>
+-                {accOpen['cluster'] && (
+-                  <div className="px-3.5 pb-3.5 pt-3" style={{ background: '#FFFBEB', borderTop: '1px solid #FDE68A' }}>
+-                    <p className="text-[13px] leading-relaxed" style={{ color: '#78350F' }}>{brf.clusterText}</p>
++                  <span className="text-[9px] font-bold text-muted-foreground/30 mt-0.5 uppercase tracking-widest">This Semester</span>
++                </div>
++
++                <div className="rounded-2xl p-4 bg-card/30 border border-border/10 flex flex-col justify-center">
++                  <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Batch Impact</span>
++                  <div className="flex items-baseline gap-1 mt-1">
++                    <span className="text-[13px] font-black tracking-tighter text-slate-800">{st.isCluster ? '4 cases' : 'Isolated'}</span>
+                   </div>
+-                )}
+-              </div>
+-            )}
++                  <span className="text-[9px] font-bold text-muted-foreground/30 mt-0.5 uppercase tracking-widest">Cluster size</span>
++                </div>
++            </section>
++
++            {/* 6. Expandable Sections */}
++            <section className="space-y-2">
++              <Accordion
++                id="timeline"
++                open={!!accOpen['timeline']}
++                onToggle={() => toggleAcc('timeline')}
++                label="Full Case Timeline"
++                icon={<ClockIcon className="size-4" />}
++              >
++                <div className="space-y-4 py-2">
++                  {brf.auditTrail.map((entry, i) => (
++                    <div key={i} className="flex gap-4 group/item">
++                      <div className="flex flex-col items-center">
++                        <div className="size-2 rounded-full ring-4 ring-muted/5 group-hover/item:ring-primary/10 transition-all" style={{ background: entry.color }} />
++                        {i < brf.auditTrail.length - 1 && <div className="w-px flex-1 my-1 bg-border/20" />}
++                      </div>
++                      <div className="flex-1 -mt-1 pb-4 border-b border-border/5">
++                        <div className="text-[12px] font-bold text-slate-700">{entry.event}</div>
++                        <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 mt-1">{entry.time}</div>
++                      </div>
++                    </div>
++                  ))}
++                </div>
++              </Accordion>
++
++              <Accordion
++                id="evidence"
++                open={!!accOpen['evidence']}
++                onToggle={() => toggleAcc('evidence')}
++                label="Evidence used in original grading"
++                icon={<FileIcon className="size-4" />}
++              >
++                <div className="space-y-3 py-2">
++                  {brf.gradingEvidenceLines.map((line, i) => (
++                    <p key={i} className="text-[12px] leading-relaxed text-slate-600 border-l-2 border-primary/10 pl-4">{line}</p>
++                  ))}
++                </div>
++              </Accordion>
++            </section>
+ 
+             <div className="h-24" />
+           </div>
+ 
+           {/* Footer */}
+-          <div className="px-6 py-3.5 flex items-center justify-between flex-shrink-0" style={{ borderTop: '1px solid #E5E7EB', background: '#fff' }}>
+-            <div className="flex items-center gap-2">
++          <div className="px-8 py-5 flex items-center justify-between flex-shrink-0 bg-background/60 backdrop-blur-md border-t border-border/10">
++            <div className="flex items-center gap-4">
+               <button
+                 onClick={onClose}
+-                className="px-4 py-2 rounded-lg text-[13px] font-medium transition-colors hover:bg-gray-50"
+-                style={{ border: '1.5px solid #E5E7EB', background: '#fff', color: '#374151', cursor: 'pointer', fontFamily: 'inherit' }}
++                className="group flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground border border-border/30 bg-card/50 hover:bg-card hover:border-border transition-all"
+               >
+-                ÔåÉ Back to list
++                {onStart ? <ChevronLeftIcon className="size-3 group-hover:-translate-x-0.5 transition-transform" /> : <XIcon className="size-3 group-hover:scale-110 transition-transform" />}
++                {onStart ? 'Back to list' : 'Close Briefing'}
+               </button>
+               {!scrolled && onStart && (
+-                <div className="flex items-center gap-1 text-[11px]" style={{ color: '#9CA3AF' }}>
+-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+-                  Scroll to read full briefing
++                <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground/30 animate-pulse">
++                  <ArrowDownIcon className="size-3" />
++                  Scroll to briefing
+                 </div>
+               )}
+             </div>
+             {onStart && (
+               <button
+-                onClick={canStart ? onStart : undefined}
+-                disabled={!canStart}
+-                className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-all"
+-                style={{
+-                  border: 'none',
+-                  background: canStart ? '#111827' : '#E5E7EB',
+-                  color: canStart ? '#fff' : '#9CA3AF',
+-                  cursor: canStart ? 'pointer' : 'not-allowed',
+-                  fontFamily: 'inherit',
+-                }}
++                onClick={canStart && !isNavigating ? handleStart : undefined}
++                disabled={!canStart || isNavigating}
++                className={`group/btn flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all min-w-[180px] ${
++                  canStart && !isNavigating
++                    ? 'bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.25)] hover:shadow-[0_6_20px_rgba(var(--primary),0.35)] translate-y-0 active:scale-[0.98]' 
++                    : isNavigating
++                      ? 'bg-primary/80 text-white cursor-wait shadow-[0_4px_12px_rgba(var(--primary),0.15)]'
++                      : 'bg-muted/50 text-muted-foreground/50 border border-border/10 opacity-50 cursor-not-allowed'
++                }`}
+               >
+-                Start Re-Evaluation
+-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+-                  <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+-                </svg>
++                {isNavigating ? (
++                  <>
++                    <div className="size-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
++                    Opening Workspace...
++                  </>
++                ) : (
++                  <>
++                    Start Re-Evaluation
++                    <ChevronLeftIcon className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
++                  </>
++                )}
+               </button>
+             )}
+           </div>
+@@ -282,25 +379,124 @@ function Accordion({
+   id: string; open: boolean; onToggle: () => void; label: string; icon: React.ReactNode; children: React.ReactNode
+ }) {
+   return (
+-    <div className="rounded-xl overflow-hidden mb-2" style={{ border: '1px solid #E5E7EB' }}>
++    <div className={`rounded-2xl overflow-hidden border border-border/10 transition-all ${open ? 'bg-card/30' : 'bg-card/5 hover:bg-card/10'}`}>
+       <button
+         onClick={onToggle}
+-        className="w-full flex items-center justify-between px-3.5 py-3 cursor-pointer transition-colors hover:bg-gray-50"
+-        style={{ background: '#fff', border: 'none' }}
++        className="w-full flex items-center justify-between px-5 py-4 cursor-pointer"
+       >
+-        <div className="flex items-center gap-2">
+-          {icon}
+-          <span className="text-[13px] font-semibold" style={{ color: '#111827' }}>{label}</span>
++        <div className="flex items-center gap-3">
++          <div className={`size-5 flex items-center justify-center ${open ? 'text-primary' : 'text-muted-foreground/30'}`}>
++            {icon}
++          </div>
++          <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">{label}</span>
+         </div>
+-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s', color: '#9CA3AF' }}>
+-          <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+-        </svg>
++        <ChevronDownIcon className={`size-4 transition-transform duration-300 text-muted-foreground/30 ${open ? 'rotate-180' : ''}`} />
+       </button>
+       {open && (
+-        <div className="px-3.5 pb-3.5 pt-3" style={{ background: '#FAFAFA', borderTop: '1px solid #F3F4F6' }}>
+-          {children}
++        <div className="px-5 pb-5 pt-0 animate-in fade-in slide-in-from-top-1 duration-200">
++          <div className="pt-4 border-t border-border/10">
++            {children}
++          </div>
+         </div>
+       )}
+     </div>
+   )
+ }
++
++// Minimal Icons
++function XIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <line x1="18" y1="6" x2="6" y2="18"></line>
++      <line x1="6" y1="6" x2="18" y2="18"></line>
++    </svg>
++  )
++}
++
++function ChevronLeftIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <path d="M15 18l-6-6 6-6" />
++    </svg>
++  )
++}
++
++function ChevronDownIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <path d="M6 9l6 6 6-6" />
++    </svg>
++  )
++}
++
++function ArrowRightIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <path d="M5 12h14M12 5l7 7-7 7" />
++    </svg>
++  )
++}
++
++function ArrowDownIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <path d="M12 5v14M5 12l7 7-7 7" />
++    </svg>
++  )
++}
++
++function ZapIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
++    </svg>
++  )
++}
++
++function ShieldCheckIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
++      <path d="M9 12l2 2 4-4"></path>
++    </svg>
++  )
++}
++
++function InfoIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <circle cx="12" cy="12" r="10"></circle>
++      <line x1="12" y1="16" x2="12" y2="12"></line>
++      <line x1="12" y1="8" x2="12.01" y2="8"></line>
++    </svg>
++  )
++}
++
++function CheckIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <polyline points="20 6 9 17 4 12"></polyline>
++    </svg>
++  )
++}
++
++function ClockIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <circle cx="12" cy="12" r="10"></circle>
++      <polyline points="12 6 12 12 16 14"></polyline>
++    </svg>
++  )
++}
++
++function FileIcon({ className }: { className?: string }) {
++  return (
++    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
++      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
++      <polyline points="14 2 14 8 20 8"></polyline>
++      <line x1="16" y1="13" x2="8" y2="13"></line>
++      <line x1="16" y1="17" x2="8" y2="17"></line>
++      <polyline points="10 9 9 9 8 9"></polyline>
++    </svg>
++  )
++}
