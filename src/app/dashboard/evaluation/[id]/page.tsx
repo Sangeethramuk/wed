@@ -204,10 +204,19 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     feedbackStatus?: FeedbackStatus,
     feedbackIsEdited?: boolean,
     feedbackUpdatedAt?: number,
+    feedbackEditedAt?: number,
     lastConfirmedScore?: number
   }>>({})
 
   const pick = (...options: string[]) => options[Math.floor(Math.random() * options.length)];
+
+  function timeAgo(ms: number): string {
+    const diff = Math.floor((Date.now() - ms) / 1000);
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+  }
 
   function generateFeedbackText(criterionName: string, score: number, maxPoints: number, reasoning: string, evidence: string[]): string {
     const normalizedScore = (score / maxPoints) * 10;
@@ -1165,7 +1174,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                         )}
                                         {isEdited && (
                                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted/40 text-muted-foreground border border-border/50">
-                                            <Edit2 className="w-2.5 h-2.5" /> Edited
+                                            <Edit2 className="w-2.5 h-2.5" /> Edited {state.feedbackEditedAt ? timeAgo(state.feedbackEditedAt) : 'just now'}
                                           </span>
                                         )}
                                       </div>
@@ -1177,7 +1186,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                         onChange={e => {
                                           e.target.style.height = 'auto';
                                           e.target.style.height = e.target.scrollHeight + 'px';
-                                          setCriterionState(prev => ({ ...prev, [cid]: { ...prev[cid], feedback: e.target.value, feedbackIsEdited: true } }));
+                                          setCriterionState(prev => ({ ...prev, [cid]: { ...prev[cid], feedback: e.target.value, feedbackIsEdited: true, feedbackEditedAt: Date.now() } }));
                                         }}
                                         ref={el => {
                                           if (el) {
