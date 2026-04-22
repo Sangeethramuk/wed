@@ -146,7 +146,7 @@ export default function ReEvaluationDashboard() {
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-8rem)] relative bg-[#F8FAFC]/30">
+    <div className="flex flex-col min-h-[calc(100vh-8rem)] relative bg-muted/30">
       {/* Header Section — Sticky with blur matching Pre-evaluation */}
       <div className="sticky top-0 z-50 bg-background/60 backdrop-blur-md pt-6 pb-8 border-b border-border/10">
         <div className="max-w-6xl mx-auto w-full px-4">
