@@ -1225,7 +1225,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-foreground text-background hover:bg-foreground/80 transition-colors cursor-pointer border-none"
                                         >
                                           <CheckCircle2 className="w-3.5 h-3.5" />
-                                          {isLastCriterion ? 'Confirm Feedback' : 'Confirm & Next'}
+                                          Confirm
                                         </button>
                                       </div>
                                     )}
