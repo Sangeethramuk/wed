@@ -40,7 +40,10 @@ import {
   Link as LinkIcon,
   Edit2,
   Upload,
-  X
+  X,
+  Lock,
+  Pencil,
+  Trash2
 } from "lucide-react"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
@@ -115,6 +118,29 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   // Feedback summary modal state
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false)
   const [overallFeedback, setOverallFeedback] = useState("")
+
+  // Internal Notes state
+  interface InternalNote {
+    id: string
+    authorId: string
+    authorName: string
+    authorInitials: string
+    authorRole: string
+    text: string
+    createdAt: number
+    isOwn: boolean
+  }
+  const CURRENT_INSTRUCTOR = { id: 'self', name: 'You (Dr. J. Desai)', initials: 'JD', role: 'Primary Grader' }
+  const [internalNotes, setInternalNotes] = useState<InternalNote[]>([
+    { id: 'n1', authorId: 'other1', authorName: 'Dr. Priya Mehta', authorInitials: 'PM', authorRole: 'Secondary Grader', text: 'Student has documented learning difficulties — allow additional processing time when reviewing late submissions.', createdAt: Date.now() - 1000 * 60 * 47, isOwn: false },
+    { id: 'n2', authorId: 'other2', authorName: 'Prof. Arjun Sharma', authorInitials: 'AS', authorRole: 'Module Lead', text: 'Flagged for academic support referral after midterm review. Grading should reflect effort and trajectory, not just accuracy.', createdAt: Date.now() - 1000 * 60 * 60 * 3, isOwn: false },
+  ])
+  const [internalNotesOpen, setInternalNotesOpen] = useState(false)
+  const [noteCarouselIdx, setNoteCarouselIdx] = useState(0)
+  const [newNoteText, setNewNoteText] = useState('')
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
+  const [editingNoteText, setEditingNoteText] = useState('')
+  const [noteMenuOpenId, setNoteMenuOpenId] = useState<string | null>(null)
 
   const manuscript = useMemo(() => generateManuscript(selectedSubmission), [selectedSubmission])
   const artifacts = useMemo(() => generateArtifacts(selectedSubmission), [selectedSubmission])
@@ -969,8 +995,17 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                   </div>
                 </div>
 
-                <ScrollArea className="flex-1 min-h-0">
-                  <div className="p-4 space-y-3">
+                <div className="relative flex-1 min-h-0">
+                  {/* Blur overlay when internal notes are open */}
+                  {internalNotesOpen && (
+                    <div
+                      className="absolute inset-0 z-10 bg-background/60 backdrop-blur-[3px] cursor-pointer"
+                      onClick={() => setInternalNotesOpen(false)}
+                      aria-label="Close internal notes"
+                    />
+                  )}
+                  <ScrollArea className="h-full">
+                    <div className="p-4 space-y-3">
                     {point.status === 'REVIEW_NEEDED' && (
                       <div className="rounded-lg bg-amber-50 border border-amber-200 overflow-hidden">
                         <button
@@ -1337,7 +1372,194 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                       )}
                     </div>
                   </div>
-                </ScrollArea>
+                  </ScrollArea>
+                </div>
+
+                {/* ── Internal Notes ── */}
+                {(() => {
+                  const hasNotes = internalNotes.length > 0;
+                  const visibleNote = internalNotes[noteCarouselIdx];
+                  return (
+                    <div className={`border-t border-border shrink-0 bg-background transition-all ${internalNotesOpen && hasNotes ? 'relative z-10 shadow-[0_-4px_24px_rgba(0,0,0,0.07)]' : ''}`}>
+                      {/* Header row */}
+                      <button
+                        onClick={() => setInternalNotesOpen(o => !o)}
+                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors"
+                        aria-expanded={internalNotesOpen}
+                        aria-label="Toggle internal notes"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Lock className="w-3 h-3 text-muted-foreground" aria-hidden />
+                          <span className="text-[11px] font-black uppercase tracking-widest text-foreground">Internal Notes</span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 border border-amber-200">Instructors Only</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {hasNotes && (
+                            <span className="text-[10px] text-muted-foreground font-medium">{internalNotes.length} {internalNotes.length === 1 ? 'note' : 'notes'}</span>
+                          )}
+                          <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${internalNotesOpen ? 'rotate-180' : ''}`} />
+                        </div>
+                      </button>
+
+                      {/* Expanded body */}
+                      {internalNotesOpen && (
+                        <div className="px-4 pb-4 space-y-3">
+
+                          {/* Notes carousel */}
+                          {hasNotes && (
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Shared by instructors</span>
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    onClick={() => setNoteCarouselIdx(i => Math.max(0, i - 1))}
+                                    disabled={noteCarouselIdx === 0}
+                                    aria-label="Previous note"
+                                    className="w-5 h-5 flex items-center justify-center rounded text-muted-foreground disabled:opacity-30 hover:bg-muted transition-colors bg-transparent border-none cursor-pointer"
+                                  ><ChevronLeft className="w-3 h-3" /></button>
+                                  <span className="text-[10px] text-muted-foreground tabular-nums">{noteCarouselIdx + 1}/{internalNotes.length}</span>
+                                  <button
+                                    onClick={() => setNoteCarouselIdx(i => Math.min(internalNotes.length - 1, i + 1))}
+                                    disabled={noteCarouselIdx === internalNotes.length - 1}
+                                    aria-label="Next note"
+                                    className="w-5 h-5 flex items-center justify-center rounded text-muted-foreground disabled:opacity-30 hover:bg-muted transition-colors bg-transparent border-none cursor-pointer"
+                                  ><ChevronRight className="w-3 h-3" /></button>
+                                </div>
+                              </div>
+
+                              {visibleNote && (
+                                <div className="relative rounded-xl border border-blue-100 bg-blue-50/40 p-4">
+                                  {/* Author row */}
+                                  <div className="flex items-start justify-between gap-2 mb-3">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-7 h-7 rounded-full bg-foreground text-background text-[10px] font-black flex items-center justify-center shrink-0" aria-hidden>
+                                        {visibleNote.authorInitials}
+                                      </div>
+                                      <div>
+                                        <p className="text-[11px] font-bold text-foreground leading-snug">{visibleNote.authorName}</p>
+                                        <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">{visibleNote.authorRole}</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <span className="text-[10px] text-muted-foreground">{timeAgo(visibleNote.createdAt)}</span>
+                                      {visibleNote.isOwn && (
+                                        <div className="relative">
+                                          <button
+                                            onClick={() => setNoteMenuOpenId(id => id === visibleNote.id ? null : visibleNote.id)}
+                                            aria-label="Note options"
+                                            aria-haspopup="true"
+                                            className="w-6 h-6 flex items-center justify-center rounded hover:bg-muted transition-colors text-muted-foreground bg-transparent border-none cursor-pointer"
+                                          ><MoreVertical className="w-3.5 h-3.5" /></button>
+                                          {noteMenuOpenId === visibleNote.id && (
+                                            <div role="menu" className="absolute right-0 top-7 z-20 w-32 rounded-lg border border-border bg-background shadow-lg overflow-hidden">
+                                              <button
+                                                role="menuitem"
+                                                onClick={() => {
+                                                  setEditingNoteId(visibleNote.id);
+                                                  setEditingNoteText(visibleNote.text);
+                                                  setNoteMenuOpenId(null);
+                                                }}
+                                                className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-foreground hover:bg-muted transition-colors bg-transparent border-none cursor-pointer font-sans text-left"
+                                              ><Pencil className="w-3 h-3" /> Edit</button>
+                                              <button
+                                                role="menuitem"
+                                                onClick={() => {
+                                                  setInternalNotes(prev => prev.filter(n => n.id !== visibleNote.id));
+                                                  setNoteCarouselIdx(i => Math.max(0, i - 1));
+                                                  setNoteMenuOpenId(null);
+                                                }}
+                                                className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-red-600 hover:bg-red-50 transition-colors bg-transparent border-none cursor-pointer font-sans text-left"
+                                              ><Trash2 className="w-3 h-3" /> Delete</button>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Note body — editable if own & in edit mode */}
+                                  {editingNoteId === visibleNote.id ? (
+                                    <div className="space-y-2">
+                                      <textarea
+                                        value={editingNoteText}
+                                        onChange={e => setEditingNoteText(e.target.value)}
+                                        autoFocus
+                                        className="w-full text-[12px] leading-relaxed text-foreground bg-background border border-border rounded-lg p-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 font-sans"
+                                        rows={3}
+                                        aria-label="Edit note"
+                                      />
+                                      <div className="flex gap-2 justify-end">
+                                        <button
+                                          onClick={() => { setEditingNoteId(null); setEditingNoteText(''); }}
+                                          className="px-2.5 py-1 text-[10px] font-bold text-muted-foreground hover:bg-muted rounded transition-colors bg-transparent border border-border cursor-pointer font-sans"
+                                        >Cancel</button>
+                                        <button
+                                          onClick={() => {
+                                            if (!editingNoteText.trim()) return;
+                                            setInternalNotes(prev => prev.map(n => n.id === visibleNote.id ? { ...n, text: editingNoteText.trim() } : n));
+                                            setEditingNoteId(null);
+                                            setEditingNoteText('');
+                                          }}
+                                          className="px-2.5 py-1 text-[10px] font-bold text-background bg-foreground hover:bg-foreground/80 rounded transition-colors border-none cursor-pointer font-sans"
+                                        >Save</button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <p className="text-[12px] leading-[1.65] text-foreground/85">{visibleNote.text}</p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Add a note */}
+                          <div className="space-y-2 pt-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Add a note</span>
+                              <span className="text-[9px] text-muted-foreground/60">Visible to all instructors</span>
+                            </div>
+                            <textarea
+                              value={newNoteText}
+                              onChange={e => setNewNoteText(e.target.value)}
+                              placeholder="Add context, observations, or decisions that other instructors should know…"
+                              rows={3}
+                              aria-label="New internal note"
+                              className="w-full text-[12px] leading-relaxed text-foreground bg-muted/5 border border-border rounded-lg p-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 font-sans placeholder:text-muted-foreground/40"
+                            />
+                            <div className="flex items-center justify-between">
+                              <span className="flex items-center gap-1 text-[9px] text-muted-foreground/50">
+                                <EyeOff className="w-2.5 h-2.5" /> Not shown to student
+                              </span>
+                              <button
+                                disabled={!newNoteText.trim()}
+                                onClick={() => {
+                                  if (!newNoteText.trim()) return;
+                                  const note: InternalNote = {
+                                    id: `n-${Date.now()}`,
+                                    authorId: CURRENT_INSTRUCTOR.id,
+                                    authorName: CURRENT_INSTRUCTOR.name,
+                                    authorInitials: CURRENT_INSTRUCTOR.initials,
+                                    authorRole: CURRENT_INSTRUCTOR.role,
+                                    text: newNoteText.trim(),
+                                    createdAt: Date.now(),
+                                    isOwn: true,
+                                  };
+                                  setInternalNotes(prev => [...prev, note]);
+                                  setNoteCarouselIdx(internalNotes.length);
+                                  setNewNoteText('');
+                                }}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-foreground text-background hover:bg-foreground/80 disabled:opacity-30 disabled:pointer-events-none transition-colors border-none cursor-pointer"
+                                aria-label="Submit internal note"
+                              >
+                                + Add Note
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 <div className="p-4 border-t border-border bg-background shrink-0 space-y-3">
                   <div className="flex items-center justify-between">
