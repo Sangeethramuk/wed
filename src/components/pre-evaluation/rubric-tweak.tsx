@@ -7,22 +7,17 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import {
-  Plus,
   Check,
   ArrowLeft,
   AlertTriangle,
   Lock,
   Pencil,
-  Wand2,
   Sparkles,
   RotateCcw,
-  X,
   Info,
-  HelpCircle,
 } from "lucide-react"
 import { useMemo, useState, useCallback } from "react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 
 const VAGUE_TERMS = ["good", "bad", "nice", "poor", "great", "okay", "fine", "some", "many", "few"]
@@ -41,14 +36,11 @@ export function RubricTweak() {
   const {
     rubric,
     assignment,
-    addCriterion,
     updateCriterion,
-    removeCriterion,
     updateCriterionLevel,
     resetRubricToDefault,
     nextStep,
     prevStep,
-    addAudit,
   } = usePreEvalStore()
 
   const [editedCells, setEditedCells] = useState<Set<string>>(new Set())
@@ -72,20 +64,13 @@ export function RubricTweak() {
 
   const totalWeight = rubric.reduce((s, c) => s + Number(c.weight || 0), 0)
   const weightsBalanced = totalWeight === 100
-  const modifiedCount = rubric.filter(c => !c.isDefault).length
-  const isModified = modifiedCount > 0
+  const isModified = rubric.some(c => !c.isDefault)
+
+  const totalCells = rubric.length * 4
+  const filledCells = rubric.flatMap(c => c.levels).filter(l => l.description.trim().length >= 20).length
+  const alignmentScore = totalCells > 0 ? Math.round(filledCells / totalCells * 100) : 0
 
   const canProceed = rubric.length >= MIN_CRITERIA && rubric.length <= MAX_CRITERIA && weightsBalanced && rubric.every(c => c.name.trim())
-
-  const handleRewriteDescription = (critId: string, levelLabel: string, mode: "measurable" | "specific") => {
-    const crit = rubric.find(c => c.id === critId)
-    const lvl = crit?.levels.find(l => l.label === levelLabel)
-    if (!lvl || !lvl.description.trim()) return
-    const prefix = mode === "measurable" ? "Measurable outcome: " : "Specifically, "
-    const cleaned = lvl.description.replace(/^(Measurable outcome: |Specifically, )/, "")
-    updateCriterionLevel(critId, levelLabel, { description: prefix + cleaned })
-    addAudit({ action: "Rubric rewrite", details: `AI rewrite (${mode}) applied to ${crit?.name} — ${levelLabel}.`, type: "ai" })
-  }
 
   return (
     <TooltipProvider delay={120}>
@@ -98,9 +83,6 @@ export function RubricTweak() {
             <div className="space-y-0">
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-black tracking-tight secondary-text">Grading Rubric</h1>
-                {assignment.type && (
-                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 uppercase font-black text-[9px] tracking-widest px-2 h-5">{assignment.type}</Badge>
-                )}
               </div>
               <p className="text-[10px] font-semibold text-muted-foreground/40 uppercase tracking-widest">Define your grade levels — pre-loaded from institutional standards</p>
             </div>
@@ -128,7 +110,7 @@ export function RubricTweak() {
           <div className="flex-1 min-w-0">
             <p className="text-[11px] font-black uppercase tracking-widest text-primary/80 leading-tight">Pre-filled for you</p>
             <p className="text-[10px] font-medium text-muted-foreground leading-tight mt-0.5">
-              Rubric loaded from <span className="font-black text-foreground/80">{assignment.institution.name}</span> standards for <span className="font-black text-foreground/80">{assignment.type ?? "this assignment"}</span>. Edit criteria, weights, and descriptions — structure and grade levels are locked.
+              Rubric loaded from <span className="font-black text-foreground/80">{assignment.institution.name}</span> standards. Edit criteria, weights, and descriptions — structure and grade levels are locked.
             </p>
           </div>
         </div>
@@ -143,31 +125,24 @@ export function RubricTweak() {
             <span className="opacity-30">·</span>
             <span className="inline-flex items-center gap-1.5">
               <Pencil className="h-3 w-3 text-primary" />
-              <span>Criteria, weights & descriptions editable</span>
+              <span>Descriptions editable</span>
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">{rubric.length}/{MAX_CRITERIA}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-[9px] font-black uppercase tracking-widest border border-dashed border-border/40 bg-transparent hover:border-primary/40 hover:text-primary rounded-md"
-              onClick={addCriterion}
-              disabled={rubric.length >= MAX_CRITERIA}
-            >
-              <Plus className="h-3 w-3 mr-1" />
-              Add criterion
-            </Button>
+            <span className={cn(
+              "eyebrow text-[10px] font-black tabular-nums",
+              alignmentScore === 100 ? "text-[color:var(--status-success)]" : alignmentScore >= 60 ? "text-[color:var(--status-warning)]" : "text-muted-foreground/40"
+            )}>{alignmentScore}% described</span>
           </div>
         </div>
 
         {/* Rubric Grid */}
-        <Card className="border border-border/20 overflow-hidden rounded-xl bg-card/10 backdrop-blur-sm shadow-none">
+        <Card className="border border-border/20 overflow-hidden rounded-xl bg-card shadow-none">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-muted/[0.02] border-b border-border/10">
-                  <th className="p-4 text-left w-[280px] sticky left-0 z-10 bg-background/80 backdrop-blur-sm border-r border-border/10">
+                  <th className="p-4 text-left w-[280px] sticky left-0 z-10 bg-card border-r border-border/10">
                     <div className="flex items-center gap-1.5">
                       <Pencil className="h-3 w-3 text-primary" />
                       <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Criterion</span>
@@ -199,16 +174,13 @@ export function RubricTweak() {
               <tbody>
                 {rubric.map((crit, rowIdx) => (
                   <tr key={crit.id} className="border-b border-border/10 hover:bg-primary/[0.01] group">
-                    <td className="p-4 border-r border-border/10 bg-muted/[0.02] align-top sticky left-0 z-10 backdrop-blur-sm w-[280px]">
+                    <td className="p-4 border-r border-border/10 bg-card align-top sticky left-0 z-10 w-[280px]">
                       <CriterionCell
                         crit={crit}
                         rowIdx={rowIdx}
                         totalWeight={totalWeight}
                         onNameChange={(v) => updateCriterion(crit.id, { name: v })}
                         onWeightChange={(v) => updateCriterion(crit.id, { weight: v })}
-                        onCOChange={(v) => updateCriterion(crit.id, { linkedCO: v })}
-                        onRemove={() => removeCriterion(crit.id)}
-                        canRemove={rubric.length > MIN_CRITERIA}
                       />
                     </td>
                     {crit.levels.map((lvl) => (
@@ -225,15 +197,14 @@ export function RubricTweak() {
                             updateCriterionLevel(crit.id, lvl.label, { description: v })
                           }}
                           onResolve={() => resolveCell(crit.id, lvl.label)}
-                          onRewrite={(mode) => handleRewriteDescription(crit.id, lvl.label, mode)}
                         />
                       </td>
                     ))}
                   </tr>
                 ))}
                 {/* Weight total footer */}
-                <tr className="bg-muted/[0.02]">
-                  <td className="p-3 border-r border-border/10 sticky left-0 z-10 bg-background/80 backdrop-blur-sm">
+                <tr className="bg-card">
+                  <td className="p-3 border-r border-border/10 sticky left-0 z-10 bg-card">
                     <div className="flex items-center justify-between">
                       <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Total weight</span>
                       <span className={cn(
@@ -270,7 +241,7 @@ export function RubricTweak() {
             onClick={nextStep}
             disabled={!canProceed}
           >
-            See student view →
+            Check calibration →
           </Button>
         </div>
       </div>
@@ -308,68 +279,56 @@ function LevelScoreEditor({
   )
 }
 
+function inferBlooms(name: string): string {
+  if (/evaluat|assess|judg|justif|critic/i.test(name)) return "L5 · Evaluate"
+  if (/creat|design|construct|develop|generat/i.test(name)) return "L6 · Create"
+  if (/analys|diagnos|compar|examin|break/i.test(name)) return "L4 · Analyze"
+  if (/appl|demonstrat|implement|execut|use|organis/i.test(name)) return "L3 · Apply"
+  if (/explain|describ|interpret|summar/i.test(name)) return "L2 · Understand"
+  return "L3 · Apply"
+}
+
 function CriterionCell({
   crit,
   rowIdx,
   onNameChange,
   onWeightChange,
-  onCOChange,
-  onRemove,
-  canRemove,
 }: {
   crit: MatrixCriterion
   rowIdx: number
   totalWeight: number
   onNameChange: (v: string) => void
   onWeightChange: (v: number) => void
-  onCOChange: (v: string) => void
-  onRemove: () => void
-  canRemove: boolean
 }) {
   const hasNameIssue = !crit.name.trim()
+  const blooms = inferBlooms(crit.name)
 
   return (
-    <div className="space-y-2 relative">
-      <div className="flex items-start justify-between gap-2">
-        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 pt-2">#{rowIdx + 1}</span>
-        {canRemove && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 rounded-md text-muted-foreground/30 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={onRemove}
-          >
-            <X className="h-3 w-3" />
-          </Button>
-        )}
-      </div>
+    <div className="space-y-2">
+      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">#{rowIdx + 1}</span>
       <Input
         value={crit.name}
         placeholder="e.g. Technical Accuracy"
         className={cn(
-          "h-9 font-black text-xs bg-background border rounded-md px-3 focus-visible:ring-primary/10",
+          "h-9 font-semibold text-xs bg-background border rounded-md px-3 focus-visible:ring-primary/10",
           hasNameIssue ? "border-amber-500/40" : "border-border/40"
         )}
         onChange={(e) => onNameChange(e.target.value)}
       />
 
-      <div className="flex items-center gap-2">
-        <div className="flex-1 min-w-0">
-          <Select value={crit.linkedCO} onValueChange={(v) => { if (v) onCOChange(v) }}>
-            <SelectTrigger className="h-7 text-[10px] font-bold bg-muted/10 border border-border/40 text-primary rounded-md px-2">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent sideOffset={4} className="z-[105] border border-border/20 rounded-xl p-1 shadow-none max-w-[240px]">
-              {Object.keys(CO_DEFINITIONS).map(co => (
-                <SelectItem key={co} value={co} className="text-[11px] font-bold py-1.5 rounded-md">
-                  <div className="flex flex-col">
-                    <span>{co}</span>
-                    <span className="text-[9px] opacity-50">{CO_DEFINITIONS[co]}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5">
+          <Tooltip>
+            <TooltipTrigger className="cursor-help">
+              <Badge variant="outline" className="eyebrow text-primary border-primary/20 bg-primary/[0.03] px-1.5 h-5 rounded-md">
+                {crit.linkedCO}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="bg-foreground border-none p-2 rounded-lg max-w-[200px]">
+              <p className="text-xs font-bold text-primary-foreground leading-snug">{CO_DEFINITIONS[crit.linkedCO] ?? crit.linkedCO}</p>
+            </TooltipContent>
+          </Tooltip>
+          <span className="text-[9px] font-medium text-muted-foreground/40">{blooms}</span>
         </div>
         <div className="flex items-center gap-1">
           <Input
@@ -386,14 +345,6 @@ function CriterionCell({
           <span className="text-[9px] font-black text-muted-foreground/40">%</span>
         </div>
       </div>
-
-      {!crit.isDefault && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest px-1.5 h-4 bg-amber-500/5 text-amber-700 border-amber-500/20 rounded">
-            Modified
-          </Badge>
-        </div>
-      )}
     </div>
   )
 }
@@ -406,7 +357,6 @@ function LevelDescriptionCell({
   resolved,
   onChange,
   onResolve,
-  onRewrite,
 }: {
   critName: string
   levelLabel: string
@@ -415,16 +365,14 @@ function LevelDescriptionCell({
   resolved: boolean
   onChange: (v: string) => void
   onResolve: () => void
-  onRewrite: (mode: "measurable" | "specific") => void
 }) {
   const issue = isEdited ? descriptionIssues(description) : null
-  const hasContent = description.trim().length > 0
   const showWarning = !!issue && !resolved
 
   return (
-    <div className="space-y-1.5 group/cell">
+    <div className="space-y-1.5">
       <Textarea
-        placeholder={`What does "${levelLabel}" look like for ${critName}? Be specific and measurable.`}
+        placeholder={`What does "${levelLabel}" look like for ${critName}?`}
         value={description}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
@@ -432,59 +380,25 @@ function LevelDescriptionCell({
           showWarning ? "border-amber-500/30" : "border-border/40"
         )}
       />
-      <div className="flex items-center justify-between gap-2 min-h-[18px]">
-        <div className="flex items-center gap-1.5 min-w-0">
-          {showWarning ? (
-            <>
-              <AlertTriangle className="h-2.5 w-2.5 text-amber-600 shrink-0" />
-              <span className="text-[9px] font-semibold text-amber-700/80 leading-tight truncate">{issue}</span>
-              <button
-                type="button"
-                onClick={onResolve}
-                className="shrink-0 text-[8px] font-black uppercase tracking-widest text-amber-700/60 hover:text-amber-700 border border-amber-500/20 hover:border-amber-500/40 rounded px-1.5 py-0.5 transition-colors"
-              >
-                Resolve
-              </button>
-            </>
-          ) : isEdited && resolved && descriptionIssues(description) ? (
-            <>
-              <Check className="h-2.5 w-2.5 text-muted-foreground/40 shrink-0" />
-              <span className="text-[9px] font-semibold text-muted-foreground/40 leading-tight">Reviewed</span>
-            </>
-          ) : isEdited && hasContent ? (
-            <>
-              <Check className="h-2.5 w-2.5 text-emerald-600 shrink-0" />
-              <span className="text-[9px] font-semibold text-emerald-700/70">Clear</span>
-            </>
-          ) : <span />
-          }
-        </div>
-        {hasContent && (
-          <div className="flex items-center gap-1 opacity-0 group-hover/cell:opacity-100 transition-opacity shrink-0">
-            <Tooltip>
-              <TooltipTrigger
-                className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:text-primary hover:bg-accent transition-colors"
-                onClick={() => onRewrite("measurable")}
-              >
-                <Wand2 className="h-2.5 w-2.5" />
-              </TooltipTrigger>
-              <TooltipContent side="top" className="bg-slate-900 border-none p-2 rounded-lg">
-                <p className="text-[9px] font-bold text-white">Make it measurable</p>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger
-                className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:text-primary hover:bg-accent transition-colors"
-                onClick={() => onRewrite("specific")}
-              >
-                <HelpCircle className="h-2.5 w-2.5" />
-              </TooltipTrigger>
-              <TooltipContent side="top" className="bg-slate-900 border-none p-2 rounded-lg">
-                <p className="text-[9px] font-bold text-white">Rewrite to be more specific</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        )}
+      <div className="flex items-center gap-1.5 min-h-[16px]">
+        {showWarning ? (
+          <>
+            <AlertTriangle className="h-2.5 w-2.5 text-amber-600 shrink-0" />
+            <span className="text-[9px] font-semibold text-amber-700/80 leading-tight truncate">{issue}</span>
+            <button
+              type="button"
+              onClick={onResolve}
+              className="shrink-0 text-[8px] font-black uppercase tracking-widest text-amber-700/60 hover:text-amber-700 border border-amber-500/20 hover:border-amber-500/40 rounded px-1.5 py-0.5 transition-colors"
+            >
+              Ok
+            </button>
+          </>
+        ) : isEdited && description.trim().length > 0 ? (
+          <>
+            <Check className="h-2.5 w-2.5 text-emerald-600 shrink-0" />
+            <span className="text-[9px] font-semibold text-emerald-700/70">Clear</span>
+          </>
+        ) : null}
       </div>
     </div>
   )

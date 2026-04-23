@@ -33,6 +33,46 @@ import {
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 
+const TYPE_STYLES: Record<string, string> = {
+  Project:      "bg-primary/10 text-primary border-primary/20",
+  MCQ:          "bg-[color:var(--status-info)]/10 text-[color:var(--status-info)] border-[color:var(--status-info)]/20",
+  Essay:        "bg-[color:var(--status-warning)]/10 text-[color:var(--status-warning)] border-[color:var(--status-warning)]/20",
+  Design:       "bg-purple-500/10 text-purple-500 border-purple-500/20",
+  "Lab Record": "bg-[color:var(--status-success)]/10 text-[color:var(--status-success)] border-[color:var(--status-success)]/20",
+  Viva:         "bg-orange-500/10 text-orange-500 border-orange-500/20",
+  "Case Study": "bg-[color:var(--status-info)]/10 text-[color:var(--status-info)] border-[color:var(--status-info)]/20",
+  Specialized:  "bg-muted/30 text-muted-foreground/60 border-muted-foreground/20",
+}
+
+function resolveType(assignment: Assignment): string {
+  if (assignment.type) return assignment.type
+
+  const questions = assignment.blocks
+    .filter(b => b.type === "questions")
+    .flatMap(b => (b as Extract<Block, { type: "questions" }>).questions)
+    .filter(q => q.text.trim())
+
+  const deliverables = assignment.blocks
+    .filter(b => b.type === "deliverables")
+    .flatMap(b => (b as Extract<Block, { type: "deliverables" }>).items)
+    .filter(i => i.name.trim())
+
+  const instrBody = (assignment.blocks.find(b => b.type === "instructions") as Extract<Block, { type: "instructions" }> | undefined)?.body ?? ""
+  const text = `${assignment.title} ${instrBody} ${deliverables.map(d => d.name).join(" ")}`.toLowerCase()
+
+  if (/\bviva\b|\boral\b/.test(text)) return "Viva"
+  if (/\blab\b|\brecord\b/.test(text)) return "Lab Record"
+  if (/\bessay\b/.test(text)) return "Essay"
+  if (/\bcase[\s-]?stud/.test(text)) return "Case Study"
+  if (/\bdesign\b|\bprototype\b|\bfigma\b/.test(text)) return "Design"
+  if (questions.length > 10) return "MCQ"
+  if (deliverables.some(d => /repo|github|source|code/.test(d.name.toLowerCase()))) return "Project"
+  if (questions.length > 0 && deliverables.length === 0) return "MCQ"
+  if (deliverables.length >= 2) return "Project"
+
+  return "Specialized"
+}
+
 export function StudentPreview() {
   const { assignment, rubric, prevStep, reset } = usePreEvalStore()
   const [viewMode, setViewMode] = useState<"student" | "instructor">("student")
@@ -236,6 +276,9 @@ function StudentView({
   deadlineTime: string
   latePolicyLabel: Record<string, string>
 }) {
+  const resolvedType = resolveType(assignment)
+  const typeClass = TYPE_STYLES[resolvedType] ?? TYPE_STYLES.Specialized
+
   return (
     <div className="border border-border/20 rounded-xl overflow-hidden bg-card animate-in fade-in duration-300">
       {/* Assignment Header */}
@@ -243,14 +286,14 @@ function StudentView({
         <p className="eyebrow text-muted-foreground/40">
           {assignment.institution.name}
         </p>
-        <h2 className="text-2xl font-semibold tracking-tight">
-          {assignment.title || "Untitled Assignment"}
-        </h2>
-        {assignment.type && (
-          <Badge variant="outline" className="eyebrow bg-primary/5 text-primary border-primary/20 px-2 h-5 rounded-full">
-            {assignment.type}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            {assignment.title || "Untitled Assignment"}
+          </h2>
+          <Badge variant="outline" className={`eyebrow ${typeClass}`}>
+            {resolvedType}
           </Badge>
-        )}
+        </div>
         {instructionBlock?.body.trim() && (
           <p className="text-sm text-foreground/70 leading-relaxed font-medium pt-1">
             {instructionBlock.body}
@@ -287,12 +330,9 @@ function StudentView({
             </div>
             <div className="space-y-2">
               {allQuestions.map((q, idx) => (
-                <div key={q.id} className="flex items-start justify-between gap-4 px-4 py-3.5 rounded-xl border border-border/15 bg-muted/[0.02] hover:bg-muted/[0.04] transition-colors">
-                  <div className="flex items-start gap-3 min-w-0">
-                    <span className="eyebrow text-primary/50 shrink-0 pt-0.5">Task {idx + 1}</span>
-                    <p className="text-sm font-semibold text-foreground leading-relaxed">{q.text || <span className="italic opacity-40">Untitled task</span>}</p>
-                  </div>
-                  <span className="eyebrow text-muted-foreground/50 shrink-0 pt-0.5">{q.weight}%</span>
+                <div key={q.id} className="flex items-start gap-4 px-4 py-3.5 rounded-xl border border-border/15 bg-muted/[0.02] hover:bg-muted/[0.04] transition-colors">
+                  <span className="eyebrow text-primary/50 shrink-0 pt-0.5">Task {idx + 1}</span>
+                  <p className="text-sm font-semibold text-foreground leading-relaxed">{q.text || <span className="italic opacity-40">Untitled task</span>}</p>
                 </div>
               ))}
             </div>
@@ -353,13 +393,21 @@ function StudentView({
               <Lightbulb className="h-3.5 w-3.5 text-muted-foreground/40" />
               <p className="eyebrow text-muted-foreground/50">Skills you will develop</p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {rubric.map(crit => (
-                <div key={crit.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/20 bg-muted/5 text-xs font-bold text-foreground/70">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary/40" />
-                  {crit.name}
-                </div>
-              ))}
+            <div className="rounded-xl border border-border/15 overflow-hidden divide-y divide-border/10">
+              {rubric.map((crit, idx) => {
+                const exemplary = crit.levels.find(l => l.label === "Exemplary")
+                return (
+                  <div key={crit.id} className="flex items-start gap-3 px-4 py-3.5 bg-muted/[0.02]">
+                    <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">{idx + 1}</span>
+                    <div className="space-y-0.5 min-w-0">
+                      <p className="text-sm font-semibold text-foreground leading-snug">{crit.name}</p>
+                      {exemplary?.description.trim() && (
+                        <p className="text-xs text-muted-foreground/60 font-medium leading-relaxed">{exemplary.description}</p>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
@@ -394,6 +442,8 @@ function InstructorView({
   latePolicyLabel: Record<string, string>
 }) {
   const totalWeight = allQuestions.reduce((s, q) => s + Number(q.weight || 0), 0)
+  const resolvedType = resolveType(assignment)
+  const typeClass = TYPE_STYLES[resolvedType] ?? TYPE_STYLES.Specialized
 
   return (
     <div className="border border-border/20 rounded-xl overflow-hidden bg-card animate-in fade-in duration-300">
@@ -406,10 +456,12 @@ function InstructorView({
             {assignment.institution.name} — {assignment.institution.dept}
           </p>
         </div>
-        <h2 className="text-2xl font-semibold tracking-tight secondary-text">{assignment.title || "Untitled Assignment"}</h2>
-        {assignment.type && (
-          <Badge variant="outline" className="eyebrow mt-3 bg-primary/5 text-primary border-primary/20 px-2 h-5 rounded-full">{assignment.type}</Badge>
-        )}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <h2 className="text-2xl font-semibold tracking-tight secondary-text">{assignment.title || "Untitled Assignment"}</h2>
+          <Badge variant="outline" className={`eyebrow ${typeClass}`}>
+            {resolvedType}
+          </Badge>
+        </div>
       </div>
 
       <div className="px-8 py-6 space-y-6">

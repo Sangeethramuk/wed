@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Textarea } from "@/components/ui/textarea"
-import { Separator } from "@/components/ui/separator"
 import {
   ArrowLeft,
   CheckCircle2,
@@ -19,6 +18,10 @@ import {
   Check,
   Zap,
   Info,
+  BookOpen,
+  Upload,
+  FileText,
+  X,
 } from "lucide-react"
 
 type CalibrationState = "pre_calibrated" | "review_recommended" | "calibration_needed" | "limited"
@@ -146,18 +149,133 @@ export function CalibrationCheck() {
     nextStep,
     creationMode,
     selectedHistoryId,
+    assignment,
     rubric,
     setCalibrationConfirmed,
     setCalibrationStatus,
   } = usePreEvalStore()
 
-  const initialCalState = useMemo((): CalibrationState => {
-    if (creationMode === "history" && selectedHistoryId) {
-      const h = MOCK_HISTORY.find((x) => x.id === selectedHistoryId)
-      return h && h.avgScore >= 80 ? "pre_calibrated" : "review_recommended"
+  const sourceHistory = useMemo(() =>
+    creationMode === "history" && selectedHistoryId
+      ? MOCK_HISTORY.find(x => x.id === selectedHistoryId) ?? null
+      : null,
+    [creationMode, selectedHistoryId]
+  )
+
+  // Structural + content diff between current assignment and the source history item
+  const diff = useMemo(() => {
+    if (!sourceHistory) return null
+
+    const qBlock = assignment.blocks.find(b => b.type === "questions")
+    const dBlock = assignment.blocks.find(b => b.type === "deliverables")
+
+    const currentQuestions = qBlock?.type === "questions" ? qBlock.questions : []
+    const currentDeliverables = dBlock?.type === "deliverables" ? dBlock.items : []
+
+    const origQTexts = sourceHistory.sampleQuestions ?? []
+    const origDCount = sourceHistory.sampleDeliverables?.length ?? 0
+    const origRubricCount = sourceHistory.rubricSummary?.length ?? 0
+
+    const changes: { item: string; impact: string }[] = []
+
+    // Question count changed
+    if (currentQuestions.length !== origQTexts.length && currentQuestions.length > 0) {
+      const delta = currentQuestions.length - origQTexts.length
+      changes.push({
+        item: `Questions ${delta > 0 ? "added" : "removed"} (${origQTexts.length} → ${currentQuestions.length})`,
+        impact: "Task scope and grading surface has changed from the calibrated version",
+      })
     }
-    return "calibration_needed"
-  }, [creationMode, selectedHistoryId])
+
+    // Question text modified (same count, different content)
+    if (currentQuestions.length === origQTexts.length && currentQuestions.length > 0) {
+      const modifiedCount = currentQuestions.filter((q, i) =>
+        q.text.trim() && q.text.trim() !== origQTexts[i]
+      ).length
+      if (modifiedCount > 0) {
+        changes.push({
+          item: `${modifiedCount} question${modifiedCount > 1 ? "s" : ""} revised`,
+          impact: "Evaluation focus may have shifted from the previously calibrated version",
+        })
+      }
+    }
+
+    // Deliverable count changed
+    if (currentDeliverables.length > 0 && currentDeliverables.length !== origDCount) {
+      changes.push({
+        item: `Deliverables changed (${origDCount} → ${currentDeliverables.length})`,
+        impact: "Submission scope differs from the version grading logic was built on",
+      })
+    }
+
+    // Rubric criteria count changed
+    if (rubric.length > 0 && origRubricCount > 0 && rubric.length !== origRubricCount) {
+      changes.push({
+        item: `Rubric criteria updated (${origRubricCount} → ${rubric.length})`,
+        impact: "Grading structure has changed — existing calibration may not carry over reliably",
+      })
+    }
+
+    // Weights redistributed (only surface if no count changes detected)
+    if (changes.length === 0 && origQTexts.length > 0 && currentQuestions.length === origQTexts.length) {
+      const origEven = Math.round(100 / origQTexts.length)
+      const weightsShifted = currentQuestions.some(q => Math.abs(q.weight - origEven) > 10)
+      if (weightsShifted) {
+        changes.push({
+          item: "Question weightage redistributed",
+          impact: "Grading emphasis has shifted between tasks compared to last term",
+        })
+      }
+    }
+
+    return { changes }
+  }, [sourceHistory, assignment.blocks, rubric])
+
+  const initialCalState = useMemo((): CalibrationState => {
+    // Scratch / new → always requires calibration
+    if (!sourceHistory) return "calibration_needed"
+
+    // Reuse with no meaningful changes → pre-calibrated
+    if (!diff || diff.changes.length === 0) return "pre_calibrated"
+
+    // Structural changes (count shifts in questions, deliverables, or rubric) → requires recalibration
+    const isStructural = diff.changes.some(c =>
+      c.item.startsWith("Questions") || c.item.startsWith("Deliverables") || c.item.startsWith("Rubric")
+    )
+    if (isStructural) return "calibration_needed"
+
+    // Minor content changes (text edits, weight shifts) → lightweight review recommended
+    return "review_recommended"
+  }, [sourceHistory, diff])
+
+  // Dynamic details copy for the "Why am I seeing this?" section
+  const dynamicDetails = useMemo((): string[] => {
+    if (initialCalState === "pre_calibrated") {
+      return [
+        `Assignment structure matches "${sourceHistory?.title}"`,
+        "Rubric criteria and weights are substantially unchanged",
+        "Sufficient prior reviewed evaluations exist from last term",
+      ]
+    }
+    if (initialCalState === "review_recommended") {
+      return [
+        ...diff!.changes.map(c => c.item),
+        "Prior calibration is still partially usable",
+      ]
+    }
+    if (sourceHistory) {
+      return [
+        "Structural changes were made that affect grading reliability",
+        "Prior calibration cannot be applied to the modified assignment",
+        "New guidance is required for consistent evaluation",
+      ]
+    }
+    return [
+      "No prior evaluation history found for this assignment",
+      "New rubric criteria have been created without a reference",
+      "Assignment scope and type are new to the system",
+    ]
+  }, [initialCalState, sourceHistory, diff])
 
   const [calState, setCalState] = useState<CalibrationState>(initialCalState)
   const [phase, setPhase] = useState<Phase>("status")
@@ -172,6 +290,8 @@ export function CalibrationCheck() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analyzeProgress, setAnalyzeProgress] = useState(0)
   const [confirming, setConfirming] = useState(false)
+  const [uploadedFiles, setUploadedFiles] = useState<{ id: string; name: string; size: string; tag: string | null }[]>([])
+  const [isDragOver, setIsDragOver] = useState(false)
 
   useEffect(() => {
     if (!isAnalyzing) return
@@ -230,6 +350,18 @@ export function CalibrationCheck() {
   const config = STATUS_CONFIG[calState]
   const nudges = NUDGES[calState] ?? []
 
+  // Dynamic explanation for calibration_needed differs based on whether this is from scratch or modified
+  const dynamicExplanation = calState === "calibration_needed" && sourceHistory
+    ? "Structural changes were detected that affect how this assignment should be graded. Updated guidance is required."
+    : config.explanation
+
+  // Past learnings for pre_calibrated reference the actual source history
+  const pastLearnings = sourceHistory ? [
+    `"${sourceHistory.title}" had an average score of ${sourceHistory.avgScore}% — calibration carries forward`,
+    `Rubric structure from ${sourceHistory.semester} is substantially unchanged`,
+    "Sufficient reviewed evaluations exist to support reliable AI grading",
+  ] : PAST_LEARNINGS
+
   const sourcesConfig =
     calState === "pre_calibrated"
       ? [
@@ -287,7 +419,7 @@ export function CalibrationCheck() {
       {phase === "status" && (
         <div className="space-y-5">
           {/* Block 1: Status header */}
-          <Card className="border border-border/20 bg-card/20 rounded-xl shadow-none overflow-hidden">
+          <Card className="border border-border/20 bg-card rounded-xl shadow-none overflow-hidden">
             <CardContent className="p-6 space-y-4">
               <div className="space-y-3">
                 <Badge
@@ -299,7 +431,7 @@ export function CalibrationCheck() {
                 </Badge>
                 <div>
                   <h2 className="text-lg font-semibold tracking-tight">{config.title}</h2>
-                  <p className="text-sm text-muted-foreground/70 font-medium mt-1">{config.explanation}</p>
+                  <p className="text-sm text-muted-foreground/70 font-medium mt-1">{dynamicExplanation}</p>
                 </div>
               </div>
               <button
@@ -315,7 +447,7 @@ export function CalibrationCheck() {
               </button>
               {expandDetails && (
                 <div className="space-y-1.5 pt-1">
-                  {config.details.map((d, i) => (
+                  {dynamicDetails.map((d, i) => (
                     <div
                       key={i}
                       className="flex items-center gap-2 text-xs text-muted-foreground/60 font-medium"
@@ -330,7 +462,7 @@ export function CalibrationCheck() {
           </Card>
 
           {/* Block 2: What we're using */}
-          <Card className="border border-border/20 bg-card/20 rounded-xl shadow-none">
+          <Card className="border border-border/20 bg-card rounded-xl shadow-none">
             <CardContent className="p-6 space-y-3">
               <p className="eyebrow text-muted-foreground/40">
                 What calibration is based on
@@ -368,7 +500,7 @@ export function CalibrationCheck() {
                   </p>
                 </div>
                 <div className="space-y-2">
-                  {PAST_LEARNINGS.map((l, i) => (
+                  {pastLearnings.map((l, i) => (
                     <p
                       key={i}
                       className="text-sm text-muted-foreground/70 font-medium flex items-start gap-2"
@@ -390,7 +522,7 @@ export function CalibrationCheck() {
                     Detected changes
                   </p>
                   <div className="space-y-3">
-                    {MOCK_CHANGES.map((c, i) => (
+                    {(diff?.changes ?? []).map((c, i) => (
                       <div key={i} className="space-y-0.5">
                         <p className="text-sm font-bold text-foreground/80">{c.item}</p>
                         <p className="text-xs text-muted-foreground/50 font-medium">{c.impact}</p>
@@ -399,7 +531,7 @@ export function CalibrationCheck() {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="border border-border/20 bg-card/20 rounded-xl shadow-none">
+              <Card className="border border-border/20 bg-card rounded-xl shadow-none">
                 <CardContent className="p-6 space-y-1">
                   <p className="eyebrow text-muted-foreground/40">
                     Recommended action
@@ -419,8 +551,9 @@ export function CalibrationCheck() {
                   Next step
                 </p>
                 <p className="text-sm text-muted-foreground/70 font-medium">
-                  Provide answer guidance so the system understands how this assignment should be
-                  evaluated. This takes about 2–3 minutes.
+                  {sourceHistory
+                    ? "The structural changes you made mean existing calibration can't be reused. Provide updated guidance so the system evaluates this version reliably."
+                    : "No prior evaluation reference exists. Provide answer guidance so the system understands how this assignment should be evaluated — takes about 2–3 minutes."}
                 </p>
               </CardContent>
             </Card>
@@ -449,7 +582,7 @@ export function CalibrationCheck() {
 
           {/* Block 4: Nudges */}
           {nudges.length > 0 && (
-            <Card className="border border-border/10 bg-card/10 rounded-xl shadow-none">
+            <Card className="border border-border/10 bg-card rounded-xl shadow-none">
               <CardContent className="p-6 space-y-3">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-3.5 w-3.5 text-primary/40" />
@@ -551,119 +684,260 @@ export function CalibrationCheck() {
       {/* ── PHASE: FORM ── */}
       {phase === "form" && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold tracking-tight">Answer guidance</h2>
+          {/* Rubric context */}
+          <Card className="border border-border/20 bg-card rounded-xl shadow-none">
+            <CardContent className="px-5 py-4">
+              <div className="flex items-start gap-3">
+                <BookOpen className="h-3.5 w-3.5 text-muted-foreground/40 mt-0.5 shrink-0" />
+                <div className="space-y-2 min-w-0">
+                  <p className="eyebrow text-muted-foreground/40">Rubric criteria for this assignment</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(rubric.length > 0
+                      ? rubric.map(c => c.name)
+                      : sourceHistory?.rubricSummary?.map(s => s.replace(/ \(\d+%\)$/, "")) ?? []
+                    ).map((name, i) => (
+                      <span key={i} className="text-xs font-semibold text-foreground/70 px-2.5 py-1 rounded-md bg-muted/30 border border-border/20">
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Reference materials upload */}
+          <Card className="border border-border/20 bg-card rounded-xl shadow-none overflow-hidden">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <p className="text-sm font-bold text-foreground/80">Reference materials</p>
+                <span className="eyebrow text-muted-foreground/40 border border-border/20 px-1.5 py-0.5 rounded-full">Optional</span>
+              </div>
+              <p className="text-xs text-muted-foreground/60 font-medium leading-relaxed -mt-2">
+                Upload answer keys, sample responses, or marking notes to help the system interpret this assignment more accurately.
+              </p>
+
+              {/* Drop zone */}
+              <div
+                onDragOver={(e) => { e.preventDefault(); setIsDragOver(true) }}
+                onDragLeave={() => setIsDragOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  setIsDragOver(false)
+                  const files = Array.from(e.dataTransfer.files)
+                  const newFiles = files.map(f => ({
+                    id: `file-${Date.now()}-${Math.random()}`,
+                    name: f.name,
+                    size: f.size > 1024 * 1024 ? `${(f.size / 1024 / 1024).toFixed(1)} MB` : `${Math.round(f.size / 1024)} KB`,
+                    tag: null,
+                  }))
+                  setUploadedFiles(prev => [...prev, ...newFiles])
+                }}
+                className={`flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed py-8 transition-all ${
+                  isDragOver ? "border-primary/40 bg-primary/[0.03]" : "border-border/30 bg-muted/[0.02] hover:border-border/50 hover:bg-muted/[0.04]"
+                }`}
+              >
+                <div className={`h-10 w-10 rounded-full border flex items-center justify-center transition-all ${
+                  isDragOver ? "bg-primary/10 border-primary/20 text-primary" : "bg-muted/30 border-border/20 text-muted-foreground/40"
+                }`}>
+                  <Upload className="h-4 w-4" />
+                </div>
+                <div className="text-center space-y-1">
+                  <p className="text-sm font-medium text-foreground/60">
+                    Drag files here, or{" "}
+                    <label className="text-primary cursor-pointer hover:underline">
+                      browse
+                      <input
+                        type="file"
+                        multiple
+                        accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,image/*"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files ?? [])
+                          const newFiles = files.map(f => ({
+                            id: `file-${Date.now()}-${Math.random()}`,
+                            name: f.name,
+                            size: f.size > 1024 * 1024 ? `${(f.size / 1024 / 1024).toFixed(1)} MB` : `${Math.round(f.size / 1024)} KB`,
+                            tag: null,
+                          }))
+                          setUploadedFiles(prev => [...prev, ...newFiles])
+                          e.target.value = ""
+                        }}
+                      />
+                    </label>
+                  </p>
+                  <p className="eyebrow text-muted-foreground/30">PDF, DOC, DOCX, TXT, PPT, images</p>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap justify-center">
+                  {["Answer key", "Exemplar response", "Marking notes", "Common mistakes"].map(tag => (
+                    <span key={tag} className="eyebrow px-2.5 py-1 rounded-full border border-border/20 text-muted-foreground/40 bg-background">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Uploaded files list */}
+              {uploadedFiles.length > 0 && (
+                <div className="space-y-2">
+                  {uploadedFiles.map(file => (
+                    <div key={file.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-border/20 bg-muted/[0.02]">
+                      <FileText className="h-3.5 w-3.5 text-primary/50 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-foreground/80 truncate">{file.name}</p>
+                        <p className="eyebrow text-muted-foreground/40">{file.size}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {["Answer key", "Exemplar response", "Marking notes", "Common mistakes"].map(tag => (
+                          <button
+                            key={tag}
+                            onClick={() => setUploadedFiles(prev => prev.map(f => f.id === file.id ? { ...f, tag: f.tag === tag ? null : tag } : f))}
+                            className={`eyebrow px-2 py-0.5 rounded-full border transition-all ${
+                              file.tag === tag
+                                ? "border-primary/30 bg-primary/5 text-primary/70"
+                                : "border-border/20 text-muted-foreground/40 hover:border-border/40"
+                            }`}
+                          >
+                            {tag}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setUploadedFiles(prev => prev.filter(f => f.id !== file.id))}
+                        className="text-muted-foreground/30 hover:text-muted-foreground/70 transition-colors"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p className="text-xs text-muted-foreground/40 font-medium leading-relaxed border-t border-border/10 pt-3">
+                Uploaded reference materials help generate and validate evaluation guidance. They do not automatically override your rubric or final review.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Guidance fields heading */}
+          <div className="space-y-1 pt-2">
+            <h2 className="text-xl font-semibold tracking-tight">Define how this assignment should be evaluated</h2>
             <p className="text-sm text-muted-foreground/60 font-medium">
-              Describe how this assignment should be evaluated. Your guidance helps the system
-              support consistent grading.
+              Your guidance helps the system interpret the rubric consistently, especially for open-ended or nuanced responses.
             </p>
           </div>
 
-          {/* Field 1 */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <p className="eyebrow text-foreground/70">
-                What should a strong answer include?
-              </p>
-              <span className="eyebrow text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">
-                Required
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground/50 font-medium">
-              Describe the key qualities, concepts, evidence, structure, or reasoning a strong
-              submission should demonstrate.
-            </p>
-            <Textarea
-              placeholder="e.g. Strong answers should include a clear problem statement, well-structured code with comments, proper use of design patterns, and evidence of testing..."
-              className="min-h-[100px] text-sm border-border/30 bg-card/30 focus-visible:ring-primary/20 resize-none rounded-lg shadow-none placeholder:text-muted-foreground/20"
-              value={guidance.strongAnswer}
-              onChange={(e) => setGuidance((g) => ({ ...g, strongAnswer: e.target.value }))}
-            />
-          </div>
+          <Card className="border border-border/20 bg-card rounded-xl shadow-none overflow-hidden">
+            <CardContent className="p-0 divide-y divide-border/10">
+              {/* Field 1 */}
+              <div className="p-6 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <p className="eyebrow text-foreground/70">What should a strong answer include?</p>
+                    <span className="eyebrow text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">Required</span>
+                  </div>
+                  <button
+                    className="eyebrow flex items-center gap-1 text-muted-foreground/40 hover:text-primary transition-colors"
+                    onClick={() => setGuidance(g => ({ ...g, strongAnswer: g.strongAnswer || "Strong answers should demonstrate clear understanding of the core concept, apply it to the given scenario with accuracy, and provide justification or evidence for their approach." }))}
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    Suggest draft
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground/50 font-medium">
+                  Describe the key qualities, concepts, evidence, structure, or reasoning a strong submission should demonstrate.
+                </p>
+                <Textarea
+                  placeholder="e.g. Strong answers should include a clear problem statement, well-structured code with comments, proper use of design patterns, and evidence of testing..."
+                  className="min-h-[100px] text-sm border-border/30 bg-muted/[0.04] focus-visible:ring-primary/20 resize-none rounded-lg shadow-none placeholder:text-muted-foreground/20"
+                  value={guidance.strongAnswer}
+                  onChange={(e) => setGuidance((g) => ({ ...g, strongAnswer: e.target.value }))}
+                />
+              </div>
 
-          <Separator className="opacity-10" />
+              {/* Field 2 */}
+              <div className="p-6 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <p className="eyebrow text-foreground/70">What separates average from excellent?</p>
+                    <span className="eyebrow text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">Required</span>
+                  </div>
+                  <button
+                    className="eyebrow flex items-center gap-1 text-muted-foreground/40 hover:text-primary transition-colors"
+                    onClick={() => setGuidance(g => ({ ...g, excellentVsAverage: g.excellentVsAverage || "Average answers meet the stated requirements. Excellent answers go further — showing original thinking, handling edge cases, and clearly justifying design or reasoning choices beyond what was asked." }))}
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    Suggest draft
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground/50 font-medium">
+                  What makes a response merely acceptable versus truly strong?
+                </p>
+                <Textarea
+                  placeholder="e.g. Average answers meet the requirements. Excellent answers go beyond by demonstrating original thinking, edge case handling, and clear justification of design choices..."
+                  className="min-h-[100px] text-sm border-border/30 bg-muted/[0.04] focus-visible:ring-primary/20 resize-none rounded-lg shadow-none placeholder:text-muted-foreground/20"
+                  value={guidance.excellentVsAverage}
+                  onChange={(e) => setGuidance((g) => ({ ...g, excellentVsAverage: e.target.value }))}
+                />
+              </div>
 
-          {/* Field 2 */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <p className="eyebrow text-foreground/70">
-                What separates average from excellent?
-              </p>
-              <span className="eyebrow text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">
-                Required
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground/50 font-medium">
-              What makes a response merely acceptable versus truly strong?
-            </p>
-            <Textarea
-              placeholder="e.g. Average answers meet the requirements. Excellent answers go beyond by demonstrating original thinking, edge case handling, and clear justification of design choices..."
-              className="min-h-[100px] text-sm border-border/30 bg-card/30 focus-visible:ring-primary/20 resize-none rounded-lg shadow-none placeholder:text-muted-foreground/20"
-              value={guidance.excellentVsAverage}
-              onChange={(e) => setGuidance((g) => ({ ...g, excellentVsAverage: e.target.value }))}
-            />
-          </div>
+              {/* Field 3 */}
+              <div className="p-6 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <p className="eyebrow text-foreground/70">What should be penalized?</p>
+                    <span className="eyebrow text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">Required</span>
+                  </div>
+                  <button
+                    className="eyebrow flex items-center gap-1 text-muted-foreground/40 hover:text-primary transition-colors"
+                    onClick={() => setGuidance(g => ({ ...g, penalties: g.penalties || "Missing documentation, hardcoded values, no error handling, copy-pasted work without understanding, and incomplete coverage of the required tasks." }))}
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    Suggest draft
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground/50 font-medium">
+                  List common mistakes, missing elements, or weak patterns that should reduce the score.
+                </p>
+                <Textarea
+                  placeholder="e.g. Missing documentation, hardcoded values, no error handling, incomplete test coverage, copy-pasted code without understanding..."
+                  className="min-h-[100px] text-sm border-border/30 bg-muted/[0.04] focus-visible:ring-primary/20 resize-none rounded-lg shadow-none placeholder:text-muted-foreground/20"
+                  value={guidance.penalties}
+                  onChange={(e) => setGuidance((g) => ({ ...g, penalties: e.target.value }))}
+                />
+              </div>
 
-          <Separator className="opacity-10" />
-
-          {/* Field 3 */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <p className="eyebrow text-foreground/70">
-                What should be penalized?
-              </p>
-              <span className="eyebrow text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">
-                Required
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground/50 font-medium">
-              List common mistakes, missing elements, or weak patterns that should reduce the score.
-            </p>
-            <Textarea
-              placeholder="e.g. Missing documentation, hardcoded values, no error handling, incomplete test coverage, copy-pasted code without understanding..."
-              className="min-h-[100px] text-sm border-border/30 bg-card/30 focus-visible:ring-primary/20 resize-none rounded-lg shadow-none placeholder:text-muted-foreground/20"
-              value={guidance.penalties}
-              onChange={(e) => setGuidance((g) => ({ ...g, penalties: e.target.value }))}
-            />
-          </div>
-
-          <Separator className="opacity-10" />
-
-          {/* Field 4: Multiple approaches */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <p className="eyebrow text-foreground/70">
-                Are multiple valid answer approaches acceptable?
-              </p>
-              <span className="eyebrow text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">
-                Required
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {(
-                [
-                  { value: "yes" as const, label: "Yes", sub: "Multiple valid approaches" },
-                  { value: "no" as const, label: "No", sub: "Fixed expected elements" },
-                  { value: "partial" as const, label: "Partially", sub: "Some flexibility allowed" },
-                ] as const
-              ).map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => setGuidance((g) => ({ ...g, multipleApproaches: opt.value }))}
-                  className={`flex flex-col items-start p-4 rounded-xl border text-left transition-all ${
-                    guidance.multipleApproaches === opt.value
-                      ? "border-primary/30 bg-primary/5"
-                      : "border-border/20 bg-card/20 hover:border-border/40"
-                  }`}
-                >
-                  <span className="text-sm font-semibold tracking-tight">{opt.label}</span>
-                  <span className="text-xs font-medium text-muted-foreground/50 mt-0.5">
-                    {opt.sub}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
+              {/* Field 4: Multiple approaches */}
+              <div className="p-6 space-y-3">
+                <div className="flex items-center gap-2">
+                  <p className="eyebrow text-foreground/70">Are multiple valid answer approaches acceptable?</p>
+                  <span className="eyebrow text-primary/60 border border-primary/20 px-1.5 py-0.5 rounded-full">Required</span>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  {(
+                    [
+                      { value: "yes" as const, label: "Yes", sub: "Multiple valid approaches" },
+                      { value: "no" as const, label: "No", sub: "Fixed expected elements" },
+                      { value: "partial" as const, label: "Partially", sub: "Some flexibility allowed" },
+                    ] as const
+                  ).map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setGuidance((g) => ({ ...g, multipleApproaches: opt.value }))}
+                      className={`flex flex-col items-start p-4 rounded-xl border text-left transition-all ${
+                        guidance.multipleApproaches === opt.value
+                          ? "border-primary/30 bg-primary/5"
+                          : "border-border/30 bg-muted/[0.04] hover:border-border/50 hover:bg-muted/[0.07]"
+                      }`}
+                    >
+                      <span className="text-sm font-semibold tracking-tight">{opt.label}</span>
+                      <span className="text-xs font-medium text-muted-foreground/50 mt-0.5">{opt.sub}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Analysis progress */}
           {isAnalyzing && (
@@ -713,7 +987,7 @@ export function CalibrationCheck() {
           </div>
 
           {/* System understanding */}
-          <Card className="border border-border/20 bg-card/20 rounded-xl shadow-none">
+          <Card className="border border-border/20 bg-card rounded-xl shadow-none">
             <CardContent className="p-6 space-y-5">
               <p className="eyebrow text-muted-foreground/40">
                 How this assignment will be interpreted
@@ -754,7 +1028,7 @@ export function CalibrationCheck() {
           </Card>
 
           {/* Rubric alignment */}
-          <Card className="border border-border/20 bg-card/20 rounded-xl shadow-none">
+          <Card className="border border-border/20 bg-card rounded-xl shadow-none">
             <CardContent className="p-6 space-y-3">
               <p className="eyebrow text-muted-foreground/40">
                 Rubric alignment
