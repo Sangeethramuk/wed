@@ -66,6 +66,17 @@ function ConfidenceBars({ confidence }: { confidence: number }) {
 
 type EvidenceRef = { criterionId: string; id: string }
 
+// Highlighter-marker background per criterion — uses the main category color at
+// ~35% opacity (vs the faint `-bg` tint) so the highlight reads as ink, not a
+// hairline underline. Hover bumps to ~50% for a clear affordance. DS-compliant:
+// references --category-N tokens with a Tailwind opacity modifier.
+const HIGHLIGHTER_BG: Record<string, string> = {
+  c1: 'bg-[color:var(--category-1)]/35 hover:bg-[color:var(--category-1)]/50',
+  c2: 'bg-[color:var(--category-2)]/35 hover:bg-[color:var(--category-2)]/50',
+  c3: 'bg-[color:var(--category-3)]/35 hover:bg-[color:var(--category-3)]/50',
+  c4: 'bg-[color:var(--category-4)]/35 hover:bg-[color:var(--category-4)]/50',
+}
+
 function UserHighlightedSpan({
   text,
   evidences,
@@ -75,16 +86,16 @@ function UserHighlightedSpan({
   evidences: EvidenceRef[]
   id?: string
 }) {
-  // Use the first mapped criterion's palette for the span chrome (underline +
-  // bg tint). The popover itself lists every criterion this text is linked to.
+  // Highlighter color driven by the first mapped criterion. The popover itself
+  // lists every criterion this passage is linked to.
   const first = evidences[0]
-  const c = CRITERION_COLORS[first.criterionId] ?? CRITERION_COLORS['c1']
+  const highlighter = HIGHLIGHTER_BG[first.criterionId] ?? HIGHLIGHTER_BG.c1
 
   return (
     <HoverCard>
       <HoverCardTrigger
         id={id}
-        className={`${c.bg} border-b-2 ${c.border} border-dashed px-1 rounded cursor-pointer transition-colors scroll-mt-20`}
+        className={`${highlighter} box-decoration-clone px-1 py-0.5 rounded-sm cursor-pointer transition-colors scroll-mt-20`}
       >
         {text}
       </HoverCardTrigger>
