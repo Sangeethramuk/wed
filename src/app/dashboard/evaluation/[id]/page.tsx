@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/resizable"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -99,6 +100,10 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   }, [selectedSubmission, activeStudentId, setActiveStudent])
   const [isFixed, setIsFixed] = useState(false)
   const [activeTab, setActiveTab] = useState<"rubric" | "feedback" | "integrity">("rubric")
+  // Manuscript view toggle — 'scanned' shows the rendered document, 'ocr' shows
+  // the OCR-extracted plain-text mode. Prototype: both currently render the same
+  // manuscript; the state is ready for downstream wiring.
+  const [manuscriptView, setManuscriptView] = useState<"scanned" | "ocr">("scanned")
   const [triageFilter, setTriageFilter] = useState<"all" | "critical" | "focus" | "verified">("all")
   const [showInsights, setShowInsights] = useState(true)
   const [isPaused, setIsPaused] = useState(false)
@@ -739,7 +744,17 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                     <h2 className="text-sm font-semibold tracking-tight text-foreground">{currentStudent?.name || "Evaluating..."}</h2>
                   </div>
                 </div>
-                
+
+                {/* Scanned vs OCR Original view toggle — DS Tabs primitive per
+                    CONTRIBUTING.md. State is tracked now; downstream rendering
+                    can branch on `manuscriptView` once the OCR view is wired. */}
+                <Tabs value={manuscriptView} onValueChange={(v) => setManuscriptView(v as "scanned" | "ocr")}>
+                  <TabsList className="border border-border">
+                    <TabsTrigger value="scanned" className="px-4">Scanned</TabsTrigger>
+                    <TabsTrigger value="ocr" className="px-4">OCR Original</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
                 <div className="flex items-center gap-4">
                   <Tooltip>
                     <TooltipTrigger>
