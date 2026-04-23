@@ -14,10 +14,9 @@ export default function EvaluationDashboard() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
-          <p className="eyebrow text-muted-foreground/40">Academic Evaluation Suite</p>
-          <h1 className="text-3xl font-bold tracking-tight">Triage Desk</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Assignments</h1>
           <p className="text-muted-foreground text-sm">
-            All assignments across your courses — calibrate AI alignment before entering the grading desk.
+            All assignments across your courses — review submissions and monitor grading progress.
           </p>
         </div>
       </div>

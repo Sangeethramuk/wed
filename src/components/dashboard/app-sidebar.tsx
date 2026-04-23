@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils"
 const mainNavItems = [
   { title: "Home", url: "/dashboard", icon: Home },
   { title: "Prepare Assignment", url: "/dashboard/pre-evaluation", icon: PlusCircle },
-  { title: "Grading Desk", url: "/dashboard/evaluation", icon: ClipboardCheck },
+  { title: "Assignments", url: "/dashboard/evaluation", icon: ClipboardCheck },
   { title: "Re-evaluation", url: "/dashboard/re-evaluation/triage", icon: RefreshCcw },
   { title: "Result Insights", url: "/dashboard/post-evaluation", icon: BarChart3 },
 ]
