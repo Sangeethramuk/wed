@@ -1054,9 +1054,11 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                   className={`flex-1 py-2 border rounded-md text-[10px] font-bold transition-all ${
                                     isDraftSelected
                                       ? 'bg-amber-500 text-white border-amber-500'
-                                      : isCurrentConfirmed || isAiDefault
-                                      ? 'bg-foreground text-background border-foreground'
-                                      : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground'
+                                      : isCurrentConfirmed
+                                      ? 'bg-foreground text-background border-foreground shadow-sm'
+                                      : isAiDefault
+                                      ? 'bg-muted text-muted-foreground border-border/60 hover:bg-accent'
+                                      : 'border-border text-muted-foreground/50 hover:bg-accent hover:text-foreground'
                                   }`}
                                 >
                                   {lvl.points}pts
@@ -1266,10 +1268,14 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                                               setActiveRubricCriterionIdx(activeRubricCriterionIdx + 1);
                                             }
                                           }}
-                                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-foreground text-background hover:bg-foreground/80 transition-colors cursor-pointer border-none"
+                                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer border-none ${
+                                            state.confirmed 
+                                              ? 'bg-green-600 text-white hover:bg-green-700' 
+                                              : 'bg-foreground text-background hover:bg-foreground/80'
+                                          }`}
                                         >
                                           <CheckCircle2 className="w-3.5 h-3.5" />
-                                          Confirm
+                                          {state.confirmed ? 'Confirmed' : 'Confirm'}
                                         </button>
                                       </div>
                                     )}
