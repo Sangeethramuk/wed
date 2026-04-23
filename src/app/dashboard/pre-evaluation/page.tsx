@@ -63,15 +63,8 @@ export default function PreEvaluationPage() {
         <div className="sticky top-0 z-50 bg-background/60 backdrop-blur-md pt-4 pb-8 mb-8 border-b border-border/10">
           <div className="max-w-6xl mx-auto w-full px-4">
             <div className="flex items-center justify-between mb-4">
-              <div className="eyebrow flex items-center gap-6 transition-all">
-                <div className="flex items-center gap-3">
-                    <span className="text-primary opacity-100 font-semibold">Step {currentStep} of 6 — {currentStepData?.label}</span>
-                </div>
-                <div className="flex gap-2 text-muted-foreground/10 px-4">
-                    {steps.map(s => (
-                      <div key={s.id} className={`size-1.5 rounded-full ${s.id === currentStep ? 'bg-primary' : 'bg-current'}`} />
-                    ))}
-                </div>
+              <div className="eyebrow flex items-center gap-3 transition-all">
+                <span className="text-primary opacity-100 font-semibold">Step {currentStep} of 6 — {currentStepData?.label}</span>
               </div>
               
               <div className="flex items-center gap-6">
@@ -84,8 +77,6 @@ export default function PreEvaluationPage() {
             </div>
             {selectedCourse && courseData && (
               <div className="flex items-center gap-2 mb-3 flex-wrap">
-                <span className="eyebrow text-muted-foreground/40">IIM Bangalore</span>
-                <span className="text-muted-foreground/20 text-xs">·</span>
                 <span className="eyebrow text-foreground/60">{courseData.name}</span>
                 <span className="text-muted-foreground/20 text-xs">·</span>
                 <span className="eyebrow text-muted-foreground/50">{courseData.semester}</span>
