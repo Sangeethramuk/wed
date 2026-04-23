@@ -680,7 +680,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-8 h-8 text-xs bg-background border-border focus-visible:ring-primary/20" placeholder="Filter cohort..." />
+                <Input suppressHydrationWarning value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-8 h-8 text-xs bg-background border-border focus-visible:ring-primary/20" placeholder="Filter cohort..." />
               </div>
 
               {/* Bulk Approve — only visible in Verified tab */}
@@ -1600,17 +1600,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                       <Button
                         size="sm"
                         disabled={!allConfirmed}
-                        onClick={() => {
-                          if (!gradedSubmissions.includes(selectedSubmission)) {
-                            setGradedSubmissions(prev => [...new Set([...prev, selectedSubmission])])
-                          }
-                          const nextUngraded = submissions.find(s => !gradedSubmissions.includes(s.id) && s.id !== selectedSubmission)
-                          if (nextUngraded) {
-                            setSelectedSubmission(nextUngraded.id)
-                            setIsFixed(false)
-                            setCurrentPage(1)
-                          }
-                        }}
+                        onClick={() => setFeedbackModalOpen(true)}
                         className="h-9 flex-1 text-[10px] font-black uppercase tracking-widest bg-foreground text-background hover:bg-foreground/90 disabled:opacity-40 disabled:pointer-events-none"
                       >
                         {allConfirmed ? 'Overall Feedback →' : `· ${rubricPoints.length - confirmedCount} remaining`}
@@ -1631,7 +1621,38 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
           })()}
         </ResizablePanel>
       </ResizablePanelGroup>
-      
+
+      {/* Overall Feedback Summary Modal */}
+      <FeedbackSummaryModal
+        isOpen={feedbackModalOpen}
+        onClose={() => setFeedbackModalOpen(false)}
+        studentName={currentStudent?.name ?? 'Student'}
+        totalScore={currentTotalScore}
+        maxScore={totalMaxPoints}
+        criteria={rubricPoints.map(p => ({
+          id: p.id,
+          label: p.label,
+          score: criterionState[p.id]?.score ?? p.aiScore,
+          maxPoints: p.maxPoints,
+          feedback: criterionState[p.id]?.feedback ?? '',
+          isOverridden: criterionState[p.id]?.isOverridden ?? false,
+          aiScore: p.aiScore,
+        }))}
+        onSubmit={(feedback) => {
+          setOverallFeedback(feedback)
+          setFeedbackModalOpen(false)
+          if (!gradedSubmissions.includes(selectedSubmission)) {
+            setGradedSubmissions(prev => [...new Set([...prev, selectedSubmission])])
+          }
+          const nextUngraded = submissions.find(s => !gradedSubmissions.includes(s.id) && s.id !== selectedSubmission)
+          if (nextUngraded) {
+            setSelectedSubmission(nextUngraded.id)
+            setIsFixed(false)
+            setCurrentPage(1)
+          }
+        }}
+      />
+
       {/* Floating Status Bar Hidden when paused */}
 
       <AnimatePresence>
