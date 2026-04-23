@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/resizable"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -99,6 +101,10 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   }, [selectedSubmission, activeStudentId, setActiveStudent])
   const [isFixed, setIsFixed] = useState(false)
   const [activeTab, setActiveTab] = useState<"rubric" | "feedback" | "integrity">("rubric")
+  // Manuscript view toggle — 'ocr' (default) renders the real content via
+  // ManuscriptRenderer; 'scanned' shows a skeleton-based handwritten-paper
+  // preview for the prototype (no real scan pipeline wired yet).
+  const [manuscriptView, setManuscriptView] = useState<"scanned" | "ocr">("ocr")
   const [triageFilter, setTriageFilter] = useState<"all" | "critical" | "focus" | "verified">("all")
   const [showInsights, setShowInsights] = useState(true)
   const [isPaused, setIsPaused] = useState(false)
@@ -485,6 +491,54 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     { id: "Q4", label: "Question 4: Deployment", pages: [4] },
   ]
 
+  // Prototype placeholder for the "Scanned" tab — mimics a handwritten-paper
+  // scan using DS Skeleton primitives. Shape matches ManuscriptPage (max-width,
+  // shadow, border, inner padding) so flipping between tabs feels consistent.
+  // Keeps the id="page-N" anchor so page-navigation chevrons still resolve.
+  const ScannedPagePreview = ({ index }: { index: number }) => (
+    <div
+      id={`page-${index}`}
+      className="bg-background shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-[#E6E1D6]/50 mx-auto transition-all duration-300 relative w-full max-w-4xl my-4"
+    >
+      <div className="p-16 lg:p-24 space-y-10">
+        {/* Title row */}
+        <div className="space-y-3">
+          <Skeleton className="h-10 w-2/3" />
+          <Skeleton className="h-4 w-1/3" />
+        </div>
+
+        {/* Paragraph group 1 */}
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-11/12" />
+          <Skeleton className="h-4 w-10/12" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-9/12" />
+        </div>
+
+        {/* Figure / diagram placeholder */}
+        <div className="flex justify-center py-4">
+          <Skeleton className="aspect-[4/3] w-1/2" />
+        </div>
+
+        {/* Paragraph group 2 */}
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-10/12" />
+          <Skeleton className="h-4 w-11/12" />
+          <Skeleton className="h-4 w-9/12" />
+        </div>
+
+        {/* Paragraph group 3 */}
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-11/12" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-8/12" />
+        </div>
+      </div>
+    </div>
+  )
+
   const ManuscriptPage = ({ index, children }: { index: number, children: React.ReactNode }) => {
     const question = questionMap.find(q => q.pages.includes(index))
     
@@ -739,7 +793,17 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                     <h2 className="text-sm font-semibold tracking-tight text-foreground">{currentStudent?.name || "Evaluating..."}</h2>
                   </div>
                 </div>
-                
+
+                {/* Scanned vs OCR Original view toggle — DS Tabs primitive per
+                    CONTRIBUTING.md. State is tracked now; downstream rendering
+                    can branch on `manuscriptView` once the OCR view is wired. */}
+                <Tabs value={manuscriptView} onValueChange={(v) => setManuscriptView(v as "scanned" | "ocr")}>
+                  <TabsList className="border border-border">
+                    <TabsTrigger value="scanned" className="px-4">Scanned</TabsTrigger>
+                    <TabsTrigger value="ocr" className="px-4">OCR Original</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
                 <div className="flex items-center gap-4">
                   <Tooltip>
                     <TooltipTrigger>
@@ -813,32 +877,43 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                   className="p-10 lg:p-24 transition-transform duration-500 ease-out origin-top flex flex-col items-center"
                   style={{ transform: `scale(${zoom / 100})` }}
                 >
-                  {/* Page 1 */}
-                  <ManuscriptPage index={1}>
-                    <div className="max-w-3xl mx-auto space-y-10">
-                      <div className="space-y-6 border-b border-border/80 pb-8">
-                        <div className="flex items-center justify-between">
-                          <h1 className="text-4xl font-serif text-foreground leading-tight italic tracking-tight underline decoration-primary/20">{manuscript.title}</h1>
+                  {manuscriptView === "ocr" ? (
+                    <>
+                      {/* Page 1 */}
+                      <ManuscriptPage index={1}>
+                        <div className="max-w-3xl mx-auto space-y-10">
+                          <div className="space-y-6 border-b border-border/80 pb-8">
+                            <div className="flex items-center justify-between">
+                              <h1 className="text-4xl font-serif text-foreground leading-tight italic tracking-tight underline decoration-primary/20">{manuscript.title}</h1>
+                            </div>
+                          </div>
+                          <ManuscriptRenderer elements={manuscript.pages[0].elements} userEvidence={mappedEvidence} />
                         </div>
-                      </div>
-                      <ManuscriptRenderer elements={manuscript.pages[0].elements} userEvidence={mappedEvidence} />
-                    </div>
-                  </ManuscriptPage>
+                      </ManuscriptPage>
 
-                  {/* Page 2 */}
-                  <ManuscriptPage index={2}>
-                    <ManuscriptRenderer elements={manuscript.pages[1].elements} userEvidence={mappedEvidence} />
-                  </ManuscriptPage>
-                  
-                  {/* Page 3 */}
-                  <ManuscriptPage index={3}>
-                    <ManuscriptRenderer elements={manuscript.pages[2].elements} userEvidence={mappedEvidence} />
-                  </ManuscriptPage>
+                      {/* Page 2 */}
+                      <ManuscriptPage index={2}>
+                        <ManuscriptRenderer elements={manuscript.pages[1].elements} userEvidence={mappedEvidence} />
+                      </ManuscriptPage>
 
-                  {/* Page 4 */}
-                  <ManuscriptPage index={4}>
-                    <ManuscriptRenderer elements={manuscript.pages[3].elements} userEvidence={mappedEvidence} />
-                  </ManuscriptPage>
+                      {/* Page 3 */}
+                      <ManuscriptPage index={3}>
+                        <ManuscriptRenderer elements={manuscript.pages[2].elements} userEvidence={mappedEvidence} />
+                      </ManuscriptPage>
+
+                      {/* Page 4 */}
+                      <ManuscriptPage index={4}>
+                        <ManuscriptRenderer elements={manuscript.pages[3].elements} userEvidence={mappedEvidence} />
+                      </ManuscriptPage>
+                    </>
+                  ) : (
+                    <>
+                      <ScannedPagePreview index={1} />
+                      <ScannedPagePreview index={2} />
+                      <ScannedPagePreview index={3} />
+                      <ScannedPagePreview index={4} />
+                    </>
+                  )}
 
                   <div className="h-60 shrink-0 w-full flex items-center justify-center opacity-20 hover:opacity-100 transition-opacity">
                       <div className="flex flex-col items-center gap-4">

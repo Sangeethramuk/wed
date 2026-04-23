@@ -8,6 +8,7 @@ import { BriefingModal } from '@/components/re-evaluation/briefing-modal'
 import { statusStyles, confidenceStyles } from '@/lib/design-tokens'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 type Decision = 'uphold' | 'adjust'
 type WorkspaceState = 'active' | 'compare' | 'submitted'
@@ -172,18 +173,15 @@ export default function ReEvalWorkspacePage() {
           <div className="h-14 px-6 flex items-center justify-between border-b border-border bg-background shadow-sm z-10 flex-shrink-0">
             <div className="flex items-center gap-4">
               <span className="eyebrow text-muted-foreground/40">Submission Viewer</span>
-              <div className="flex bg-muted/40 p-1 rounded-xl border border-border/5">
-                {(['scan', 'ocr'] as const).map((v) => (
-                  <Button
-                    key={v}
-                    variant={view === v ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setView(v)}
-                  >
-                    {v === 'scan' ? 'Original scan' : 'Extracted text'}
-                  </Button>
-                ))}
-              </div>
+              {/* Scanned / OCR Original view toggle — uses the DS Tabs primitive
+                  per CONTRIBUTING.md (never <Button aria-current="page"> pretending
+                  to be a tab). Keeps the existing `view` / `setView` state intact. */}
+              <Tabs value={view} onValueChange={(v) => setView(v as 'scan' | 'ocr')}>
+                <TabsList className="border border-border">
+                  <TabsTrigger value="scan" className="px-4">Scanned</TabsTrigger>
+                  <TabsTrigger value="ocr" className="px-4">OCR Original</TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
             <div className="flex items-center gap-3">
                <div className="flex items-center gap-1">
