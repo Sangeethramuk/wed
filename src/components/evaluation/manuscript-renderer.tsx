@@ -64,9 +64,22 @@ function ConfidenceBars({ confidence }: { confidence: number }) {
   )
 }
 
-function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterionId: string; id?: string }) {
-  const c = CRITERION_COLORS[criterionId] ?? CRITERION_COLORS['c1']
-  const label = CRITERION_LABELS[criterionId] ?? `Criterion ${criterionId}`
+type EvidenceRef = { criterionId: string; id: string }
+
+function UserHighlightedSpan({
+  text,
+  evidences,
+  id,
+}: {
+  text: string
+  evidences: EvidenceRef[]
+  id?: string
+}) {
+  // Use the first mapped criterion's palette for the span chrome (underline +
+  // bg tint). The popover itself lists every criterion this text is linked to.
+  const first = evidences[0]
+  const c = CRITERION_COLORS[first.criterionId] ?? CRITERION_COLORS['c1']
+
   return (
     <HoverCard>
       <HoverCardTrigger
@@ -76,32 +89,59 @@ function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterio
         {text}
       </HoverCardTrigger>
       <HoverCardContent side="top" className="max-w-xs p-4 border border-border shadow-lg">
-        <div className="space-y-2">
-          <div className={`inline-flex items-center gap-2 px-2 py-1 ${c.badge} rounded-md`}>
-            <div className={`w-2 h-2 rounded-full ${c.dot}`} />
-            <span className={`eyebrow ${c.text}`}>Your Evidence</span>
+        <div className="space-y-3">
+          <div className="inline-flex items-center gap-2 px-2 py-1 bg-primary/10 rounded-md">
+            <div className="w-2 h-2 rounded-full bg-primary" />
+            <span className="eyebrow text-primary">Evidence</span>
           </div>
-          <p className="text-sm font-bold text-popover-foreground">{label}</p>
-          <p className="text-xs text-muted-foreground italic">Manually mapped by instructor</p>
+          <p className="text-xs text-muted-foreground italic">
+            Manually mapped by instructor to {evidences.length === 1 ? '1 criterion' : `${evidences.length} criteria`}
+          </p>
+          <div className="space-y-2">
+            {evidences.map((ev) => {
+              const style = CRITERION_COLORS[ev.criterionId] ?? CRITERION_COLORS['c1']
+              const label = CRITERION_LABELS[ev.criterionId] ?? `Criterion ${ev.criterionId}`
+              return (
+                <div key={ev.id} className={`flex items-start gap-2 pl-2 border-l-2 ${style.border}`}>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-popover-foreground leading-tight">{label}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Criterion {ev.criterionId}</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </HoverCardContent>
     </HoverCard>
   )
 }
 
+/**
+ * Split a paragraph text into plain + evidence segments. Multiple evidences
+ * pointing at the same text produce ONE merged segment carrying the full list
+ * of criterion links — the popover renders them all.
+ */
 function splitByEvidence(
   text: string,
   evidences: { id: string; text: string; criterionId: string }[]
-): Array<{ text: string; evidence?: { criterionId: string; id: string } }> {
-  let segments: Array<{ text: string; evidence?: { criterionId: string; id: string } }> = [{ text }]
+): Array<{ text: string; evidences?: EvidenceRef[] }> {
+  let segments: Array<{ text: string; evidences?: EvidenceRef[] }> = [{ text }]
   for (const ev of evidences) {
     const next: typeof segments = []
     for (const seg of segments) {
-      if (seg.evidence) { next.push(seg); continue }
+      // Segment already wrapped for the exact same text → merge this evidence in.
+      if (seg.evidences && seg.text === ev.text) {
+        next.push({ ...seg, evidences: [...seg.evidences, { criterionId: ev.criterionId, id: ev.id }] })
+        continue
+      }
+      // Already a wrapped segment for a different (overlapping) text → leave it alone.
+      if (seg.evidences) { next.push(seg); continue }
+      // Plain segment — look for this evidence's text inside it.
       const idx = seg.text.indexOf(ev.text)
       if (idx === -1) { next.push(seg); continue }
       if (idx > 0) next.push({ text: seg.text.slice(0, idx) })
-      next.push({ text: ev.text, evidence: { criterionId: ev.criterionId, id: ev.id } })
+      next.push({ text: ev.text, evidences: [{ criterionId: ev.criterionId, id: ev.id }] })
       const tail = seg.text.slice(idx + ev.text.length)
       if (tail) next.push({ text: tail })
     }
@@ -289,8 +329,13 @@ export default function ManuscriptRenderer({
               paragraphNode = (
                 <p className="text-lg leading-[1.8] text-foreground/90 p-2 -m-2 rounded transition-colors font-serif">
                   {segments.map((seg, j) =>
-                    seg.evidence ? (
-                      <UserHighlightedSpan key={j} text={seg.text} criterionId={seg.evidence.criterionId} id={`evidence-${seg.evidence.id}`} />
+                    seg.evidences && seg.evidences.length > 0 ? (
+                      <UserHighlightedSpan
+                        key={j}
+                        text={seg.text}
+                        evidences={seg.evidences}
+                        id={`evidence-${seg.evidences[0].id}`}
+                      />
                     ) : (
                       <span key={j}>{seg.text}</span>
                     )
