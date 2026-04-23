@@ -10,9 +10,9 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="h-svh overflow-hidden">
         <DashboardHeader />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 min-h-0 overflow-y-auto p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   )
