@@ -67,14 +67,14 @@ function ConfidenceBars({ confidence }: { confidence: number }) {
 type EvidenceRef = { criterionId: string; id: string }
 
 // Highlighter-marker background per criterion — uses the main category color at
-// ~35% opacity (vs the faint `-bg` tint) so the highlight reads as ink, not a
-// hairline underline. Hover bumps to ~50% for a clear affordance. DS-compliant:
-// references --category-N tokens with a Tailwind opacity modifier.
+// ~18% opacity for a soft marker tint (readable but unobtrusive), bumping to
+// ~28% on hover. DS-compliant: references --category-N tokens with a Tailwind
+// opacity modifier.
 const HIGHLIGHTER_BG: Record<string, string> = {
-  c1: 'bg-[color:var(--category-1)]/35 hover:bg-[color:var(--category-1)]/50',
-  c2: 'bg-[color:var(--category-2)]/35 hover:bg-[color:var(--category-2)]/50',
-  c3: 'bg-[color:var(--category-3)]/35 hover:bg-[color:var(--category-3)]/50',
-  c4: 'bg-[color:var(--category-4)]/35 hover:bg-[color:var(--category-4)]/50',
+  c1: 'bg-[color:var(--category-1)]/18 hover:bg-[color:var(--category-1)]/28',
+  c2: 'bg-[color:var(--category-2)]/18 hover:bg-[color:var(--category-2)]/28',
+  c3: 'bg-[color:var(--category-3)]/18 hover:bg-[color:var(--category-3)]/28',
+  c4: 'bg-[color:var(--category-4)]/18 hover:bg-[color:var(--category-4)]/28',
 }
 
 function UserHighlightedSpan({
