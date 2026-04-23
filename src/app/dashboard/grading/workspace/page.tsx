@@ -363,61 +363,51 @@ export default function WorkspacePage() {
                   <div className="p-3 space-y-2.5">
                     {activeCriterion && (
                       <>
-                        {/* Review needed strip (shown when confidence < 0.8) */}
-                        {activeCriterion.confidence < 0.8 && (
-                          <div className={cn("rounded-md border", statusStyles.warning.bg, statusStyles.warning.border)}>
-                            <Button
-                              variant="ghost"
-                              onClick={() => setReviewStripOpen(s => ({ ...s, [activeCriterion.id]: !s[activeCriterion.id] }))}
-                              className={cn("w-full justify-between", statusStyles.warning.text)}
-                            >
-                              <div className="flex items-center gap-2">
-                                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="shrink-0"><circle cx="6.5" cy="6.5" r="6" stroke="currentColor" strokeWidth="1.2"/><path d="M6.5 4v3.5M6.5 9v.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
-                                <span className="text-xs font-semibold">Review needed</span>
-                                <span className="text-xs opacity-75">— citations missing for key claims</span>
-                              </div>
-                              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="shrink-0 transition-transform" style={{ transform: reviewStripOpen[activeCriterion.id] ? 'rotate(180deg)' : 'none' }}><path d="M2.5 4.5l4 4 4-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                            </Button>
-                            {reviewStripOpen[activeCriterion.id] && (
-                              <ul className={cn("text-xs leading-[1.7] px-9 pb-2.5 m-0", statusStyles.warning.text)}>
-                                {activeCriterion.evidence.map((ev, i) => (
-                                  <li key={i}>{ev}</li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                        )}
-
                         {/* Main criterion card */}
                         <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
                           <div className="p-3.5 space-y-3.5">
-                            <div>
-                              <h4 className="text-sm font-semibold text-foreground leading-snug">{activeCriterion.name}</h4>
-                              <p className="text-xs text-muted-foreground leading-relaxed mt-1">{activeCriterion.reasoning}</p>
+                            {/* Title + optional review icon */}
+                            <div className="flex items-start gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <h4 className="text-sm font-semibold text-foreground leading-snug">{activeCriterion.name}</h4>
+                                  {activeCriterion.confidence < 0.8 && (
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0 text-amber-500 mt-0.5" aria-label="Review needed"><path d="M7 1.5L1 12.5h12L7 1.5z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><path d="M7 6v3M7 10.5v.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{activeCriterion.reasoning}</p>
+                              </div>
                             </div>
 
                             {/* Score */}
                             <div>
                               <span className="eyebrow font-semibold text-muted-foreground/60 block mb-2">Score</span>
-                              <div className="flex items-center gap-2.5">
+                              <div className="flex items-center gap-2.5 flex-wrap">
                                 <div className="flex items-baseline gap-0.5">
-                                  <span className="text-3xl font-semibold leading-none tracking-tight text-foreground">{activeCriterion.level}</span>
-                                  <span className="text-sm text-muted-foreground/60 font-normal">/5</span>
+                                  <span className="text-3xl font-semibold leading-none tracking-tight text-foreground">{activeCriterion.level * 2}</span>
+                                  <span className="text-sm text-muted-foreground/60 font-normal">/10</span>
                                 </div>
                                 <div className="w-px h-7 bg-border" />
-                                <div className="flex items-center gap-1.5 ml-1">
+                                <div className="flex items-center gap-1.5">
                                   <span className="text-xs text-muted-foreground/60">Adjust:</span>
                                   <div className="flex gap-1">
-                                    {[1, 2, 3, 4, 5].map(v => (
-                                      <Button
-                                        key={v}
-                                        variant={professorLevel === v ? "default" : "outline"}
-                                        size="icon-sm"
-                                        onClick={() => handleGradeSelection(activeCriterion.id, v)}
-                                      >
-                                        {v}
-                                      </Button>
-                                    ))}
+                                    {[1, 2, 3, 4, 5].map(v => {
+                                      const pts = v * 2
+                                      const selected = (professorLevel ?? activeCriterion.level) === v
+                                      return (
+                                        <button
+                                          key={v}
+                                          onClick={() => handleGradeSelection(activeCriterion.id, v)}
+                                          className={`text-xs font-semibold px-2 py-1 rounded-md border transition-all ${
+                                            selected
+                                              ? 'bg-foreground text-background border-foreground'
+                                              : 'bg-background text-muted-foreground border-border hover:border-foreground/40'
+                                          }`}
+                                        >
+                                          {pts}pts
+                                        </button>
+                                      )
+                                    })}
                                   </div>
                                 </div>
                               </div>
@@ -451,19 +441,53 @@ export default function WorkspacePage() {
                                 />
                               </div>
                             )}
-
-                            {/* Feedback */}
-                            <div>
-                              <span className="eyebrow font-semibold text-muted-foreground/60 block mb-1.5">Feedback</span>
-                              <textarea
-                                value={feedbacks[activeCriterion.id] ?? ''}
-                                onChange={e => setFeedbacks(f => ({ ...f, [activeCriterion.id]: e.target.value }))}
-                                rows={4}
-                                placeholder="Write feedback for this criterion…"
-                                className="w-full text-sm leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[90px] transition-colors"
-                              />
-                            </div>
                           </div>
+                        </div>
+
+                        {/* AI Reasoning accordion */}
+                        <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
+                          <Button
+                            variant="ghost"
+                            onClick={() => toggleAccordion(`ai-${activeCriterion.id}`)}
+                            className="w-full justify-between"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className={cn("w-5 h-5 rounded-[5px] flex items-center justify-center shrink-0", statusStyles.warning.bg, statusStyles.warning.text)}>
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5C3.5 1.5 1.5 3.5 1.5 6S3.5 10.5 6 10.5 10.5 8.5 10.5 6 8.5 1.5 6 1.5z" stroke="currentColor" strokeWidth="1.1"/><path d="M4 6c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2" stroke="currentColor" strokeWidth="1.1"/><circle cx="6" cy="6" r=".8" fill="currentColor"/></svg>
+                              </div>
+                              AI reasoning
+                            </div>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={`text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen[`ai-${activeCriterion.id}`] ? 'rotate-180' : ''}`}><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          </Button>
+                          {accordionOpen[`ai-${activeCriterion.id}`] && (
+                            <div className="border-t border-border p-3.5 space-y-2">
+                              {/* Working items (first half of evidence = positive signals) */}
+                              {activeCriterion.evidence.length > 0 && (
+                                <div className="space-y-1">
+                                  <span className="eyebrow text-xs text-muted-foreground/50">What's working</span>
+                                  {activeCriterion.evidence.slice(0, Math.ceil(activeCriterion.evidence.length / 2)).map((ev, i) => (
+                                    <div key={i} className="flex items-start gap-1.5 text-xs text-foreground/80">
+                                      <span className="text-emerald-500 font-bold mt-0.5 shrink-0">✓</span>
+                                      <span className="leading-[1.5]">{ev}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              {/* Gaps (derived from reasoning, shown as "not working") */}
+                              <div className="space-y-1">
+                                <span className="eyebrow text-xs text-muted-foreground/50">Gaps identified</span>
+                                {activeCriterion.evidence.slice(Math.ceil(activeCriterion.evidence.length / 2)).map((ev, i) => (
+                                  <div key={i} className="flex items-start gap-1.5 text-xs text-foreground/80">
+                                    <span className="text-red-400 font-bold mt-0.5 shrink-0">✗</span>
+                                    <span className="leading-[1.5]">{ev}</span>
+                                  </div>
+                                ))}
+                                {activeCriterion.evidence.length === 0 && (
+                                  <p className="text-xs text-muted-foreground/50 italic">{activeCriterion.reasoning}</p>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {/* Evidence accordion */}
@@ -483,59 +507,75 @@ export default function WorkspacePage() {
                           </Button>
                           {accordionOpen[`ev-${activeCriterion.id}`] && (
                             <div className="border-t border-border p-3.5 space-y-2">
-                              {activeCriterion.evidence.map((ev, i) => (
-                                <div key={i} className="flex items-start gap-2 p-2.5 bg-muted/30 border border-border rounded-md hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
-                                  <div className="w-[18px] h-[18px] rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-xs leading-[1.55] text-muted-foreground italic">"{ev}"</p>
-                                    <div className="flex gap-2 mt-1.5">
-                                      <Button variant="link" size="xs" className="p-0 h-auto">Edit</Button>
-                                      <Button variant="link" size="xs" className="p-0 h-auto text-destructive">Remove</Button>
-                                    </div>
-                                  </div>
+                              {activeCriterion.evidence.length === 0 ? (
+                                <div className="text-center py-3 space-y-1.5">
+                                  <p className="text-xs text-muted-foreground/70 leading-[1.5]">No evidence linked. Scores with evidence attached see <span className="font-semibold text-foreground/60">40% fewer re-evaluation requests.</span></p>
+                                  <button className="w-full mt-1 text-xs border border-dashed border-border/60 rounded-md py-2 text-muted-foreground/60 hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-1.5">
+                                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1.5v8M1.5 5.5h8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                                    Add evidence
+                                  </button>
                                 </div>
-                              ))}
-                              <Button variant="outline" size="sm" className="w-full border-dashed mt-1">
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                                Add evidence — select text in left panel
-                              </Button>
+                              ) : (
+                                <>
+                                  {activeCriterion.evidence.map((ev, i) => (
+                                    <div key={i} className="flex items-start gap-2 p-2.5 bg-muted/30 border border-border rounded-md hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
+                                      <div className="w-[18px] h-[18px] rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-xs leading-[1.55] text-muted-foreground italic">"{ev}"</p>
+                                        <div className="flex gap-2 mt-1.5">
+                                          <Button variant="link" size="xs" className="p-0 h-auto">Edit</Button>
+                                          <Button variant="link" size="xs" className="p-0 h-auto text-destructive">Remove</Button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                  <button className="w-full text-xs border border-dashed border-border/60 rounded-md py-2 text-muted-foreground/60 hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-1.5">
+                                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1.5v8M1.5 5.5h8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                                    Add evidence — select text in left panel
+                                  </button>
+                                </>
+                              )}
                             </div>
                           )}
                         </div>
 
-                        {/* AI Reasoning accordion */}
+                        {/* Feedback — always visible */}
                         <div className="bg-background border border-border rounded-[10px] overflow-hidden shadow-sm">
-                          <Button
-                            variant="ghost"
-                            onClick={() => toggleAccordion(`ai-${activeCriterion.id}`)}
-                            className="w-full justify-between"
-                          >
-                            <div className="flex items-center gap-2">
-                              <div className={cn("w-5 h-5 rounded-[5px] flex items-center justify-center shrink-0", statusStyles.warning.bg, statusStyles.warning.text)}>
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5C3.5 1.5 1.5 3.5 1.5 6S3.5 10.5 6 10.5 10.5 8.5 10.5 6 8.5 1.5 6 1.5z" stroke="currentColor" strokeWidth="1.1"/><path d="M4 6c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2" stroke="currentColor" strokeWidth="1.1"/><circle cx="6" cy="6" r=".8" fill="currentColor"/></svg>
-                              </div>
-                              AI reasoning
+                          <div className="p-3.5 space-y-2.5">
+                            <span className="eyebrow font-semibold text-muted-foreground/60 block">Detailed Feedback</span>
+                            {/* Color-coded indicator */}
+                            {(() => {
+                              const score = (professorLevel ?? activeCriterion.level) * 2
+                              const isLow = score <= 6
+                              return (
+                                <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold ${
+                                  isLow
+                                    ? 'bg-amber-50 border border-amber-200 text-amber-700'
+                                    : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+                                }`}>
+                                  <span>{isLow ? '💡' : '✓'}</span>
+                                  <span>{isLow ? 'Significant Gap' : 'Meets Expectations'}</span>
+                                </div>
+                              )
+                            })()}
+                            <textarea
+                              value={feedbacks[activeCriterion.id] ?? ''}
+                              onChange={e => setFeedbacks(f => ({ ...f, [activeCriterion.id]: e.target.value }))}
+                              rows={4}
+                              placeholder="Write feedback for this criterion…"
+                              className="w-full text-sm leading-[1.7] text-foreground bg-muted/20 border border-border rounded-md p-2.5 resize-y focus:outline-none focus:border-primary font-sans min-h-[90px] transition-colors"
+                            />
+                            <div className="flex items-center justify-between gap-2 pt-0.5">
+                              <button className="flex items-center gap-1.5 text-xs text-muted-foreground/70 hover:text-foreground border border-border/60 rounded-md px-2.5 py-1.5 transition-colors">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 2C8.5.8 6.5.5 4.5 1.3A5 5 0 0 0 2 9.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><path d="M2 6.5v3H5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                Regenerate
+                              </button>
+                              <button className="flex items-center gap-1.5 text-xs font-semibold bg-foreground text-background rounded-md px-3 py-1.5 hover:opacity-90 transition-opacity">
+                                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1"/><circle cx="5" cy="5" r="2" fill="currentColor"/></svg>
+                                Confirm
+                              </button>
                             </div>
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={`text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen[`ai-${activeCriterion.id}`] ? 'rotate-180' : ''}`}><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                          </Button>
-                          {accordionOpen[`ai-${activeCriterion.id}`] && (
-                            <div className="border-t border-border p-3.5 space-y-2.5">
-                              <p className="text-xs text-muted-foreground leading-[1.65]">{activeCriterion.reasoning}</p>
-                              <div className="flex flex-wrap gap-1.5">
-                                {activeCriterion.evidence.slice(0, 2).map((ev, i) => (
-                                  <span key={i} className={cn("inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium", statusStyles.success.bg, statusStyles.success.text)}>
-                                    <svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="3.5" fill="currentColor"/></svg>
-                                    {ev.length > 30 ? ev.slice(0, 30) + '…' : ev}
-                                  </span>
-                                ))}
-                                {isRevealed && (
-                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border border-border/60 bg-muted/30 text-muted-foreground">
-                                    ~ Acceptable depth for level
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          )}
+                          </div>
                         </div>
                       </>
                     )}

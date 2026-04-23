@@ -126,6 +126,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     linkedEvidence: Array<{ id: string, text: string, page: number }>
     ocrFile?: { name: string, size: string }
     reasoning: string
+    scoreReasoning: string
   }
 
   const [overrideDrafts, setOverrideDrafts] = useState<Record<string, OverrideDraft>>({})
@@ -165,6 +166,27 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
   const manuscript = useMemo(() => generateManuscript(selectedSubmission), [selectedSubmission])
   const artifacts = useMemo(() => generateArtifacts(selectedSubmission), [selectedSubmission])
+
+  // Pre-seed one evidence excerpt per criterion from the manuscript's highlighted paragraphs
+  useEffect(() => {
+    const seeded: { id: string; text: string; criterionId: string }[] = []
+    const seen = new Set<string>()
+    for (const page of manuscript.pages) {
+      for (const el of page.elements) {
+        if (el.type === 'paragraph' && el.highlight && !seen.has(el.highlight.criterionId)) {
+          seen.add(el.highlight.criterionId)
+          const full = el.text
+          // grab a ~80-char window from the middle to avoid sentence-start boilerplate
+          const start = Math.max(0, Math.floor(full.length * 0.2))
+          const raw = full.slice(start, start + 85)
+          // trim to the nearest word boundary
+          const trimmed = raw.slice(0, raw.lastIndexOf(' ') > 20 ? raw.lastIndexOf(' ') : raw.length)
+          seeded.push({ id: `seed-${el.highlight.criterionId}`, text: trimmed, criterionId: el.highlight.criterionId })
+        }
+      }
+    }
+    setMappedEvidence(seeded)
+  }, [selectedSubmission]) // eslint-disable-line react-hooks/exhaustive-deps
   // Mock data for 60 students - Indian names
   const firstNames = [
     "Arjun", "Priya", "Rahul", "Ananya", "Vikram", 
@@ -236,13 +258,13 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   const currentStudent = allSubmissions.find(s => s.id === selectedSubmission)
 
   const rubricPoints = [
-    { id: "c1", type: "c1", label: "Problem Understanding & Direction", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the problem framing, user/task clarity, assumptions/constraints, outcomes/non-goals, and scoped use-case mapping is present, and 20% of the work has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
-    { id: "c2", type: "c2", label: "Iteration & Improvement", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the iteration rationale, before/after evidence, and next-steps articulation is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
-    { id: "c3", type: "c3", label: "Documentation & Reproducibility", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the setup/run steps, samples/expected outputs, troubleshooting, and limitations is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] },
-    { id: "c4", type: "c4", label: "Technical Setup & Integration", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the tool/API integration, config documentation, runnable end-to-end execution, basic error handling, and test path is present, and 20% has issues.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] }
+    { id: "c1", type: "c1", label: "Problem Understanding & Direction", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the problem framing, user/task clarity, assumptions/constraints, outcomes/non-goals, and scoped use-case mapping is present, and 20% of the work has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", working: ["Problem scope is clearly defined with boundaries", "User tasks and goals are well articulated", "Assumptions and constraints explicitly stated"], gaps: ["Outcome metrics are vague and unmeasurable", "Use-case mapping is incomplete — 2 of 5 scenarios missing"], levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
+    { id: "c2", type: "c2", label: "Iteration & Improvement", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the iteration rationale, before/after evidence, and next-steps articulation is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", working: ["Before/after comparison evidence is present", "Iteration rationale clearly stated for v1 → v2", "Next steps are articulated with justification"], gaps: ["v3 changes lack documented rationale", "No quantitative improvement metrics provided"], levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
+    { id: "c3", type: "c3", label: "Documentation & Reproducibility", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the setup/run steps, samples/expected outputs, troubleshooting, and limitations is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", working: ["Setup and run steps are complete and correct", "Sample inputs and expected outputs provided", "Limitations section acknowledges key constraints"], gaps: ["Troubleshooting guide is missing for 3 common error states", "No environment version pinning (Python/Node versions unspecified)"], levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] },
+    { id: "c4", type: "c4", label: "Technical Setup & Integration", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the tool/API integration, config documentation, runnable end-to-end execution, basic error handling, and test path is present, and 20% has issues.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", working: ["Tool and API integration correctly implemented", "Config documented with environment variable descriptions", "End-to-end execution path is runnable"], gaps: ["Basic error handling missing for network timeout scenarios", "No test path or smoke test included"], levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] }
   ]
 
-  const [criterionState, setCriterionState] = useState<Record<string, { score: number, isOverridden: boolean, feedback: string, confirmed: boolean }>>({})
+  const [criterionState, setCriterionState] = useState<Record<string, { score: number, isOverridden: boolean, feedback: string, confirmed: boolean, instructorReasoning?: string }>>({})
 
   const calculateTotalScore = () => {
     return rubricPoints.reduce((total, point) => {
@@ -298,7 +320,8 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
         direction,
         reasonCategory: prev[criterionId]?.reasonCategory || '',
         linkedEvidence: prev[criterionId]?.linkedEvidence || [],
-        reasoning: prev[criterionId]?.reasoning || ''
+        reasoning: prev[criterionId]?.reasoning || '',
+        scoreReasoning: prev[criterionId]?.scoreReasoning || ''
       }
     }))
   }
@@ -313,10 +336,10 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
   const handleConfirmOverride = (criterionId: string) => {
     const draft = overrideDrafts[criterionId]
-    if (!draft || draft.reasoning.length < 20) return
+    if (!draft || (draft.reasonCategory === '' && draft.reasoning.trim().length === 0)) return
     setCriterionState(prev => ({
       ...prev,
-      [criterionId]: { ...prev[criterionId], score: draft.proposedScore, isOverridden: true, confirmed: true }
+      [criterionId]: { ...prev[criterionId], score: draft.proposedScore, isOverridden: true, confirmed: true, instructorReasoning: draft.scoreReasoning }
     }))
     addRevisionEvent({
       type: 'override',
@@ -418,6 +441,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   const [activeRubricCriterionIdx, setActiveRubricCriterionIdx] = useState(0)
   const [rubricAccordionOpen, setRubricAccordionOpen] = useState<Record<string, boolean>>({})
   const [rubricReviewStripOpen, setRubricReviewStripOpen] = useState<Record<string, boolean>>({})
+  const [scoreLevelExpanded, setScoreLevelExpanded] = useState<Record<string, boolean>>({})
 
   const handleConfirmNext = () => {
     const currentSub = submissions.find(s => s.id === selectedSubmission)
@@ -970,7 +994,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
             const isOverride = activeOverrideId === point.id && !!draft
             const isIncrease = draft?.direction === 'increase'
             const overrideReasons = isIncrease ? INCREASE_REASONS : DECREASE_REASONS
-            const isOverrideValid = !!draft && draft.reasoning.length >= 20 && (draft.reasonCategory !== 'found_more_evidence' || draft.linkedEvidence.length > 0)
+            const isOverrideValid = !!draft && (draft.reasonCategory !== '' || draft.reasoning.trim().length > 0) && draft.scoreReasoning.trim().length > 0
             const pointEvidence = mappedEvidence.filter(e => e.criterionId === point.id)
 
             return (
@@ -1005,279 +1029,234 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 </div>
 
                 <ScrollArea className="flex-1 min-h-0">
-                  <div className="p-4 space-y-3">
-                    {point.status === 'REVIEW_NEEDED' && (
-                      <div className="rounded-lg bg-[color:var(--status-warning-bg)] border border-[color:var(--status-warning)]/30 overflow-hidden">
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-between"
-                          onClick={() => setRubricReviewStripOpen(prev => ({ ...prev, [point.id]: !prev[point.id] }))}
-                        >
-                          <div className="flex items-center gap-2">
-                            <AlertCircle className="h-3.5 w-3.5 text-[color:var(--status-warning)] shrink-0" />
-                            <span className="eyebrow text-[color:var(--status-warning)]">Review needed</span>
-                          </div>
-                          <ChevronDown className={`h-3.5 w-3.5 text-[color:var(--status-warning)] transition-transform ${rubricReviewStripOpen[point.id] ? 'rotate-180' : ''}`} />
-                        </Button>
-                        {rubricReviewStripOpen[point.id] && (
-                          <div className="px-3 pb-3">
-                            <p className="text-xs text-[color:var(--status-warning)] leading-relaxed">{point.note}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
+                  <div className="p-4 space-y-5">
                     <div className="rounded-xl border border-border bg-background shadow-sm overflow-hidden">
-                      <div className="p-4 space-y-4">
-                        <div>
-                          <h3 className="text-sm font-bold text-foreground leading-tight">{point.label}</h3>
-                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-3">{point.reasoning}</p>
+                      <div className="p-4 space-y-5">
+
+                        {/* Title row + badge */}
+                        <div className="relative">
+                          {point.status === 'REVIEW_NEEDED' && (
+                            <div className="absolute -top-4 -right-4 flex items-center gap-1 bg-orange-500 text-white text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-bl-lg rounded-tr-xl shadow-sm">
+                              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1L1 9h8L5 1z" fill="white" fillOpacity="0.3" stroke="white" strokeWidth="0.8" strokeLinejoin="round"/><path d="M5 4.5v2M5 7.5v.5" stroke="white" strokeWidth="0.9" strokeLinecap="round"/></svg>
+                              Review Required
+                            </div>
+                          )}
+                          <h3 className="text-sm font-bold text-foreground leading-tight pr-2">{point.label}</h3>
                         </div>
 
+                        {/* Score + selector */}
                         <div className="space-y-2">
-                          <div className="flex items-center gap-3">
-                            <span className="eyebrow text-muted-foreground">Score</span>
-                            <div className="flex items-baseline gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="eyebrow text-muted-foreground/60">Score</span>
+                            <div className="flex items-baseline gap-0.5">
                               <span className="text-2xl font-semibold text-foreground tabular-nums">{(state.score ?? point.aiScore).toFixed(1)}</span>
-                              <span className="text-sm text-muted-foreground">/{point.maxPoints}</span>
+                              <span className="text-sm text-muted-foreground/60">/{point.maxPoints}</span>
                             </div>
-                            <span className="text-xs text-muted-foreground ml-auto">Adjust:</span>
+                            {state.isOverridden && (
+                              <span className="ml-1 text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                                Overridden
+                              </span>
+                            )}
+                            <span className="text-xs text-muted-foreground/50 ml-auto">Adjust:</span>
                           </div>
-                          <div className="flex gap-1.5">
-                            {point.levels.map(lvl => {
-                              const isDraftSelected = isOverride && draft.proposedScore === lvl.points
-                              const isCurrentConfirmed = state.confirmed && state.score === lvl.points
-                              const isAiDefault = lvl.points === point.aiScore && !state.confirmed && !isOverride
-                              const selected = isDraftSelected || isCurrentConfirmed || isAiDefault
-                              return (
-                                <Button
-                                  key={lvl.val}
-                                  variant={selected ? "default" : "outline"}
-                                  size="sm"
-                                  onClick={() => handleScoreLevelClick(point.id, lvl.points, point.aiScore)}
-                                  className="flex-1"
-                                >
-                                  {lvl.points}pts
-                                </Button>
-                              )
-                            })}
-                          </div>
+
+                          {/* Compact horizontal score buttons + expand toggle */}
+                          {!scoreLevelExpanded[point.id] && (
+                            <div className="flex gap-1 items-center">
+                              {point.levels.map(lvl => {
+                                const isDraftSelected = isOverride && draft.proposedScore === lvl.points
+                                const isCurrentConfirmed = state.confirmed && state.score === lvl.points
+                                const isAiDefault = lvl.points === point.aiScore && !state.confirmed && !isOverride
+                                const selected = isDraftSelected || isCurrentConfirmed || isAiDefault
+                                return (
+                                  <button
+                                    key={lvl.val}
+                                    onClick={() => handleScoreLevelClick(point.id, lvl.points, point.aiScore)}
+                                    className={`flex-1 text-xs font-semibold py-1.5 rounded-md border transition-all ${
+                                      selected
+                                        ? 'bg-foreground text-background border-foreground'
+                                        : 'bg-background text-muted-foreground border-border hover:border-foreground/40'
+                                    }`}
+                                  >
+                                    {lvl.points}
+                                  </button>
+                                )
+                              })}
+                              <button
+                                onClick={() => setScoreLevelExpanded(s => ({ ...s, [point.id]: true }))}
+                                className="w-7 h-7 flex items-center justify-center rounded-md border border-border text-muted-foreground/50 hover:border-foreground/40 hover:text-foreground transition-all shrink-0"
+                                title="Show level descriptors"
+                              >
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4h8M2 8h8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Expanded vertical score list with descriptors */}
+                          {scoreLevelExpanded[point.id] && (
+                            <div className="space-y-1">
+                              {point.levels.map(lvl => {
+                                const isDraftSelected = isOverride && draft.proposedScore === lvl.points
+                                const isCurrentConfirmed = state.confirmed && state.score === lvl.points
+                                const isAiDefault = lvl.points === point.aiScore && !state.confirmed && !isOverride
+                                const selected = isDraftSelected || isCurrentConfirmed || isAiDefault
+                                return (
+                                  <button
+                                    key={lvl.val}
+                                    onClick={() => handleScoreLevelClick(point.id, lvl.points, point.aiScore)}
+                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg border text-left transition-all ${
+                                      selected
+                                        ? 'bg-foreground text-background border-foreground'
+                                        : 'bg-background border-border hover:border-foreground/40'
+                                    }`}
+                                  >
+                                    <span className={`text-sm font-bold tabular-nums shrink-0 ${selected ? 'text-background' : 'text-foreground'}`}>{lvl.points}</span>
+                                    <span className={`text-xs leading-snug ${selected ? 'text-background/80' : 'text-muted-foreground'}`}>{lvl.name}</span>
+                                  </button>
+                                )
+                              })}
+                              <button
+                                onClick={() => setScoreLevelExpanded(s => ({ ...s, [point.id]: false }))}
+                                className="w-full text-xs text-muted-foreground/50 hover:text-foreground py-1 text-center transition-colors"
+                              >
+                                Collapse ↑
+                              </button>
+                            </div>
+                          )}
                         </div>
 
-                        {isOverride && (
-                          <div className="border border-[color:var(--status-warning)]/30 rounded-lg bg-[color:var(--status-warning-bg)]/50 p-3 space-y-3">
-                            <div className={`flex items-center gap-2 ${isIncrease ? 'text-[color:var(--status-success)]' : 'text-[color:var(--status-error)]'}`}>
-                              {isIncrease ? <ArrowUp className="h-3.5 w-3.5 shrink-0" /> : <ArrowDown className="h-3.5 w-3.5 shrink-0" />}
-                              <span className="text-xs font-semibold">
-                                Proposing {draft.proposedScore}pts ({isIncrease ? '↑' : '↓'}{Math.abs(draft.proposedScore - draft.aiScore).toFixed(1)} from AI&apos;s {draft.aiScore}pts)
-                              </span>
-                            </div>
-                            <select
-                              value={draft.reasonCategory}
-                              onChange={e => {
-                                handleUpdateDraft(point.id, { reasonCategory: e.target.value })
-                                if (e.target.value === 'found_more_evidence') {
-                                  setTextSelectionMode({ active: true, criterionId: point.id })
-                                } else {
-                                  setTextSelectionMode({ active: false, criterionId: null })
-                                }
-                              }}
-                              className="w-full text-xs rounded border border-[color:var(--status-warning)]/30 bg-background p-2 text-foreground focus:outline-none focus:ring-1 focus:ring-amber-300"
-                            >
-                              <option value="">Select a reason&hellip;</option>
-                              {overrideReasons.map(r => (
-                                <option key={r.value} value={r.value}>{r.label}</option>
-                              ))}
-                            </select>
-                            {draft.reasonCategory === 'found_more_evidence' && (
-                              <div className="p-2.5 rounded-lg bg-[color:var(--status-info-bg)] border border-[color:var(--status-info)]/30">
-                                <p className="text-xs text-[color:var(--status-info)]/80 leading-relaxed mb-2">Highlight text in the manuscript to link as evidence.</p>
-                                {draft.linkedEvidence.length > 0 && (
-                                  <div className="space-y-1.5 mb-2">
-                                    {draft.linkedEvidence.map((ev, i) => (
-                                      <div key={ev.id} className="flex items-start gap-2 p-2 rounded bg-background border border-[color:var(--status-info)]/30 group/ev">
-                                        <span className="text-xs font-mono font-bold text-[color:var(--status-info)] shrink-0">E{i + 1}</span>
-                                        <p className="text-xs font-serif italic text-foreground/70 flex-1 leading-relaxed">&quot;{ev.text.length > 60 ? ev.text.substring(0, 60) + '...' : ev.text}&quot;</p>
-                                        <Button variant="ghost" size="icon-xs" onClick={() => handleRemoveOverrideEvidence(point.id, ev.id)} className="opacity-0 group-hover/ev:opacity-100 transition-opacity shrink-0">
-                                          <X className="h-3 w-3 text-destructive hover:text-[color:var(--status-error)]" />
-                                        </Button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                                {draft.linkedEvidence.length === 0 && (
-                                  <p className="text-xs text-[color:var(--status-info)]/60 italic">No evidence linked yet</p>
-                                )}
+                        {/* Override block — chip + custom-input pattern */}
+                        {isOverride && (() => {
+                          const chipReasons = [
+                            'Rubric ambiguity',
+                            'Student explained verbally',
+                            'Missed context',
+                            'Effort acknowledged',
+                            'Partial credit warranted',
+                          ]
+                          return (
+                            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3.5">
+                              {/* Header */}
+                              <div>
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  {isIncrease ? <ArrowUp className="h-3.5 w-3.5 text-[color:var(--status-success)] shrink-0" /> : <ArrowDown className="h-3.5 w-3.5 text-[color:var(--status-error)] shrink-0" />}
+                                  <span className="text-sm font-semibold text-foreground">
+                                    Proposing {draft.proposedScore}pts
+                                    <span className={`ml-1 text-xs font-normal ${isIncrease ? 'text-[color:var(--status-success)]' : 'text-[color:var(--status-error)]'}`}>
+                                      ({isIncrease ? '+' : '−'}{Math.abs(draft.proposedScore - draft.aiScore).toFixed(1)} from AI&apos;s {draft.aiScore}pts)
+                                    </span>
+                                  </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground/60 pl-5">One tap for common reasons, or type a custom reason</p>
                               </div>
-                            )}
-                            <div className="space-y-1">
-                              <div className="flex items-center justify-between">
-                                <span className="eyebrow text-muted-foreground">Explain your override</span>
-                                <span className={`text-xs font-mono ${draft.reasoning.length >= 20 ? 'text-[color:var(--status-success)]' : 'text-[color:var(--status-warning)]'}`}>{draft.reasoning.length}/20</span>
+
+                              {/* Reason chips */}
+                              <div className="flex flex-wrap gap-2">
+                                {chipReasons.map(chip => {
+                                  const active = draft.reasonCategory === chip
+                                  return (
+                                    <button
+                                      key={chip}
+                                      onClick={() => handleUpdateDraft(point.id, { reasonCategory: active ? '' : chip })}
+                                      className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${
+                                        active
+                                          ? 'bg-foreground text-background border-foreground'
+                                          : 'bg-background text-foreground border-border hover:border-foreground/50'
+                                      }`}
+                                    >
+                                      {chip}
+                                    </button>
+                                  )
+                                })}
                               </div>
-                              <textarea
+
+                              {/* Custom reason input */}
+                              <input
+                                type="text"
                                 value={draft.reasoning}
                                 onChange={e => handleUpdateDraft(point.id, { reasoning: e.target.value })}
-                                placeholder={isIncrease ? 'Describe what the AI missed...' : "Explain what's wrong with the AI's interpretation..."}
-                                className="w-full h-20 rounded-lg border border-[color:var(--status-warning)]/30 bg-background p-2.5 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-amber-300 text-foreground/80 placeholder:text-xs placeholder:text-muted-foreground/40"
+                                placeholder="Or type a custom reason…"
+                                className="w-full text-xs px-3 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary/50 transition-colors"
                               />
-                            </div>
-                            {!isOverrideValid && draft.reasonCategory && (
-                              <div className="flex items-center gap-2 p-2 rounded bg-[color:var(--status-warning-bg)] border border-[color:var(--status-warning)]/30">
-                                <AlertCircle className="h-3 w-3 text-[color:var(--status-warning)] shrink-0" />
-                                <span className="text-xs text-[color:var(--status-warning)]">
-                                  {draft.reasoning.length < 20
-                                    ? 'At least 20 characters required.'
-                                    : draft.reasonCategory === 'found_more_evidence' && draft.linkedEvidence.length === 0
-                                    ? 'Link at least one evidence from the manuscript.'
-                                    : ''}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm" onClick={() => handleCancelOverride(point.id)}>
-                                Cancel
-                              </Button>
-                              <Button size="sm" onClick={() => handleConfirmOverride(point.id)} disabled={!isOverrideValid}
-                                className="flex-1">
-                                Confirm override
-                              </Button>
-                            </div>
-                          </div>
-                        )}
 
-                        {/* Pre-filled Feedback — seamless review & edit */}
-                        {(() => {
-                          const criterionKey = point.id
-                          const storeFb = studentCriterionFeedbacks[criterionKey]
-                          const isGenerating = generatingFeedbackFor === point.id
-                          
-                          // Consistently use suggested or stored feedback
-                          const currentScore = state.score ?? point.aiScore
-                          const suggestedFb = !storeFb ? generateCriterionFeedback(point.label, Math.round(currentScore / 2), [], '') : null
-                          
-                          const fb = storeFb || {
-                            ...suggestedFb,
-                            authorship: 'ai_generated' as const,
-                            isConfirmed: false,
-                            isApproved: false,
-                            regenCount: 0,
-                          }
-
-                          return (
-                            <div className="space-y-4">
-                              {isGenerating ? (
-                                <FeedbackGenerating />
-                              ) : (
-                                <CriterionFeedbackCard
-                                  tier={fb.tier as any}
-                                  tierLabel={fb.tierLabel}
-                                  feedbackText={fb.feedbackText}
-                                  thinkingPrompt={fb.thinkingPrompt}
-                                  authorship={fb.authorship}
-                                  isApproved={fb.isApproved}
-                                  regenCount={fb.regenCount}
-                                  onEdit={(text) => {
-                                    // Implicit adoption on edit
-                                    if (!storeFb) {
-                                      confirmFeedback(criterionKey, {
-                                        tier: fb.tier as any,
-                                        tierLabel: fb.tierLabel,
-                                        feedbackText: text,
-                                        thinkingPrompt: fb.thinkingPrompt,
-                                      })
-                                    } else {
-                                      updateCriterionFeedback(criterionKey, text)
-                                    }
-                                  }}
-                                  onRegenerate={() => {
-                                    const regen = generateCriterionFeedback(point.label, Math.round(currentScore / 2), [], '')
-                                    if (!storeFb) {
-                                       // If not yet in store, just adopt the regen
-                                       confirmFeedback(criterionKey, {
-
-                                        tier: regen.tier as any,
-                                        tierLabel: regen.tierLabel,
-                                        feedbackText: regen.feedbackText,
-                                        thinkingPrompt: regen.thinkingPrompt,
-                                      })
-                                    } else {
-                                      regenerateCriterionFeedback(criterionKey, regen.feedbackText, regen.tier as any, regen.tierLabel)
-                                    }
-                                  }}
-                                  onApprove={() => {
-                                    // Explicit adoption on confirm
-                                    if (!storeFb) {
-                                      confirmFeedback(criterionKey, {
-
-                                        tier: fb.tier as any,
-                                        tierLabel: fb.tierLabel,
-                                        feedbackText: fb.feedbackText,
-                                        thinkingPrompt: fb.thinkingPrompt,
-                                      })
-                                    }
-                                    approveCriterionFeedback(criterionKey)
-                                  }}
+                              {/* Score justification */}
+                              <div className="space-y-1.5">
+                                <p className="text-xs font-medium text-foreground/70">
+                                  Why is <span className="font-bold text-foreground">{draft.proposedScore}pts</span> the correct score for this criterion?
+                                </p>
+                                <textarea
+                                  value={draft.scoreReasoning}
+                                  onChange={e => handleUpdateDraft(point.id, { scoreReasoning: e.target.value })}
+                                  rows={3}
+                                  placeholder="Describe what in the student's work justifies this score…"
+                                  className="w-full text-xs px-3 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary/50 resize-none transition-colors min-h-[72px]"
                                 />
-                              )}
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex gap-2 pt-0.5">
+                                <Button variant="outline" size="sm" onClick={() => handleCancelOverride(point.id)} className="shrink-0">Cancel</Button>
+                                <Button size="sm" onClick={() => handleConfirmOverride(point.id)} disabled={!isOverrideValid} className="flex-1">
+                                  Confirm override
+                                </Button>
+                              </div>
                             </div>
                           )
                         })()}
-                      </div>
-                    </div>
 
-                    <div className="rounded-xl border border-border bg-background shadow-sm overflow-hidden">
-                      <Button
-                        variant="ghost"
-                        onClick={() => setRubricAccordionOpen(prev => ({ ...prev, [`evidence-${point.id}`]: !prev[`evidence-${point.id}`] }))}
-                        className="w-full justify-between"
-                      >
-                        <span className="eyebrow text-muted-foreground">
-                          Evidence ({pointEvidence.length} linked)
-                        </span>
-                        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${rubricAccordionOpen[`evidence-${point.id}`] ? 'rotate-180' : ''}`} />
-                      </Button>
-                      {rubricAccordionOpen[`evidence-${point.id}`] && (
-                        <div className="px-4 pb-4 space-y-4">
-                          {pointEvidence.length === 0 ? (
-                            <div className="border-2 border-dashed border-[color:var(--category-2)]/30 rounded-lg p-6 text-center bg-[color:var(--category-2-bg)]/30">
-                              <p className="eyebrow text-[color:var(--category-2)] leading-relaxed">No evidence linked yet</p>
-                              <p className="text-xs text-[color:var(--category-2)] italic mt-1">Select text in the manuscript to map it here</p>
-                            </div>
+                        {/* Reasoning — instructor's when overridden, AI's otherwise */}
+                        <div className="space-y-2 pt-2 border-t border-border/40">
+                          {state.isOverridden && state.instructorReasoning ? (
+                            <>
+                              <span className="eyebrow text-muted-foreground/50 block text-xs">Instructor reasoning</span>
+                              <p className="text-xs text-foreground/75 leading-[1.6]">{state.instructorReasoning}</p>
+                            </>
                           ) : (
-                            <div className="flex flex-wrap gap-2 py-1">
+                            <>
+                              <span className="eyebrow text-muted-foreground/50 block text-xs">AI reasoning</span>
+                              {(point as any).working?.[0] && (
+                                <div className="flex items-start gap-2 text-xs text-foreground/75">
+                                  <span className="text-emerald-500 font-bold shrink-0 mt-px">✓</span>
+                                  <span className="leading-[1.5]">{(point as any).working[0]}</span>
+                                </div>
+                              )}
+                              {(point as any).gaps?.[0] && (
+                                <div className="flex items-start gap-2 text-xs text-foreground/75">
+                                  <span className="text-red-400 font-bold shrink-0 mt-px">✗</span>
+                                  <span className="leading-[1.5]">{(point as any).gaps[0]}</span>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+
+                        {/* Evidence — inline */}
+                        <div className="space-y-2 pt-2 border-t border-border/40">
+                          <span className="eyebrow text-muted-foreground/50 block text-xs">Evidence ({pointEvidence.length} linked)</span>
+                          {pointEvidence.length === 0 ? (
+                            <p className="text-xs text-muted-foreground/60 leading-[1.5]">No evidence linked. Scores with evidence attached see <span className="font-semibold text-foreground/50">40% fewer re-evaluation requests.</span></p>
+                          ) : (
+                            <div className="flex flex-wrap gap-1.5">
                               {pointEvidence.map((ev, i) => (
                                 <Tooltip key={ev.id}>
                                   <TooltipTrigger render={
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
+                                    <button
                                       onClick={() => scrollToEvidence(ev.id)}
-                                      className="group"
+                                      className="group flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border border-border bg-muted/30 hover:border-primary hover:bg-primary/5 transition-all"
                                     />
                                   }>
-                                      <div className="w-1.5 h-1.5 rounded-full bg-primary group-hover:animate-pulse" />
-                                      <span className="eyebrow text-muted-foreground group-hover:text-primary transition-colors">
-                                        Evidence #{i+1}
-                                      </span>
-                                      <div 
-                                        role="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          setMappedEvidence(prev => prev.filter(e => e.id !== ev.id))
-                                        }}
-                                        className="ml-1 opacity-0 group-hover:opacity-100 p-0.5 hover:bg-[color:var(--status-error-bg)] rounded-full transition-all"
-                                      >
-                                        <X className="h-2.5 w-2.5 text-destructive hover:text-[color:var(--status-error)]" />
-                                      </div>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary group-hover:animate-pulse shrink-0" />
+                                    <span className="eyebrow text-muted-foreground group-hover:text-primary transition-colors">E{i+1}</span>
+                                    <div
+                                      role="button"
+                                      onClick={(e) => { e.stopPropagation(); setMappedEvidence(prev => prev.filter(e => e.id !== ev.id)) }}
+                                      className="ml-0.5 opacity-0 group-hover:opacity-100 transition-all"
+                                    >
+                                      <X className="h-2.5 w-2.5 text-destructive" />
+                                    </div>
                                   </TooltipTrigger>
                                   <TooltipContent side="bottom" className="max-w-xs p-3 z-[100] bg-popover text-popover-foreground border border-border shadow-xl">
-                                    <div className="space-y-1">
-                                      <span className="eyebrow text-primary/60">Source Text</span>
-                                      <p className="text-xs font-serif italic leading-relaxed">
-                                        &ldquo;{ev.text || "No text available"}&rdquo;
-                                      </p>
-                                    </div>
+                                    <p className="text-xs font-serif italic leading-relaxed">&ldquo;{ev.text || 'No text available'}&rdquo;</p>
                                   </TooltipContent>
                                 </Tooltip>
                               ))}
@@ -1287,35 +1266,80 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                             variant={textSelectionMode.active && textSelectionMode.criterionId === point.id ? "default" : "outline"}
                             size="sm"
                             onClick={() => setTextSelectionMode({ active: true, criterionId: point.id })}
-                            className="w-full border-dashed"
+                            className="w-full border-dashed text-xs"
                           >
-                            <LinkIcon className={`h-3.5 w-3.5 ${textSelectionMode.active && textSelectionMode.criterionId === point.id ? 'animate-bounce' : ''}`} />
+                            <LinkIcon className={`h-3 w-3 ${textSelectionMode.active && textSelectionMode.criterionId === point.id ? 'animate-bounce' : ''}`} />
                             {textSelectionMode.active && textSelectionMode.criterionId === point.id ? 'Selecting evidence...' : '+ Add evidence'}
                           </Button>
                         </div>
-                      )}
-                    </div>
 
-                    <div className="rounded-xl border border-border bg-background shadow-sm overflow-hidden">
-                      <Button
-                        variant="ghost"
-                        onClick={() => setRubricAccordionOpen(prev => ({ ...prev, [`reasoning-${point.id}`]: !prev[`reasoning-${point.id}`] }))}
-                        className="w-full justify-between"
-                      >
-                        <span className="eyebrow text-muted-foreground">AI reasoning</span>
-                        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${rubricAccordionOpen[`reasoning-${point.id}`] ? 'rotate-180' : ''}`} />
-                      </Button>
-                      {rubricAccordionOpen[`reasoning-${point.id}`] && (
-                        <div className="px-4 pb-4 space-y-2">
-                          <p className="text-xs font-serif italic text-muted-foreground leading-relaxed">{point.reasoning}</p>
-                          <div className="flex flex-wrap gap-1.5">
-                            <Badge className="text-xs bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30 border shadow-none">{point.aiScoreLabel}</Badge>
-                            {point.status === 'REVIEW_NEEDED' && (
-                              <Badge className="text-xs bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30 border shadow-none">Review needed</Badge>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                        {/* Feedback — plain editable text box */}
+                        {(() => {
+                          const criterionKey = point.id
+                          const storeFb = studentCriterionFeedbacks[criterionKey]
+                          const currentScore = state.score ?? point.aiScore
+                          const suggestedFb = !storeFb ? generateCriterionFeedback(point.label, Math.round(currentScore / 2), [], '') : null
+                          const fb = storeFb || { ...suggestedFb, authorship: 'ai_generated' as const, isConfirmed: false, isApproved: false, regenCount: 0 }
+                          const isApproved = fb.isApproved
+
+                          return (
+                            <div className="space-y-2 pt-2 border-t border-border/40">
+                              <span className="eyebrow text-muted-foreground/50 block text-xs">Feedback</span>
+                              <textarea
+                                value={fb.feedbackText}
+                                onChange={e => {
+                                  if (!storeFb) {
+                                    confirmFeedback(criterionKey, { tier: fb.tier as any, tierLabel: fb.tierLabel, feedbackText: e.target.value, thinkingPrompt: fb.thinkingPrompt })
+                                  } else {
+                                    updateCriterionFeedback(criterionKey, e.target.value)
+                                  }
+                                }}
+                                rows={5}
+                                placeholder="Write feedback for this criterion…"
+                                className="w-full text-xs leading-[1.75] text-foreground bg-background border border-border rounded-lg p-3 resize-y focus:outline-none focus:border-primary/50 font-sans min-h-[100px] transition-colors"
+                              />
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={fb.regenCount >= 2}
+                                  onClick={() => {
+                                    const regen = generateCriterionFeedback(point.label, Math.round(currentScore / 2), [], '')
+                                    if (!storeFb) {
+                                      confirmFeedback(criterionKey, { tier: regen.tier as any, tierLabel: regen.tierLabel, feedbackText: regen.feedbackText, thinkingPrompt: regen.thinkingPrompt })
+                                    } else {
+                                      regenerateCriterionFeedback(criterionKey, regen.feedbackText, regen.tier as any, regen.tierLabel)
+                                    }
+                                  }}
+                                  className="eyebrow h-8 px-2.5 text-muted-foreground/60 gap-1.5 hover:text-foreground"
+                                >
+                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 2C8.5.8 6.5.5 4.5 1.3A5 5 0 0 0 2 9.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><path d="M2 6.5v3H5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                  {fb.regenCount >= 2 ? 'Max uses' : 'Regenerate'}
+                                </Button>
+                                {isApproved ? (
+                                  <Button variant="ghost" size="sm" className="eyebrow h-8 px-4 ml-auto bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border border-[color:var(--status-success)]/30 gap-1.5 cursor-default hover:bg-[color:var(--status-success-bg)] rounded-full">
+                                    <CheckCircle2 className="w-3.5 h-3.5" /> Finalized
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    className="eyebrow h-8 px-5 bg-foreground text-background gap-1.5 ml-auto rounded-full hover:opacity-90"
+                                    onClick={() => {
+                                      if (!storeFb) {
+                                        confirmFeedback(criterionKey, { tier: fb.tier as any, tierLabel: fb.tierLabel, feedbackText: fb.feedbackText, thinkingPrompt: fb.thinkingPrompt })
+                                      }
+                                      approveCriterionFeedback(criterionKey)
+                                    }}
+                                  >
+                                    <CheckCircle2 className="w-3.5 h-3.5" /> Confirm
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })()}
+
+                      </div>
                     </div>
                   </div>
                 </ScrollArea>
