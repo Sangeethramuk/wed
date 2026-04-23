@@ -12,18 +12,18 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
 const bannerVariants = cva(
-  "flex w-full items-center gap-3 rounded-lg border px-4 py-2.5 text-sm leading-snug",
+  "flex w-full items-center gap-3 rounded-md border-l-[3px] bg-muted/40 px-3 py-2 text-sm leading-snug",
   {
     variants: {
       variant: {
         info:
-          "bg-[color:var(--status-info-bg)] border-[color:var(--status-info)]/25 text-foreground [&>svg]:text-[color:var(--status-info)]",
+          "[border-left-color:var(--status-info)] [&>svg]:text-[color:var(--status-info)]",
         success:
-          "bg-[color:var(--status-success-bg)] border-[color:var(--status-success)]/25 text-foreground [&>svg]:text-[color:var(--status-success)]",
+          "[border-left-color:var(--status-success)] [&>svg]:text-[color:var(--status-success)]",
         warning:
-          "bg-[color:var(--status-warning-bg)] border-[color:var(--status-warning)]/25 text-foreground [&>svg]:text-[color:var(--status-warning)]",
+          "[border-left-color:var(--status-warning)] [&>svg]:text-[color:var(--status-warning)]",
         danger:
-          "bg-[color:var(--status-error-bg)] border-[color:var(--status-error)]/25 text-foreground [&>svg]:text-[color:var(--status-error)]",
+          "[border-left-color:var(--status-error)] [&>svg]:text-[color:var(--status-error)]",
       },
     },
     defaultVariants: {
