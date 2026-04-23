@@ -1613,7 +1613,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                         }}
                         className="h-9 flex-1 text-[10px] font-black uppercase tracking-widest bg-foreground text-background hover:bg-foreground/90 disabled:opacity-40 disabled:pointer-events-none"
                       >
-                        {allConfirmed ? 'Submit Grade →' : `· ${rubricPoints.length - confirmedCount} remaining`}
+                        {allConfirmed ? 'Overall Feedback →' : `· ${rubricPoints.length - confirmedCount} remaining`}
                       </Button>
                     ) : (
                       <Button
