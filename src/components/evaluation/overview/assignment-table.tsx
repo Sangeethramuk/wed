@@ -51,21 +51,12 @@ function CalibrationBadge({ state }: { state: EvaluationAssignment["calibrationS
 
 function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
   const router = useRouter()
-  const { calibration, initCalibration } = useGradingStore()
+  const { calibration } = useGradingStore()
 
   const calData = calibration[assignment.id]
   const isCalibrated = calData?.phase === "complete" || assignment.calibrationState === "complete"
 
   const handleAction = () => {
-    if (assignment.gradingStatus === "complete") {
-      router.push(`/dashboard/evaluation/results`)
-      return
-    }
-    if (!isCalibrated) {
-      if (!calData) initCalibration(assignment.id)
-      router.push(`/dashboard/evaluation/${assignment.id}/calibrate`)
-      return
-    }
     router.push(`/dashboard/evaluation/${assignment.id}`)
   }
 
@@ -87,7 +78,10 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
     : 0
 
   return (
-    <div className="group flex items-center gap-4 px-5 py-4 hover:bg-muted/20 transition-colors border-b border-border/30 last:border-0">
+    <div 
+      onClick={handleAction}
+      className="group flex items-center gap-4 px-5 py-4 hover:bg-muted/30 transition-all border-b border-border/30 last:border-0 cursor-pointer"
+    >
       {/* Status dot */}
       <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
         assignment.gradingStatus === "complete" ? "bg-[color:var(--status-success)]" :
