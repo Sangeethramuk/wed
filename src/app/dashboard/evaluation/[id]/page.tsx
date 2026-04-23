@@ -519,12 +519,11 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
   const ManuscriptPage = ({ index, children }: { index: number, children: React.ReactNode }) => {
     const question = questionMap.find(q => q.pages.includes(index))
-    const isSuspicious = currentStudent ? !currentStudent.checkpoints.cheating : false
 
     return (
       <div
         id={`page-${index}`}
-        className={`bg-background shadow-[0_0_50px_rgba(0,0,0,0.05)] border mx-auto transition-all duration-300 relative group/page ${textSelectionMode.active ? 'cursor-crosshair' : 'cursor-text'} ${isSuspicious ? 'border-[color:var(--status-error)]/40 ring-2 ring-[color:var(--status-error)]/15' : 'border-[#E6E1D6]/50'}`}
+        className={`bg-background shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-border mx-auto transition-all duration-300 relative group/page ${textSelectionMode.active ? 'cursor-crosshair' : 'cursor-text'}`}
         onMouseUp={(e) => {
           const sel = window.getSelection()
           if (sel && sel.toString().trim().length > 0) {
@@ -583,20 +582,6 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--status-warning)]" />
                 {question.id}
              </div>
-        )}
-
-        {isSuspicious && (
-          <Tooltip>
-            <TooltipTrigger>
-              <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full border border-[color:var(--status-error)]/40 bg-[color:var(--status-error-bg)] px-2.5 py-1 text-[11px] font-semibold text-[color:var(--status-error)]">
-                <AlertTriangle className="h-3 w-3" />
-                Review carefully
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              Review this area carefully — possible plagiarism or cheating detected on this submission.
-            </TooltipContent>
-          </Tooltip>
         )}
 
         <div className="p-16 lg:p-24 h-full font-serif overflow-hidden">
@@ -894,32 +879,47 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                   className="p-10 lg:p-24 transition-transform duration-500 ease-out origin-top flex flex-col items-center"
                   style={{ transform: `scale(${zoom / 100})` }}
                 >
-                  {/* Page 1 */}
-                  <ManuscriptPage index={1}>
-                    <div className="max-w-3xl mx-auto space-y-10">
-                      <div className="space-y-6 border-b border-border/80 pb-8">
-                        <div className="flex items-center justify-between">
-                          <h1 className="text-4xl font-serif text-foreground leading-tight italic tracking-tight underline decoration-primary/20">{manuscript.title}</h1>
-                        </div>
-                      </div>
-                      <ManuscriptRenderer elements={manuscript.pages[0].elements} userEvidence={mappedEvidence} />
-                    </div>
-                  </ManuscriptPage>
+                  {/*
+                    Per-page suspicious paragraph indices. Prototype: when the student's
+                    cheating checkpoint fails, flag two paragraphs on page 1 and one on
+                    page 3 so the "plagiarism highlight" pattern is visible without
+                    covering the whole submission. Each page's element indices start at 0.
+                  */}
+                  {(() => {
+                    const cheatingFlagged = currentStudent ? !currentStudent.checkpoints.cheating : false
+                    const page1Flags = cheatingFlagged ? [1, 4] : []
+                    const page3Flags = cheatingFlagged ? [2] : []
+                    return (
+                      <>
+                        {/* Page 1 */}
+                        <ManuscriptPage index={1}>
+                          <div className="max-w-3xl mx-auto space-y-10">
+                            <div className="space-y-6 border-b border-border/80 pb-8">
+                              <div className="flex items-center justify-between">
+                                <h1 className="text-4xl font-serif text-foreground leading-tight italic tracking-tight underline decoration-primary/20">{manuscript.title}</h1>
+                              </div>
+                            </div>
+                            <ManuscriptRenderer elements={manuscript.pages[0].elements} userEvidence={mappedEvidence} suspiciousElementIndices={page1Flags} />
+                          </div>
+                        </ManuscriptPage>
 
-                  {/* Page 2 */}
-                  <ManuscriptPage index={2}>
-                    <ManuscriptRenderer elements={manuscript.pages[1].elements} userEvidence={mappedEvidence} />
-                  </ManuscriptPage>
-                  
-                  {/* Page 3 */}
-                  <ManuscriptPage index={3}>
-                    <ManuscriptRenderer elements={manuscript.pages[2].elements} userEvidence={mappedEvidence} />
-                  </ManuscriptPage>
+                        {/* Page 2 */}
+                        <ManuscriptPage index={2}>
+                          <ManuscriptRenderer elements={manuscript.pages[1].elements} userEvidence={mappedEvidence} />
+                        </ManuscriptPage>
 
-                  {/* Page 4 */}
-                  <ManuscriptPage index={4}>
-                    <ManuscriptRenderer elements={manuscript.pages[3].elements} userEvidence={mappedEvidence} />
-                  </ManuscriptPage>
+                        {/* Page 3 */}
+                        <ManuscriptPage index={3}>
+                          <ManuscriptRenderer elements={manuscript.pages[2].elements} userEvidence={mappedEvidence} suspiciousElementIndices={page3Flags} />
+                        </ManuscriptPage>
+
+                        {/* Page 4 */}
+                        <ManuscriptPage index={4}>
+                          <ManuscriptRenderer elements={manuscript.pages[3].elements} userEvidence={mappedEvidence} />
+                        </ManuscriptPage>
+                      </>
+                    )
+                  })()}
 
                   <div className="h-60 shrink-0 w-full flex items-center justify-center opacity-20 hover:opacity-100 transition-opacity">
                       <div className="flex flex-col items-center gap-4">
