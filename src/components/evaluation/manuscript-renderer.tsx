@@ -1,9 +1,11 @@
 "use client"
 
+import React from "react"
 import { type ManuscriptElement } from "@/lib/manuscript-generator"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { criterionStyles, type CriterionKey } from "@/lib/design-tokens"
+import { AlertTriangle } from "lucide-react"
 
 type CriterionColor = {
   bg: string
@@ -237,16 +239,36 @@ function DiagramElement({
   )
 }
 
+function SuspiciousParagraphWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="relative rounded-md border border-[color:var(--status-error)]/30 bg-[color:var(--status-error-bg)] pl-5 pr-3 py-3 group/sus"
+      title="Review this area carefully — possible plagiarism or cheating detected."
+    >
+      <span className="absolute -top-2 left-3 inline-flex items-center gap-1 rounded-full border border-[color:var(--status-error)]/40 bg-background px-2 py-0.5 text-[10px] font-semibold text-[color:var(--status-error)]">
+        <AlertTriangle className="h-2.5 w-2.5" />
+        Review carefully
+      </span>
+      {children}
+    </div>
+  )
+}
+
 export default function ManuscriptRenderer({
   elements,
   userEvidence = [],
+  suspiciousElementIndices = [],
 }: {
   elements: ManuscriptElement[]
   userEvidence?: { id: string; text: string; criterionId: string }[]
+  /** Element indices (within `elements`) to flag as suspicious — renders with a review-carefully overlay + tooltip. */
+  suspiciousElementIndices?: number[]
 }) {
+  const suspiciousSet = new Set(suspiciousElementIndices)
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {elements.map((el, i) => {
+        const isSuspicious = suspiciousSet.has(i)
         switch (el.type) {
           case "heading":
             return el.level === 3 ? (
@@ -261,10 +283,11 @@ export default function ManuscriptRenderer({
 
           case "paragraph": {
             const matches = userEvidence.filter(ev => el.text.includes(ev.text))
+            let paragraphNode: React.ReactNode
             if (matches.length > 0) {
               const segments = splitByEvidence(el.text, matches)
-              return (
-                <p key={i} className="text-lg leading-[1.8] text-foreground/90 p-2 -m-2 rounded transition-colors font-serif">
+              paragraphNode = (
+                <p className="text-lg leading-[1.8] text-foreground/90 p-2 -m-2 rounded transition-colors font-serif">
                   {segments.map((seg, j) =>
                     seg.evidence ? (
                       <UserHighlightedSpan key={j} text={seg.text} criterionId={seg.evidence.criterionId} id={`evidence-${seg.evidence.id}`} />
@@ -274,16 +297,22 @@ export default function ManuscriptRenderer({
                   )}
                 </p>
               )
+            } else if (el.highlight) {
+              paragraphNode = (
+                <p className="text-lg leading-[1.8] text-foreground/90 p-2 -m-2 rounded transition-colors">
+                  <HighlightedSpan text={el.text} criterionId={el.highlight.criterionId} confidence={el.highlight.confidence} />
+                </p>
+              )
+            } else {
+              paragraphNode = (
+                <p className="text-lg leading-[1.8] text-foreground/90">
+                  {el.text}
+                </p>
+              )
             }
-            return el.highlight ? (
-              <p key={i} className="text-lg leading-[1.8] text-foreground/90 p-2 -m-2 rounded transition-colors">
-                <HighlightedSpan text={el.text} criterionId={el.highlight.criterionId} confidence={el.highlight.confidence} />
-              </p>
-            ) : (
-              <p key={i} className="text-lg leading-[1.8] text-foreground/90">
-                {el.text}
-              </p>
-            )
+            return isSuspicious
+              ? <SuspiciousParagraphWrapper key={i}>{paragraphNode}</SuspiciousParagraphWrapper>
+              : <div key={i}>{paragraphNode}</div>
           }
 
           case "code":

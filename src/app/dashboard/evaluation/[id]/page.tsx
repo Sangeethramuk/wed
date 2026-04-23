@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { motion, AnimatePresence } from "framer-motion"
@@ -24,11 +25,13 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  CheckCircle2, 
-  AlertCircle, 
+  CheckCircle2,
+  AlertCircle,
+  AlertTriangle,
   ShieldAlert,
   Zap,
   Info,
+  XCircle,
   MoreVertical,
   History,
   EyeOff,
@@ -237,16 +240,42 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
     const status = gradedSubmissions.includes(id) ? "graded" : (flags > 0 ? "flagged" : "ready")
 
-    return { 
-      id, 
-      name, 
-      code: `#${100 + i}`, 
-      status, 
-      flags, 
-      score: gradedSubmissions.includes(id) ? 85 + (i % 10) : 0, 
-      reason, 
+    // Review-prompt banners derived from 3 accountability checkpoints:
+    //   ocr      → info   (OCR quality is low)
+    //   history  → warning (historical-grade deviation)
+    //   cheating → danger (plagiarism / cheating)
+    type ReviewFlag = { severity: 'info' | 'success' | 'warning' | 'danger'; message: string }
+    const reviewFlags: ReviewFlag[] = []
+    if (!checkpoints.ocr) {
+      reviewFlags.push({
+        severity: 'info',
+        message: 'OCR quality is low on this submission — please review.',
+      })
+    }
+    if (!checkpoints.history) {
+      reviewFlags.push({
+        severity: 'warning',
+        message: `${name}'s submission is not in their usual pattern — please review carefully.`,
+      })
+    }
+    if (!checkpoints.cheating) {
+      reviewFlags.push({
+        severity: 'danger',
+        message: 'Possible cheating or plagiarism detected — please review.',
+      })
+    }
+
+    return {
+      id,
+      name,
+      code: `#${100 + i}`,
+      status,
+      flags,
+      score: gradedSubmissions.includes(id) ? 85 + (i % 10) : 0,
+      reason,
       category,
-      checkpoints 
+      checkpoints,
+      reviewFlags,
     }
   })
 
@@ -257,11 +286,12 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   })
   const currentStudent = allSubmissions.find(s => s.id === selectedSubmission)
 
+  const LOW_CONFIDENCE_THRESHOLD = 0.7
   const rubricPoints = [
-    { id: "c1", type: "c1", label: "Problem Understanding & Direction", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the problem framing, user/task clarity, assumptions/constraints, outcomes/non-goals, and scoped use-case mapping is present, and 20% of the work has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", working: ["Problem scope is clearly defined with boundaries", "User tasks and goals are well articulated", "Assumptions and constraints explicitly stated"], gaps: ["Outcome metrics are vague and unmeasurable", "Use-case mapping is incomplete — 2 of 5 scenarios missing"], levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
-    { id: "c2", type: "c2", label: "Iteration & Improvement", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the iteration rationale, before/after evidence, and next-steps articulation is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", working: ["Before/after comparison evidence is present", "Iteration rationale clearly stated for v1 → v2", "Next steps are articulated with justification"], gaps: ["v3 changes lack documented rationale", "No quantitative improvement metrics provided"], levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
-    { id: "c3", type: "c3", label: "Documentation & Reproducibility", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the setup/run steps, samples/expected outputs, troubleshooting, and limitations is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", working: ["Setup and run steps are complete and correct", "Sample inputs and expected outputs provided", "Limitations section acknowledges key constraints"], gaps: ["Troubleshooting guide is missing for 3 common error states", "No environment version pinning (Python/Node versions unspecified)"], levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] },
-    { id: "c4", type: "c4", label: "Technical Setup & Integration", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the tool/API integration, config documentation, runnable end-to-end execution, basic error handling, and test path is present, and 20% has issues.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", working: ["Tool and API integration correctly implemented", "Config documented with environment variable descriptions", "End-to-end execution path is runnable"], gaps: ["Basic error handling missing for network timeout scenarios", "No test path or smoke test included"], levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] }
+    { id: "c1", type: "c1", label: "Problem Understanding & Direction", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the problem framing, user/task clarity, assumptions/constraints, outcomes/non-goals, and scoped use-case mapping is present, and 20% of the work has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", aiConfidence: 0.92, working: ["Problem scope is clearly defined with boundaries", "User tasks and goals are well articulated", "Assumptions and constraints explicitly stated"], gaps: ["Outcome metrics are vague and unmeasurable", "Use-case mapping is incomplete — 2 of 5 scenarios missing"], levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
+    { id: "c2", type: "c2", label: "Iteration & Improvement", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the iteration rationale, before/after evidence, and next-steps articulation is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", aiConfidence: 0.55, working: ["Before/after comparison evidence is present", "Iteration rationale clearly stated for v1 → v2", "Next steps are articulated with justification"], gaps: ["v3 changes lack documented rationale", "No quantitative improvement metrics provided"], levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
+    { id: "c3", type: "c3", label: "Documentation & Reproducibility", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the setup/run steps, samples/expected outputs, troubleshooting, and limitations is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", aiConfidence: 0.88, working: ["Setup and run steps are complete and correct", "Sample inputs and expected outputs provided", "Limitations section acknowledges key constraints"], gaps: ["Troubleshooting guide is missing for 3 common error states", "No environment version pinning (Python/Node versions unspecified)"], levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] },
+    { id: "c4", type: "c4", label: "Technical Setup & Integration", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the tool/API integration, config documentation, runnable end-to-end execution, basic error handling, and test path is present, and 20% has issues.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", aiConfidence: 0.60, working: ["Tool and API integration correctly implemented", "Config documented with environment variable descriptions", "End-to-end execution path is runnable"], gaps: ["Basic error handling missing for network timeout scenarios", "No test path or smoke test included"], levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] }
   ]
 
   const [criterionState, setCriterionState] = useState<Record<string, { score: number, isOverridden: boolean, feedback: string, confirmed: boolean, instructorReasoning?: string }>>({})
@@ -814,7 +844,17 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 <div className="flex items-center gap-4">
                   <div className="flex flex-col">
                     <span className="eyebrow text-primary/60 mb-0.5">Authoring Identity</span>
-                    <h2 className="text-sm font-semibold tracking-tight text-foreground">{currentStudent?.name || "Evaluating..."}</h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold tracking-tight text-foreground">{currentStudent?.name || "Evaluating..."}</h2>
+                      {currentStudent && !currentStudent.checkpoints.timeline ? (
+                        <Badge
+                          variant="outline"
+                          className="text-[11px] h-5 px-2 rounded-full border-[color:var(--status-warning)]/40 bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)]"
+                        >
+                          Late submission — 10% penalty
+                        </Badge>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
 
@@ -849,7 +889,29 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 </div>
               </div>
             </header>
-            
+
+            {/* Per-student review flags — surfaced as shadcn Alert strip(s) above the full manuscript viewer. */}
+            {currentStudent?.reviewFlags?.length ? (
+              <div className="px-6 pt-3 space-y-2 shrink-0">
+                {currentStudent.reviewFlags.map((flag, i) => {
+                  const variant =
+                    flag.severity === "danger" ? "danger" :
+                    flag.severity === "warning" ? "warning" :
+                    flag.severity === "success" ? "success" : "info"
+                  const Icon =
+                    flag.severity === "danger" ? XCircle :
+                    flag.severity === "warning" ? AlertTriangle :
+                    flag.severity === "success" ? CheckCircle2 : Info
+                  return (
+                    <Alert key={i} variant={variant}>
+                      <Icon />
+                      <AlertDescription>{flag.message}</AlertDescription>
+                    </Alert>
+                  )
+                })}
+              </div>
+            ) : null}
+
             <div className="flex-1 flex overflow-hidden relative">
               <ArtifactSidebar artifacts={artifacts} />
               {/* Text Selection Mode Banner */}
@@ -903,32 +965,41 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 >
                   {manuscriptView === "ocr" ? (
                     <>
-                      {/* Page 1 */}
-                      <ManuscriptPage index={1}>
-                        <div className="max-w-3xl mx-auto space-y-10">
-                          <div className="space-y-6 border-b border-border/80 pb-8">
-                            <div className="flex items-center justify-between">
-                              <h1 className="text-4xl font-serif text-foreground leading-tight italic tracking-tight underline decoration-primary/20">{manuscript.title}</h1>
-                            </div>
-                          </div>
-                          <ManuscriptRenderer elements={manuscript.pages[0].elements} userEvidence={mappedEvidence} />
-                        </div>
-                      </ManuscriptPage>
+                      {(() => {
+                        const cheatingFlagged = currentStudent ? !currentStudent.checkpoints.cheating : false
+                        const page1Flags = cheatingFlagged ? [1, 4] : []
+                        const page3Flags = cheatingFlagged ? [2] : []
+                        return (
+                          <>
+                            {/* Page 1 */}
+                            <ManuscriptPage index={1}>
+                              <div className="max-w-3xl mx-auto space-y-10">
+                                <div className="space-y-6 border-b border-border/80 pb-8">
+                                  <div className="flex items-center justify-between">
+                                    <h1 className="text-4xl font-serif text-foreground leading-tight italic tracking-tight underline decoration-primary/20">{manuscript.title}</h1>
+                                  </div>
+                                </div>
+                                <ManuscriptRenderer elements={manuscript.pages[0].elements} userEvidence={mappedEvidence} suspiciousElementIndices={page1Flags} />
+                              </div>
+                            </ManuscriptPage>
 
-                      {/* Page 2 */}
-                      <ManuscriptPage index={2}>
-                        <ManuscriptRenderer elements={manuscript.pages[1].elements} userEvidence={mappedEvidence} />
-                      </ManuscriptPage>
+                            {/* Page 2 */}
+                            <ManuscriptPage index={2}>
+                              <ManuscriptRenderer elements={manuscript.pages[1].elements} userEvidence={mappedEvidence} />
+                            </ManuscriptPage>
 
-                      {/* Page 3 */}
-                      <ManuscriptPage index={3}>
-                        <ManuscriptRenderer elements={manuscript.pages[2].elements} userEvidence={mappedEvidence} />
-                      </ManuscriptPage>
+                            {/* Page 3 */}
+                            <ManuscriptPage index={3}>
+                              <ManuscriptRenderer elements={manuscript.pages[2].elements} userEvidence={mappedEvidence} suspiciousElementIndices={page3Flags} />
+                            </ManuscriptPage>
 
-                      {/* Page 4 */}
-                      <ManuscriptPage index={4}>
-                        <ManuscriptRenderer elements={manuscript.pages[3].elements} userEvidence={mappedEvidence} />
-                      </ManuscriptPage>
+                            {/* Page 4 */}
+                            <ManuscriptPage index={4}>
+                              <ManuscriptRenderer elements={manuscript.pages[3].elements} userEvidence={mappedEvidence} />
+                            </ManuscriptPage>
+                          </>
+                        )
+                      })()}
                     </>
                   ) : (
                     <>
@@ -1012,14 +1083,27 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                     {rubricPoints.map((p, idx) => {
                       const done = !!criterionState[p.id]?.confirmed
                       const active = idx === activeRubricCriterionIdx
+                      const lowConfidence = (p.aiConfidence ?? 1) < LOW_CONFIDENCE_THRESHOLD
                       return (
-                        <Button key={p.id} variant="ghost" size="sm" onClick={() => setActiveRubricCriterionIdx(idx)} className="flex-1 h-auto flex-col gap-1 py-1">
-                          <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
-                            done ? 'bg-foreground border-foreground' :
-                            active ? 'border-[color:var(--category-2)]/30 bg-background' :
-                            'border-border bg-background'
-                          }`}>
-                            {active && !done && <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--category-2)]" />}
+                        <Button key={p.id} variant="ghost" size="sm" onClick={() => setActiveRubricCriterionIdx(idx)} className="flex-1 h-auto flex-col gap-1 py-1 relative">
+                          <div className="relative">
+                            <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
+                              done ? 'bg-foreground border-foreground' :
+                              active ? 'border-[color:var(--category-2)]/30 bg-background' :
+                              'border-border bg-background'
+                            }`}>
+                              {active && !done && <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--category-2)]" />}
+                            </div>
+                            {lowConfidence && !done ? (
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <span className="absolute -top-2 -right-2 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background">
+                                    <AlertTriangle className="h-3 w-3 text-[color:var(--status-warning)]" />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>AI confidence is low for this criterion — please review.</TooltipContent>
+                              </Tooltip>
+                            ) : null}
                           </div>
                           <span className={`text-xs font-bold transition-colors ${active ? 'text-foreground' : 'text-muted-foreground/50'}`}>C{p.id}</span>
                         </Button>
