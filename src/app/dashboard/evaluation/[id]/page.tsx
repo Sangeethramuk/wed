@@ -14,20 +14,22 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Banner } from "@/components/ui/banner"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { motion, AnimatePresence } from "framer-motion"
-import { 
-  Search, 
+import {
+  Search,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  CheckCircle2, 
-  AlertCircle, 
+  CheckCircle2,
+  AlertCircle,
+  AlertTriangle,
   ShieldAlert,
   Zap,
   Info,
+  XCircle,
   MoreVertical,
   History,
   EyeOff,
@@ -780,15 +782,27 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
               </div>
             </header>
 
-            {/* Per-student review flags — surfaced as Banner strip(s) above the full manuscript viewer.
-                Rendered here (between header and the horizontal artifact+manuscript row) so it spans full width. */}
+            {/* Per-student review flags — surfaced as shadcn Alert strip(s) above the full manuscript
+                viewer. Rendered here (between header and the horizontal artifact+manuscript row) so
+                it spans full width. */}
             {currentStudent?.reviewFlags?.length ? (
               <div className="px-6 pt-3 space-y-2 shrink-0">
-                {currentStudent.reviewFlags.map((flag, i) => (
-                  <Banner key={i} variant={flag.severity}>
-                    {flag.message}
-                  </Banner>
-                ))}
+                {currentStudent.reviewFlags.map((flag, i) => {
+                  const variant =
+                    flag.severity === "danger" ? "danger" :
+                    flag.severity === "warning" ? "warning" :
+                    flag.severity === "success" ? "success" : "info"
+                  const Icon =
+                    flag.severity === "danger" ? XCircle :
+                    flag.severity === "warning" ? AlertTriangle :
+                    flag.severity === "success" ? CheckCircle2 : Info
+                  return (
+                    <Alert key={i} variant={variant}>
+                      <Icon />
+                      <AlertDescription>{flag.message}</AlertDescription>
+                    </Alert>
+                  )
+                })}
               </div>
             ) : null}
 
