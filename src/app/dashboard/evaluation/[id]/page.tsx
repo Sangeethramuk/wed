@@ -120,6 +120,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     linkedEvidence: Array<{ id: string, text: string, page: number }>
     ocrFile?: { name: string, size: string }
     reasoning: string
+    scoreReasoning: string
   }
 
   const [overrideDrafts, setOverrideDrafts] = useState<Record<string, OverrideDraft>>({})
@@ -159,6 +160,27 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
   const manuscript = useMemo(() => generateManuscript(selectedSubmission), [selectedSubmission])
   const artifacts = useMemo(() => generateArtifacts(selectedSubmission), [selectedSubmission])
+
+  // Pre-seed one evidence excerpt per criterion from the manuscript's highlighted paragraphs
+  useEffect(() => {
+    const seeded: { id: string; text: string; criterionId: string }[] = []
+    const seen = new Set<string>()
+    for (const page of manuscript.pages) {
+      for (const el of page.elements) {
+        if (el.type === 'paragraph' && el.highlight && !seen.has(el.highlight.criterionId)) {
+          seen.add(el.highlight.criterionId)
+          const full = el.text
+          // grab a ~80-char window from the middle to avoid sentence-start boilerplate
+          const start = Math.max(0, Math.floor(full.length * 0.2))
+          const raw = full.slice(start, start + 85)
+          // trim to the nearest word boundary
+          const trimmed = raw.slice(0, raw.lastIndexOf(' ') > 20 ? raw.lastIndexOf(' ') : raw.length)
+          seeded.push({ id: `seed-${el.highlight.criterionId}`, text: trimmed, criterionId: el.highlight.criterionId })
+        }
+      }
+    }
+    setMappedEvidence(seeded)
+  }, [selectedSubmission]) // eslint-disable-line react-hooks/exhaustive-deps
   // Mock data for 60 students - Indian names
   const firstNames = [
     "Arjun", "Priya", "Rahul", "Ananya", "Vikram", 
@@ -236,7 +258,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     { id: "c4", type: "c4", label: "Technical Setup & Integration", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the tool/API integration, config documentation, runnable end-to-end execution, basic error handling, and test path is present, and 20% has issues.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", working: ["Tool and API integration correctly implemented", "Config documented with environment variable descriptions", "End-to-end execution path is runnable"], gaps: ["Basic error handling missing for network timeout scenarios", "No test path or smoke test included"], levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] }
   ]
 
-  const [criterionState, setCriterionState] = useState<Record<string, { score: number, isOverridden: boolean, feedback: string, confirmed: boolean }>>({})
+  const [criterionState, setCriterionState] = useState<Record<string, { score: number, isOverridden: boolean, feedback: string, confirmed: boolean, instructorReasoning?: string }>>({})
 
   const calculateTotalScore = () => {
     return rubricPoints.reduce((total, point) => {
@@ -292,7 +314,8 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
         direction,
         reasonCategory: prev[criterionId]?.reasonCategory || '',
         linkedEvidence: prev[criterionId]?.linkedEvidence || [],
-        reasoning: prev[criterionId]?.reasoning || ''
+        reasoning: prev[criterionId]?.reasoning || '',
+        scoreReasoning: prev[criterionId]?.scoreReasoning || ''
       }
     }))
   }
@@ -307,10 +330,10 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
   const handleConfirmOverride = (criterionId: string) => {
     const draft = overrideDrafts[criterionId]
-    if (!draft || draft.reasoning.length < 20) return
+    if (!draft || (draft.reasonCategory === '' && draft.reasoning.trim().length === 0)) return
     setCriterionState(prev => ({
       ...prev,
-      [criterionId]: { ...prev[criterionId], score: draft.proposedScore, isOverridden: true, confirmed: true }
+      [criterionId]: { ...prev[criterionId], score: draft.proposedScore, isOverridden: true, confirmed: true, instructorReasoning: draft.scoreReasoning }
     }))
     addRevisionEvent({
       type: 'override',
@@ -896,7 +919,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
             const isOverride = activeOverrideId === point.id && !!draft
             const isIncrease = draft?.direction === 'increase'
             const overrideReasons = isIncrease ? INCREASE_REASONS : DECREASE_REASONS
-            const isOverrideValid = !!draft && draft.reasoning.length >= 20 && (draft.reasonCategory !== 'found_more_evidence' || draft.linkedEvidence.length > 0)
+            const isOverrideValid = !!draft && (draft.reasonCategory !== '' || draft.reasoning.trim().length > 0) && draft.scoreReasoning.trim().length > 0
             const pointEvidence = mappedEvidence.filter(e => e.criterionId === point.id)
 
             return (
@@ -954,6 +977,11 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                               <span className="text-2xl font-semibold text-foreground tabular-nums">{(state.score ?? point.aiScore).toFixed(1)}</span>
                               <span className="text-sm text-muted-foreground/60">/{point.maxPoints}</span>
                             </div>
+                            {state.isOverridden && (
+                              <span className="ml-1 text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                                Overridden
+                              </span>
+                            )}
                             <span className="text-xs text-muted-foreground/50 ml-auto">Adjust:</span>
                           </div>
 
@@ -1022,98 +1050,108 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                           )}
                         </div>
 
-                        {/* Override block */}
-                        {isOverride && (
-                          <div className="border border-[color:var(--status-warning)]/30 rounded-lg bg-[color:var(--status-warning-bg)]/50 p-3 space-y-3">
-                            <div className={`flex items-center gap-2 ${isIncrease ? 'text-[color:var(--status-success)]' : 'text-[color:var(--status-error)]'}`}>
-                              {isIncrease ? <ArrowUp className="h-3.5 w-3.5 shrink-0" /> : <ArrowDown className="h-3.5 w-3.5 shrink-0" />}
-                              <span className="text-xs font-semibold">
-                                Proposing {draft.proposedScore}pts ({isIncrease ? '↑' : '↓'}{Math.abs(draft.proposedScore - draft.aiScore).toFixed(1)} from AI&apos;s {draft.aiScore}pts)
-                              </span>
-                            </div>
-                            <select
-                              value={draft.reasonCategory}
-                              onChange={e => {
-                                handleUpdateDraft(point.id, { reasonCategory: e.target.value })
-                                if (e.target.value === 'found_more_evidence') {
-                                  setTextSelectionMode({ active: true, criterionId: point.id })
-                                } else {
-                                  setTextSelectionMode({ active: false, criterionId: null })
-                                }
-                              }}
-                              className="w-full text-xs rounded border border-[color:var(--status-warning)]/30 bg-background p-2 text-foreground focus:outline-none focus:ring-1 focus:ring-amber-300"
-                            >
-                              <option value="">Select a reason&hellip;</option>
-                              {overrideReasons.map(r => (
-                                <option key={r.value} value={r.value}>{r.label}</option>
-                              ))}
-                            </select>
-                            {draft.reasonCategory === 'found_more_evidence' && (
-                              <div className="p-2.5 rounded-lg bg-[color:var(--status-info-bg)] border border-[color:var(--status-info)]/30">
-                                <p className="text-xs text-[color:var(--status-info)]/80 leading-relaxed mb-2">Highlight text in the manuscript to link as evidence.</p>
-                                {draft.linkedEvidence.length > 0 && (
-                                  <div className="space-y-1.5 mb-2">
-                                    {draft.linkedEvidence.map((ev, i) => (
-                                      <div key={ev.id} className="flex items-start gap-2 p-2 rounded bg-background border border-[color:var(--status-info)]/30 group/ev">
-                                        <span className="text-xs font-mono font-bold text-[color:var(--status-info)] shrink-0">E{i + 1}</span>
-                                        <p className="text-xs font-serif italic text-foreground/70 flex-1 leading-relaxed">&quot;{ev.text.length > 60 ? ev.text.substring(0, 60) + '...' : ev.text}&quot;</p>
-                                        <Button variant="ghost" size="icon-xs" onClick={() => handleRemoveOverrideEvidence(point.id, ev.id)} className="opacity-0 group-hover/ev:opacity-100 transition-opacity shrink-0">
-                                          <X className="h-3 w-3 text-destructive" />
-                                        </Button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                                {draft.linkedEvidence.length === 0 && (
-                                  <p className="text-xs text-[color:var(--status-info)]/60 italic">No evidence linked yet</p>
-                                )}
+                        {/* Override block — chip + custom-input pattern */}
+                        {isOverride && (() => {
+                          const chipReasons = [
+                            'Rubric ambiguity',
+                            'Student explained verbally',
+                            'Missed context',
+                            'Effort acknowledged',
+                            'Partial credit warranted',
+                          ]
+                          return (
+                            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3.5">
+                              {/* Header */}
+                              <div>
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  {isIncrease ? <ArrowUp className="h-3.5 w-3.5 text-[color:var(--status-success)] shrink-0" /> : <ArrowDown className="h-3.5 w-3.5 text-[color:var(--status-error)] shrink-0" />}
+                                  <span className="text-sm font-semibold text-foreground">
+                                    Proposing {draft.proposedScore}pts
+                                    <span className={`ml-1 text-xs font-normal ${isIncrease ? 'text-[color:var(--status-success)]' : 'text-[color:var(--status-error)]'}`}>
+                                      ({isIncrease ? '+' : '−'}{Math.abs(draft.proposedScore - draft.aiScore).toFixed(1)} from AI&apos;s {draft.aiScore}pts)
+                                    </span>
+                                  </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground/60 pl-5">One tap for common reasons, or type a custom reason</p>
                               </div>
-                            )}
-                            <div className="space-y-1">
-                              <div className="flex items-center justify-between">
-                                <span className="eyebrow text-muted-foreground">Explain your override</span>
-                                <span className={`text-xs font-mono ${draft.reasoning.length >= 20 ? 'text-[color:var(--status-success)]' : 'text-[color:var(--status-warning)]'}`}>{draft.reasoning.length}/20</span>
+
+                              {/* Reason chips */}
+                              <div className="flex flex-wrap gap-2">
+                                {chipReasons.map(chip => {
+                                  const active = draft.reasonCategory === chip
+                                  return (
+                                    <button
+                                      key={chip}
+                                      onClick={() => handleUpdateDraft(point.id, { reasonCategory: active ? '' : chip })}
+                                      className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${
+                                        active
+                                          ? 'bg-foreground text-background border-foreground'
+                                          : 'bg-background text-foreground border-border hover:border-foreground/50'
+                                      }`}
+                                    >
+                                      {chip}
+                                    </button>
+                                  )
+                                })}
                               </div>
-                              <textarea
+
+                              {/* Custom reason input */}
+                              <input
+                                type="text"
                                 value={draft.reasoning}
                                 onChange={e => handleUpdateDraft(point.id, { reasoning: e.target.value })}
-                                placeholder={isIncrease ? 'Describe what the AI missed...' : "Explain what's wrong with the AI's interpretation..."}
-                                className="w-full h-20 rounded-lg border border-[color:var(--status-warning)]/30 bg-background p-2.5 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-amber-300 text-foreground/80 placeholder:text-xs placeholder:text-muted-foreground/40"
+                                placeholder="Or type a custom reason…"
+                                className="w-full text-xs px-3 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary/50 transition-colors"
                               />
-                            </div>
-                            {!isOverrideValid && draft.reasonCategory && (
-                              <div className="flex items-center gap-2 p-2 rounded bg-[color:var(--status-warning-bg)] border border-[color:var(--status-warning)]/30">
-                                <AlertCircle className="h-3 w-3 text-[color:var(--status-warning)] shrink-0" />
-                                <span className="text-xs text-[color:var(--status-warning)]">
-                                  {draft.reasoning.length < 20
-                                    ? 'At least 20 characters required.'
-                                    : draft.reasonCategory === 'found_more_evidence' && draft.linkedEvidence.length === 0
-                                    ? 'Link at least one evidence from the manuscript.'
-                                    : ''}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm" onClick={() => handleCancelOverride(point.id)}>Cancel</Button>
-                              <Button size="sm" onClick={() => handleConfirmOverride(point.id)} disabled={!isOverrideValid} className="flex-1">Confirm override</Button>
-                            </div>
-                          </div>
-                        )}
 
-                        {/* AI reasoning — inline, 2 pointer lines */}
+                              {/* Score justification */}
+                              <div className="space-y-1.5">
+                                <p className="text-xs font-medium text-foreground/70">
+                                  Why is <span className="font-bold text-foreground">{draft.proposedScore}pts</span> the correct score for this criterion?
+                                </p>
+                                <textarea
+                                  value={draft.scoreReasoning}
+                                  onChange={e => handleUpdateDraft(point.id, { scoreReasoning: e.target.value })}
+                                  rows={3}
+                                  placeholder="Describe what in the student's work justifies this score…"
+                                  className="w-full text-xs px-3 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary/50 resize-none transition-colors min-h-[72px]"
+                                />
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex gap-2 pt-0.5">
+                                <Button variant="outline" size="sm" onClick={() => handleCancelOverride(point.id)} className="shrink-0">Cancel</Button>
+                                <Button size="sm" onClick={() => handleConfirmOverride(point.id)} disabled={!isOverrideValid} className="flex-1">
+                                  Confirm override
+                                </Button>
+                              </div>
+                            </div>
+                          )
+                        })()}
+
+                        {/* Reasoning — instructor's when overridden, AI's otherwise */}
                         <div className="space-y-2 pt-2 border-t border-border/40">
-                          <span className="eyebrow text-muted-foreground/50 block text-xs mb-1.5">AI reasoning</span>
-                          {(point as any).working?.[0] && (
-                            <div className="flex items-start gap-2 text-xs text-foreground/75">
-                              <span className="text-emerald-500 font-bold shrink-0 mt-px">✓</span>
-                              <span className="leading-[1.5]">{(point as any).working[0]}</span>
-                            </div>
-                          )}
-                          {(point as any).gaps?.[0] && (
-                            <div className="flex items-start gap-2 text-xs text-foreground/75">
-                              <span className="text-red-400 font-bold shrink-0 mt-px">✗</span>
-                              <span className="leading-[1.5]">{(point as any).gaps[0]}</span>
-                            </div>
+                          {state.isOverridden && state.instructorReasoning ? (
+                            <>
+                              <span className="eyebrow text-muted-foreground/50 block text-xs">Instructor reasoning</span>
+                              <p className="text-xs text-foreground/75 leading-[1.6]">{state.instructorReasoning}</p>
+                            </>
+                          ) : (
+                            <>
+                              <span className="eyebrow text-muted-foreground/50 block text-xs">AI reasoning</span>
+                              {(point as any).working?.[0] && (
+                                <div className="flex items-start gap-2 text-xs text-foreground/75">
+                                  <span className="text-emerald-500 font-bold shrink-0 mt-px">✓</span>
+                                  <span className="leading-[1.5]">{(point as any).working[0]}</span>
+                                </div>
+                              )}
+                              {(point as any).gaps?.[0] && (
+                                <div className="flex items-start gap-2 text-xs text-foreground/75">
+                                  <span className="text-red-400 font-bold shrink-0 mt-px">✗</span>
+                                  <span className="leading-[1.5]">{(point as any).gaps[0]}</span>
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
 

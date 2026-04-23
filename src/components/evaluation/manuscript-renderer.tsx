@@ -63,13 +63,13 @@ function ConfidenceBars({ confidence }: { confidence: number }) {
 }
 
 function UserHighlightedSpan({ text, criterionId, id }: { text: string; criterionId: string; id?: string }) {
-  const c = CRITERION_COLORS[criterionId] ?? CRITERION_COLORS[1]
+  const c = CRITERION_COLORS[criterionId] ?? CRITERION_COLORS['c1']
   const label = CRITERION_LABELS[criterionId] ?? `Criterion ${criterionId}`
   return (
     <HoverCard>
       <HoverCardTrigger
         id={id}
-        className={`bg-[color:var(--status-warning-bg)]/90 border-b-2 border-[color:var(--status-warning)] border-dashed px-1 rounded cursor-pointer hover:bg-[color:var(--status-warning-bg)]/80 transition-colors scroll-mt-20`}
+        className={`${c.bg} border-b-2 ${c.border} border-dashed px-1 rounded cursor-pointer transition-colors scroll-mt-20`}
       >
         {text}
       </HoverCardTrigger>
