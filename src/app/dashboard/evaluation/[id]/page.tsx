@@ -212,39 +212,30 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
     const status = gradedSubmissions.includes(id) ? "graded" : (flags > 0 ? "flagged" : "ready")
 
-    // Prototype: review-prompt banners derived from the 5 accountability checkpoints.
-    // Each failing checkpoint pushes a banner with its own severity + copy, so the
-    // banner stack matches the ✗ indicators already shown in the triage sidebar tooltip.
+    // Review-prompt banners derived from 3 accountability checkpoints:
+    //   ocr      → info   (OCR quality is low)
+    //   history  → warning (historical-grade deviation)
+    //   cheating → danger (plagiarism / cheating)
+    // `grading` → not a banner (grading-confidence surfaces as per-criterion alert icons in the rubric stepper).
+    // `timeline` → not a banner (late submission surfaces as a pill in the student metadata).
     type ReviewFlag = { severity: 'info' | 'success' | 'warning' | 'danger'; message: string }
     const reviewFlags: ReviewFlag[] = []
-    if (!checkpoints.grading) {
-      reviewFlags.push({
-        severity: 'warning',
-        message: `Scores are unusually high for ${name} — please review.`,
-      })
-    }
     if (!checkpoints.ocr) {
       reviewFlags.push({
         severity: 'info',
         message: 'OCR quality is low on this submission — please review.',
       })
     }
+    if (!checkpoints.history) {
+      reviewFlags.push({
+        severity: 'warning',
+        message: `${name}'s submission is not in their usual pattern — please review carefully.`,
+      })
+    }
     if (!checkpoints.cheating) {
       reviewFlags.push({
         severity: 'danger',
         message: 'Possible cheating or plagiarism detected — please review.',
-      })
-    }
-    if (!checkpoints.history) {
-      reviewFlags.push({
-        severity: 'warning',
-        message: 'Grade history is inconsistent with prior submissions — please review.',
-      })
-    }
-    if (!checkpoints.timeline) {
-      reviewFlags.push({
-        severity: 'warning',
-        message: 'Submission timeline is unusual — please review.',
       })
     }
 
@@ -269,11 +260,12 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   })
   const currentStudent = allSubmissions.find(s => s.id === selectedSubmission)
 
+  const LOW_CONFIDENCE_THRESHOLD = 0.7
   const rubricPoints = [
-    { id: "c1", type: "c1", label: "Problem Understanding & Direction", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the problem framing, user/task clarity, assumptions/constraints, outcomes/non-goals, and scoped use-case mapping is present, and 20% of the work has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
-    { id: "c2", type: "c2", label: "Iteration & Improvement", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the iteration rationale, before/after evidence, and next-steps articulation is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
-    { id: "c3", type: "c3", label: "Documentation & Reproducibility", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the setup/run steps, samples/expected outputs, troubleshooting, and limitations is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] },
-    { id: "c4", type: "c4", label: "Technical Setup & Integration", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the tool/API integration, config documentation, runnable end-to-end execution, basic error handling, and test path is present, and 20% has issues.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] }
+    { id: "c1", type: "c1", label: "Problem Understanding & Direction", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the problem framing, user/task clarity, assumptions/constraints, outcomes/non-goals, and scoped use-case mapping is present, and 20% of the work has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", aiConfidence: 0.92, levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
+    { id: "c2", type: "c2", label: "Iteration & Improvement", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the iteration rationale, before/after evidence, and next-steps articulation is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", aiConfidence: 0.55, levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
+    { id: "c3", type: "c3", label: "Documentation & Reproducibility", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the setup/run steps, samples/expected outputs, troubleshooting, and limitations is present, and 20% has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", aiConfidence: 0.88, levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] },
+    { id: "c4", type: "c4", label: "Technical Setup & Integration", maxPoints: 12, aiScore: 7.2, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the tool/API integration, config documentation, runnable end-to-end execution, basic error handling, and test path is present, and 20% has issues.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", aiConfidence: 0.60, levels: [{val: 5, name: "Exceeds expectations", points: 12}, {val: 4, name: "Meets expectations", points: 9.6}, {val: 3, name: "Meets expectations with fewer issues", points: 7.2}, {val: 2, name: "Below Expectations", points: 4.8}, {val: 1, name: "Significant issues identified", points: 2.4}] }
   ]
 
   const [criterionState, setCriterionState] = useState<Record<string, { score: number, isOverridden: boolean, feedback: string, confirmed: boolean }>>({})
@@ -527,11 +519,12 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
   const ManuscriptPage = ({ index, children }: { index: number, children: React.ReactNode }) => {
     const question = questionMap.find(q => q.pages.includes(index))
-    
+    const isSuspicious = currentStudent ? !currentStudent.checkpoints.cheating : false
+
     return (
-      <div 
+      <div
         id={`page-${index}`}
-        className={`bg-background shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-[#E6E1D6]/50 mx-auto transition-all duration-300 relative group/page ${textSelectionMode.active ? 'cursor-crosshair' : 'cursor-text'}`}
+        className={`bg-background shadow-[0_0_50px_rgba(0,0,0,0.05)] border mx-auto transition-all duration-300 relative group/page ${textSelectionMode.active ? 'cursor-crosshair' : 'cursor-text'} ${isSuspicious ? 'border-[color:var(--status-error)]/40 ring-2 ring-[color:var(--status-error)]/15' : 'border-[#E6E1D6]/50'}`}
         onMouseUp={(e) => {
           const sel = window.getSelection()
           if (sel && sel.toString().trim().length > 0) {
@@ -590,6 +583,20 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--status-warning)]" />
                 {question.id}
              </div>
+        )}
+
+        {isSuspicious && (
+          <Tooltip>
+            <TooltipTrigger>
+              <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full border border-[color:var(--status-error)]/40 bg-[color:var(--status-error-bg)] px-2.5 py-1 text-[11px] font-semibold text-[color:var(--status-error)]">
+                <AlertTriangle className="h-3 w-3" />
+                Review carefully
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              Review this area carefully — possible plagiarism or cheating detected on this submission.
+            </TooltipContent>
+          </Tooltip>
         )}
 
         <div className="p-16 lg:p-24 h-full font-serif overflow-hidden">
@@ -776,7 +783,17 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 <div className="flex items-center gap-4">
                   <div className="flex flex-col">
                     <span className="eyebrow text-primary/60 mb-0.5">Authoring Identity</span>
-                    <h2 className="text-sm font-semibold tracking-tight text-foreground">{currentStudent?.name || "Evaluating..."}</h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold tracking-tight text-foreground">{currentStudent?.name || "Evaluating..."}</h2>
+                      {currentStudent && !currentStudent.checkpoints.timeline ? (
+                        <Badge
+                          variant="outline"
+                          className="text-[11px] h-5 px-2 rounded-full border-[color:var(--status-warning)]/40 bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)]"
+                        >
+                          Late submission — 10% penalty
+                        </Badge>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
                 
@@ -977,14 +994,27 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                     {rubricPoints.map((p, idx) => {
                       const done = !!criterionState[p.id]?.confirmed
                       const active = idx === activeRubricCriterionIdx
+                      const lowConfidence = (p.aiConfidence ?? 1) < LOW_CONFIDENCE_THRESHOLD
                       return (
-                        <Button key={p.id} variant="ghost" size="sm" onClick={() => setActiveRubricCriterionIdx(idx)} className="flex-1 h-auto flex-col gap-1 py-1">
-                          <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
-                            done ? 'bg-foreground border-foreground' :
-                            active ? 'border-[color:var(--category-2)]/30 bg-background' :
-                            'border-border bg-background'
-                          }`}>
-                            {active && !done && <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--category-2)]" />}
+                        <Button key={p.id} variant="ghost" size="sm" onClick={() => setActiveRubricCriterionIdx(idx)} className="flex-1 h-auto flex-col gap-1 py-1 relative">
+                          <div className="relative">
+                            <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
+                              done ? 'bg-foreground border-foreground' :
+                              active ? 'border-[color:var(--category-2)]/30 bg-background' :
+                              'border-border bg-background'
+                            }`}>
+                              {active && !done && <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--category-2)]" />}
+                            </div>
+                            {lowConfidence && !done ? (
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <span className="absolute -top-2 -right-2 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background">
+                                    <AlertTriangle className="h-3 w-3 text-[color:var(--status-warning)]" />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>AI confidence is low for this criterion — please review.</TooltipContent>
+                              </Tooltip>
+                            ) : null}
                           </div>
                           <span className={`text-xs font-bold transition-colors ${active ? 'text-foreground' : 'text-muted-foreground/50'}`}>C{p.id}</span>
                         </Button>
