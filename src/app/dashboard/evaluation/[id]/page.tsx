@@ -212,21 +212,41 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
     const status = gradedSubmissions.includes(id) ? "graded" : (flags > 0 ? "flagged" : "ready")
 
-    // Prototype: review-prompt banners on a few specific entries — three
-    // canonical states the user called out:
-    //   • warning → scores unusually low or high
-    //   • danger  → possible cheating or plagiarism detected
-    //   • info    → OCR quality is low
-    // Indices chosen so the banners show up on early, discoverable students.
+    // Prototype: review-prompt banners derived from the 5 accountability checkpoints.
+    // Each failing checkpoint pushes a banner with its own severity + copy, so the
+    // banner stack matches the ✗ indicators already shown in the triage sidebar tooltip.
     type ReviewFlag = { severity: 'info' | 'success' | 'warning' | 'danger'; message: string }
-    const reviewFlags: ReviewFlag[] = (() => {
-      if (i === 0) return [{ severity: 'warning', message: `Scores are unusually high for ${name} — please review.` }]
-      if (i === 4) return [{ severity: 'info', message: 'OCR quality is low on this submission — please review.' }]
-      if (i === 7) return [{ severity: 'danger', message: 'Possible cheating or plagiarism detected — please review.' }]
-      if (i === 13) return [{ severity: 'warning', message: `Scores are unusually low for ${name} — please review.` }]
-      if (i === 19) return [{ severity: 'danger', message: 'Possible cheating or plagiarism detected — please review.' }]
-      return []
-    })()
+    const reviewFlags: ReviewFlag[] = []
+    if (!checkpoints.grading) {
+      reviewFlags.push({
+        severity: 'warning',
+        message: `Scores are unusually high for ${name} — please review.`,
+      })
+    }
+    if (!checkpoints.ocr) {
+      reviewFlags.push({
+        severity: 'info',
+        message: 'OCR quality is low on this submission — please review.',
+      })
+    }
+    if (!checkpoints.cheating) {
+      reviewFlags.push({
+        severity: 'danger',
+        message: 'Possible cheating or plagiarism detected — please review.',
+      })
+    }
+    if (!checkpoints.history) {
+      reviewFlags.push({
+        severity: 'warning',
+        message: 'Grade history is inconsistent with prior submissions — please review.',
+      })
+    }
+    if (!checkpoints.timeline) {
+      reviewFlags.push({
+        severity: 'warning',
+        message: 'Submission timeline is unusual — please review.',
+      })
+    }
 
     return {
       id,
