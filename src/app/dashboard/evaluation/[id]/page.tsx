@@ -779,7 +779,19 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                 </div>
               </div>
             </header>
-            
+
+            {/* Per-student review flags — surfaced as Banner strip(s) above the full manuscript viewer.
+                Rendered here (between header and the horizontal artifact+manuscript row) so it spans full width. */}
+            {currentStudent?.reviewFlags?.length ? (
+              <div className="px-6 pt-3 space-y-2 shrink-0">
+                {currentStudent.reviewFlags.map((flag, i) => (
+                  <Banner key={i} variant={flag.severity}>
+                    {flag.message}
+                  </Banner>
+                ))}
+              </div>
+            ) : null}
+
             <div className="flex-1 flex overflow-hidden relative">
               <ArtifactSidebar artifacts={artifacts} />
               {/* Text Selection Mode Banner */}
@@ -805,16 +817,6 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                   </motion.div>
                 )}
               </AnimatePresence>
-              {/* Per-student review flags — surfaced as Banner strip(s) above the manuscript. */}
-              {currentStudent?.reviewFlags?.length ? (
-                <div className="px-6 pt-3 space-y-2 shrink-0">
-                  {currentStudent.reviewFlags.map((flag, i) => (
-                    <Banner key={i} variant={flag.severity}>
-                      {flag.message}
-                    </Banner>
-                  ))}
-                </div>
-              ) : null}
               {/* Main Canvas */}
               <ScrollArea
                 className="flex-1 bg-[#F9F8F4] scroll-smooth"
