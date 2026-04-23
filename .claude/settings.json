@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(netstat -ano)",
+      "Bash(findstr :3000)",
+      "Bash(taskkill /F /PID 1148)",
+      "PowerShell(Stop-Process -Id 1148 -Force -ErrorAction SilentlyContinue)"
     ]
   }
 }

@@ -144,9 +144,9 @@ export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
         isDoubleBlind: true,
         progress: 0,
         criteria: {
-          c1: { id: 'c1', name: 'Conceptual Accuracy', level: 3, confidence: 0.85, reasoning: 'AI evaluated visible text.', evidence: ['Normalization ensures reduncancy...'] },
-          c2: { id: 'c2', name: 'Logic Flow', level: 2, confidence: 0.9, reasoning: 'Structure matches rubric', evidence: ['First normal form requires...'] },
-          c3: { id: 'c3', name: 'Real-world Context', level: 1, confidence: 0.45, reasoning: 'Vague description in rubric', evidence: [] },
+          c1: { id: 'c1', name: 'Conceptual Accuracy', level: 3, confidence: 0.85, reasoning: 'Student demonstrates partial understanding of normalization concepts but conflates 2NF and 3NF rules.', evidence: ['Correctly defines normalization as reducing redundancy', 'Provides accurate example of 1NF with atomic values', 'Confuses partial dependency with transitive dependency', 'Missing explanation of BCNF conditions'] },
+          c2: { id: 'c2', name: 'Logic Flow', level: 2, confidence: 0.9, reasoning: 'Argument structure is present but key inferential steps are skipped, weakening the overall logical chain.', evidence: ['Opens with a clear thesis statement', 'Each section has a topic sentence', 'Conclusion does not follow from the evidence presented', 'Three logical gaps between premises and conclusions'] },
+          c3: { id: 'c3', name: 'Real-world Context', level: 1, confidence: 0.45, reasoning: 'Very limited application to real scenarios. Examples are generic and not grounded in actual database design challenges.', evidence: ['Mentions e-commerce as a domain', 'No specific schema or table examples provided', 'Real-world tradeoffs (performance vs. normalization) not discussed', 'Lacks industry context entirely'] },
         }
       },
       {
@@ -158,9 +158,9 @@ export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
         progress: 0,
         integrityFlags: [],
         criteria: {
-          c1: { id: 'c1', name: 'Conceptual Accuracy', level: 4, confidence: 0.95, reasoning: 'Clear definition provided.', evidence: ['Normalization ensures...'] },
-          c2: { id: 'c2', name: 'Logic Flow', level: 3, confidence: 0.88, reasoning: 'Lossless join used.', evidence: ['Tables decomposed...'] },
-          c3: { id: 'c3', name: 'Real-world Context', level: 2, confidence: 0.7, reasoning: 'Adequate application.', evidence: [] },
+          c1: { id: 'c1', name: 'Conceptual Accuracy', level: 4, confidence: 0.95, reasoning: 'Strong conceptual grasp of normalization through 3NF. Minor gap in BCNF edge cases.', evidence: ['Correctly explains 1NF, 2NF, and 3NF with examples', 'Identifies functional dependencies accurately', 'BCNF decomposition example has a minor error', 'Does not address multi-valued dependencies'] },
+          c2: { id: 'c2', name: 'Logic Flow', level: 3, confidence: 0.88, reasoning: 'Argument is largely coherent with lossless join decomposition demonstrated correctly.', evidence: ['Lossless join property correctly proven', 'Dependency preservation verified for most cases', 'One unjustified leap in section 3 argument', 'Missing transition between sections 2 and 3'] },
+          c3: { id: 'c3', name: 'Real-world Context', level: 2, confidence: 0.7, reasoning: 'References e-commerce schema but does not go deep enough into the trade-offs.', evidence: ['References Amazon product catalog as example', 'Mentions denormalization for performance', 'No concrete query performance comparison provided', 'Real-world constraints (scale, team size) not considered'] },
         }
       }
     ]
