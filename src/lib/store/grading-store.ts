@@ -61,6 +61,15 @@ export interface Criterion {
   isOverridden?: boolean;
 }
 
+export type ReviewFlagSeverity = 'info' | 'success' | 'warning' | 'danger';
+
+export interface ReviewFlag {
+  severity: ReviewFlagSeverity;
+  message: string;
+  /** Optional — when present, links the flag to a specific criterion/checkpoint. */
+  criterionId?: string;
+}
+
 export interface StudentSubmission {
   id: string;
   name: string;
@@ -71,6 +80,8 @@ export interface StudentSubmission {
   progress: number;
   isDoubleBlind: boolean;
   ocrHealth?: number;
+  /** Prototype: review-prompt flags shown as banner(s) above the manuscript. */
+  reviewFlags?: ReviewFlag[];
 }
 
 export interface AssignmentNarrative {
@@ -143,6 +154,9 @@ export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
         integrityFlags: ['Hidden White Font', 'Injection-style language'],
         isDoubleBlind: true,
         progress: 0,
+        reviewFlags: [
+          { severity: 'warning', message: "Review carefully — grades usually aren't this high for Rohan Verma." },
+        ],
         criteria: {
           c1: { id: 'c1', name: 'Conceptual Accuracy', level: 3, confidence: 0.85, reasoning: 'AI evaluated visible text.', evidence: ['Normalization ensures reduncancy...'] },
           c2: { id: 'c2', name: 'Logic Flow', level: 2, confidence: 0.9, reasoning: 'Structure matches rubric', evidence: ['First normal form requires...'] },
@@ -180,6 +194,9 @@ export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
         ocrHealth: 74,
         isDoubleBlind: true,
         progress: 0,
+        reviewFlags: [
+          { severity: 'info', message: 'OCR confidence is low on this submission. Re-check the scan quality before trusting text evidence.' },
+        ],
         criteria: {
           c1: { id: 'c1', name: 'Normal Forms', level: 3, confidence: 0.84, reasoning: 'Identified 1NF and 2NF', evidence: ['1NF requires atomic values'] },
           c3: { id: 'c3', name: 'Transitive Deps', level: 1, confidence: 0.55, reasoning: 'OCR unclear on line 4', evidence: [] },
@@ -201,6 +218,9 @@ export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
         isDoubleBlind: true,
         progress: 0,
         integrityFlags: [],
+        reviewFlags: [
+          { severity: 'danger', message: 'Submission timestamp shows activity after the deadline. Verify before final scoring.' },
+        ],
         criteria: {
           c1: { id: 'c1', name: 'Algorithm Efficiency', level: 3, confidence: 0.95, reasoning: 'Correct Big-O analysis.', evidence: ['Time complexity is O(n)...'] },
           c2: { id: 'c2', name: 'Edge Case Handling', level: 2, confidence: 0.8, reasoning: 'Missed empty array case.', evidence: [] },
@@ -222,6 +242,9 @@ export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
         isDoubleBlind: true,
         progress: 100,
         integrityFlags: [],
+        reviewFlags: [
+          { severity: 'warning', message: "Review carefully — grades usually aren't this high for Arjun Sharma." },
+        ],
         criteria: {
           c1: { id: 'c1', name: 'Ethical Framework Application', level: 5, confidence: 0.98, reasoning: 'Sophisticated multi-framework analysis.', evidence: [] },
           c2: { id: 'c2', name: 'Policy Analysis Depth', level: 4, confidence: 0.92, reasoning: 'Strong policy literacy.', evidence: [] },
@@ -237,6 +260,9 @@ export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
         isDoubleBlind: true,
         progress: 0,
         integrityFlags: [],
+        reviewFlags: [
+          { severity: 'success', message: "Consistent with this student's previous performance — fast path to confirm." },
+        ],
         criteria: {
           c1: { id: 'c1', name: 'Ethical Framework Application', level: 3, confidence: 0.85, reasoning: 'Adequate single-framework analysis.', evidence: [] },
           c2: { id: 'c2', name: 'Policy Analysis Depth', level: 3, confidence: 0.8, reasoning: 'Surface-level coverage.', evidence: [] },

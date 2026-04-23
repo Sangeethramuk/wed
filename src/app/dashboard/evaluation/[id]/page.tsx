@@ -14,6 +14,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Banner } from "@/components/ui/banner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { motion, AnimatePresence } from "framer-motion"
@@ -180,7 +181,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
   const allSubmissions = Array.from({ length: 60 }, (_, i) => {
     const id = `STU-${100 + i}`
     const name = `${firstNames[i % 30]} ${lastNames[(i + 7) % 30]}`
-    
+
     // Five-Parameter Accountability Checkpoints
     const checkpoints = {
       grading: i % 10 !== 0,   // Fail 10%
@@ -191,7 +192,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     }
 
     const passedCount = Object.values(checkpoints).filter(Boolean).length
-    
+
     let category: "critical" | "focus" | "verified" = "verified"
     let reason = "Verified Clear"
     let flags = 5 - passedCount
@@ -209,16 +210,29 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
     const status = gradedSubmissions.includes(id) ? "graded" : (flags > 0 ? "flagged" : "ready")
 
-    return { 
-      id, 
-      name, 
-      code: `#${100 + i}`, 
-      status, 
-      flags, 
-      score: gradedSubmissions.includes(id) ? 85 + (i % 10) : 0, 
-      reason, 
+    // Prototype: review-prompt banners on a few specific entries (one per variant).
+    // Keeps the prototype discoverable — first ~20 students span all four variants.
+    type ReviewFlag = { severity: 'info' | 'success' | 'warning' | 'danger'; message: string }
+    const reviewFlags: ReviewFlag[] = (() => {
+      if (i === 0) return [{ severity: 'warning', message: `Review carefully — grades usually aren't this high for ${name}.` }]
+      if (i === 4) return [{ severity: 'info', message: 'OCR confidence is low on this submission. Re-check the scan quality before trusting text evidence.' }]
+      if (i === 7) return [{ severity: 'danger', message: 'Submission timestamp shows activity after the deadline. Verify before final scoring.' }]
+      if (i === 13) return [{ severity: 'warning', message: 'Grade trend is unusual — last three submissions scored noticeably lower.' }]
+      if (i === 19) return [{ severity: 'success', message: "Consistent with this student's previous performance — fast path to confirm." }]
+      return []
+    })()
+
+    return {
+      id,
+      name,
+      code: `#${100 + i}`,
+      status,
+      flags,
+      score: gradedSubmissions.includes(id) ? 85 + (i % 10) : 0,
+      reason,
       category,
-      checkpoints 
+      checkpoints,
+      reviewFlags,
     }
   })
 
@@ -787,8 +801,18 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
                   </motion.div>
                 )}
               </AnimatePresence>
+              {/* Per-student review flags — surfaced as Banner strip(s) above the manuscript. */}
+              {currentStudent?.reviewFlags?.length ? (
+                <div className="px-6 pt-3 space-y-2 shrink-0">
+                  {currentStudent.reviewFlags.map((flag, i) => (
+                    <Banner key={i} variant={flag.severity}>
+                      {flag.message}
+                    </Banner>
+                  ))}
+                </div>
+              ) : null}
               {/* Main Canvas */}
-              <ScrollArea 
+              <ScrollArea
                 className="flex-1 bg-[#F9F8F4] scroll-smooth"
                 onScrollCapture={(e) => {
                   const target = e.currentTarget as HTMLElement
