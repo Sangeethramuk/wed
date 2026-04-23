@@ -177,9 +177,9 @@ export default function ReEvalWorkspacePage() {
                   per CONTRIBUTING.md (never <Button aria-current="page"> pretending
                   to be a tab). Keeps the existing `view` / `setView` state intact. */}
               <Tabs value={view} onValueChange={(v) => setView(v as 'scan' | 'ocr')}>
-                <TabsList>
-                  <TabsTrigger value="scan">Scanned</TabsTrigger>
-                  <TabsTrigger value="ocr">OCR Original</TabsTrigger>
+                <TabsList className="border border-border">
+                  <TabsTrigger value="scan" className="px-4">Scanned</TabsTrigger>
+                  <TabsTrigger value="ocr" className="px-4">OCR Original</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
