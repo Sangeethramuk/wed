@@ -282,7 +282,7 @@ export default function FeedbackPage() {
         </aside>
 
         {/* Right: Overall Feedback + Solution Direction */}
-        <section className="flex-1 flex flex-col overflow-hidden bg-[#fafafa]">
+        <section className="flex-1 flex flex-col overflow-hidden bg-muted/30">
           <Tabs defaultValue="feedback" value={activeTab} onValueChange={(v) => setActiveTab(v as string)} className="flex-1 flex flex-col overflow-hidden">
             <div className="bg-background flex items-center justify-center border-b border-border shrink-0 h-12">
               <TabsList className="bg-transparent p-0 h-full gap-0">
@@ -314,7 +314,7 @@ export default function FeedbackPage() {
 
                   <div className="bg-background border border-border/60 rounded-[20px] shadow-[0_4px_24px_rgb(0,0,0,0.02)] overflow-hidden relative">
                     <div 
-                      className="p-10 text-sm leading-[1.85] text-foreground font-sans min-h-[500px] outline-none whitespace-pre-wrap cursor-text hover:bg-[#fdfdfd] transition-colors"
+                      className="p-10 text-sm leading-[1.85] text-foreground font-sans min-h-[500px] outline-none whitespace-pre-wrap cursor-text hover:bg-background transition-colors"
                       contentEditable
                       suppressContentEditableWarning
                       onBlur={(e) => activeStudent && updateOverallFeedbackText(activeStudent.id, e.currentTarget.innerText)}
@@ -350,7 +350,7 @@ export default function FeedbackPage() {
               </ScrollArea>
 
               {/* Enlarged Instructor Workspace Panel */}
-              <div className="px-8 pb-8 pt-4 shrink-0 bg-[#fafafa]">
+              <div className="px-8 pb-8 pt-4 shrink-0 bg-muted/30">
                  <div className="max-w-3xl mx-auto space-y-4">
                     <div className="flex items-center justify-between px-1">
                        <div className="flex items-center gap-4">
@@ -387,7 +387,7 @@ export default function FeedbackPage() {
             </TabsContent>
 
             {/* Solution Direction Tab */}
-            <TabsContent value="solution" className="flex-1 overflow-hidden outline-none bg-[#fafafa]">
+            <TabsContent value="solution" className="flex-1 overflow-hidden outline-none bg-muted/30">
               <ScrollArea className="h-full p-8 font-sans">
                 <div className="max-w-4xl mx-auto">
                   <div className="flex flex-col items-center text-center mb-10">

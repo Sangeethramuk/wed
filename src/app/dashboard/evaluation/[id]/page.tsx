@@ -491,7 +491,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
     return (
       <div 
         id={`page-${index}`}
-        className={`bg-background shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-[#E6E1D6]/50 mx-auto transition-all duration-300 relative group/page ${textSelectionMode.active ? 'cursor-crosshair' : 'cursor-text'}`}
+        className={`bg-background shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-border mx-auto transition-all duration-300 relative group/page ${textSelectionMode.active ? 'cursor-crosshair' : 'cursor-text'}`}
         onMouseUp={(e) => {
           const sel = window.getSelection()
           if (sel && sel.toString().trim().length > 0) {
@@ -789,7 +789,7 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
               </AnimatePresence>
               {/* Main Canvas */}
               <ScrollArea 
-                className="flex-1 bg-[#F9F8F4] scroll-smooth"
+                className="flex-1 bg-muted/30 scroll-smooth"
                 onScrollCapture={(e) => {
                   const target = e.currentTarget as HTMLElement
                   const containerHeight = target.clientHeight
