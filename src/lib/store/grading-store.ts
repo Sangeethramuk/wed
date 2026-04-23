@@ -155,7 +155,7 @@ export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
         isDoubleBlind: true,
         progress: 0,
         reviewFlags: [
-          { severity: 'warning', message: "Review carefully — grades usually aren't this high for Rohan Verma." },
+          { severity: 'warning', message: 'Scores are unusually high for Rohan Verma — please review.' },
         ],
         criteria: {
           c1: { id: 'c1', name: 'Conceptual Accuracy', level: 3, confidence: 0.85, reasoning: 'AI evaluated visible text.', evidence: ['Normalization ensures reduncancy...'] },
@@ -195,7 +195,7 @@ export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
         isDoubleBlind: true,
         progress: 0,
         reviewFlags: [
-          { severity: 'info', message: 'OCR confidence is low on this submission. Re-check the scan quality before trusting text evidence.' },
+          { severity: 'info', message: 'OCR quality is low on this submission — please review.' },
         ],
         criteria: {
           c1: { id: 'c1', name: 'Normal Forms', level: 3, confidence: 0.84, reasoning: 'Identified 1NF and 2NF', evidence: ['1NF requires atomic values'] },
@@ -219,7 +219,7 @@ export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
         progress: 0,
         integrityFlags: [],
         reviewFlags: [
-          { severity: 'danger', message: 'Submission timestamp shows activity after the deadline. Verify before final scoring.' },
+          { severity: 'danger', message: 'Possible cheating or plagiarism detected — please review.' },
         ],
         criteria: {
           c1: { id: 'c1', name: 'Algorithm Efficiency', level: 3, confidence: 0.95, reasoning: 'Correct Big-O analysis.', evidence: ['Time complexity is O(n)...'] },
@@ -243,7 +243,7 @@ export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
         progress: 100,
         integrityFlags: [],
         reviewFlags: [
-          { severity: 'warning', message: "Review carefully — grades usually aren't this high for Arjun Sharma." },
+          { severity: 'warning', message: 'Scores are unusually high for Arjun Sharma — please review.' },
         ],
         criteria: {
           c1: { id: 'c1', name: 'Ethical Framework Application', level: 5, confidence: 0.98, reasoning: 'Sophisticated multi-framework analysis.', evidence: [] },
@@ -261,7 +261,7 @@ export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
         progress: 0,
         integrityFlags: [],
         reviewFlags: [
-          { severity: 'success', message: "Consistent with this student's previous performance — fast path to confirm." },
+          { severity: 'danger', message: 'Possible cheating or plagiarism detected — please review.' },
         ],
         criteria: {
           c1: { id: 'c1', name: 'Ethical Framework Application', level: 3, confidence: 0.85, reasoning: 'Adequate single-framework analysis.', evidence: [] },

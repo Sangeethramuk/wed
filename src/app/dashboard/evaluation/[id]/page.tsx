@@ -210,15 +210,19 @@ export default function GradingDesk({ params }: { params: Promise<{ id: string }
 
     const status = gradedSubmissions.includes(id) ? "graded" : (flags > 0 ? "flagged" : "ready")
 
-    // Prototype: review-prompt banners on a few specific entries (one per variant).
-    // Keeps the prototype discoverable — first ~20 students span all four variants.
+    // Prototype: review-prompt banners on a few specific entries — three
+    // canonical states the user called out:
+    //   • warning → scores unusually low or high
+    //   • danger  → possible cheating or plagiarism detected
+    //   • info    → OCR quality is low
+    // Indices chosen so the banners show up on early, discoverable students.
     type ReviewFlag = { severity: 'info' | 'success' | 'warning' | 'danger'; message: string }
     const reviewFlags: ReviewFlag[] = (() => {
-      if (i === 0) return [{ severity: 'warning', message: `Review carefully — grades usually aren't this high for ${name}.` }]
-      if (i === 4) return [{ severity: 'info', message: 'OCR confidence is low on this submission. Re-check the scan quality before trusting text evidence.' }]
-      if (i === 7) return [{ severity: 'danger', message: 'Submission timestamp shows activity after the deadline. Verify before final scoring.' }]
-      if (i === 13) return [{ severity: 'warning', message: 'Grade trend is unusual — last three submissions scored noticeably lower.' }]
-      if (i === 19) return [{ severity: 'success', message: "Consistent with this student's previous performance — fast path to confirm." }]
+      if (i === 0) return [{ severity: 'warning', message: `Scores are unusually high for ${name} — please review.` }]
+      if (i === 4) return [{ severity: 'info', message: 'OCR quality is low on this submission — please review.' }]
+      if (i === 7) return [{ severity: 'danger', message: 'Possible cheating or plagiarism detected — please review.' }]
+      if (i === 13) return [{ severity: 'warning', message: `Scores are unusually low for ${name} — please review.` }]
+      if (i === 19) return [{ severity: 'danger', message: 'Possible cheating or plagiarism detected — please review.' }]
       return []
     })()
 
