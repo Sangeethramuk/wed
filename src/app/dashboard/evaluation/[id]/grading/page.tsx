@@ -2,6 +2,7 @@
 
 import { useState, use, useEffect, useMemo, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { toast } from "sonner"
 import { useGradingStore } from "@/lib/store/grading-store"
 import { generateManuscript, generateArtifacts } from "@/lib/manuscript-generator"
 import ManuscriptRenderer, { CRITERION_COLORS } from "@/components/evaluation/manuscript-renderer"
@@ -415,9 +416,12 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
   /**
    * Publish-grades gate: the one place the Level-3 failsafe fires.
-   * If the instructor has dismissed too many nudges without engaging, the
-   * spot-check modal opens first (they verify, then re-try Publish). Otherwise
-   * we flash a success state on the button for a couple of seconds.
+   *
+   * - If the instructor has dismissed too many nudges without engaging, the
+   *   spot-check modal opens first (they verify, then re-try Publish).
+   * - Otherwise: flash the button green briefly, show a toast, and auto-
+   *   navigate to the next student in the cohort. On the last student,
+   *   route back to the submissions list.
    */
   const handlePublishGrades = () => {
     if (!spotCheckAutoFired && ignoredNudgeCount >= ESCALATION_DISMISS_THRESHOLD) {
@@ -426,7 +430,23 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
       return
     }
     setPublishSuccess(true)
-    setTimeout(() => setPublishSuccess(false), 2500)
+    const studentName = currentStudent?.name ?? "this student"
+    const idx = allSubmissions.findIndex(s => s.id === selectedSubmission)
+    const next = idx >= 0 && idx < allSubmissions.length - 1 ? allSubmissions[idx + 1] : null
+    toast.success(`Grades submitted for ${studentName}`, {
+      description: next ? `Opening ${next.name}…` : "All cohort submissions graded.",
+      duration: 3500,
+    })
+    // Brief delay so the instructor sees the button flash + toast before the
+    // URL changes under their cursor.
+    setTimeout(() => {
+      setPublishSuccess(false)
+      if (next) {
+        router.push(`/dashboard/evaluation/${id}/grading?studentId=${next.id}`)
+      } else {
+        router.push(`/dashboard/evaluation/${id}/submissions`)
+      }
+    }, 1200)
   }
 
   // Note: the useEffect that marks the active criterion as "opened" + the
