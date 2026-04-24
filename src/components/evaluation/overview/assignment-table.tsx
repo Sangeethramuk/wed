@@ -80,10 +80,11 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
       router.push(`/dashboard/evaluation/results?id=${assignment.id}`)
       return
     }
-    if (!isCalibrated) {
-      router.push(`/dashboard/evaluation/${assignment.id}/calibrate`)
-      return
-    }
+    // Both the calibration CTAs (Begin / Continue) and Enter Desk land on
+    // Assignment Details. That page has the blind-grading-required gate card
+    // (first-time + continuing copy) that acts as the calibration intro.
+    // The Enter Desk rows pass the gate via the overview's calibrationState
+    // and see the regular submissions content instead.
     router.push(`/dashboard/evaluation/${assignment.id}`)
   }
 
