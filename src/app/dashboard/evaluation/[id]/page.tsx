@@ -91,8 +91,14 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
   const blindGradedCount = cal?.papers.filter(p =>
     cal.scores.filter(s => s.paperId === p.paperId).every(s => s.instructorLevel > 0) && cal.criteria.length > 0
   ).length ?? 0
-  const blindRemainingCount = blindTotalCount - blindGradedCount
-  const blindHasStarted = blindGradedCount > 0
+  // The Triage overview is the canonical source of "is this calibration in
+  // progress?" — its calibrationStatus is 0 / 0-99 / 100. The grading-store
+  // numbers above are accurate per-paper but only for a session that has
+  // actually run; treat the overview as authoritative for the start vs
+  // continue copy variant on the gate card.
+  const overviewCalProgress = overviewAssignment?.calibrationStatus ?? 0
+  const blindHasStarted = blindGradedCount > 0 || overviewCalProgress > 0
+  const blindRemainingCount = Math.max(blindTotalCount - blindGradedCount, 0)
 
   if (!assignment) {
     return (
@@ -252,26 +258,30 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
 
               <div className="space-y-3 max-w-md">
                 <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-                  {blindHasStarted ? `${blindRemainingCount} submission${blindRemainingCount !== 1 ? 's' : ''} to go` : 'Blind grading required'}
+                  {blindHasStarted ? 'Continue blind grading' : 'Blind grading required'}
                 </h2>
                 {blindHasStarted ? (
                   <>
                     <p className="text-sm text-slate-500 leading-relaxed">
-                      You've graded <span className="font-semibold text-slate-900">{blindGradedCount} of {blindTotalCount}</span> benchmark submissions.
-                      Setting this benchmark makes the remaining grading faster and more consistent.
+                      {blindGradedCount > 0 ? (
+                        <>You&apos;ve graded <span className="font-semibold text-slate-900">{blindGradedCount} of {blindTotalCount}</span> benchmark submissions.</>
+                      ) : (
+                        <>You&apos;re <span className="font-semibold text-slate-900">{overviewCalProgress}%</span> through this calibration. Pick up where you left off.</>
+                      )}
+                      {' '}Setting this benchmark makes the remaining grading faster and more consistent.
                     </p>
                     <p className="text-xs text-slate-400">
-                      We'll show the AI comparison and full submissions list once all {blindTotalCount} are done.
+                      We&apos;ll show the AI comparison and full submissions list once calibration is complete.
                     </p>
                   </>
                 ) : (
                   <>
                     <p className="text-sm text-slate-500 leading-relaxed">
-                      You'll manually grade <span className="font-semibold text-slate-900">{blindTotalCount} submission{blindTotalCount !== 1 ? 's' : ''}</span> without seeing AI scores first.
+                      You&apos;ll manually grade <span className="font-semibold text-slate-900">{blindTotalCount} submission{blindTotalCount !== 1 ? 's' : ''}</span> without seeing AI scores first.
                       Setting the benchmark makes the remaining grading faster and more consistent.
                     </p>
                     <p className="text-xs text-slate-400">
-                      We'll show the AI comparison and full submissions list once you're done.
+                      We&apos;ll show the AI comparison and full submissions list once you&apos;re done.
                     </p>
                   </>
                 )}
