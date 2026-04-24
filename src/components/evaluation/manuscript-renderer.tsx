@@ -66,6 +66,10 @@ function ConfidenceBars({ confidence }: { confidence: number }) {
 
 type EvidenceRef = { criterionId: string; id: string }
 
+// Highlighter-marker background per criterion — uses the main category color at
+// ~18% opacity for a soft marker tint (readable but unobtrusive), bumping to
+// ~28% on hover. DS-compliant: references --category-N tokens with a Tailwind
+// opacity modifier.
 const HIGHLIGHTER_BG: Record<string, string> = {
   c1: 'bg-[color:var(--category-1)]/18 hover:bg-[color:var(--category-1)]/28',
   c2: 'bg-[color:var(--category-2)]/18 hover:bg-[color:var(--category-2)]/28',
@@ -82,8 +86,11 @@ function UserHighlightedSpan({
   evidences: EvidenceRef[]
   id?: string
 }) {
+  // Highlighter color driven by the first mapped criterion. The popover itself
+  // lists every criterion this passage is linked to.
   const first = evidences[0]
   const highlighter = HIGHLIGHTER_BG[first.criterionId] ?? HIGHLIGHTER_BG.c1
+
   return (
     <HoverCard>
       <HoverCardTrigger
@@ -134,11 +141,14 @@ function splitByEvidence(
   for (const ev of evidences) {
     const next: typeof segments = []
     for (const seg of segments) {
+      // Segment already wrapped for the exact same text → merge this evidence in.
       if (seg.evidences && seg.text === ev.text) {
         next.push({ ...seg, evidences: [...seg.evidences, { criterionId: ev.criterionId, id: ev.id }] })
         continue
       }
+      // Already a wrapped segment for a different (overlapping) text → leave it alone.
       if (seg.evidences) { next.push(seg); continue }
+      // Plain segment — look for this evidence's text inside it.
       const idx = seg.text.indexOf(ev.text)
       if (idx === -1) { next.push(seg); continue }
       if (idx > 0) next.push({ text: seg.text.slice(0, idx) })
