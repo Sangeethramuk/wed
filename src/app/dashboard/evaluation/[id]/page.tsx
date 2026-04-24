@@ -363,8 +363,12 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
                 ))}
               </div>
 
-              {/* Full Width Submissions Table */}
-              <div className="rounded-3xl overflow-hidden border border-border/50 shadow-2xl bg-card/30 backdrop-blur-xl h-[800px]">
+              {/* Full Width Submissions Table — TriageSidebar keeps its own
+                  chrome; wrapper just provides the guide's card surface. */}
+              <div
+                className="rounded-xl overflow-hidden border border-slate-200 bg-white h-[800px]"
+                style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+              >
                 <TriageSidebar
                   selectedStudentId=""
                   onStudentSelect={handleStudentSelect}
@@ -377,31 +381,43 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
         </TabsContent>
 
         <TabsContent value="analytics" className="outline-none">
-          <Card className="border-border/40 bg-card/40 backdrop-blur-sm p-20 text-center">
+          <div
+            className="rounded-xl border border-slate-200 bg-white p-20 text-center"
+            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+          >
             <div className="space-y-4 max-w-sm mx-auto">
-              <div className="mx-auto w-16 h-16 rounded-full bg-[color:var(--status-info-bg)] flex items-center justify-center">
-                <BarChart3 className="h-8 w-8 text-[color:var(--status-info)] opacity-50" />
+              <div
+                className="mx-auto w-16 h-16 rounded-full flex items-center justify-center border"
+                style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }}
+              >
+                <BarChart3 className="h-8 w-8" style={{ color: '#1F4E8C' }} />
               </div>
-              <h3 className="text-xl font-semibold tracking-tight italic">Analytics coming soon</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed italic">
+              <h3 className="text-xl font-semibold tracking-tight text-slate-900">Analytics coming soon</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">
                 Advanced performance tracking and cohort benchmarking metrics are being calibrated for this course.
               </p>
             </div>
-          </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="preview" className="outline-none">
-          <Card className="border-border/40 bg-card/40 backdrop-blur-sm p-20 text-center">
+          <div
+            className="rounded-xl border border-slate-200 bg-white p-20 text-center"
+            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+          >
             <div className="space-y-4 max-w-sm mx-auto">
-              <div className="mx-auto w-16 h-16 rounded-full bg-primary/5 flex items-center justify-center">
-                <Eye className="h-8 w-8 text-primary opacity-50" />
+              <div
+                className="mx-auto w-16 h-16 rounded-full flex items-center justify-center border"
+                style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }}
+              >
+                <Eye className="h-8 w-8" style={{ color: '#1F4E8C' }} />
               </div>
-              <h3 className="text-xl font-semibold tracking-tight italic">Assignment Preview</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed italic">
+              <h3 className="text-xl font-semibold tracking-tight text-slate-900">Assignment Preview</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">
                 Preview the assignment as it appears to students. Coming soon in the next update.
               </p>
             </div>
-          </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
