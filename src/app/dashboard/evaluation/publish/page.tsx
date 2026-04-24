@@ -19,7 +19,9 @@ import {
   MessagesSquare,
   Sparkles,
   Save,
-  Rocket
+  Rocket,
+  Loader2,
+  FileDown
 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -35,6 +37,16 @@ export default function PublishResultsPage() {
     aiPrescreen: true,
   })
   const [isAcknowledged, setIsAcknowledged] = useState(false)
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+
+  const handlePublish = async () => {
+    setIsPublishing(true)
+    // Simulate 1.2s publishing delay
+    await new Promise(resolve => setTimeout(resolve, 1200))
+    setIsPublishing(false)
+    setShowSuccess(true)
+  }
 
   const releaseOptions = [
     {
@@ -333,7 +345,8 @@ export default function PublishResultsPage() {
 
                   <div className="space-y-3">
                     <Button 
-                      disabled={!isAcknowledged}
+                      onClick={handlePublish}
+                      disabled={!isAcknowledged || isPublishing}
                       className={cn(
                         "w-full h-12 font-bold tracking-tight rounded-xl transition-all duration-300",
                         isAcknowledged 
@@ -341,8 +354,17 @@ export default function PublishResultsPage() {
                           : "bg-muted text-muted-foreground/40 cursor-not-allowed border border-border/50"
                       )}
                     >
-                      <Rocket className={cn("mr-2 h-4 w-4 transition-transform", isAcknowledged && "animate-pulse")} />
-                      Publish Results
+                      {isPublishing ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Publishing Results...
+                        </>
+                      ) : (
+                        <>
+                          <Rocket className={cn("mr-2 h-4 w-4 transition-transform", isAcknowledged && "animate-pulse")} />
+                          Publish Results
+                        </>
+                      )}
                     </Button>
                     <Button variant="outline" className="w-full h-12 font-bold rounded-xl border-border/40 text-sm hover:bg-muted/30 transition-colors bg-white">
                       <Save className="mr-2 h-4 w-4" />
@@ -358,6 +380,155 @@ export default function PublishResultsPage() {
           </aside>
         </div>
       </div>
+
+      {/* Premium Success State Interaction */}
+      <AnimatePresence>
+        {showSuccess && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Soft Dim Overlay + Premium Backdrop Blur */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/15 backdrop-blur-[10px]"
+              onClick={() => setShowSuccess(false)}
+            />
+
+            {/* Success Modal Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-[440px] bg-white rounded-[24px] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.12)] border border-white p-8 text-center space-y-8 overflow-hidden"
+            >
+              {/* Animated Success Visual */}
+              <div className="flex flex-col items-center">
+                <div className="relative h-20 w-20 flex items-center justify-center">
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="absolute inset-0 rounded-full bg-emerald-500/5"
+                  />
+                  <motion.div 
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: [0.8, 1.2, 1], opacity: 1 }}
+                    transition={{ delay: 1.2, duration: 0.6 }}
+                    className="absolute inset-0 rounded-full border border-emerald-500/20"
+                  />
+                  <svg className="h-20 w-20 transform -rotate-90">
+                    <motion.circle
+                      cx="40"
+                      cy="40"
+                      r="38"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      fill="transparent"
+                      className="text-emerald-500"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.8, ease: "easeInOut" }}
+                    />
+                  </svg>
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
+                    <motion.svg 
+                      viewBox="0 0 24 24" 
+                      className="h-8 w-8 text-emerald-500"
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="3.5" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    >
+                      <motion.polyline 
+                        points="20 6 9 17 4 12" 
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 0.5, delay: 0.7 }}
+                      />
+                    </motion.svg>
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Success Copy Content */}
+              <div className="space-y-2">
+                <motion.h2 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-2xl font-bold tracking-tight text-foreground"
+                >
+                  Results Published
+                </motion.h2>
+                <motion.p 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="text-muted-foreground font-medium"
+                >
+                  45 students can now view grades and feedback.
+                </motion.p>
+              </div>
+
+              {/* Meta Intelligence Line */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+                className="py-3 px-4 bg-muted/30 rounded-xl border border-border/10 flex flex-col gap-1"
+              >
+                <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+                  {appealsEnabled ? (
+                    <>
+                      <span>Appeals open for {appealDuration}</span>
+                      <span className="opacity-30">•</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Appeals Disabled</span>
+                      <span className="opacity-30">•</span>
+                    </>
+                  )}
+                  <span>Notifications Sent</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground/40 font-medium italic">
+                  Published {releaseOptions.find(o => o.id === releaseTime)?.subtitle || "Today"} • Secure Release archived
+                </p>
+              </motion.div>
+
+              {/* Action Buttons */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                className="space-y-3 pt-2"
+              >
+                <Button className="w-full h-13 font-bold rounded-xl bg-primary text-white shadow-xl shadow-primary/10 transition-transform active:scale-95">
+                  Preview Student View
+                </Button>
+                <Link href="/dashboard" className="block w-full">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full h-11 font-bold rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                  >
+                    Return to Dashboard
+                  </Button>
+                </Link>
+                <Button variant="link" className="text-xs font-bold text-primary/60 hover:text-primary">
+                  <FileDown className="mr-2 h-3.5 w-3.5" />
+                  Download Release Summary
+                </Button>
+              </motion.div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
