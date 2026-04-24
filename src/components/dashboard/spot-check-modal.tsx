@@ -3,17 +3,10 @@
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useGradingStore } from "@/lib/store/grading-store"
-import { X, ChevronRight, ChevronLeft, Check, AlertTriangle, CheckSquare, Info, FileText, CheckCircle2 } from "lucide-react"
+import { X, ChevronRight, ChevronLeft, Check } from "lucide-react"
 
-import { confidenceStyles, statusStyles } from "@/lib/design-tokens"
-import { cn } from "@/lib/utils"
-
-// Category-2 (violet) slot is used as the spot-check accent so re-skins
-// flow through design tokens automatically.
-const ACCENT_BG = "bg-[color:var(--category-2-bg)]"
-const ACCENT_BORDER = "border-[color:var(--category-2)]/40"
-const ACCENT_TEXT = "text-[color:var(--category-2)]"
-const ACCENT_SOLID = "bg-[color:var(--category-2)]"
+// Colors moved inline (hex palette) per EDUCAITORS_DS_GUIDE.md. The old
+// --category-2 / statusStyles tokens are no longer used on this modal.
 
 const OVERRIDE_REASONS = [
   'AI missed contextual evidence',
@@ -230,10 +223,7 @@ export function SpotCheckModal() {
             </div>
 
             {/* BODY */}
-            <div className={cn(
-              "flex-1 min-h-0 overflow-hidden",
-              scStep >= 0 && scStep < 5 ? "grid grid-cols-[360px_1fr]" : "overflow-y-auto p-5"
-            )}>
+            <div className={`flex-1 min-h-0 overflow-hidden ${scStep >= 0 && scStep < 5 ? "grid grid-cols-[360px_1fr]" : "overflow-y-auto p-5"}`}>
 
               {/* INTRO */}
               {scStep === -1 && (
@@ -250,7 +240,6 @@ export function SpotCheckModal() {
               {/* QUESTION */}
               {scStep >= 0 && scStep < 5 && (() => {
                 const q = SC_QUESTIONS[scStep]
-                const conf = confidenceStyles[q.conf]
                 return (
                   <>
                     {/* LEFT — Preview pane: paper-style card with the
