@@ -283,30 +283,40 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
             </motion.div>
           ) : (
             <>
-              {/* Cohort-level publish — final step after all per-student grades
-                  are submitted. Spot-check gate fires here if the instructor
-                  ignored nudges repeatedly during the session. */}
-              <Card className="border-primary/20 bg-primary/5">
-                <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              {/* Cohort-level publish — guide-compliant white card with subtle
+                  shadow; brand-navy CTA flips to a soft-emerald 'Published'
+                  pill after success. Spot-check gate stays unchanged. */}
+              <div
+                className="rounded-xl border border-slate-200 bg-white"
+                style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+              >
+                <div className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="space-y-1">
-                    <p className="eyebrow text-primary">Ready to finalize</p>
-                    <h3 className="text-lg font-semibold text-foreground">
+                    <p className="text-xs font-semibold tracking-wider" style={{ color: '#1F4E8C' }}>Ready to finalize</p>
+                    <h3 className="text-lg font-semibold text-slate-900">
                       {cohortPublished ? "Cohort grades published" : "Publish cohort grades"}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-slate-500">
                       {cohortPublished
                         ? "All submissions for this assignment have been released to students."
                         : "Review the cohort below, then publish to release grades to all students in this assignment."}
                     </p>
                   </div>
-                  <Button
-                    size="lg"
+                  <button
                     onClick={handlePublishCohort}
                     disabled={cohortPublished}
-                    variant={cohortPublished ? "outline" : "default"}
-                    className={cohortPublished
-                      ? "gap-2 border-[color:var(--status-success)]/40 text-[color:var(--status-success)] bg-[color:var(--status-success-bg)]"
-                      : "gap-2"}
+                    className="inline-flex items-center gap-2 h-11 px-6 rounded-lg text-sm font-semibold transition-colors disabled:cursor-not-allowed"
+                    style={
+                      cohortPublished
+                        ? { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0', borderWidth: 1, color: '#047857' }
+                        : { backgroundColor: '#1F4E8C', color: '#FFFFFF' }
+                    }
+                    onMouseEnter={(e) => {
+                      if (!cohortPublished) e.currentTarget.style.backgroundColor = '#1E3A5F'
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!cohortPublished) e.currentTarget.style.backgroundColor = '#1F4E8C'
+                    }}
                   >
                     {cohortPublished ? (
                       <>
@@ -319,9 +329,9 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
                         Publish cohort grades
                       </>
                     )}
-                  </Button>
-                </CardContent>
-              </Card>
+                  </button>
+                </div>
+              </div>
 
               {/* Stats Cards Row — white cards, inline shadow, hex accents */}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
