@@ -151,125 +151,167 @@ export function TriageSidebar({
       </div>
 
       {/* Table Header */}
-      <div className="grid grid-cols-12 gap-4 px-8 py-3 bg-muted/10 border-b border-border/30 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">
-        <div className="col-span-5">Student Information</div>
-        <div className="col-span-2 text-center">Protocol Integrity</div>
-        <div className="col-span-2 text-center">Critical Flags</div>
-        <div className="col-span-2 text-center">Validation Reason</div>
+      <div className="grid grid-cols-12 gap-4 px-8 py-3 bg-slate-50 border-b border-slate-200 text-xs font-semibold tracking-wider text-slate-400">
+        <div className="col-span-5">Student</div>
+        <div className="col-span-2 text-center">Checkpoints</div>
+        <div className="col-span-2 text-center">Flags</div>
+        <div className="col-span-2 text-center">Reason</div>
         <div className="col-span-1 text-right">Actions</div>
       </div>
 
       <ScrollArea className="flex-1">
         <div className="px-4 py-2 space-y-1">
-          {submissions.map((sub) => (
-            <div
-              key={sub.id}
-              role="button"
-              onClick={() => onStudentSelect(sub.id)}
-              className={`w-full grid grid-cols-12 gap-4 items-center px-4 py-3.5 rounded-2xl transition-all duration-300 text-left cursor-pointer group border ${
-                selectedStudentId === sub.id
-                  ? 'bg-primary/5 border-primary/20 shadow-sm'
-                  : 'hover:bg-muted/30 border-transparent text-muted-foreground'
-              }`}
-            >
-              {/* Student Info */}
-              <div className="col-span-5 flex items-center gap-3">
-                <div className="relative shrink-0">
-                  {gradedSubmissions.includes(sub.id) ? (
-                    <div className="w-8 h-8 rounded-full bg-[color:var(--status-success-bg)]/20 flex items-center justify-center">
-                      <CheckCircle2 className="h-4 w-4 text-[color:var(--status-success)]" />
-                    </div>
-                  ) : (
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 border-dashed ${
-                      sub.category === 'critical' ? 'border-destructive/40 bg-destructive/5' :
-                      sub.category === 'focus' ? 'border-[color:var(--status-warning)]/40 bg-[color:var(--status-warning)]/5' :
-                      'border-primary/20 bg-primary/5'
-                    }`}>
-                      <span className="text-[10px] font-bold">{sub.name.charAt(0)}</span>
-                    </div>
-                  )}
-                  {!gradedSubmissions.includes(sub.id) && sub.category !== 'verified' && (
-                    <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${
-                      sub.category === 'critical' ? 'bg-destructive' : 'bg-[color:var(--status-warning)]'
-                    }`} />
-                  )}
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm font-semibold truncate ${selectedStudentId === sub.id ? 'text-primary' : 'text-foreground/80'} ${gradedSubmissions.includes(sub.id) ? 'line-through opacity-40' : ''}`}>
-                      {sub.name}
-                    </span>
-                    {selectedStudentId === sub.id && !gradedSubmissions.includes(sub.id) && (
-                      <Sparkles className="h-3 w-3 text-primary animate-pulse" />
+          {submissions.map((sub) => {
+            const isSelected = selectedStudentId === sub.id
+            const isGraded = gradedSubmissions.includes(sub.id)
+            const checkpointsPassed = Object.values(sub.checkpoints).filter(Boolean).length
+            // Per guide's active-nav pattern: blue-50 bg + navy border + navy name.
+            const catAccent =
+              sub.category === 'critical' ? '#EF4444' :
+              sub.category === 'focus' ? '#F59E0B' :
+              '#10B981'
+            const catBg =
+              sub.category === 'critical' ? '#FEF2F2' :
+              sub.category === 'focus' ? '#FFFBEB' :
+              '#ECFDF5'
+            return (
+              <div
+                key={sub.id}
+                role="button"
+                onClick={() => onStudentSelect(sub.id)}
+                className="w-full grid grid-cols-12 gap-4 items-center px-4 py-3 rounded-lg transition-colors text-left cursor-pointer group border"
+                style={
+                  isSelected
+                    ? { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }
+                    : { backgroundColor: 'transparent', borderColor: 'transparent' }
+                }
+                onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = '#F8FAFC' }}
+                onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent' }}
+              >
+                {/* Student Info */}
+                <div className="col-span-5 flex items-center gap-3">
+                  <div className="relative shrink-0">
+                    {isGraded ? (
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center border"
+                        style={{ backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }}
+                      >
+                        <CheckCircle2 className="h-4 w-4" style={{ color: '#10B981' }} />
+                      </div>
+                    ) : (
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center border"
+                        style={{ backgroundColor: catBg, borderColor: catAccent + '40', color: catAccent }}
+                      >
+                        <span className="text-xs font-semibold">{sub.name.charAt(0)}</span>
+                      </div>
+                    )}
+                    {!isGraded && sub.category !== 'verified' && (
+                      <div
+                        className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white"
+                        style={{ backgroundColor: catAccent }}
+                      />
                     )}
                   </div>
-                  <span className="text-[10px] font-bold text-muted-foreground/30 tabular-nums uppercase tracking-tighter">{sub.code}</span>
+                  <div className="flex flex-col min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="text-sm font-semibold truncate"
+                        style={{
+                          color: isSelected ? '#1F4E8C' : '#0F172A',
+                          textDecoration: isGraded ? 'line-through' : undefined,
+                          opacity: isGraded ? 0.5 : 1,
+                        }}
+                      >
+                        {sub.name}
+                      </span>
+                      {isSelected && !isGraded && (
+                        <Sparkles className="h-3 w-3 animate-pulse" style={{ color: '#1F4E8C' }} />
+                      )}
+                    </div>
+                    <span className="text-xs font-mono text-slate-400 tabular-nums">{sub.code}</span>
+                  </div>
+                </div>
+
+                {/* Protocol Integrity */}
+                <div className="col-span-2 flex justify-center">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <div
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold tabular-nums"
+                          style={
+                            checkpointsPassed <= 2
+                              ? { backgroundColor: '#FEF2F2', borderColor: '#FECACA', color: '#B91C1C' }
+                              : checkpointsPassed <= 4
+                                ? { backgroundColor: '#FFFBEB', borderColor: '#FDE68A', color: '#B45309' }
+                                : { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0', color: '#047857' }
+                          }
+                        >
+                          {checkpointsPassed}/5
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="p-3 space-y-2 border border-slate-200 bg-white shadow-xl">
+                        <div className="text-xs font-semibold tracking-wider text-slate-400 border-b border-slate-100 pb-1.5">Checkpoints</div>
+                        <div className="space-y-1.5 min-w-[140px]">
+                          {Object.entries(sub.checkpoints).map(([key, passed]) => (
+                            <div key={key} className="flex items-center justify-between gap-6 text-xs">
+                              <span className="capitalize text-slate-500">{key}</span>
+                              <span
+                                className="font-semibold"
+                                style={{ color: passed ? '#10B981' : '#EF4444' }}
+                              >
+                                {passed ? '✓' : '✗'}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+
+                {/* Critical Flags */}
+                <div className="col-span-2 flex justify-center">
+                  {!isGraded && sub.flags > 0 ? (
+                    <span
+                      className="inline-flex items-center rounded-full h-6 px-2.5 text-xs font-semibold border"
+                      style={{ backgroundColor: '#FEF2F2', borderColor: '#FECACA', color: '#B91C1C' }}
+                    >
+                      {sub.flags} flags
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-300">—</span>
+                  )}
+                </div>
+
+                {/* Validation Reason */}
+                <div className="col-span-2 text-center">
+                  <span
+                    className="text-xs font-medium"
+                    style={{
+                      color:
+                        sub.category === 'critical' ? '#B91C1C' :
+                        sub.category === 'focus' ? '#B45309' :
+                        '#64748B',
+                    }}
+                  >
+                    {sub.reason}
+                  </span>
+                </div>
+
+                {/* Actions */}
+                <div className="col-span-1 text-right">
+                  <button
+                    className="h-8 w-8 inline-flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-colors text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                    aria-label="Open student"
+                  >
+                    <ChevronDown className="h-4 w-4 -rotate-90" />
+                  </button>
                 </div>
               </div>
-
-              {/* Protocol Integrity */}
-              <div className="col-span-2 flex justify-center">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${
-                        Object.values(sub.checkpoints).filter(Boolean).length <= 2 ? 'bg-destructive/5 border-destructive/20 text-destructive' :
-                        Object.values(sub.checkpoints).filter(Boolean).length <= 4 ? 'bg-[color:var(--status-warning-bg)]/20 border-[color:var(--status-warning)]/20 text-[color:var(--status-warning)]' :
-                        'bg-primary/5 border-primary/10 text-primary'
-                      }`}>
-                        <span className="text-[11px] font-bold tabular-nums">
-                          {Object.values(sub.checkpoints).filter(Boolean).length}/5
-                        </span>
-                        <span className="text-[9px] font-black uppercase tracking-tighter opacity-70">Checks</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="p-3 space-y-2 border-border/50 bg-background/95 backdrop-blur-md shadow-2xl">
-                      <div className="eyebrow text-[9px] text-muted-foreground/60 border-b border-border/50 pb-1.5 uppercase font-bold tracking-widest">Protocol Quality</div>
-                      <div className="space-y-1.5 min-w-[120px]">
-                        {Object.entries(sub.checkpoints).map(([key, passed]) => (
-                          <div key={key} className="flex items-center justify-between gap-6 text-[10px]">
-                            <span className="text-muted-foreground capitalize font-medium">{key}</span>
-                            <span className={passed ? 'text-[color:var(--status-success)]' : 'text-destructive font-bold'}>
-                              {passed ? 'PASSED' : 'FAILED'}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-
-              {/* Critical Flags */}
-              <div className="col-span-2 flex justify-center">
-                {!gradedSubmissions.includes(sub.id) && sub.flags > 0 ? (
-                  <Badge variant="destructive" className="h-6 px-3 rounded-full text-[10px] font-black border-0 shadow-lg shadow-destructive/20 animate-pulse uppercase tracking-widest">
-                    {sub.flags} FLAGS
-                  </Badge>
-                ) : (
-                  <div className="h-1 w-4 rounded-full bg-muted/30" />
-                )}
-              </div>
-
-              {/* Validation Reason */}
-              <div className="col-span-2 text-center flex flex-col items-center">
-                <span className={`text-[11px] font-medium italic ${
-                  sub.category === 'critical' ? 'text-destructive/70' :
-                  sub.category === 'focus' ? 'text-[color:var(--status-warning)]' :
-                  'text-muted-foreground/40'
-                }`}>
-                  {sub.reason}
-                </span>
-              </div>
-
-              {/* Actions */}
-              <div className="col-span-1 text-right">
-                <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-primary/10 hover:text-primary">
-                  <ChevronDown className="h-4 w-4 -rotate-90" />
-                </Button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </ScrollArea>
     </div>
