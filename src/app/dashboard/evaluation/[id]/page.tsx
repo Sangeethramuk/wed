@@ -111,17 +111,18 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div
+      className="space-y-8 pb-20 -m-6 p-6 min-h-[calc(100svh-4rem)] animate-in fade-in slide-in-from-bottom-4 duration-700"
+      style={{ backgroundColor: '#F8F9FA' }}
+    >
       {/* Back Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="group -ml-2 text-muted-foreground hover:text-foreground transition-all"
+      <button
         onClick={() => router.push("/dashboard/evaluation")}
+        className="group inline-flex items-center gap-1 -ml-2 px-2 py-1 rounded-lg text-sm font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
       >
-        <ChevronLeft className="mr-1 h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+        <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
         Back to Assignments
-      </Button>
+      </button>
 
       {/* Hero Card */}
       <div className="relative overflow-hidden rounded-3xl border border-border/50 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl shadow-2xl">
