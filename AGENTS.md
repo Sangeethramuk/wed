@@ -6,7 +6,10 @@ This,, version has breaking changes — APIs, conventions, and file structure ma
 
 # DS contract — read first
 
-Before touching any UI in this repo, read [`CONTRIBUTING.md`](./CONTRIBUTING.md). It is the strict contract on which primitives to use, when to escalate, and what is forbidden. The [`DESIGN_SYSTEM_GUIDE.md`](./DESIGN_SYSTEM_GUIDE.md) is the companion reference for tokens and themes.
+**[`EDUCAITORS_DS_GUIDE.md`](./EDUCAITORS_DS_GUIDE.md) is authoritative for every visual / styling decision in this repo.** It defines the color palette, shadow system, typography, spacing, component patterns, and approved pitfalls for matching the deployed reference app at https://educ-a-itors-bice.vercel.app/. Every new change — human or AI — conforms to it.
 
+The older `CONTRIBUTING.md` and `DESIGN_SYSTEM_GUIDE.md` remain in the repo as historical references. **Where they conflict with the EducAItors guide, the EducAItors guide wins.**
+
+@EDUCAITORS_DS_GUIDE.md
 @CONTRIBUTING.md
 @DESIGN_SYSTEM_GUIDE.md

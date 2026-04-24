@@ -10,24 +10,61 @@ interface StatsHeaderProps {
   complete: number
 }
 
+// Stats grid migrated to the EducAItors DS guide. White cards, very subtle
+// inline shadow, slate text ramp, accent color used only for the icon (not a
+// full tinted background). Numbers stay large (text-4xl) but in brand navy
+// for emphasis and slate-900 otherwise.
 export function StatsHeader({ total, pendingCalibration, inGrading, complete }: StatsHeaderProps) {
   const stats = [
-    { label: "Total Assignments", value: total, icon: LayoutGrid, color: "text-foreground", bg: "bg-muted/30" },
-    { label: "Pending Calibration", value: pendingCalibration, icon: Zap, color: "text-[color:var(--status-warning)] dark:text-[color:var(--status-warning)]", bg: "bg-[color:var(--status-warning-bg)]/60 dark:bg-[color:var(--status-warning-bg)]/20 border-[color:var(--status-warning)]/50 dark:border-[color:var(--status-warning)]/30" },
-    { label: "In Grading", value: inGrading, icon: ClipboardCheck, color: "text-primary", bg: "bg-primary/5 border-primary/10" },
-    { label: "Fully Graded", value: complete, icon: CheckCircle2, color: "text-[color:var(--status-success)] dark:text-[color:var(--status-success)]", bg: "bg-[color:var(--status-success-bg)]/60 dark:bg-[color:var(--status-success-bg)]/20 border-[color:var(--status-success)]/50 dark:border-[color:var(--status-success)]/30" },
+    {
+      label: "Total Assignments",
+      value: total,
+      icon: LayoutGrid,
+      accent: "#64748B",      // slate-500
+      numberColor: "#0F172A", // slate-900
+    },
+    {
+      label: "Pending Calibration",
+      value: pendingCalibration,
+      icon: Zap,
+      accent: "#F59E0B",      // warning
+      numberColor: "#F59E0B",
+    },
+    {
+      label: "In Grading",
+      value: inGrading,
+      icon: ClipboardCheck,
+      accent: "#1F4E8C",      // brand primary
+      numberColor: "#1F4E8C",
+    },
+    {
+      label: "Fully Graded",
+      value: complete,
+      icon: CheckCircle2,
+      accent: "#10B981",      // success
+      numberColor: "#10B981",
+    },
   ]
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat) => (
-        <Card key={stat.label} className={`p-6 border ${stat.bg} transition-all hover:shadow-sm`}>
+        <Card
+          key={stat.label}
+          className="bg-white border border-slate-200 rounded-xl p-5 transition-colors hover:border-slate-300"
+          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
+        >
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <p className="eyebrow text-muted-foreground/60">{stat.label}</p>
-              <p className={`text-4xl font-semibold tracking-tight tabular-nums ${stat.color}`}>{stat.value}</p>
+              <p className="text-xs font-semibold tracking-wider text-slate-400">{stat.label}</p>
+              <p
+                className="text-4xl font-semibold tracking-tight tabular-nums"
+                style={{ color: stat.numberColor }}
+              >
+                {stat.value}
+              </p>
             </div>
-            <stat.icon className={`h-5 w-5 mt-1 ${stat.color} opacity-40`} />
+            <stat.icon className="h-5 w-5 mt-1 opacity-80" style={{ color: stat.accent }} />
           </div>
         </Card>
       ))}

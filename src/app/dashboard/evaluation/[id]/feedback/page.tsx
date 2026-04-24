@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import { 
   Star, CircleDot, Lightbulb, AlertTriangle, 
   ChevronUp, ChevronDown, CheckCircle2, Pencil, 
@@ -17,7 +18,6 @@ import {
 } from '@/lib/feedback-generator';
 import { useGradingStore } from '@/lib/store/grading-store';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -92,8 +92,23 @@ export default function FeedbackPage() {
     }
   }, [assignmentId, currentAssignmentId, selectAssignment, syncAssignments]);
 
-  const assignment = assignments[assignmentId as string] || (currentAssignmentId ? assignments[currentAssignmentId] : null);
-  const activeStudent = assignment?.students.find(s => s.id === (activeStudentId || assignment.students[0]?.id));
+  // The URL id (e.g. `OS-LAB-03`) comes from evaluation-overview-store, but the
+  // grading store keys its DEFAULT_ASSIGNMENTS on a different scheme (`se-101`,
+  // `dbms-202`, etc.). If neither the URL id nor currentAssignmentId resolves,
+  // fall back to the first assignment in the store so the feedback page can
+  // render with sample data instead of hanging on the loading spinner.
+  const assignment =
+    assignments[assignmentId as string] ||
+    (currentAssignmentId ? assignments[currentAssignmentId] : null) ||
+    Object.values(assignments)[0] ||
+    null;
+  // activeStudentId from the grading desk may be `STU-100` while the resolved
+  // assignment has students keyed as `rohan`, `meghna`, etc. Fall back to the
+  // first student of the resolved assignment when the id doesn't match.
+  const activeStudent =
+    assignment?.students.find(s => s.id === activeStudentId) ||
+    assignment?.students[0] ||
+    null;
 
   // Determine specific feedback for this student
   const studentOverallFeedback = useMemo(() => 
@@ -182,22 +197,47 @@ export default function FeedbackPage() {
     // 1. Mark current student as submitted
     submitFinalFeedback(activeStudent.id);
 
-    // 2. Find next student in roster
-    const currentIndex = assignment.students.findIndex(s => s.id === activeStudent.id);
-    const nextStudent = assignment.students[currentIndex + 1];
+    // 2. The grading page stored the real cohort student id (STU-NNN) in
+    //    `activeStudentId`. The `activeStudent` object resolved above is the
+    //    fallback from DEFAULT_ASSIGNMENTS (rohan/meghna/…) used only for
+    //    rendering — don't use it to compute "next". Prefer activeStudentId.
+    const realStuId = (activeStudentId as string | null) ?? activeStudent.id;
+    const stuMatch = realStuId.match(/^STU-(\d+)$/);
+    const urlAssignmentId = (assignmentId as string) ?? assignment.id;
 
-    toast.success(`Feedback submitted for ${activeStudent.name}`, {
-      description: nextStudent ? `Moving to ${nextStudent.name}` : 'All students in this cohort are complete.',
+    // 3. Toast so the instructor sees confirmation.
+    toast.success(`Grades saved and submitted for ${activeStudent.name}`, {
+      description: "Opening the next student's paper…",
+      duration: 3500,
     });
 
-    if (nextStudent) {
-      // 3. If there is a next student, move to them and go back to grading
-      setActiveStudent(nextStudent.id);
-      router.push(`/dashboard/evaluation/${assignment.id}/grading?studentId=${nextStudent.id}`);
-    } else {
-      // 4. If last student, finalize and go to assignment page
-      router.push(`/dashboard/evaluation/${assignment.id}`);
-    }
+    // 4. Compute the next student. Increments the STU-NNN suffix against
+    //    the generated 60-seat cohort (100–159). Falls back to the stored
+    //    assignment.students array only when the id doesn't match that shape.
+    const nextStuId = stuMatch
+      ? (() => {
+          const next = parseInt(stuMatch[1], 10) + 1;
+          return next <= 159 ? `STU-${next}` : null;
+        })()
+      : null;
+    const fallbackNext = !stuMatch
+      ? assignment.students[assignment.students.findIndex(s => s.id === activeStudent.id) + 1]
+      : null;
+
+    // 5. Dwell briefly so the toast registers before the route changes.
+    setTimeout(() => {
+      if (nextStuId) {
+        setActiveStudent(nextStuId);
+        router.push(`/dashboard/evaluation/${urlAssignmentId}/grading?studentId=${nextStuId}`);
+      } else if (fallbackNext) {
+        setActiveStudent(fallbackNext.id);
+        router.push(`/dashboard/evaluation/${urlAssignmentId}/grading?studentId=${fallbackNext.id}`);
+      } else {
+        // Last student — back to the assignment details so the instructor
+        // can review the cohort and publish.
+        router.push(`/dashboard/evaluation/${urlAssignmentId}`);
+      }
+    }, 1200);
   };
 
   const handleCopy = () => {
@@ -247,7 +287,7 @@ export default function FeedbackPage() {
              <div className="text-2xl font-semibold text-foreground leading-none font-mono">60<span className="text-sm text-muted-foreground/40 font-medium">/100</span></div>
              <Badge variant="outline" className="eyebrow h-4 px-1.5 bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30 mt-1">Satisfactory</Badge>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>✕</Button>
+          <Button variant="ghost" size="icon">✕</Button>
         </div>
       </header>
 

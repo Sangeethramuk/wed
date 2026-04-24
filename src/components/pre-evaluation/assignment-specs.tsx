@@ -1,27 +1,19 @@
 "use client"
 
-import { usePreEvalStore, MOCK_HISTORY, type AssignmentType, type BloomLevel, type Block, type Question, type DeliverableItem, type ResourceItem } from "@/lib/store/pre-evaluation-store"
+import { usePreEvalStore, MOCK_HISTORY, type BloomLevel, type Block, type Question, type DeliverableItem, type ResourceItem } from "@/lib/store/pre-evaluation-store"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
 import {
   ArrowLeft,
   Plus,
-  FolderKanban,
-  Palette,
   FileText,
-  Mic2,
-  Code2,
   Check,
-  HelpCircle,
   Trash2,
   X,
-  Star,
   Wand2,
-  Info,
   Sparkles,
   FileCheck2,
   Link2,
@@ -34,69 +26,12 @@ import {
   Download,
   GripVertical,
 } from "lucide-react"
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { DateTimePicker } from "@/components/ui/datetime-picker"
 import { cn } from "@/lib/utils"
 
-type TypeTemplate = {
-  type: AssignmentType
-  label: string
-  icon: any
-  color: string
-  bestFor: string[]
-  structure: string[]
-  evaluation: string[]
-}
-
-const TYPE_TEMPLATES: TypeTemplate[] = [
-  {
-    type: "Project",
-    label: "Project",
-    icon: FolderKanban,
-    color: "text-[color:var(--status-info)]",
-    bestFor: ["Applying concepts", "Integrative work"],
-    structure: ["Brief / scenario", "3–5 tasks", "Deliverables", "Submission format"],
-    evaluation: ["Criteria-based rubric", "Depth & reasoning"],
-  },
-  {
-    type: "Design",
-    label: "Design / Figma",
-    icon: Palette,
-    color: "text-[color:var(--category-2)]",
-    bestFor: ["Visual reasoning", "UX / UI craft"],
-    structure: ["Design brief", "Artboards", "Process artifacts"],
-    evaluation: ["Rubric on process + outcome"],
-  },
-  {
-    type: "Lab Record",
-    label: "Lab Record",
-    icon: Code2,
-    color: "text-[color:var(--status-warning)]",
-    bestFor: ["Procedural mastery", "Hands-on skill"],
-    structure: ["Objective", "Procedure", "Observations", "Conclusion"],
-    evaluation: ["Checklist + rubric", "Execution accuracy"],
-  },
-  {
-    type: "Essay",
-    label: "Writing / Essay",
-    icon: FileText,
-    color: "text-[color:var(--category-2)]",
-    bestFor: ["Analytical thinking", "Argumentation"],
-    structure: ["Prompt", "Length target", "Reference guidance"],
-    evaluation: ["Rubric on reasoning & clarity"],
-  },
-  {
-    type: "Viva",
-    label: "Viva / Oral",
-    icon: Mic2,
-    color: "text-[color:var(--status-warning)]",
-    bestFor: ["Conceptual depth", "Oral reasoning"],
-    structure: ["Question bank", "Probing follow-ups", "Score sheet"],
-    evaluation: ["Rubric per question", "Depth & clarity"],
-  },
-]
 
 export function AssignmentSpecs() {
   const {
@@ -118,28 +53,23 @@ export function AssignmentSpecs() {
     removeResourceItem,
     nextStep,
     prevStep,
-    addAudit
+    addAudit,
+    creationMode,
+    selectedHistoryId,
   } = usePreEvalStore()
 
-  const recommendedType = useMemo<AssignmentType>(() => {
-    if (!selectedCourse) return "Project"
-    const counts: Record<string, number> = {}
-    for (const h of MOCK_HISTORY) {
-      if (h.course === selectedCourse && h.type) {
-        counts[h.type] = (counts[h.type] || 0) + 1
-      }
+  const sourceHistory = creationMode === "history" && selectedHistoryId
+    ? MOCK_HISTORY.find(h => h.id === selectedHistoryId)
+    : null
+
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    const init: Record<string, boolean> = {}
+    for (const b of assignment.blocks) {
+      if (b.type === "instructions" || b.type === "resources") init[b.id] = true
     }
-    const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1])
-    return (ranked[0]?.[0] as AssignmentType) ?? "Project"
-  }, [selectedCourse])
-
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
+    return init
+  })
   const toggleCollapsed = (id: string) => setCollapsed(c => ({ ...c, [id]: !c[id] }))
-
-  const handleTypeSelect = (type: AssignmentType) => {
-    updateAssignment({ type })
-    addAudit({ action: "Assignment type set to " + type, details: `Format confirmed. Institutional templates loaded.`, type: "user" })
-  }
 
   const questionsBlocks = assignment.blocks.filter(b => b.type === "questions") as Extract<Block, { type: "questions" }>[]
   const instructionsBlocks = assignment.blocks.filter(b => b.type === "instructions") as Extract<Block, { type: "instructions" }>[]
@@ -150,31 +80,62 @@ export function AssignmentSpecs() {
   const totalWeight = allQuestions.reduce((s, q) => s + Number(q.weight || 0), 0)
 
   const hasInstructionsBody = instructionsBlocks.some(b => b.body.trim().length >= 30)
-  const hasThreePlusQuestions = allQuestions.length >= 3
-  const allQuestionsHaveText = allQuestions.length > 0 && allQuestions.every(q => q.text.trim().length > 0)
+  const hasAnyQuestions = allQuestions.length > 0
+  const isSingleTask = allQuestions.length === 1
+  const allQuestionsHaveText = allQuestions.every(q => q.text.trim().length > 0)
   const weightsSumCorrect = totalWeight === 100
   const hasDeliverables = deliverablesBlocks.some(b => b.items.length > 0 && b.items.every(i => i.name.trim()))
 
-  const bloomMix = useMemo(() => {
-    let lower = 0, higher = 0
-    for (const q of allQuestions) {
-      if (q.bloomLevel === "L1: Remember" || q.bloomLevel === "L2: Understand") lower++
-      else higher++
-    }
-    return { lower, higher, mixed: lower > 0 && higher > 0 }
-  }, [allQuestions])
+  type HealthCheck = { id: string; ok: boolean; label: string; hint?: string; blocking: boolean }
 
-  const healthChecks = [
-    { id: "instructions", ok: hasInstructionsBody, label: hasInstructionsBody ? "Instructions complete" : "Instructions need detail", hint: hasInstructionsBody ? undefined : "Describe what students should do — aim for 2–3 sentences." },
-    { id: "questions-count", ok: hasThreePlusQuestions, label: hasThreePlusQuestions ? `${allQuestions.length} questions added` : "Add more questions", hint: hasThreePlusQuestions ? undefined : `Add at least 3 questions for better evaluation (you have ${allQuestions.length}).` },
-    { id: "questions-text", ok: allQuestionsHaveText, label: allQuestionsHaveText ? "All questions written" : "Some questions are empty", hint: allQuestionsHaveText ? undefined : "Fill in the question prompts above." },
-    { id: "weights", ok: weightsSumCorrect, label: weightsSumCorrect ? "Weights total 100%" : `Weights total ${totalWeight}% — should be 100%`, hint: weightsSumCorrect ? undefined : "Adjust question weightage so the total equals 100%." },
-    { id: "deliverables", ok: hasDeliverables, label: hasDeliverables ? "Deliverables defined" : "Deliverables unclear", hint: hasDeliverables ? undefined : "Add at least one deliverable so students know what to submit." },
-    { id: "bloom", ok: bloomMix.mixed || allQuestions.length < 3, label: bloomMix.mixed ? "Balanced difficulty mix" : (allQuestions.length < 3 ? "Difficulty mix — pending" : "Difficulty skewed"), hint: bloomMix.mixed || allQuestions.length < 3 ? undefined : "Mix recall-level questions with higher-order thinking." },
+  const healthChecks: HealthCheck[] = [
+    {
+      id: "instructions",
+      ok: hasInstructionsBody,
+      label: hasInstructionsBody ? "Instructions written" : "Instructions need detail",
+      hint: hasInstructionsBody ? undefined : "Describe what students should do — aim for 2–3 sentences.",
+      blocking: true,
+    },
+    {
+      id: "tasks",
+      ok: hasAnyQuestions && allQuestionsHaveText,
+      label: !hasAnyQuestions
+        ? "No tasks defined yet"
+        : !allQuestionsHaveText
+        ? "Some tasks are incomplete"
+        : `${allQuestions.length} task${allQuestions.length !== 1 ? "s" : ""} defined`,
+      hint: !hasAnyQuestions
+        ? "Add at least one task or question for students to complete."
+        : !allQuestionsHaveText
+        ? "Fill in the task prompts above."
+        : undefined,
+      blocking: true,
+    },
+    ...(isSingleTask ? [{
+      id: "single-task",
+      ok: false,
+      label: "Single-task assignment",
+      hint: "Ensure your rubric covers multiple aspects for reliable grading.",
+      blocking: false,
+    }] : []),
+    {
+      id: "weights",
+      ok: weightsSumCorrect,
+      label: weightsSumCorrect ? "Weights total 100%" : `Weights total ${totalWeight}% — should be 100%`,
+      hint: weightsSumCorrect ? undefined : "Adjust task weightage so the total equals 100%.",
+      blocking: true,
+    },
+    {
+      id: "deliverables",
+      ok: hasDeliverables,
+      label: hasDeliverables ? "Deliverables defined" : "Deliverables not specified",
+      hint: hasDeliverables ? undefined : "Define what students will submit to make evaluation clear.",
+      blocking: false,
+    },
   ]
 
   const readyScore = Math.round(healthChecks.filter(c => c.ok).length / healthChecks.length * 100)
-  const canProceed = !!assignment.title && hasInstructionsBody && allQuestionsHaveText && weightsSumCorrect && hasDeliverables
+  const canProceed = !!assignment.title && healthChecks.filter(c => c.blocking).every(c => c.ok)
 
   const handleAIRewrite = (blockId: string, mode: "clarity" | "simplify") => {
     const block = instructionsBlocks.find(b => b.id === blockId)
@@ -224,100 +185,6 @@ export function AssignmentSpecs() {
     }, 0)
   }
 
-  if (!assignment.type) {
-    return (
-      <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-10">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={prevStep}>
-            <ArrowLeft className="h-4 w-4" />
-            Back to strategy
-          </Button>
-        </div>
-
-        <div className="space-y-2">
-          <h1 className="text-4xl font-semibold tracking-tight secondary-text">Choose an assignment type</h1>
-          <p className="text-base text-muted-foreground font-medium opacity-70">
-            Each type is a guided starting template — we&apos;ll pre-fill the structure and rubric so you can adapt it.
-          </p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {TYPE_TEMPLATES.map((t) => {
-            const isRecommended = t.type === recommendedType
-            return (
-              <Card
-                key={t.type}
-                className={cn(
-                  "group relative cursor-pointer transition-all flex flex-col shadow-none overflow-hidden",
-                  isRecommended
-                    ? "border-2 border-primary/30 bg-primary/[0.02] hover:border-primary/60 hover:bg-primary/[0.04]"
-                    : "border border-border/40 bg-card/20 hover:border-primary/30"
-                )}
-                onClick={() => handleTypeSelect(t.type)}
-              >
-                {isRecommended && (
-                  <div className="absolute top-4 right-4 z-10">
-                    <Badge className="eyebrow bg-primary text-primary-foreground border-0 rounded-full px-2 py-0.5 gap-1">
-                      <Star className="h-2.5 w-2.5" />
-                      Commonly used
-                    </Badge>
-                  </div>
-                )}
-
-                <CardContent className="px-5 pt-5 pb-5 flex flex-col gap-4 flex-1">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2.5 w-fit rounded-lg bg-muted/30 border border-border/20 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                      <t.icon className={cn("h-5 w-5", t.color, "group-hover:text-inherit")} />
-                    </div>
-                    <h3 className="text-lg tracking-tight font-semibold pt-1">{t.label}</h3>
-                  </div>
-
-                  <div className="space-y-3 pt-2 border-t border-border/10">
-                    <TypeRow title="Best for" items={t.bestFor} />
-                    <TypeRow title="Structure" items={t.structure} />
-                    <TypeRow title="Evaluation" items={t.evaluation} />
-                  </div>
-                </CardContent>
-
-                <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Custom type — configurable guardrails */}
-        <Card
-          className="group cursor-pointer transition-all border border-dashed border-border/40 bg-card/10 hover:border-primary/40 hover:bg-card/20 shadow-none"
-          onClick={() => handleTypeSelect("Specialized")}
-        >
-          <CardContent className="px-6 py-5 flex items-center gap-5">
-            <div className="p-3 rounded-lg bg-muted/20 border border-border/30 text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all shrink-0">
-              <Wand2 className="h-5 w-5" />
-            </div>
-            <div className="flex-1 min-w-0 space-y-1">
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-semibold tracking-tight">Create your own type</h3>
-                <Badge variant="outline" className="eyebrow border-border/40 opacity-70">Configurable</Badge>
-              </div>
-              <p className="text-xs text-muted-foreground opacity-70 font-medium leading-relaxed">
-                Define your own structure blocks and evaluation approach — still wired into the rubric &amp; calibration flow, so nothing breaks.
-              </p>
-            </div>
-            <Plus className="h-5 w-5 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0" />
-          </CardContent>
-        </Card>
-
-        {/* Non-binding helper */}
-        <div className="flex items-center gap-2 pt-2 text-muted-foreground/60">
-          <Info className="h-3.5 w-3.5 opacity-60" />
-          <p className="text-xs font-medium opacity-70">
-            You can modify the structure and evaluation later — this just sets your starting template.
-          </p>
-        </div>
-      </div>
-    )
-  }
-
   const blockIndex = (id: string) => assignment.blocks.findIndex(b => b.id === id)
   const isFirst = (id: string) => blockIndex(id) === 0
   const isLast = (id: string) => blockIndex(id) === assignment.blocks.length - 1
@@ -336,15 +203,16 @@ export function AssignmentSpecs() {
     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-20">
         <div className="flex items-center justify-between border-b border-border/40 pb-4 sticky top-0 z-50 bg-background/80 backdrop-blur-md -mx-4 px-4 pt-4">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => updateAssignment({ type: null })}>
+            <Button variant="ghost" size="icon" onClick={prevStep}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="space-y-0">
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-semibold tracking-tight secondary-text">Assignment Details</h1>
-                <Badge variant="outline" className="eyebrow bg-primary/5 text-primary border-primary/20 px-2 h-5 text-center">{assignment.type}</Badge>
               </div>
-              <p className="text-muted-foreground text-xs font-semibold opacity-50 tracking-wider">Build it block by block — structure only, grading comes next</p>
+              <p className="text-muted-foreground text-xs font-semibold opacity-50 tracking-wider">
+                {sourceHistory ? "Review and adjust the prefilled content below" : "Build it block by block — structure only, grading comes next"}
+              </p>
             </div>
           </div>
 
@@ -372,9 +240,22 @@ export function AssignmentSpecs() {
           </div>
         </div>
 
+        {sourceHistory && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[color:var(--status-info)]/20 bg-[color:var(--status-info)]/[0.04]">
+            <div className="h-2 w-2 rounded-full bg-[color:var(--status-info)] shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-foreground/70 leading-tight">
+                Prefilled from <span className="text-foreground">{sourceHistory.title}</span>
+                <span className="text-muted-foreground/50 font-medium"> · {sourceHistory.semester}</span>
+              </p>
+              <p className="eyebrow text-muted-foreground/40 mt-0.5">Review and adjust the content below — nothing is locked in.</p>
+            </div>
+          </div>
+        )}
+
         <div className="grid gap-6 lg:grid-cols-4">
           <div className="lg:col-span-3 space-y-5">
-            <Card className="border border-border/30 rounded-xl bg-card/10 backdrop-blur-sm shadow-none">
+            <Card className="border border-border/30 rounded-xl bg-card shadow-none">
               <CardContent className="pt-6 pb-6 px-6 space-y-4">
                 <div className="space-y-2">
                   <Label className="eyebrow text-muted-foreground opacity-50">Assignment title</Label>
@@ -438,8 +319,15 @@ export function AssignmentSpecs() {
               )
 
               return (
-                <Card key={block.id} className="border border-border/30 rounded-xl bg-card/10 backdrop-blur-sm shadow-none overflow-hidden">
+                <Card key={block.id} className="border border-border/30 rounded-xl bg-card shadow-none overflow-hidden">
                   {commonHeader}
+                  {isCollapsed && block.type === "instructions" && (block as Extract<Block, { type: "instructions" }>).body.trim() && (
+                    <div className="px-5 py-2.5 border-t border-border/10">
+                      <p className="text-xs text-muted-foreground/60 font-medium line-clamp-2 leading-relaxed">
+                        {(block as Extract<Block, { type: "instructions" }>).body}
+                      </p>
+                    </div>
+                  )}
                   {!isCollapsed && (
                     <CardContent className="p-6 space-y-4">
                       {block.type === "instructions" && (
@@ -499,30 +387,31 @@ export function AssignmentSpecs() {
               </div>
             )}
 
-            <div className="flex items-start gap-2 pt-2 text-muted-foreground/60">
-              <Info className="h-3.5 w-3.5 opacity-60 mt-0.5 shrink-0" />
-              <p className="text-xs font-medium opacity-70 leading-relaxed">
-                Set the structure here. Rubrics and evaluation criteria come on the next step — no need to define them yet.
-              </p>
-            </div>
           </div>
 
           <div className="space-y-5">
-            <Card className="border border-border/20 bg-primary/[0.01] sticky top-[90px] rounded-xl backdrop-blur-sm shadow-none overflow-hidden">
+            <Card className="border border-border/20 bg-card sticky top-[90px] rounded-xl shadow-none overflow-hidden">
               <div className="px-5 py-4 border-b border-border/10 bg-muted/[0.04]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center text-primary border border-primary/10">
+                    <div className={cn(
+                      "h-8 w-8 rounded-lg flex items-center justify-center border",
+                      canProceed
+                        ? "bg-[color:var(--status-success)]/10 border-[color:var(--status-success)]/20 text-[color:var(--status-success)]"
+                        : "bg-primary/5 border-primary/10 text-primary"
+                    )}>
                       <ShieldCheck className="h-4 w-4" />
                     </div>
                     <div>
-                      <p className="eyebrow text-primary/80 leading-tight">Assignment Health</p>
-                      <p className="eyebrow text-muted-foreground opacity-40 leading-tight">{readyScore}% ready</p>
+                      <p className={cn("eyebrow leading-tight", canProceed ? "text-[color:var(--status-success)]" : "text-primary/80")}>
+                        {canProceed ? "Evaluation Ready" : "Assignment Health"}
+                      </p>
+                      <p className="eyebrow text-muted-foreground opacity-40 leading-tight">{readyScore}% complete</p>
                     </div>
                   </div>
                   <span className={cn(
                     "text-2xl font-semibold tracking-tight leading-none",
-                    readyScore === 100 ? "text-[color:var(--status-success)]" : readyScore >= 60 ? "text-[color:var(--status-warning)]" : "text-muted-foreground/40"
+                    canProceed ? "text-[color:var(--status-success)]" : readyScore >= 60 ? "text-[color:var(--status-warning)]" : "text-muted-foreground/40"
                   )}>
                     {readyScore}%
                   </span>
@@ -536,13 +425,15 @@ export function AssignmentSpecs() {
                         "mt-0.5 h-4 w-4 rounded-full flex items-center justify-center shrink-0 border",
                         c.ok
                           ? "bg-[color:var(--status-success)]/10 border-[color:var(--status-success)]/20 text-[color:var(--status-success)]/80"
-                          : "bg-[color:var(--status-warning)]/10 border-[color:var(--status-warning)]/20 text-[color:var(--status-warning)]/80"
+                          : c.blocking
+                          ? "bg-[color:var(--status-warning)]/10 border-[color:var(--status-warning)]/20 text-[color:var(--status-warning)]/80"
+                          : "bg-[color:var(--status-info)]/10 border-[color:var(--status-info)]/20 text-[color:var(--status-info)]/80"
                       )}>
-                        {c.ok ? <Check className="h-2.5 w-2.5" /> : <AlertTriangle className="h-2.5 w-2.5" />}
+                        {c.ok ? <Check className="h-2.5 w-2.5" /> : c.blocking ? <AlertTriangle className="h-2.5 w-2.5" /> : <Lightbulb className="h-2.5 w-2.5" />}
                       </div>
                       <p className={cn(
                         "text-xs font-bold leading-tight",
-                        c.ok ? "text-foreground/70" : "text-foreground/90"
+                        c.ok ? "text-foreground/70" : c.blocking ? "text-foreground/90" : "text-foreground/70"
                       )}>{c.label}</p>
                     </div>
                     {c.hint && (
@@ -566,15 +457,6 @@ export function AssignmentSpecs() {
         </div>
       </div>
     </TooltipProvider>
-  )
-}
-
-function TypeRow({ title, items }: { title: string; items: string[] }) {
-  return (
-    <div className="space-y-1">
-      <span className="eyebrow text-muted-foreground opacity-50">{title}</span>
-      <p className="text-xs font-medium opacity-75 leading-relaxed">{items.join(" · ")}</p>
-    </div>
   )
 }
 
@@ -604,31 +486,27 @@ function InstructionsEditor({
         value={block.body}
         onChange={(e) => onChange(e.target.value)}
       />
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-muted-foreground/60">
-          <Sparkles className="h-3 w-3 text-primary opacity-70" />
-          <span className="text-xs font-semibold opacity-80">AI assist</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onAIRewrite("clarity")}
-            disabled={!hasBody}
-          >
-            <Wand2 className="h-3 w-3 mr-1" />
-            Improve clarity
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onAIRewrite("simplify")}
-            disabled={!hasBody}
-          >
-            <Lightbulb className="h-3 w-3 mr-1" />
-            Simplify language
-          </Button>
-        </div>
+      <div className="flex items-center justify-end gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onAIRewrite("clarity")}
+          disabled={!hasBody}
+          className="text-muted-foreground/60 hover:text-primary"
+        >
+          <Wand2 className="h-3 w-3 mr-1" />
+          Improve clarity
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onAIRewrite("simplify")}
+          disabled={!hasBody}
+          className="text-muted-foreground/60 hover:text-primary"
+        >
+          <Lightbulb className="h-3 w-3 mr-1" />
+          Simplify language
+        </Button>
       </div>
     </div>
   )
@@ -650,20 +528,10 @@ function QuestionsEditor({
   onSuggest: () => void
 }) {
   const total = block.questions.reduce((s, q) => s + Number(q.weight || 0), 0)
-  const needsMore = block.questions.length < 3
   const weightOff = total !== 100
 
   return (
     <div className="space-y-4">
-      {needsMore && (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-[color:var(--status-warning)]/[0.04] border border-[color:var(--status-warning)]/15">
-          <Info className="h-3 w-3 text-[color:var(--status-warning)]/80 shrink-0" />
-          <p className="text-xs font-semibold text-[color:var(--status-warning)]/80 leading-tight">
-            Add at least 3 questions for better evaluation.
-          </p>
-        </div>
-      )}
-
       <div className="space-y-3">
         {block.questions.map((q, idx) => (
           <QuestionRow
@@ -716,15 +584,6 @@ function QuestionsEditor({
   )
 }
 
-const BLOOM_OPTIONS: { value: BloomLevel; label: string }[] = [
-  { value: "L1: Remember", label: "L1 · Remember" },
-  { value: "L2: Understand", label: "L2 · Understand" },
-  { value: "L3: Apply", label: "L3 · Apply" },
-  { value: "L4: Analyze", label: "L4 · Analyze" },
-  { value: "L5: Evaluate", label: "L5 · Evaluate" },
-  { value: "L6: Create", label: "L6 · Create" },
-]
-
 function QuestionRow({
   index,
   question,
@@ -737,7 +596,7 @@ function QuestionRow({
   onRemove: () => void
 }) {
   const suggestionMatches = question.bloomLevel === question.bloomSuggested
-  const suggestedLabel = BLOOM_OPTIONS.find(b => b.value === question.bloomSuggested)?.label ?? question.bloomSuggested
+  const suggestedLabel = question.bloomSuggested?.replace("L", "L").replace(": ", " · ") ?? ""
 
   return (
     <div className="group relative rounded-lg border border-border/30 bg-background/40 hover:border-primary/20 transition-all">
@@ -776,43 +635,20 @@ function QuestionRow({
           value={question.text}
           onChange={(e) => onUpdate({ text: e.target.value })}
         />
-        <div className="flex items-center gap-2 flex-wrap">
+        {question.text.trim().length > 0 && !suggestionMatches && (
           <div className="flex items-center gap-1.5">
-            <Label className="eyebrow text-muted-foreground/50">Bloom&apos;s level</Label>
-            <Tooltip>
-              <TooltipTrigger className="text-muted-foreground/40 hover:text-primary">
-                <HelpCircle className="h-3 w-3" />
-              </TooltipTrigger>
-              <TooltipContent className="bg-foreground border-none p-2 rounded-lg shadow-none max-w-[220px]">
-                <p className="text-xs font-bold text-primary-foreground leading-relaxed">Cognitive depth for this question. We auto-suggest based on the verbs in the prompt — change it if the suggestion feels off.</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <Select value={question.bloomLevel} onValueChange={(val) => { if (val) onUpdate({ bloomLevel: val as BloomLevel }) }}>
-            <SelectTrigger className="h-7 w-40 font-bold text-xs bg-muted/10 border border-border/40 text-primary rounded-md px-2">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent sideOffset={5} className="z-[105] border border-border/20 rounded-xl p-1 shadow-none">
-              {BLOOM_OPTIONS.map(L => (
-                <SelectItem key={L.value} value={L.value} className="text-xs font-bold py-1.5 rounded-md">
-                  {L.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {question.text.trim().length > 0 && !suggestionMatches && (
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="border-dashed"
+              className="text-primary/70 hover:text-primary border-dashed border border-primary/20 hover:border-primary/40 h-6 px-2"
               onClick={() => onUpdate({ bloomLevel: question.bloomSuggested })}
             >
-              <Sparkles className="h-3 w-3" />
-              AI suggests {suggestedLabel}
+              <Sparkles className="h-3 w-3 mr-1" />
+              <span className="eyebrow">{suggestedLabel}</span>
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )

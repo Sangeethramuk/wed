@@ -1,8 +1,10 @@
 "use client"
 
-import { use, useState } from "react"
+import { use, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { useGradingStore } from "@/lib/store/grading-store"
+import { ESCALATION_DISMISS_THRESHOLD } from "@/components/evaluation/progressive-nudges"
 import {
   ChevronLeft,
   Users,
@@ -12,8 +14,10 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
-  Zap,
   Send,
+  Zap,
+  EyeOff,
+  ArrowRight
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -21,16 +25,63 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { TriageSidebar } from "@/components/evaluation/triage-sidebar"
 import { motion } from "framer-motion"
-import { toast } from "sonner"
-import { ESCALATION_DISMISS_THRESHOLD } from "@/components/evaluation/progressive-nudges"
 
 export default function AssignmentDetails({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
-  const { assignments, progressiveNudges, triggerSpotCheck, markSpotCheckAutoFired, resetProgressiveNudges } = useGradingStore()
+  const {
+    assignments,
+    progressiveNudges,
+    triggerSpotCheck,
+    markSpotCheckAutoFired,
+    calibration,
+    initCalibration,
+  } = useGradingStore()
   const assignment = assignments[id]
   const [activeTab, setActiveTab] = useState("submissions")
   const [gradedSubmissions, setGradedSubmissions] = useState<string[]>([])
+  const [cohortPublished, setCohortPublished] = useState(false)
+
+  /**
+   * Cohort-level publish — the LEVEL-3 failsafe gate.
+   *
+   * Reads `progressiveNudges.ignoredCount` from the grading store (ticked by
+   * each un-productive nudge dismissal on the per-student grading desk).
+   * If the instructor is trying to finalize after ignoring ≥
+   * ESCALATION_DISMISS_THRESHOLD nudges, the spot-check modal opens first.
+   * Otherwise: toast success + lock the button.
+   */
+  const handlePublishCohort = () => {
+    if (cohortPublished) return
+    const { ignoredCount, spotCheckAutoFired } = progressiveNudges
+    if (!spotCheckAutoFired && ignoredCount >= ESCALATION_DISMISS_THRESHOLD) {
+      markSpotCheckAutoFired()
+      triggerSpotCheck()
+      return
+    }
+    setCohortPublished(true)
+    toast.success("Cohort grades published", {
+      description: `All 60 submissions for ${assignment?.title ?? "this assignment"} finalized.`,
+      duration: 4000,
+    })
+  }
+
+  const requiresBlindGrading = assignment?.students.some(s => s.isDoubleBlind)
+  const calibrationComplete = calibration[id]?.phase === 'complete'
+  const blindGateActive = requiresBlindGrading && !calibrationComplete
+
+  // Pre-init so we know the paper count before the user clicks Begin
+  useEffect(() => {
+    if (requiresBlindGrading) initCalibration(id)
+  }, [id, requiresBlindGrading, initCalibration])
+
+  const cal = calibration[id]
+  const blindTotalCount = cal?.papers.length ?? 0
+  const blindGradedCount = cal?.papers.filter(p =>
+    cal.scores.filter(s => s.paperId === p.paperId).every(s => s.instructorLevel > 0) && cal.criteria.length > 0
+  ).length ?? 0
+  const blindRemainingCount = blindTotalCount - blindGradedCount
+  const blindHasStarted = blindGradedCount > 0
 
   if (!assignment) {
     return (
@@ -43,12 +94,14 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
     )
   }
 
-  const stats = [
-    { label: "Total Papers", value: 60, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Pending", value: 60 - gradedSubmissions.length, icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { label: "Critical", value: 8, icon: AlertTriangle, color: "text-destructive", bg: "bg-destructive/10" },
-    { label: "Focus", value: 12, icon: Zap, color: "text-purple-500", bg: "bg-purple-500/10" },
-    { label: "Good to go", value: 40, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+  // Stats per EDUCAITORS_DS_GUIDE.md: hex accents, number takes the accent,
+  // icon sits in a soft-tinted square of the same hue, slate-400 label.
+  const stats: { label: string; value: number; icon: typeof Users; accent: string }[] = [
+    { label: "Total Papers", value: 60, icon: Users, accent: "#1F4E8C" },
+    { label: "Pending", value: 60 - gradedSubmissions.length, icon: Clock, accent: "#F59E0B" },
+    { label: "Critical", value: 8, icon: AlertTriangle, accent: "#EF4444" },
+    { label: "Focus", value: 12, icon: Zap, accent: "#1F4E8C" },
+    { label: "Good to go", value: 40, icon: CheckCircle2, accent: "#10B981" },
   ]
 
   const handleStudentSelect = (studentId: string) => {
@@ -59,108 +112,109 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
     setGradedSubmissions(prev => [...new Set([...prev, ...ids])])
   }
 
-  const handlePublishCohort = () => {
-    if (
-      progressiveNudges.ignoredCount >= ESCALATION_DISMISS_THRESHOLD &&
-      !progressiveNudges.spotCheckAutoFired
-    ) {
-      markSpotCheckAutoFired()
-      triggerSpotCheck()
-      toast.warning("Spot check required before publishing", {
-        description: "Low engagement detected — please review a few grades before publishing.",
-      })
-      return
-    }
-    resetProgressiveNudges()
-    toast.success("Grades published successfully", {
-      description: `All grades for ${assignment.title} have been published to students.`,
-    })
-  }
-
   return (
-    <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div
+      className="space-y-8 pb-20 -m-6 p-6 min-h-[calc(100svh-4rem)] animate-in fade-in slide-in-from-bottom-4 duration-700"
+      style={{ backgroundColor: '#F8F9FA' }}
+    >
       {/* Back Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="group -ml-2 text-muted-foreground hover:text-foreground transition-all"
+      <button
         onClick={() => router.push("/dashboard/evaluation")}
+        className="group inline-flex items-center gap-1 -ml-2 px-2 py-1 rounded-lg text-sm font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
       >
-        <ChevronLeft className="mr-1 h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+        <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
         Back to Assignments
-      </Button>
+      </button>
 
-      {/* Hero Card */}
-      <div className="relative overflow-hidden rounded-3xl border border-border/50 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl shadow-2xl">
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-64 w-64 rounded-full bg-[color:var(--status-info)]/5 blur-3xl" />
-
-        <div className="relative p-8 md:p-12">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-4 max-w-2xl">
-              <div className="space-y-1">
-                <p className="eyebrow text-primary/60 font-bold tracking-[0.2em] uppercase text-[10px]">
-                  Assignment Overview
-                </p>
-                <h1 className="text-4xl md:text-5xl font-serif italic tracking-tight text-foreground leading-tight">
-                  {assignment.title}
-                </h1>
-              </div>
-              <p className="text-muted-foreground/70 leading-relaxed text-sm md:text-base font-medium italic">
-                &quot;{assignment.description}&quot;
+      {/* Hero Card — per EDUCAITORS_DS_GUIDE.md: white surface, slate-200 border,
+          inline subtle shadow, slate text ramp, navy CTA with hex hover. */}
+      <div
+        className="rounded-xl border border-slate-200 bg-white p-8 md:p-10"
+        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+      >
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-4 max-w-2xl">
+            <div className="space-y-1">
+              <p className="text-xs font-semibold tracking-wider text-slate-400">
+                Assignment Overview
               </p>
-              <div className="flex flex-wrap gap-3">
-                <Badge variant="outline" className="bg-background/50 backdrop-blur-sm border-border/40 py-1.5 px-3 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                  #{assignment.id.toUpperCase()}
-                </Badge>
-                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 py-1.5 px-3 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                  Target Fix: {assignment.targetFix.toUpperCase()}
-                </Badge>
-              </div>
+              <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 leading-tight">
+                {assignment.title}
+              </h1>
             </div>
-            <div className="flex items-center gap-3">
-              <Button
-                size="lg"
-                variant="outline"
-                className="rounded-full px-6"
-                onClick={handlePublishCohort}
+            <p className="text-sm md:text-base text-slate-500 leading-relaxed">
+              {assignment.description}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                #{assignment.id.toUpperCase()}
+              </span>
+              <span
+                className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold"
+                style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE', color: '#1F4E8C' }}
               >
-                <Send className="h-4 w-4 mr-2" />
-                Publish Grades
-              </Button>
-              <Button
-                size="lg"
-                className="rounded-full px-8 shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+                Target Fix: {assignment.targetFix.toUpperCase()}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {blindGateActive ? (
+              <button
+                onClick={() => router.push(`/dashboard/evaluation/${id}/calibrate`)}
+                className="inline-flex items-center gap-2 h-11 px-6 rounded-lg text-sm font-semibold text-white transition-colors"
+                style={{ backgroundColor: '#1F4E8C' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1E3A5F' }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#1F4E8C' }}
+              >
+                <EyeOff className="h-4 w-4" />
+                Start Blind Grading
+              </button>
+            ) : (
+              <button
                 onClick={() => router.push(`/dashboard/evaluation/${id}/grading`)}
+                className="inline-flex items-center gap-2 h-11 px-6 rounded-lg text-sm font-semibold text-white transition-colors"
+                style={{ backgroundColor: '#1F4E8C' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1E3A5F' }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#1F4E8C' }}
               >
                 Enter Grading Desk
-              </Button>
-            </div>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="submissions" className="space-y-8" onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between border-b border-border/50 pb-1">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-0">
           <TabsList className="bg-transparent h-auto p-0 gap-8">
             <TabsTrigger
               value="submissions"
-              className="px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none eyebrow text-xs font-bold tracking-widest text-muted-foreground/60 data-[state=active]:text-foreground transition-all"
+              className="px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 rounded-none text-xs font-semibold tracking-wider text-slate-500 hover:text-slate-700 data-[state=active]:text-slate-900 transition-colors"
+              style={{
+                borderBottomColor: activeTab === "submissions" ? '#1F4E8C' : 'transparent',
+              }}
             >
               <LayoutDashboard className="mr-2 h-4 w-4" />
               Submissions
             </TabsTrigger>
             <TabsTrigger
               value="analytics"
-              className="px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none eyebrow text-xs font-bold tracking-widest text-muted-foreground/60 data-[state=active]:text-foreground transition-all"
+              className="px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 rounded-none text-xs font-semibold tracking-wider text-slate-500 hover:text-slate-700 data-[state=active]:text-slate-900 transition-colors"
+              style={{
+                borderBottomColor: activeTab === "analytics" ? '#1F4E8C' : 'transparent',
+              }}
             >
               <BarChart3 className="mr-2 h-4 w-4" />
               Analytics
             </TabsTrigger>
             <TabsTrigger
               value="preview"
-              className="px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none eyebrow text-xs font-bold tracking-widest text-muted-foreground/60 data-[state=active]:text-foreground transition-all"
+              className="px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 rounded-none text-xs font-semibold tracking-wider text-slate-500 hover:text-slate-700 data-[state=active]:text-slate-900 transition-colors"
+              style={{
+                borderBottomColor: activeTab === "preview" ? '#1F4E8C' : 'transparent',
+              }}
             >
               <Eye className="mr-2 h-4 w-4" />
               Preview
@@ -169,67 +223,201 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
         </div>
 
         <TabsContent value="submissions" className="space-y-8 outline-none mt-6">
-          {/* Stats Cards Row */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.1 }}
+          {blindGateActive ? (
+            /* ── Blind grading gate — white card, slate palette, navy CTA ── */
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="rounded-xl border border-slate-200 bg-white flex flex-col items-center justify-center min-h-[520px] p-12 text-center space-y-8"
+              style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+            >
+              <div
+                className="w-16 h-16 rounded-2xl flex items-center justify-center border"
+                style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }}
               >
-                <Card className="overflow-hidden border-border/40 shadow-sm bg-card/40 backdrop-blur-sm group hover:border-primary/30 transition-all hover:translate-y-[-2px]">
-                  <CardContent className="p-4 space-y-3">
-                    <div className={`p-2 rounded-xl w-fit ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
-                      <stat.icon className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-muted-foreground/50 tracking-wider uppercase">{stat.label}</p>
-                      <p className="text-2xl font-bold text-foreground tabular-nums">{stat.value}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                <EyeOff className="h-7 w-7" style={{ color: '#1F4E8C' }} />
+              </div>
 
-          {/* Full Width Submissions Table */}
-          <div className="rounded-3xl overflow-hidden border border-border/50 shadow-2xl bg-card/30 backdrop-blur-xl h-[800px]">
-            <TriageSidebar
-              selectedStudentId=""
-              onStudentSelect={handleStudentSelect}
-              gradedSubmissions={gradedSubmissions}
-              onBulkApprove={handleBulkApprove}
-            />
-          </div>
+              <div className="space-y-3 max-w-md">
+                <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                  {blindHasStarted ? `${blindRemainingCount} submission${blindRemainingCount !== 1 ? 's' : ''} to go` : 'Blind grading required'}
+                </h2>
+                {blindHasStarted ? (
+                  <>
+                    <p className="text-sm text-slate-500 leading-relaxed">
+                      You've graded <span className="font-semibold text-slate-900">{blindGradedCount} of {blindTotalCount}</span> benchmark submissions.
+                      Setting this benchmark makes the remaining grading faster and more consistent.
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      We'll show the AI comparison and full submissions list once all {blindTotalCount} are done.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-slate-500 leading-relaxed">
+                      You'll manually grade <span className="font-semibold text-slate-900">{blindTotalCount} submission{blindTotalCount !== 1 ? 's' : ''}</span> without seeing AI scores first.
+                      Setting the benchmark makes the remaining grading faster and more consistent.
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      We'll show the AI comparison and full submissions list once you're done.
+                    </p>
+                  </>
+                )}
+              </div>
+
+              <button
+                onClick={() => router.push(`/dashboard/evaluation/${id}/calibrate`)}
+                className="inline-flex items-center gap-2 h-11 px-8 rounded-lg text-sm font-semibold text-white transition-colors"
+                style={{ backgroundColor: '#1F4E8C' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1E3A5F' }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#1F4E8C' }}
+              >
+                {blindHasStarted ? 'Continue' : 'Begin'}
+                <ArrowRight className="h-4 w-4" />
+              </button>
+
+              <p className="text-xs text-slate-400">
+                Submissions list is locked until blind grading is complete
+              </p>
+            </motion.div>
+          ) : (
+            <>
+              {/* Cohort-level publish — guide-compliant white card with subtle
+                  shadow; brand-navy CTA flips to a soft-emerald 'Published'
+                  pill after success. Spot-check gate stays unchanged. */}
+              <div
+                className="rounded-xl border border-slate-200 bg-white"
+                style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+              >
+                <div className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold tracking-wider" style={{ color: '#1F4E8C' }}>Ready to finalize</p>
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      {cohortPublished ? "Cohort grades published" : "Publish cohort grades"}
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      {cohortPublished
+                        ? "All submissions for this assignment have been released to students."
+                        : "Review the cohort below, then publish to release grades to all students in this assignment."}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handlePublishCohort}
+                    disabled={cohortPublished}
+                    className="inline-flex items-center gap-2 h-11 px-6 rounded-lg text-sm font-semibold transition-colors disabled:cursor-not-allowed"
+                    style={
+                      cohortPublished
+                        ? { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0', borderWidth: 1, color: '#047857' }
+                        : { backgroundColor: '#1F4E8C', color: '#FFFFFF' }
+                    }
+                    onMouseEnter={(e) => {
+                      if (!cohortPublished) e.currentTarget.style.backgroundColor = '#1E3A5F'
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!cohortPublished) e.currentTarget.style.backgroundColor = '#1F4E8C'
+                    }}
+                  >
+                    {cohortPublished ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4" />
+                        Published
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        Publish cohort grades
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Stats Cards Row — white cards, inline shadow, hex accents */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                {stats.map((stat, i) => (
+                  <motion.div
+                    key={stat.label}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.1 }}
+                  >
+                    <div
+                      className="rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-slate-300"
+                      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold tracking-wider text-slate-400">{stat.label}</p>
+                          <p
+                            className="text-2xl font-semibold tracking-tight tabular-nums"
+                            style={{ color: stat.accent }}
+                          >
+                            {stat.value}
+                          </p>
+                        </div>
+                        <stat.icon className="h-5 w-5 mt-0.5 opacity-80" style={{ color: stat.accent }} />
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Full Width Submissions Table — TriageSidebar keeps its own
+                  chrome; wrapper just provides the guide's card surface. */}
+              <div
+                className="rounded-xl overflow-hidden border border-slate-200 bg-white h-[800px]"
+                style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+              >
+                <TriageSidebar
+                  selectedStudentId=""
+                  onStudentSelect={handleStudentSelect}
+                  gradedSubmissions={gradedSubmissions}
+                  onBulkApprove={handleBulkApprove}
+                />
+              </div>
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="analytics" className="outline-none">
-          <Card className="border-border/40 bg-card/40 backdrop-blur-sm p-20 text-center">
+          <div
+            className="rounded-xl border border-slate-200 bg-white p-20 text-center"
+            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+          >
             <div className="space-y-4 max-w-sm mx-auto">
-              <div className="mx-auto w-16 h-16 rounded-full bg-[color:var(--status-info-bg)] flex items-center justify-center">
-                <BarChart3 className="h-8 w-8 text-[color:var(--status-info)] opacity-50" />
+              <div
+                className="mx-auto w-16 h-16 rounded-full flex items-center justify-center border"
+                style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }}
+              >
+                <BarChart3 className="h-8 w-8" style={{ color: '#1F4E8C' }} />
               </div>
-              <h3 className="text-xl font-semibold tracking-tight italic">Analytics coming soon</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed italic">
+              <h3 className="text-xl font-semibold tracking-tight text-slate-900">Analytics coming soon</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">
                 Advanced performance tracking and cohort benchmarking metrics are being calibrated for this course.
               </p>
             </div>
-          </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="preview" className="outline-none">
-          <Card className="border-border/40 bg-card/40 backdrop-blur-sm p-20 text-center">
+          <div
+            className="rounded-xl border border-slate-200 bg-white p-20 text-center"
+            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+          >
             <div className="space-y-4 max-w-sm mx-auto">
-              <div className="mx-auto w-16 h-16 rounded-full bg-primary/5 flex items-center justify-center">
-                <Eye className="h-8 w-8 text-primary opacity-50" />
+              <div
+                className="mx-auto w-16 h-16 rounded-full flex items-center justify-center border"
+                style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }}
+              >
+                <Eye className="h-8 w-8" style={{ color: '#1F4E8C' }} />
               </div>
-              <h3 className="text-xl font-semibold tracking-tight italic">Assignment Preview</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed italic">
+              <h3 className="text-xl font-semibold tracking-tight text-slate-900">Assignment Preview</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">
                 Preview the assignment as it appears to students. Coming soon in the next update.
               </p>
             </div>
-          </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

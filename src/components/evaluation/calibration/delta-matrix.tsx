@@ -20,14 +20,24 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
 
   const { papers, criteria, scores } = cal
 
-  const discrepancies = [...scores]
+  const allDiscrepancies = [...scores]
     .filter(s => s.instructorLevel > 0 && s.delta >= 1)
-    .sort((a, b) => b.delta - a.delta)
 
-  const isCalibrated = discrepancies.length === 0
+  const isCalibrated = allDiscrepancies.length === 0
 
   const getPaper = (paperId: string) => papers.find(p => p.paperId === paperId)
   const getCriterion = (criterionId: string) => criteria.find(c => c.id === criterionId)
+
+  // Group discrepancies by paper, sort criteria within each paper by delta desc
+  const discrepanciesByPaper = papers
+    .map((paper, idx) => ({
+      paper,
+      paperIdx: idx,
+      items: allDiscrepancies
+        .filter(s => s.paperId === paper.paperId)
+        .sort((a, b) => b.delta - a.delta),
+    }))
+    .filter(g => g.items.length > 0)
 
   const getScore = (paperId: string, criterionId: string) =>
     scores.find(s => s.paperId === paperId && s.criterionId === criterionId)
@@ -66,12 +76,12 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
       <div className="bg-background border border-border/60 rounded-xl p-5 shadow-sm space-y-4">
         <h2 className="text-lg font-bold tracking-tight">Review &amp; Align Your Scores</h2>
 
-        {discrepancies.length > 0 ? (
+        {allDiscrepancies.length > 0 ? (
           <div className="flex items-start gap-3 bg-[color:var(--status-error-bg)] border border-[color:var(--status-error)]/30/70 rounded-xl px-4 py-3">
             <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-[color:var(--status-error)]">
-                Your grading differs from AI on {discrepancies.length} items
+                Your grading differs from AI on {allDiscrepancies.length} items
               </p>
               <p className="text-xs text-destructive/80">
                 Start with the most impactful differences — sorted by score gap
@@ -99,42 +109,45 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
         </Button>
       </div>
 
-      {/* Discrepancy list sorted by gap */}
-      {discrepancies.length > 0 && (
-        <div className="bg-background border border-border/60 rounded-xl overflow-hidden shadow-sm">
-          <div className="px-4 py-2.5 border-b border-border/40">
-            <span className="eyebrow text-muted-foreground/60">
-              Discrepancy items · sorted by gap
-            </span>
-          </div>
-          <div className="divide-y divide-border/30">
-            {discrepancies.map(score => {
-              const paper = getPaper(score.paperId)
-              const criterion = getCriterion(score.criterionId)
-              return (
-                <div
-                  key={`${score.paperId}-${score.criterionId}`}
-                  role="button"
-                  onClick={handleStart}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors cursor-pointer"
-                >
-                  <div className={`w-[22px] h-[22px] rounded-full text-xs font-semibold flex items-center justify-center shrink-0 border ${deltaNumClass(score.delta)}`}>
-                    {deltaIndicator(score.delta)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{criterion?.name}</p>
-                    <p className="text-xs font-mono text-muted-foreground/60">{paper?.anonymizedLabel}</p>
-                  </div>
-                  <span className="text-xs font-mono text-muted-foreground/70 shrink-0">
-                    {score.instructorLevel} vs {score.aiLevel}
-                  </span>
-                  <Badge className={`text-xs font-semibold border shadow-none shrink-0 ${deltaBadgeClass(score.delta)}`}>
-                    +{score.delta}
-                  </Badge>
-                </div>
-              )
-            })}
-          </div>
+      {/* Discrepancy list grouped by paper */}
+      {discrepanciesByPaper.length > 0 && (
+        <div className="space-y-3">
+          {discrepanciesByPaper.map(({ paper, paperIdx, items }) => (
+            <div key={paper.paperId} className="bg-background border border-border/60 rounded-xl overflow-hidden shadow-sm">
+              <div className="px-4 py-2.5 border-b border-border/40 flex items-center justify-between">
+                <span className="text-sm font-semibold text-foreground">Paper {paperIdx + 1}</span>
+                <Badge className={`text-xs font-semibold border shadow-none ${deltaBadgeClass(Math.max(...items.map(i => i.delta)))}`}>
+                  {items.length} gap{items.length !== 1 ? 's' : ''}
+                </Badge>
+              </div>
+              <div className="divide-y divide-border/30">
+                {items.map(score => {
+                  const criterion = getCriterion(score.criterionId)
+                  return (
+                    <div
+                      key={`${score.paperId}-${score.criterionId}`}
+                      role="button"
+                      onClick={handleStart}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors cursor-pointer"
+                    >
+                      <div className={`w-[22px] h-[22px] rounded-full text-xs font-semibold flex items-center justify-center shrink-0 border ${deltaNumClass(score.delta)}`}>
+                        {deltaIndicator(score.delta)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{criterion?.name}</p>
+                      </div>
+                      <span className="text-xs font-mono text-muted-foreground/70 shrink-0">
+                        {score.instructorLevel} vs {score.aiLevel}
+                      </span>
+                      <Badge className={`text-xs font-semibold border shadow-none shrink-0 ${deltaBadgeClass(score.delta)}`}>
+                        +{score.delta}
+                      </Badge>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -150,12 +163,12 @@ export function DeltaMatrix({ assignmentId }: { assignmentId: string }) {
               <TableHead className="eyebrow text-left px-4 py-2.5 text-muted-foreground/50 min-w-[120px] whitespace-normal">
                 Criterion
               </TableHead>
-              {papers.map(p => (
+              {papers.map((p, idx) => (
                 <TableHead
                   key={p.paperId}
                   className="eyebrow px-3 py-2.5 text-muted-foreground/50 text-center min-w-[70px]"
                 >
-                  {p.anonymizedLabel.replace('Paper #', 'P')}
+                  Paper {idx + 1}
                 </TableHead>
               ))}
             </TableRow>
