@@ -189,9 +189,20 @@ type NudgeProps = {
   onDismiss: () => void
 }
 
+/**
+ * Shared className for nudge cards rendered in the floating toast stack:
+ * solid bg-background (overriding the Alert variant's translucent `-bg`
+ * token, which is intentionally ~10% alpha for inline tints), heavy shadow
+ * so the card reads as a floating surface, and a 4px severity-colored left
+ * border so the variant meaning stays visible.
+ */
+const FLOAT_NUDGE_BASE = "bg-background shadow-xl"
+const FLOAT_NUDGE_INFO = `${FLOAT_NUDGE_BASE} border-l-4 border-l-[color:var(--status-info)]`
+const FLOAT_NUDGE_WARN = `${FLOAT_NUDGE_BASE} border-l-4 border-l-[color:var(--status-warning)]`
+
 export function IncompleteScrollNudge({ onDismiss }: NudgeProps) {
   return (
-    <Alert variant="info">
+    <Alert variant="info" className={FLOAT_NUDGE_INFO}>
       <Sparkles className="h-4 w-4" />
       <AlertTitle className="text-sm font-semibold">
         Quick check — the last section might still have evidence
@@ -223,7 +234,7 @@ export function FastConfirmNudge({
   onDismiss: () => void
 }) {
   return (
-    <Alert variant="warning">
+    <Alert variant="warning" className={FLOAT_NUDGE_WARN}>
       <Clock className="h-4 w-4" />
       <AlertTitle className="text-sm font-semibold">
         You confirmed {criterionLabel} in a few seconds
@@ -246,7 +257,7 @@ export function FastConfirmNudge({
 
 export function AgreementStreakNudge({ onDismiss }: NudgeProps) {
   return (
-    <Alert variant="warning">
+    <Alert variant="warning" className={FLOAT_NUDGE_WARN}>
       <AlertTriangle className="h-4 w-4" />
       <AlertTitle className="text-sm font-semibold">
         You&apos;ve agreed with the AI 6 times in a row
