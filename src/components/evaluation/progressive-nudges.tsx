@@ -285,72 +285,74 @@ export type DemoControls = {
  */
 export function DemoControlPanel(ctrl: DemoControls) {
   return (
-    <Popover>
-      <PopoverTrigger
-        className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-1.5 rounded-full shadow-lg bg-background border border-primary/40 text-primary hover:bg-primary/5 h-9 px-4 text-sm font-medium"
-      >
-        <Sparkles className="h-4 w-4" />
-        Demo
-      </PopoverTrigger>
-      <PopoverContent side="top" align="end" className="w-64 p-2">
-        <div className="px-2 py-1.5">
-          <p className="text-xs font-semibold text-foreground">Demo controls</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            Trigger every flow without grading a full session.
-          </p>
-        </div>
-        <Separator className="my-1" />
-        <p className="eyebrow text-muted-foreground px-2 py-1">Progressive nudges</p>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start gap-2 font-normal"
-          onClick={ctrl.onTriggerA}
+    <div className="fixed bottom-6 right-6 z-[100]">
+      <Popover>
+        <PopoverTrigger
+          className="inline-flex items-center gap-1.5 rounded-full shadow-lg bg-background border border-primary/40 text-primary hover:bg-primary/5 h-9 px-4 text-sm font-medium"
         >
-          <Play className="h-3.5 w-3.5 text-[color:var(--status-info)]" />
-          Nudge A — incomplete scroll
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start gap-2 font-normal"
-          onClick={ctrl.onTriggerB}
-        >
-          <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
-          Nudge B — fast confirm
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start gap-2 font-normal"
-          onClick={ctrl.onTriggerC}
-        >
-          <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
-          Nudge C — agreement streak
-        </Button>
-        <Separator className="my-1" />
-        <p className="eyebrow text-muted-foreground px-2 py-1">Spot check</p>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start gap-2 font-normal"
-          onClick={ctrl.onOpenSpotCheck}
-        >
-          <ScanSearch className="h-3.5 w-3.5 text-primary" />
-          Open spot-check modal
-        </Button>
-        <Separator className="my-1" />
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start gap-2 font-normal text-muted-foreground"
-          onClick={ctrl.onResetTelemetry}
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-          Reset session telemetry
-        </Button>
-      </PopoverContent>
-    </Popover>
+          <Sparkles className="h-4 w-4" />
+          Demo
+        </PopoverTrigger>
+        <PopoverContent side="top" align="end" className="w-64 p-2">
+          <div className="px-2 py-1.5">
+            <p className="text-xs font-semibold text-foreground">Demo controls</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Trigger every flow without grading a full session.
+            </p>
+          </div>
+          <Separator className="my-1" />
+          <p className="eyebrow text-muted-foreground px-2 py-1">Progressive nudges</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 font-normal"
+            onClick={ctrl.onTriggerA}
+          >
+            <Play className="h-3.5 w-3.5 text-[color:var(--status-info)]" />
+            Nudge A — incomplete scroll
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 font-normal"
+            onClick={ctrl.onTriggerB}
+          >
+            <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
+            Nudge B — fast confirm
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 font-normal"
+            onClick={ctrl.onTriggerC}
+          >
+            <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
+            Nudge C — agreement streak
+          </Button>
+          <Separator className="my-1" />
+          <p className="eyebrow text-muted-foreground px-2 py-1">Spot check</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 font-normal"
+            onClick={ctrl.onOpenSpotCheck}
+          >
+            <ScanSearch className="h-3.5 w-3.5 text-primary" />
+            Open spot-check modal
+          </Button>
+          <Separator className="my-1" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 font-normal text-muted-foreground"
+            onClick={ctrl.onResetTelemetry}
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Reset session telemetry
+          </Button>
+        </PopoverContent>
+      </Popover>
+    </div>
   )
 }
 
