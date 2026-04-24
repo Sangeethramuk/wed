@@ -2,7 +2,6 @@
 
 import { useState, use, useEffect, useMemo, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { toast } from "sonner"
 import { useGradingStore } from "@/lib/store/grading-store"
 import { generateManuscript, generateArtifacts } from "@/lib/manuscript-generator"
 import ManuscriptRenderer, { CRITERION_COLORS } from "@/components/evaluation/manuscript-renderer"
@@ -56,7 +55,6 @@ import {
   ArrowDown,
   Link as LinkIcon,
   Edit2,
-  Upload,
   X
 } from "lucide-react"
 import Link from "next/link"
@@ -345,9 +343,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   // cohort-level Publish action on the submissions-list page can read it too.
   // Ticked by dismissNudgeA / dismissNudgeB / dismissNudgeC below.
   const { ignoredCount: ignoredNudgeCount } = progressiveNudges
-  // Transient flash on the Submit button when a single-student submission
-  // succeeds.
-  const [publishSuccess, setPublishSuccess] = useState(false)
 
   // Telemetry mutators — each corresponds to one observable instructor action.
   const markCriterionOpened = (criterionId: string) => {
@@ -418,36 +413,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     setDemoForce({ A: false, B: false, C: false })
     setNudgeDismissState({})
     resetProgressiveNudges()
-    setPublishSuccess(false)
-  }
-
-  /**
-   * Per-student submit: saves the current student's grades and advances.
-   *
-   * NO spot-check gate here — the failsafe lives on the cohort-level Publish
-   * button on the submissions-list page, which fires only when the instructor
-   * is ready to finalize the whole cohort after grading everyone.
-   *
-   * Flow: flash the button green, show a "Grades saved and submitted" toast,
-   * then router.push to the next student (or back to submissions on the last).
-   */
-  const handleSubmitStudent = () => {
-    setPublishSuccess(true)
-    const studentName = currentStudent?.name ?? "this student"
-    const idx = allSubmissions.findIndex(s => s.id === selectedSubmission)
-    const next = idx >= 0 && idx < allSubmissions.length - 1 ? allSubmissions[idx + 1] : null
-    toast.success(`Grades saved and submitted for ${studentName}`, {
-      description: next ? `Opening ${next.name}…` : "Review the cohort before publishing.",
-      duration: 3500,
-    })
-    setTimeout(() => {
-      setPublishSuccess(false)
-      if (next) {
-        router.push(`/dashboard/evaluation/${id}/grading?studentId=${next.id}`)
-      } else {
-        router.push(`/dashboard/evaluation/${id}/submissions`)
-      }
-    }, 1200)
   }
 
   // Note: the useEffect that marks the active criterion as "opened" + the
@@ -1111,28 +1076,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                     </TooltipTrigger>
                     <TooltipContent>Revision History</TooltipContent>
                   </Tooltip>
-
-                  {/* Submit grades — per-student action. Saves + advances to
-                      the next student. No spot-check gate here; the
-                      cohort-level Publish lives on the submissions-list page. */}
-                  <Button
-                    onClick={handleSubmitStudent}
-                    size="sm"
-                    variant={publishSuccess ? "outline" : "default"}
-                    className={publishSuccess ? "gap-1.5 border-[color:var(--status-success)]/40 text-[color:var(--status-success)] bg-[color:var(--status-success-bg)]" : "gap-1.5"}
-                  >
-                    {publishSuccess ? (
-                      <>
-                        <CheckCircle2 className="h-4 w-4" />
-                        Submitted
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="h-4 w-4" />
-                        Submit grades
-                      </>
-                    )}
-                  </Button>
                 </div>
               </div>
             </header>
