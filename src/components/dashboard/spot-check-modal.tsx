@@ -163,9 +163,9 @@ export function SpotCheckModal() {
                     </svg>
                   </div>
                   <div>
-                    <div className="text-sm font-semibold tracking-tight">Mandatory Spot Check</div>
+                    <div className="text-sm font-semibold tracking-tight">Let&apos;s double-check a few</div>
                     <div className="text-xs text-muted-foreground">
-                      {scStep === -1 ? 'Accuracy verification · 5 questions' : scStep === 5 ? 'All done' : `Question ${scStep + 1} of 5`}
+                      {scStep === -1 ? '5 items · ~2 min' : scStep === 5 ? 'All done' : `Question ${scStep + 1} of 5`}
                     </div>
                   </div>
                 </div>
@@ -221,71 +221,13 @@ export function SpotCheckModal() {
 
               {/* INTRO */}
               {scStep === -1 && (
-                <div className="space-y-5">
-                  {/* Alert Box */}
-                  <div className={cn("p-4 rounded-lg flex gap-3 border", statusStyles.warning.bg, statusStyles.warning.border)}>
-                    <AlertTriangle className={cn("w-5 h-5 flex-shrink-0 mt-0.5", statusStyles.warning.text)} />
-                    <div>
-                      <div className={cn("text-sm font-semibold mb-1", statusStyles.warning.text)}>Why this appeared</div>
-                      <p className={cn("text-xs leading-relaxed", statusStyles.warning.text)}>
-                        The system noticed that grading pace in this batch was significantly faster in the second half — a common sign of fatigue. This check runs automatically to protect accuracy before grades are locked.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs font-bold text-muted-foreground/60 tracking-wider mb-2">WHAT IS A MANDATORY SPOT CHECK?</div>
-                    <p className="text-sm text-foreground leading-relaxed">
-                      Think of it as your session's <span className="font-bold">final quality gate</span> — a 2-minute safety net that catches accidental "speed-grading" before any grade reaches a student.
-                    </p>
-                  </div>
-
-                  {/* Feature Cards */}
-                  <div className="space-y-2.5">
-                    <div className="flex gap-4 p-4 rounded-xl border border-border bg-muted/20">
-                      <div className={cn("w-10 h-10 rounded-lg border flex items-center justify-center flex-shrink-0", ACCENT_BG, ACCENT_BORDER)}>
-                        <CheckSquare className={cn("w-5 h-5", ACCENT_TEXT)} />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold mb-0.5">5 questions, ~2 minutes</div>
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          The system picks 5 items you already graded and shows them one at a time for a quick re-confirm.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4 p-4 rounded-xl border border-border bg-muted/20">
-                      <div className={cn("w-10 h-10 rounded-lg border flex items-center justify-center flex-shrink-0", statusStyles.success.bg, statusStyles.success.border)}>
-                        <Info className={cn("w-5 h-5", statusStyles.success.text)} />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold mb-0.5">Fix mistakes in real time</div>
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          Spot an error? Change the score right here — it's logged as a correction and helps the AI learn.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4 p-4 rounded-xl border border-border bg-muted/20">
-                      <div className={cn("w-10 h-10 rounded-lg border flex items-center justify-center flex-shrink-0", statusStyles.info.bg, statusStyles.info.border)}>
-                        <FileText className={cn("w-5 h-5", statusStyles.info.text)} />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold mb-0.5">Creates an audit trail</div>
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          A Spot Check Record is saved as proof that a human expert — not just AI — verified the final grades.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Clarification Footer Card */}
-                  <div className="flex gap-3 p-4 rounded-xl border border-border bg-muted">
-                    <CheckCircle2 className="w-4 h-4 text-muted-foreground/60 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      This isn't a sign of distrust — it's a standard professional check-in. Every session with engagement flags goes through this before grades are locked.
-                    </p>
-                  </div>
+                <div className="space-y-4">
+                  <p className="text-sm text-foreground leading-relaxed">
+                    Grading pace picked up toward the end of this batch — sometimes that&apos;s when small errors slip in. A quick re-check catches them before grades reach students.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Any changes save to the session.
+                  </p>
                 </div>
               )}
 
@@ -491,7 +433,7 @@ export function SpotCheckModal() {
                     onClick={dismissSpotCheck}
                     className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted/50"
                   >
-                    {scStep === -1 ? 'Skip spot check' : 'Save & exit'}
+                    {scStep === -1 ? 'Skip' : 'Save & exit'}
                   </button>
                 )}
               </div>
@@ -513,7 +455,7 @@ export function SpotCheckModal() {
                     scStep === 5 ? "bg-[color:var(--status-success)]" : "bg-primary",
                   )}
                 >
-                  {scStep === -1 && <><span>Begin spot check</span><ChevronRight className="w-3.5 h-3.5" /></>}
+                  {scStep === -1 && <><span>Start re-check</span><ChevronRight className="w-3.5 h-3.5" /></>}
                   {scStep >= 0 && scStep < 5 && overridePanelOpen && <><span>Save override & continue</span><ChevronRight className="w-3.5 h-3.5" /></>}
                   {scStep >= 0 && scStep < 5 && !overridePanelOpen && <><span>Score looks correct</span><Check className="w-3.5 h-3.5" /></>}
                   {scStep === 5 && <><span>Close session</span><ChevronRight className="w-3.5 h-3.5" /></>}
