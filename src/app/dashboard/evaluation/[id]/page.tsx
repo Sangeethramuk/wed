@@ -4,6 +4,7 @@ import { use, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { useGradingStore } from "@/lib/store/grading-store"
+import { useEvaluationOverviewStore } from "@/lib/store/evaluation-overview-store"
 import { ESCALATION_DISMISS_THRESHOLD } from "@/components/evaluation/progressive-nudges"
 import {
   ChevronLeft,
@@ -66,8 +67,18 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
     })
   }
 
+  // The Triage overview store is the source of truth for whether a row's
+  // calibration is complete — the grading store's per-assignment calibration
+  // phase may lag behind (e.g., the row is marked complete in the mock data
+  // but no one actually ran the flow in this session). Treat either signal
+  // as sufficient so "Enter Desk" rows don't incorrectly show the blind gate.
+  const overviewAssignment = useEvaluationOverviewStore(s =>
+    s.assignments.find(a => a.id === id)
+  )
   const requiresBlindGrading = assignment?.students.some(s => s.isDoubleBlind)
-  const calibrationComplete = calibration[id]?.phase === 'complete'
+  const calibrationComplete =
+    calibration[id]?.phase === 'complete' ||
+    overviewAssignment?.calibrationState === 'complete'
   const blindGateActive = requiresBlindGrading && !calibrationComplete
 
   // Pre-init so we know the paper count before the user clicks Begin

@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useEffect } from "react"
+import { use, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useGradingStore } from "@/lib/store/grading-store"
 import { SampleReview } from "@/components/evaluation/calibration/sample-review"
@@ -27,18 +27,18 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
 
   const cal = calibration[id]
 
+  // The SampleReview intro card re-shows on every fresh load of /calibrate
+  // — first-time visitors see the Begin state, returning visitors see the
+  // Continue copy (computed inside SampleReview from cal.scores).
+  // Clicking Begin/Continue flips this gate so the rest of the calibration
+  // UI (BlindGradingPanel, DeltaMatrix, etc.) takes over for the session.
+  const [hasBegun, setHasBegun] = useState(false)
+
   useEffect(() => {
     // Initialize calibration only once on mount
     initCalibration(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Empty deps - run once on mount
-
-  // Skip sample_review — flow now starts at blind_grading
-  useEffect(() => {
-    if (cal?.phase === "sample_review") {
-      setCalibrationPhase(id, "blind_grading")
-    }
-  }, [cal?.phase, id, setCalibrationPhase])
 
   // Redirect when calibration completes
   useEffect(() => {
@@ -59,6 +59,13 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
   }
 
   if (cal.phase === "complete") return null
+
+  // Intermediate landing: show the SampleReview intro card until the user
+  // clicks Begin/Continue. First visits see "Before you see any AI scores";
+  // returning visits (some papers already scored) see the Continue variant.
+  if (!hasBegun) {
+    return <SampleReview assignmentId={id} onBegin={() => setHasBegun(true)} />
+  }
 
   const currentStep = PHASE_STEPS.find(s => s.id === cal.phase)
   const nextStep = PHASE_STEPS.find(s => s.step === (currentStep?.step ?? 0) + 1)
