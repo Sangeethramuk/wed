@@ -17,6 +17,7 @@ import {
 } from '@/lib/feedback-generator';
 import { useGradingStore } from '@/lib/store/grading-store';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -185,13 +186,17 @@ export default function FeedbackPage() {
     const currentIndex = assignment.students.findIndex(s => s.id === activeStudent.id);
     const nextStudent = assignment.students[currentIndex + 1];
 
+    toast.success(`Feedback submitted for ${activeStudent.name}`, {
+      description: nextStudent ? `Moving to ${nextStudent.name}` : 'All students in this cohort are complete.',
+    });
+
     if (nextStudent) {
-      // 3. If there is a next student, move to them and go back to Desk
+      // 3. If there is a next student, move to them and go back to grading
       setActiveStudent(nextStudent.id);
-      router.push(`/dashboard/evaluation/${assignment.id}`);
+      router.push(`/dashboard/evaluation/${assignment.id}/grading?studentId=${nextStudent.id}`);
     } else {
-      // 4. If last student, finalize and go to results
-      router.push('/dashboard/evaluation/results');
+      // 4. If last student, finalize and go to assignment page
+      router.push(`/dashboard/evaluation/${assignment.id}`);
     }
   };
 
@@ -242,7 +247,7 @@ export default function FeedbackPage() {
              <div className="text-2xl font-semibold text-foreground leading-none font-mono">60<span className="text-sm text-muted-foreground/40 font-medium">/100</span></div>
              <Badge variant="outline" className="eyebrow h-4 px-1.5 bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30 mt-1">Satisfactory</Badge>
           </div>
-          <Button variant="ghost" size="icon">✕</Button>
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>✕</Button>
         </div>
       </header>
 

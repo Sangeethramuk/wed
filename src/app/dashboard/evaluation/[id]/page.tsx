@@ -12,7 +12,8 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
-  Zap
+  Zap,
+  Send,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -20,11 +21,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { TriageSidebar } from "@/components/evaluation/triage-sidebar"
 import { motion } from "framer-motion"
+import { toast } from "sonner"
+import { ESCALATION_DISMISS_THRESHOLD } from "@/components/evaluation/progressive-nudges"
 
 export default function AssignmentDetails({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
-  const { assignments } = useGradingStore()
+  const { assignments, progressiveNudges, triggerSpotCheck, markSpotCheckAutoFired, resetProgressiveNudges } = useGradingStore()
   const assignment = assignments[id]
   const [activeTab, setActiveTab] = useState("submissions")
   const [gradedSubmissions, setGradedSubmissions] = useState<string[]>([])
@@ -54,6 +57,24 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
 
   const handleBulkApprove = (ids: string[]) => {
     setGradedSubmissions(prev => [...new Set([...prev, ...ids])])
+  }
+
+  const handlePublishCohort = () => {
+    if (
+      progressiveNudges.ignoredCount >= ESCALATION_DISMISS_THRESHOLD &&
+      !progressiveNudges.spotCheckAutoFired
+    ) {
+      markSpotCheckAutoFired()
+      triggerSpotCheck()
+      toast.warning("Spot check required before publishing", {
+        description: "Low engagement detected — please review a few grades before publishing.",
+      })
+      return
+    }
+    resetProgressiveNudges()
+    toast.success("Grades published successfully", {
+      description: `All grades for ${assignment.title} have been published to students.`,
+    })
   }
 
   return (
@@ -97,7 +118,16 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
                 </Badge>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <Button
+                size="lg"
+                variant="outline"
+                className="rounded-full px-6"
+                onClick={handlePublishCohort}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Publish Grades
+              </Button>
               <Button
                 size="lg"
                 className="rounded-full px-8 shadow-xl shadow-primary/20 hover:scale-105 transition-all"

@@ -58,6 +58,16 @@ import { FeedbackGenerating } from "@/components/evaluation/feedback/feedback-ge
 import { InternalNotesPanel } from "@/components/evaluation/feedback/internal-notes-panel"
 import { generateCriterionFeedback } from "@/lib/feedback-generator"
 import { useGradingStore as useFeedbackStore } from "@/lib/store/grading-store"
+import {
+  FloatingNudgeStack,
+  DemoControlPanel,
+  CriterionStatusTag,
+  emptySessionTelemetry,
+  deriveTag,
+  deriveNudges,
+  telemetryKey,
+  type SessionTelemetry,
+} from "@/components/evaluation/progressive-nudges"
 
 function GradingDeskContent({ params }: { params: { id: string } }) {
   const { id } = params
@@ -154,6 +164,23 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false)
   const [overallFeedback, setOverallFeedback] = useState("")
   
+  // Progressive nudge telemetry
+  const [sessionTelemetry, setSessionTelemetry] = useState<SessionTelemetry>(emptySessionTelemetry)
+  const [dismissedNudgeA, setDismissedNudgeA] = useState(false)
+  const [dismissedNudgeB, setDismissedNudgeB] = useState(false)
+  const [dismissedNudgeC, setDismissedNudgeC] = useState(false)
+  const [lastConfirmedCriterion, setLastConfirmedCriterion] = useState<{ id: string; at: number } | null>(null)
+
+  const { incrementIgnoredNudge, resetProgressiveNudges } = useGradingStore()
+
+  // Reset per-student nudge dismissals when switching students
+  useEffect(() => {
+    setDismissedNudgeA(false)
+    setDismissedNudgeB(false)
+    setDismissedNudgeC(false)
+    setLastConfirmedCriterion(null)
+  }, [selectedSubmission])
+
   // AI Feedback flow state
   const {
     criterionFeedbacks,
@@ -332,6 +359,18 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
       criterionLabel: rubricPoints.find(p => p.id === id)?.label || '',
       details: { newScore: aiScore }
     })
+    const now = Date.now()
+    const tKey = telemetryKey(selectedSubmission, id)
+    setSessionTelemetry(prev => ({
+      ...prev,
+      byCriterion: {
+        ...prev.byCriterion,
+        [tKey]: { ...(prev.byCriterion[tKey] ?? { evidenceOpens: 0, wasOverridden: false, hasReasoning: false }), confirmedAt: now },
+      },
+      consecutiveAgreements: prev.consecutiveAgreements + 1,
+    }))
+    setLastConfirmedCriterion({ id, at: now })
+    setDismissedNudgeB(false)
     const nextIndex = rubricPoints.findIndex(p => p.id === id) + 1
     if (nextIndex < rubricPoints.length) setActiveRubricCriterionIdx(nextIndex)
   }
@@ -349,7 +388,22 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     }])
   }
 
+  const recordCriterionOpened = (cid: string) => {
+    const key = telemetryKey(selectedSubmission, cid)
+    setSessionTelemetry(prev => {
+      if (prev.byCriterion[key]?.openedAt) return prev
+      return {
+        ...prev,
+        byCriterion: {
+          ...prev.byCriterion,
+          [key]: { ...(prev.byCriterion[key] ?? { evidenceOpens: 0, wasOverridden: false, hasReasoning: false }), openedAt: Date.now() },
+        },
+      }
+    })
+  }
+
   const handleScoreLevelClick = (criterionId: string, proposedScore: number, aiScore: number) => {
+    recordCriterionOpened(criterionId)
     if (proposedScore === aiScore) {
       handleScoreConfirm(criterionId, aiScore)
       setActiveOverrideId(null)
@@ -415,6 +469,22 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
         }
       })
     }
+    const now = Date.now()
+    const tKey = telemetryKey(selectedSubmission, criterionId)
+    setSessionTelemetry(prev => ({
+      ...prev,
+      byCriterion: {
+        ...prev.byCriterion,
+        [tKey]: {
+          ...(prev.byCriterion[tKey] ?? { evidenceOpens: 0, wasOverridden: false, hasReasoning: false }),
+          confirmedAt: now,
+          wasOverridden: true,
+          hasReasoning: (draft.reasoning.trim().length > 0 || draft.scoreReasoning.trim().length > 0),
+        },
+      },
+      consecutiveAgreements: 0,
+    }))
+    setLastConfirmedCriterion({ id: criterionId, at: now })
     setActiveOverrideId(null)
     setTextSelectionMode({ active: false, criterionId: null })
     setOverrideDrafts(prev => {
@@ -542,7 +612,20 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     setRecordingId(criterionId)
   }
   
-  const scrollToEvidence = (evidenceId: string) => {
+  const scrollToEvidence = (evidenceId: string, criterionId?: string) => {
+    if (criterionId) {
+      const tKey = telemetryKey(selectedSubmission, criterionId)
+      setSessionTelemetry(prev => ({
+        ...prev,
+        byCriterion: {
+          ...prev.byCriterion,
+          [tKey]: {
+            ...(prev.byCriterion[tKey] ?? { evidenceOpens: 0, wasOverridden: false, hasReasoning: false }),
+            evidenceOpens: (prev.byCriterion[tKey]?.evidenceOpens ?? 0) + 1,
+          },
+        },
+      }))
+    }
     const el = document.getElementById(`evidence-${evidenceId}`)
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -682,6 +765,13 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
       </div>
     )
   }
+
+  const nudges = deriveNudges(sessionTelemetry, selectedSubmission, rubricPoints.map(p => p.id), lastConfirmedCriterion)
+  const showNudgeA = nudges.A && !dismissedNudgeA
+  const showNudgeBLabel = !dismissedNudgeB && nudges.B
+    ? (rubricPoints.find(p => p.id === nudges.B)?.label ?? nudges.B)
+    : null
+  const showNudgeC = nudges.C && !dismissedNudgeC
 
   return (
     <TooltipProvider delay={0}>
@@ -955,12 +1045,18 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                 )}
               </AnimatePresence>
               {/* Main Canvas */}
-              <ScrollArea 
+              <ScrollArea
                 className="flex-1 bg-muted/30 scroll-smooth"
                 onScrollCapture={(e) => {
                   const target = e.currentTarget as HTMLElement
                   const containerHeight = target.clientHeight
-                  
+                  const scrollPct = target.scrollHeight > 0 ? (target.scrollTop + target.clientHeight) / target.scrollHeight : 0
+                  setSessionTelemetry(prev => {
+                    const existing = prev.maxScrollByStudent[selectedSubmission] ?? 0
+                    if (scrollPct <= existing) return prev
+                    return { ...prev, maxScrollByStudent: { ...prev.maxScrollByStudent, [selectedSubmission]: scrollPct } }
+                  })
+
                   for (let i = 1; i <= totalPages; i++) {
                     const pageEl = document.getElementById(`page-${i}`)
                     if (pageEl) {
@@ -1123,6 +1219,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                             ) : null}
                           </div>
                           <span className={`text-xs font-bold transition-colors ${active ? 'text-foreground' : 'text-muted-foreground/50'}`}>C{p.id}</span>
+                          <CriterionStatusTag tag={deriveTag(sessionTelemetry.byCriterion[telemetryKey(selectedSubmission, p.id)])} />
                         </Button>
                       )
                     })}
@@ -1649,6 +1746,36 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
       onOpenChange={setRevisionHistoryOpen}
       events={revisionEvents}
       studentName={currentStudent?.name || 'Unknown'}
+    />
+    <FloatingNudgeStack
+      showA={showNudgeA}
+      showBCriterionLabel={showNudgeBLabel}
+      showC={showNudgeC}
+      onDismissA={() => { setDismissedNudgeA(true); incrementIgnoredNudge() }}
+      onDismissB={() => { setDismissedNudgeB(true); incrementIgnoredNudge() }}
+      onDismissC={() => { setDismissedNudgeC(true); incrementIgnoredNudge() }}
+      onReopenEvidence={() => {
+        setDismissedNudgeB(true)
+        const cid = nudges.B
+        if (cid) {
+          const idx = rubricPoints.findIndex(p => p.id === cid)
+          if (idx >= 0) setActiveRubricCriterionIdx(idx)
+        }
+      }}
+    />
+    <DemoControlPanel
+      onTriggerA={() => setSessionTelemetry(prev => ({ ...prev, byCriterion: { ...prev.byCriterion, [telemetryKey(selectedSubmission, 'c1')]: { evidenceOpens: 0, wasOverridden: false, hasReasoning: false, confirmedAt: Date.now(), openedAt: Date.now() - 5000 }, [telemetryKey(selectedSubmission, 'c2')]: { evidenceOpens: 0, wasOverridden: false, hasReasoning: false, confirmedAt: Date.now(), openedAt: Date.now() - 5000 } } }))}
+      onTriggerB={() => {
+        const now = Date.now()
+        const tKey = telemetryKey(selectedSubmission, 'c1')
+        setSessionTelemetry(prev => ({ ...prev, byCriterion: { ...prev.byCriterion, [tKey]: { evidenceOpens: 0, wasOverridden: false, hasReasoning: false, confirmedAt: now, openedAt: now - 3000 } } }))
+        setLastConfirmedCriterion({ id: 'c1', at: now })
+        setDismissedNudgeB(false)
+      }}
+      onTriggerC={() => setSessionTelemetry(prev => ({ ...prev, consecutiveAgreements: 6 }))}
+      onSimulateEscalation={() => { incrementIgnoredNudge(); incrementIgnoredNudge(); incrementIgnoredNudge() }}
+      onOpenSpotCheck={() => useGradingStore.getState().triggerSpotCheck()}
+      onResetTelemetry={() => { setSessionTelemetry(emptySessionTelemetry()); setLastConfirmedCriterion(null); setDismissedNudgeA(false); setDismissedNudgeB(false); setDismissedNudgeC(false); resetProgressiveNudges() }}
     />
     </TooltipProvider>
   )
