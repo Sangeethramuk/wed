@@ -1,5 +1,7 @@
 # Contributing — The DS Contract
 
+> **⚠ Superseded for visual / styling decisions.** [`EDUCAITORS_DS_GUIDE.md`](./EDUCAITORS_DS_GUIDE.md) is now the authoritative source for colors, shadows, typography, spacing, and component patterns in this repo. Where this document and the EducAItors guide disagree, the EducAItors guide wins. This file remains for historical reference and for non-visual contribution practices (escalation protocol, PR checklist, etc.).
+
 Read this **before** writing any UI code. It is strict. It is non-negotiable.
 
 This document is the single source of truth for "how do I add or change UI in this repo?" If you disagree with a rule, raise it — don't route around it.
