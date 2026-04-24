@@ -381,7 +381,7 @@ export function DemoControlPanel(ctrl: DemoControls) {
             Nudge C — agreement streak
           </Button>
           <Separator className="my-1" />
-          <p className="eyebrow text-muted-foreground px-2 py-1">Escalation</p>
+          <p className="eyebrow text-muted-foreground px-2 py-1">Finalization gate</p>
           <Button
             variant="ghost"
             size="sm"
@@ -389,7 +389,7 @@ export function DemoControlPanel(ctrl: DemoControls) {
             onClick={ctrl.onSimulateEscalation}
           >
             <AlertTriangle className="h-3.5 w-3.5 text-[color:var(--status-error)]" />
-            Simulate 3 ignored nudges
+            Simulate low-engagement publish
           </Button>
           <Separator className="my-1" />
           <p className="eyebrow text-muted-foreground px-2 py-1">Spot check</p>

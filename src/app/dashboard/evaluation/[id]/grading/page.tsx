@@ -332,10 +332,13 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     C?: { streakAt: number }
   }>({})
   // Escalation counter — counts un-productive dismissals (Skip on B, X on A/C)
-  // across the session. When it crosses ESCALATION_DISMISS_THRESHOLD the
-  // spot-check modal auto-fires once.
+  // across the session. Consumed by `handlePublishGrades` to decide whether the
+  // instructor must pass a spot-check before finalization.
   const [ignoredNudgeCount, setIgnoredNudgeCount] = useState(0)
   const [spotCheckAutoFired, setSpotCheckAutoFired] = useState(false)
+  // Transient flash on the Publish button when publish succeeds without
+  // triggering the spot-check gate.
+  const [publishSuccess, setPublishSuccess] = useState(false)
 
   // Telemetry mutators — each corresponds to one observable instructor action.
   const markCriterionOpened = (criterionId: string) => {
@@ -407,6 +410,23 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     setNudgeDismissState({})
     setIgnoredNudgeCount(0)
     setSpotCheckAutoFired(false)
+    setPublishSuccess(false)
+  }
+
+  /**
+   * Publish-grades gate: the one place the Level-3 failsafe fires.
+   * If the instructor has dismissed too many nudges without engaging, the
+   * spot-check modal opens first (they verify, then re-try Publish). Otherwise
+   * we flash a success state on the button for a couple of seconds.
+   */
+  const handlePublishGrades = () => {
+    if (!spotCheckAutoFired && ignoredNudgeCount >= ESCALATION_DISMISS_THRESHOLD) {
+      setSpotCheckAutoFired(true)
+      triggerSpotCheck()
+      return
+    }
+    setPublishSuccess(true)
+    setTimeout(() => setPublishSuccess(false), 2500)
   }
 
   // Note: the useEffect that marks the active criterion as "opened" + the
@@ -598,16 +618,10 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSubmission, activeRubricCriterionIdx])
 
-  // Level 3 failsafe — when the instructor has ignored ESCALATION_DISMISS_THRESHOLD
-  // nudges without taking the productive action, auto-fire the spot-check modal
-  // ONCE. Further dismissals don't re-fire (instructor explicitly dismissed the
-  // spot check too). Reset by `resetTelemetry`.
-  useEffect(() => {
-    if (!spotCheckAutoFired && ignoredNudgeCount >= ESCALATION_DISMISS_THRESHOLD) {
-      setSpotCheckAutoFired(true)
-      triggerSpotCheck()
-    }
-  }, [ignoredNudgeCount, spotCheckAutoFired, triggerSpotCheck])
+  // Level 3 failsafe is now gated by the Publish-grades action (see
+  // `handlePublishGrades` below). The mid-session auto-trigger was removed —
+  // the spot-check only fires when the instructor tries to finalize grades
+  // with too many ignored nudges behind them.
 
   // Derived visibility — natural triggers + demo-force flags, filtered by
   // recurrence-aware dismissal. Dismissals auto-expire when the behavior
@@ -1059,12 +1073,12 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                   </TabsList>
                 </Tabs>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <Tooltip>
                     <TooltipTrigger>
-                      <div 
-                        role="button" 
-                        tabIndex={0} 
+                      <div
+                        role="button"
+                        tabIndex={0}
                         onClick={() => setRevisionHistoryOpen(true)}
                         className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer focus:outline-none border border-border relative"
                       >
@@ -1077,6 +1091,27 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                     <TooltipContent>Revision History</TooltipContent>
                   </Tooltip>
 
+                  {/* Publish grades — the single finalization gate. If the
+                      instructor has ignored too many nudges, opens the
+                      spot-check modal first; otherwise flashes success. */}
+                  <Button
+                    onClick={handlePublishGrades}
+                    size="sm"
+                    variant={publishSuccess ? "outline" : "default"}
+                    className={publishSuccess ? "gap-1.5 border-[color:var(--status-success)]/40 text-[color:var(--status-success)] bg-[color:var(--status-success-bg)]" : "gap-1.5"}
+                  >
+                    {publishSuccess ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4" />
+                        Published
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4" />
+                        Publish grades
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             </header>
@@ -1856,12 +1891,17 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
       onTriggerB={() => { setNudgeDismissState(p => ({ ...p, B: undefined })); setDemoForce(f => ({ ...f, B: true })) }}
       onTriggerC={() => { setNudgeDismissState(p => ({ ...p, C: undefined })); setDemoForce(f => ({ ...f, C: true })) }}
       onSimulateEscalation={() => {
-        // Fast-forward the escalation counter to the threshold; the auto-trigger
-        // useEffect fires the spot-check modal. Clears demoForce so no nudges
-        // are flashing while the spot-check opens.
+        // Fast-forward the counter to threshold and perform the publish action
+        // in one step — exercises the gate exactly as it would fire after a
+        // real session of dismissed nudges.
         setDemoForce({ A: false, B: false, C: false })
         setSpotCheckAutoFired(false)
         setIgnoredNudgeCount(ESCALATION_DISMISS_THRESHOLD)
+        // Defer to next tick so state has committed before the gate reads it.
+        setTimeout(() => {
+          setSpotCheckAutoFired(true)
+          triggerSpotCheck()
+        }, 0)
       }}
       onOpenSpotCheck={() => triggerSpotCheck()}
       onResetTelemetry={resetTelemetry}
