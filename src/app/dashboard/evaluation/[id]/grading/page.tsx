@@ -178,6 +178,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   useEffect(() => {
     const seeded: { id: string; text: string; criterionId: string }[] = []
     const seen = new Set<string>()
+    let firstSeedText: string | null = null
     for (const page of manuscript.pages) {
       for (const el of page.elements) {
         if (el.type === 'paragraph' && el.highlight && !seen.has(el.highlight.criterionId)) {
@@ -189,7 +190,18 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
           // trim to the nearest word boundary
           const trimmed = raw.slice(0, raw.lastIndexOf(' ') > 20 ? raw.lastIndexOf(' ') : raw.length)
           seeded.push({ id: `seed-${el.highlight.criterionId}`, text: trimmed, criterionId: el.highlight.criterionId })
+          if (!firstSeedText) firstSeedText = trimmed
         }
+      }
+    }
+    // Prototype demo: link the first seeded excerpt to TWO additional criteria so
+    // the multi-criteria evidence popover has something to show. Hovering that
+    // highlight will then list all three linked criteria (c1/c2/c3 or whichever
+    // is present), each with its own color accent.
+    if (firstSeedText) {
+      const extraCriteria = ['c2', 'c3', 'c4'].filter(c => !seeded.some(s => s.text === firstSeedText && s.criterionId === c))
+      for (const extra of extraCriteria.slice(0, 2)) {
+        seeded.push({ id: `seed-shared-${extra}`, text: firstSeedText, criterionId: extra })
       }
     }
     setMappedEvidence(seeded)
