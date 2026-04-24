@@ -3,17 +3,10 @@
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useGradingStore } from "@/lib/store/grading-store"
-import { X, ChevronRight, ChevronLeft, Check, AlertTriangle, CheckSquare, Info, FileText, CheckCircle2 } from "lucide-react"
+import { X, ChevronRight, ChevronLeft, Check } from "lucide-react"
 
-import { confidenceStyles, statusStyles } from "@/lib/design-tokens"
-import { cn } from "@/lib/utils"
-
-// Category-2 (violet) slot is used as the spot-check accent so re-skins
-// flow through design tokens automatically.
-const ACCENT_BG = "bg-[color:var(--category-2-bg)]"
-const ACCENT_BORDER = "border-[color:var(--category-2)]/40"
-const ACCENT_TEXT = "text-[color:var(--category-2)]"
-const ACCENT_SOLID = "bg-[color:var(--category-2)]"
+// Colors moved inline (hex palette) per EDUCAITORS_DS_GUIDE.md. The old
+// --category-2 / statusStyles tokens are no longer used on this modal.
 
 const OVERRIDE_REASONS = [
   'AI missed contextual evidence',
@@ -148,30 +141,38 @@ export function SpotCheckModal() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 10 }}
             transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-            className="bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
-            style={{ width: 560, maxWidth: 'calc(100vw - 32px)', maxHeight: 'calc(100vh - 60px)' }}
+            className="bg-white border border-slate-200 rounded-2xl flex flex-col overflow-hidden"
+            style={{
+              width: scStep >= 0 && scStep < 5 ? 920 : 560,
+              maxWidth: 'calc(100vw - 32px)',
+              maxHeight: 'calc(100vh - 60px)',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* HEADER */}
-            <div className="px-5 pt-4 border-b border-border flex-shrink-0" style={{ paddingBottom: scStep >= 0 && scStep < 5 ? 0 : 16 }}>
+            <div className="px-5 pt-4 border-b border-slate-200 flex-shrink-0" style={{ paddingBottom: scStep >= 0 && scStep < 5 ? 0 : 16 }}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border", ACCENT_BG, ACCENT_BORDER)}>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={ACCENT_TEXT}>
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border"
+                    style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: '#1F4E8C' }}>
                       <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.3" />
                       <path d="M8 5.5v3.5M8 10.5v.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                     </svg>
                   </div>
                   <div>
-                    <div className="text-sm font-semibold tracking-tight">Let&apos;s double-check a few</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-sm font-semibold tracking-tight text-slate-900">Let&apos;s double-check a few</div>
+                    <div className="text-xs text-slate-500">
                       {scStep === -1 ? '5 items · ~2 min' : scStep === 5 ? 'All done' : `Question ${scStep + 1} of 5`}
                     </div>
                   </div>
                 </div>
                 <button
                   onClick={dismissSpotCheck}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors border border-border"
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors border border-slate-200"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -180,13 +181,13 @@ export function SpotCheckModal() {
               {scStep >= 0 && scStep < 5 && (
                 <div className="pb-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="flex-1 h-1 rounded-full overflow-hidden bg-muted">
+                    <div className="flex-1 h-1 rounded-full overflow-hidden bg-slate-100">
                       <div
-                        className={cn("h-full rounded-full transition-all duration-500", ACCENT_SOLID)}
-                        style={{ width: `${(answeredCount / 5) * 100}%` }}
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${(answeredCount / 5) * 100}%`, backgroundColor: '#1F4E8C' }}
                       />
                     </div>
-                    <span className="text-xs font-mono text-muted-foreground/70 flex-shrink-0">{answeredCount} / 5</span>
+                    <span className="text-xs font-mono text-slate-500 flex-shrink-0 tabular-nums">{answeredCount} / 5</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     {SC_QUESTIONS.map((_, i) => {
@@ -194,20 +195,25 @@ export function SpotCheckModal() {
                       const isCurrent = i === scStep
                       const isDone = !!res
                       const isOverride = res?.status === 'override'
+                      // Per the guide: solid navy for done, light-blue bg +
+                      // navy border for current, amber for overrides, slate
+                      // for pending. Connectors slate-200.
+                      const dotStyle: React.CSSProperties = isOverride
+                        ? { backgroundColor: '#FFFBEB', borderColor: '#F59E0B', color: '#B45309' }
+                        : isDone
+                          ? { backgroundColor: '#1F4E8C', borderColor: '#1F4E8C', color: '#FFFFFF' }
+                          : isCurrent
+                            ? { backgroundColor: '#EFF6FF', borderColor: '#1F4E8C', color: '#1F4E8C' }
+                            : { backgroundColor: '#F8FAFC', borderColor: '#E2E8F0', color: '#94A3B8' }
                       return (
                         <div key={i} className="flex items-center" style={{ flex: i < 4 ? '1 1 auto' : 'none' }}>
                           <div
-                            className={cn(
-                              "w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-all border-[1.5px]",
-                              isOverride && cn(statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text),
-                              !isOverride && isDone && cn(ACCENT_SOLID, "border-[color:var(--category-2)] text-primary-foreground"),
-                              !isOverride && !isDone && isCurrent && cn(ACCENT_BG, "border-[color:var(--category-2)]", ACCENT_TEXT),
-                              !isOverride && !isDone && !isCurrent && "bg-muted border-border text-muted-foreground",
-                            )}
+                            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-colors border-[1.5px]"
+                            style={dotStyle}
                           >
                             {isOverride ? '!' : isDone ? '✓' : i + 1}
                           </div>
-                          {i < 4 && <div className="flex-1 h-px mx-1 bg-border" />}
+                          {i < 4 && <div className="flex-1 h-px mx-1 bg-slate-200" />}
                         </div>
                       )
                     })}
@@ -217,15 +223,15 @@ export function SpotCheckModal() {
             </div>
 
             {/* BODY */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-5">
+            <div className={`flex-1 min-h-0 overflow-hidden ${scStep >= 0 && scStep < 5 ? "grid grid-cols-[360px_1fr]" : "overflow-y-auto p-5"}`}>
 
               {/* INTRO */}
               {scStep === -1 && (
                 <div className="space-y-4">
-                  <p className="text-sm text-foreground leading-relaxed">
+                  <p className="text-sm text-slate-700 leading-relaxed">
                     Grading pace picked up toward the end of this batch — sometimes that&apos;s when small errors slip in. A quick re-check catches them before grades reach students.
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-slate-500">
                     Any changes save to the session.
                   </p>
                 </div>
@@ -234,60 +240,136 @@ export function SpotCheckModal() {
               {/* QUESTION */}
               {scStep >= 0 && scStep < 5 && (() => {
                 const q = SC_QUESTIONS[scStep]
-                const conf = confidenceStyles[q.conf]
                 return (
-                  <div>
+                  <>
+                    {/* LEFT — Preview pane: paper-style card with the
+                        evidence passage shown in context. Surrounding text
+                        is synthetic filler so the instructor can see WHERE
+                        in the paper the AI pulled this sentence from. */}
+                    <aside
+                      className="border-r border-slate-200 overflow-y-auto p-5"
+                      style={{ backgroundColor: '#F8F9FA' }}
+                    >
+                      <div className="text-xs font-semibold tracking-wider text-slate-400 mb-2">Student submission</div>
+                      <div
+                        className="bg-white border border-slate-200 rounded-xl p-5 space-y-3"
+                        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+                      >
+                        {/* Paper metadata */}
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                          <div>
+                            <div className="text-sm font-semibold text-slate-900 leading-tight">{q.student}</div>
+                            <div className="text-xs text-slate-500 font-mono">{q.roll}</div>
+                          </div>
+                          <span className="text-xs font-semibold tracking-wider text-slate-400">
+                            {q.evLoc}
+                          </span>
+                        </div>
+
+                        {/* Synthetic lead-in paragraph */}
+                        <p className="text-xs text-slate-400 leading-relaxed">
+                          The section opens with a brief motivation, describing the performance challenges that emerge as datasets scale beyond a few million rows. The author then transitions into the mechanics of the solution.
+                        </p>
+
+                        {/* The evidence — highlighted */}
+                        <p className="text-sm text-slate-900 leading-relaxed">
+                          <span
+                            className="rounded-sm px-1 py-0.5 box-decoration-clone"
+                            style={{ backgroundColor: 'rgba(245, 158, 11, 0.18)' }}
+                          >
+                            {q.evidence}
+                          </span>
+                        </p>
+
+                        {/* Synthetic lead-out */}
+                        <p className="text-xs text-slate-400 leading-relaxed">
+                          The discussion continues with a concrete example comparing query latency with and without the index, followed by a note on write-time overhead.
+                        </p>
+
+                        {/* Excerpt attribution */}
+                        <div className="pt-2 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-400">
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h8M2 9h5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                          <span>Excerpt from the student&apos;s submission</span>
+                        </div>
+                      </div>
+                    </aside>
+
+                    {/* RIGHT — Questions pane */}
+                    <div className="overflow-y-auto p-5">
                     {/* Student strip */}
-                    <div className="flex items-center gap-2.5 p-2.5 rounded-lg mb-3.5 border border-border bg-muted">
-                      <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 border", ACCENT_BG, ACCENT_BORDER, ACCENT_TEXT)}>
+                    <div className="flex items-center gap-2.5 p-2.5 rounded-lg mb-3.5 border border-slate-200 bg-slate-50">
+                      <div
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 border"
+                        style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE', color: '#1F4E8C' }}
+                      >
                         {q.initials}
                       </div>
                       <div>
-                        <div className="text-sm font-semibold leading-tight">{q.student}</div>
-                        <div className="text-xs font-mono text-muted-foreground/70">{q.roll} · Criterion {q.critNum}</div>
+                        <div className="text-sm font-semibold leading-tight text-slate-900">{q.student}</div>
+                        <div className="text-xs font-mono text-slate-500">{q.roll} · Criterion {q.critNum}</div>
                       </div>
                     </div>
 
                     {/* Criterion */}
-                    <div className="text-xs font-semibold tracking-wider text-muted-foreground/60 mb-0.5">Criterion {q.critNum} of 5</div>
-                    <div className="text-sm font-semibold mb-0.5">{q.criterion}</div>
-                    <p className="text-xs text-muted-foreground leading-relaxed mb-3.5">{q.desc}</p>
+                    <div className="text-xs font-semibold tracking-wider text-slate-400 mb-0.5">Criterion {q.critNum} of 5</div>
+                    <div className="text-base font-semibold text-slate-900 mb-0.5">{q.criterion}</div>
+                    <p className="text-xs text-slate-500 leading-relaxed mb-3.5">{q.desc}</p>
 
                     {/* Score strip */}
-                    <div className="flex items-center gap-3.5 p-3 rounded-lg mb-3.5 border border-border bg-muted">
+                    <div className="flex items-center gap-3.5 p-3 rounded-lg mb-3.5 border border-slate-200 bg-white" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
                       <div>
-                        <span className={cn("text-3xl font-semibold leading-none font-mono", ACCENT_TEXT)}>{q.score}</span>
-                        <span className="text-sm text-muted-foreground/70 ml-0.5"> / {q.maxScore}</span>
+                        <span className="text-3xl font-semibold leading-none tabular-nums" style={{ color: '#1F4E8C' }}>{q.score}</span>
+                        <span className="text-sm text-slate-400 ml-0.5"> / {q.maxScore}</span>
                       </div>
-                      <div className="w-px h-7 bg-border" />
+                      <div className="w-px h-7 bg-slate-200" />
                       <div className="flex flex-col gap-1">
-                        <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold", conf.bg, conf.text)}>
-                          <span className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", conf.dot)} />
+                        <span
+                          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold w-fit"
+                          style={
+                            q.conf === 'high'
+                              ? { backgroundColor: '#ECFDF5', color: '#047857' }
+                              : q.conf === 'med'
+                                ? { backgroundColor: '#FFFBEB', color: '#B45309' }
+                                : { backgroundColor: '#FEF2F2', color: '#B91C1C' }
+                          }
+                        >
+                          <span
+                            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                            style={{
+                              backgroundColor:
+                                q.conf === 'high' ? '#10B981' :
+                                q.conf === 'med' ? '#F59E0B' :
+                                '#EF4444'
+                            }}
+                          />
                           {q.confLabel}
                         </span>
-                        <span className="text-xs text-muted-foreground/60">{q.criterion}</span>
+                        <span className="text-xs text-slate-500">{q.criterion}</span>
                       </div>
                     </div>
 
-                    {/* Evidence */}
-                    <div className="text-xs font-semibold tracking-wider text-muted-foreground/60 mb-1.5">Evidence extracted by AI</div>
-                    <div className={cn("text-xs text-muted-foreground leading-relaxed italic border-l-[3px] rounded-r-md px-3 py-2.5 mb-1 bg-muted", "border-l-[color:var(--category-2)]")}>
+                    {/* Evidence (right pane summary, complementing the preview) */}
+                    <div className="text-xs font-semibold tracking-wider text-slate-400 mb-1.5">Evidence extracted by AI</div>
+                    <div
+                      className="text-xs text-slate-600 leading-relaxed italic border-l-[3px] rounded-r-md px-3 py-2.5 mb-1 bg-slate-50"
+                      style={{ borderLeftColor: '#1F4E8C' }}
+                    >
                       {q.evidence}
                     </div>
-                    <div className="text-xs font-mono text-muted-foreground/60 mb-3.5">{q.evLoc}</div>
+                    <div className="text-xs font-mono text-slate-400 mb-3.5">{q.evLoc}</div>
 
                     {/* Confirm question */}
-                    <div className="text-sm font-medium text-foreground mb-3">Does this score reflect the evidence?</div>
+                    <div className="text-sm font-semibold text-slate-900 mb-3">Does this score reflect the evidence?</div>
 
                     {/* Override toggle button */}
                     <button
                       onClick={toggleOverride}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all border",
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border"
+                      style={
                         overridePanelOpen
-                          ? "bg-muted border-border text-muted-foreground"
-                          : cn(statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text),
-                      )}
+                          ? { backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', color: '#64748B' }
+                          : { backgroundColor: '#FFFBEB', borderColor: '#FDE68A', color: '#B45309' }
+                      }
                     >
                       {overridePanelOpen
                         ? <><X className="w-3 h-3" /> Cancel override</>
@@ -302,30 +384,33 @@ export function SpotCheckModal() {
 
                     {/* Override panel */}
                     {overridePanelOpen && (
-                      <div className={cn("mt-3 rounded-lg p-3.5 border", statusStyles.warning.bg, statusStyles.warning.border)}>
-                        <div className={cn("flex items-center gap-1.5 text-xs font-semibold mb-3", statusStyles.warning.text)}>
+                      <div
+                        className="mt-3 rounded-lg p-4 border"
+                        style={{ backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs font-semibold mb-3" style={{ color: '#B45309' }}>
                           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v5M6.5 8.5v.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" /><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" strokeWidth="1.1" /></svg>
                           Override — change the score
                         </div>
 
                         <div className="flex items-center gap-2 mb-2.5">
-                          <span className="text-xs text-muted-foreground w-14 flex-shrink-0">AI score</span>
-                          <span className="text-sm font-semibold font-mono text-muted-foreground/70">{q.score} / {q.maxScore}</span>
+                          <span className="text-xs text-slate-500 w-14 flex-shrink-0">AI score</span>
+                          <span className="text-sm font-semibold font-mono text-slate-700">{q.score} / {q.maxScore}</span>
                         </div>
 
                         <div className="flex items-center gap-2 mb-3">
-                          <span className="text-xs text-muted-foreground w-14 flex-shrink-0">Your score</span>
+                          <span className="text-xs text-slate-500 w-14 flex-shrink-0">Your score</span>
                           <div className="flex gap-1">
                             {[1, 2, 3, 4, 5].map(v => (
                               <button
                                 key={v}
                                 onClick={() => setPickedScore(v)}
-                                className={cn(
-                                  "w-8 h-8 rounded-md text-xs font-medium transition-all border",
+                                className="w-8 h-8 rounded-lg text-xs font-semibold transition-colors border"
+                                style={
                                   pickedScore === v
-                                    ? cn("bg-[color:var(--status-warning)] border-[color:var(--status-warning)] text-primary-foreground")
-                                    : "bg-background border-border text-muted-foreground",
-                                )}
+                                    ? { backgroundColor: '#F59E0B', borderColor: '#F59E0B', color: '#FFFFFF' }
+                                    : { backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', color: '#64748B' }
+                                }
                               >
                                 {v}
                               </button>
@@ -333,28 +418,28 @@ export function SpotCheckModal() {
                           </div>
                         </div>
 
-                        <div className={cn("text-xs font-semibold tracking-wider mb-1.5", statusStyles.warning.text)}>Reason for override</div>
+                        <div className="text-xs font-semibold tracking-wider mb-1.5" style={{ color: '#B45309' }}>Reason for override</div>
                         <div className="flex flex-col gap-1 mb-3">
                           {OVERRIDE_REASONS.map(r => (
                             <button
                               key={r}
                               onClick={() => setPickedReason(r)}
-                              className={cn(
-                                "flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-left transition-all border",
+                              className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs text-left transition-colors border"
+                              style={
                                 pickedReason === r
-                                  ? cn(statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text, "font-medium")
-                                  : "bg-background border-border text-muted-foreground",
-                              )}
+                                  ? { backgroundColor: '#FFFFFF', borderColor: '#F59E0B', color: '#B45309', fontWeight: 600 }
+                                  : { backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', color: '#64748B' }
+                              }
                             >
                               <div
-                                className={cn(
-                                  "w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 border-[1.5px]",
+                                className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 border-[1.5px]"
+                                style={
                                   pickedReason === r
-                                    ? "border-[color:var(--status-warning)] bg-[color:var(--status-warning)]"
-                                    : "border-border bg-transparent",
-                                )}
+                                    ? { borderColor: '#F59E0B', backgroundColor: '#F59E0B' }
+                                    : { borderColor: '#E2E8F0', backgroundColor: 'transparent' }
+                                }
                               >
-                                {pickedReason === r && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
+                                {pickedReason === r && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                               </div>
                               {r}
                             </button>
@@ -362,14 +447,15 @@ export function SpotCheckModal() {
                         </div>
 
                         <textarea
-                          className="w-full text-xs px-2.5 py-2 rounded-md resize-none border border-border bg-background text-foreground focus:outline-none"
+                          className="w-full text-xs px-3 py-2 rounded-lg resize-none border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                           style={{ minHeight: 50 }}
                           placeholder="Optional: add a brief note to help the AI improve…"
                           rows={2}
                         />
                       </div>
                     )}
-                  </div>
+                    </div>
+                  </>
                 )
               })()}
 
@@ -379,17 +465,20 @@ export function SpotCheckModal() {
                 const confirmedCount = scResults.filter(r => r.status === 'confirmed').length
                 return (
                   <div>
-                    <div className={cn("w-[50px] h-[50px] rounded-full flex items-center justify-center mb-4 border-[1.5px]", statusStyles.success.bg, statusStyles.success.border)}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className={statusStyles.success.text}>
+                    <div
+                      className="w-[50px] h-[50px] rounded-full flex items-center justify-center mb-4 border-[1.5px]"
+                      style={{ backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }}
+                    >
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: '#10B981' }}>
                         <path d="M5 12l5 5L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
-                    <div className="text-lg font-semibold tracking-tight mb-1.5">
+                    <div className="text-lg font-semibold tracking-tight text-slate-900 mb-1.5">
                       {overrideCount === 0
                         ? 'Spot check complete'
                         : `Spot check complete — ${overrideCount} override${overrideCount > 1 ? 's' : ''} logged`}
                     </div>
-                    <p className="text-sm text-muted-foreground leading-[1.75] mb-4">
+                    <p className="text-sm text-slate-500 leading-[1.75] mb-4">
                       {overrideCount === 0
                         ? '5 of 5 scores confirmed. All evidence matches — the session is accurate and ready to close.'
                         : `${confirmedCount} confirmed, ${overrideCount} overridden. Your corrections have been saved and sent as learning signals.`}
@@ -399,16 +488,22 @@ export function SpotCheckModal() {
                       {scResults.map((r, i) => {
                         const q = SC_QUESTIONS[r.idx]
                         const isOverride = r.status === 'override'
-                        const tone = isOverride ? statusStyles.warning : statusStyles.success
+                        const rowStyle = isOverride
+                          ? { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }
+                          : { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }
+                        const pillStyle = isOverride
+                          ? { backgroundColor: '#FFFFFF', borderColor: '#F59E0B', color: '#B45309' }
+                          : { backgroundColor: '#FFFFFF', borderColor: '#10B981', color: '#047857' }
                         return (
                           <div
                             key={i}
-                            className={cn("flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm border", tone.bg, tone.border)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm border"
+                            style={rowStyle}
                           >
                             <span className="text-sm flex-shrink-0">{isOverride ? '⚠' : '✓'}</span>
-                            <span className="flex-1 font-medium">{q.student}</span>
-                            <span className="text-xs font-mono text-muted-foreground/70">{q.criterion}</span>
-                            <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full border", tone.bg, tone.border, tone.text)}>
+                            <span className="flex-1 font-semibold text-slate-900">{q.student}</span>
+                            <span className="text-xs font-mono text-slate-500">{q.criterion}</span>
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full border" style={pillStyle}>
                               {isOverride ? `Override → ${(r as Extract<SCResult, { status: 'override' }>).newScore}/5` : 'Confirmed'}
                             </span>
                           </div>
@@ -416,9 +511,9 @@ export function SpotCheckModal() {
                       })}
                     </div>
 
-                    <div className="flex justify-between items-center px-3 py-3 rounded-lg text-sm border bg-muted/30">
-                      <span className="text-muted-foreground">Overrides logged</span>
-                      <span className="font-semibold font-mono">{overrideCount}</span>
+                    <div className="flex justify-between items-center px-3 py-3 rounded-lg text-sm border border-slate-200 bg-slate-50">
+                      <span className="text-slate-500">Overrides logged</span>
+                      <span className="font-semibold font-mono text-slate-900">{overrideCount}</span>
                     </div>
                   </div>
                 )
@@ -426,12 +521,12 @@ export function SpotCheckModal() {
             </div>
 
             {/* FOOTER */}
-            <div className="px-5 py-3 border-t bg-muted/30 flex items-center justify-between gap-2.5 flex-shrink-0">
+            <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-2.5 flex-shrink-0">
               <div>
                 {scStep < 5 && (
                   <button
                     onClick={dismissSpotCheck}
-                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted/50"
+                    className="text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors px-3 py-2 rounded-lg hover:bg-slate-100"
                   >
                     {scStep === -1 ? 'Skip' : 'Save & exit'}
                   </button>
@@ -441,7 +536,7 @@ export function SpotCheckModal() {
                 {scStep > 0 && scStep < 5 && (
                   <button
                     onClick={goBack}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium border border-border text-muted-foreground transition-colors hover:bg-muted/50"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold border border-slate-200 bg-white text-slate-700 transition-colors hover:bg-slate-50"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                     Back
@@ -450,13 +545,18 @@ export function SpotCheckModal() {
                 <button
                   onClick={goNext}
                   disabled={isNextDisabled}
-                  className={cn(
-                    "flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium text-primary-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
-                    scStep === 5 ? "bg-[color:var(--status-success)]" : "bg-primary",
-                  )}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: scStep === 5 ? '#10B981' : '#1F4E8C' }}
+                  onMouseEnter={(e) => {
+                    if (isNextDisabled) return
+                    e.currentTarget.style.backgroundColor = scStep === 5 ? '#059669' : '#1E3A5F'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = scStep === 5 ? '#10B981' : '#1F4E8C'
+                  }}
                 >
                   {scStep === -1 && <><span>Start re-check</span><ChevronRight className="w-3.5 h-3.5" /></>}
-                  {scStep >= 0 && scStep < 5 && overridePanelOpen && <><span>Save override & continue</span><ChevronRight className="w-3.5 h-3.5" /></>}
+                  {scStep >= 0 && scStep < 5 && overridePanelOpen && <><span>Save override &amp; continue</span><ChevronRight className="w-3.5 h-3.5" /></>}
                   {scStep >= 0 && scStep < 5 && !overridePanelOpen && <><span>Score looks correct</span><Check className="w-3.5 h-3.5" /></>}
                   {scStep === 5 && <><span>Close session</span><ChevronRight className="w-3.5 h-3.5" /></>}
                 </button>
