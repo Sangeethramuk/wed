@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
+import { Textarea } from "@/components/ui/textarea"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   ResizableHandle,
@@ -14,13 +15,18 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select"
+import {
   CheckCircle2,
   ChevronLeft,
-  ChevronRight,
   Lock,
   Unlock,
   Timer,
-  Sparkles,
   ArrowRight,
   ShieldAlert,
   Wifi,
@@ -77,9 +83,9 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false)
   const [inspectionTime, setInspectionTime] = useState(0)
   const [activeCriterionIdx, setActiveCriterionIdx] = useState(0)
+  const [scoreLevelExpanded, setScoreLevelExpanded] = useState<Record<string, boolean>>({})
   const [reasons, setReasons] = useState<Record<string, string>>({})
   const [feedbacks, setFeedbacks] = useState<Record<string, string>>({})
-  const [accordionOpen, setAccordionOpen] = useState<Record<string, boolean>>({})
   const [textSelectionMode, setTextSelectionMode] = useState<TextSelectionMode>({ active: false, criterionId: null })
   const [mappedEvidence, setMappedEvidence] = useState<MappedEvidence[]>([])
   const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null)
@@ -106,7 +112,6 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
   const activeCriterion = criteria[activeCriterionIdx]
   const isLastCriterion = activeCriterionIdx === criteria.length - 1
   const activeScore = paperScores.find(s => s.criterionId === activeCriterion?.id)?.instructorLevel ?? 0
-  const toggleAccordion = (key: string) => setAccordionOpen(prev => ({ ...prev, [key]: !prev[key] }))
 
   // Reset gates + ephemeral UI when switching papers.
   // mappedEvidence is NOT reset — keyed by paperId+criterionId and filtered at render.
@@ -205,84 +210,37 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
       <div className="h-[calc(100vh-10rem)] overflow-hidden border border-border/40 rounded-xl bg-background mx-4 shadow-sm">
         <ResizablePanelGroup orientation="horizontal">
 
-          {/* ── Left Panel: Paper Navigator ── */}
-          <ResizablePanel defaultSize={20} minSize={15} className="bg-muted/5">
-            <div className="flex flex-col h-full border-r border-border">
-              <div className="p-4 border-b border-border space-y-4 shrink-0">
-                <div className="flex items-center justify-between">
-                  <h2 className="eyebrow text-muted-foreground/80">
-                    Blind Queue
-                  </h2>
-                  <Badge variant="outline" className="rounded-full bg-background border-border text-xs">
-                    {totalGradedPapers}/{papers.length}
-                  </Badge>
-                </div>
-                <Progress
-                  value={(totalGradedPapers / Math.max(papers.length, 1)) * 100}
-                  className="h-1 bg-muted/40"
-                />
-              </div>
-
-              <ScrollArea className="flex-1">
-                <div className="p-2 space-y-1">
-                  {papers.map((paper, idx) => {
-                    const isActive   = paper.paperId === activePaperId
-                    const isGraded   = scores.filter(s => s.paperId === paper.paperId).every(s => s.instructorLevel > 0) && criteria.length > 0
-                    const catConfig  = CATEGORY_CONFIG[paper.selectionReason] ?? CATEGORY_CONFIG.high_confidence
-
-                    return (
-                      <div
-                        key={paper.paperId}
-                        role="button"
-                        onClick={() => setActiveCalibrationPaper(assignmentId, paper.paperId)}
-                        className={`w-full flex items-center justify-between p-3 rounded-xl transition-all cursor-pointer text-left text-sm ${
-                          isActive
-                            ? "bg-background text-foreground shadow-xl border border-border ring-1 ring-primary/20 z-10"
-                            : "hover:bg-accent/40 text-muted-foreground border border-transparent"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                          <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${catConfig.dot} ${isActive ? 'shadow-[0_0_8px_rgba(var(--primary),0.4)]' : ''}`} />
-                          <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className={`eyebrow tracking-tight truncate ${isActive ? "text-primary" : "text-foreground/70"}`}>
-                              {paper.anonymizedLabel}
-                            </span>
-                            <span className="eyebrow text-muted-foreground/40 tabular-nums">
-                              Paper {idx + 1}
-                            </span>
-                          </div>
-                          {isActive && <Sparkles className="h-2.5 w-2.5 text-primary shrink-0 ml-1" />}
-                        </div>
-                        {isGraded && <CheckCircle2 className="h-3.5 w-3.5 text-[color:var(--status-success)] shrink-0" />}
-                      </div>
-                    )
-                  })}
-                </div>
-              </ScrollArea>
-            </div>
-          </ResizablePanel>
-
-          <ResizableHandle withHandle className="bg-border" />
-
           {/* ── Center Panel: Manuscript Viewer ── */}
-          <ResizablePanel defaultSize={50} minSize={30}>
+          <ResizablePanel defaultSize={60} minSize={35}>
             <div className="h-full flex flex-col bg-muted/10">
               {/* Header */}
               <header className="p-4 border-b border-border bg-background flex flex-col gap-4 z-10 shrink-0">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex flex-col">
-                      <span className="eyebrow text-primary/60 mb-0.5">
-                        Blind Manuscript
-                      </span>
-                      <h2 className="text-sm font-semibold tracking-tight text-foreground">
-                        {currentPaper.anonymizedLabel}
-                      </h2>
-                    </div>
-                    <Separator orientation="vertical" className="h-6 bg-border mx-2" />
-                    <span className="eyebrow text-muted-foreground/40">
-                      Paper {currentPaperIndex + 1} of {papers.length}
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <Select
+                      value={activePaperId}
+                      onValueChange={(val) => setActiveCalibrationPaper(assignmentId, val)}
+                    >
+                      <SelectTrigger className="h-8 w-44 text-sm font-semibold">
+                        Paper {currentPaperIndex + 1}
+                      </SelectTrigger>
+                      <SelectContent>
+                        {papers.map((paper, idx) => {
+                          const isGraded = scores.filter(s => s.paperId === paper.paperId).every(s => s.instructorLevel > 0) && criteria.length > 0
+                          return (
+                            <SelectItem key={paper.paperId} value={paper.paperId}>
+                              <span className="flex items-center gap-2">
+                                Paper {idx + 1}
+                                {isGraded && <CheckCircle2 className="h-3 w-3 text-[color:var(--status-success)]" />}
+                              </span>
+                            </SelectItem>
+                          )
+                        })}
+                      </SelectContent>
+                    </Select>
+                    <Badge variant="outline" className="rounded-full text-xs tabular-nums bg-background">
+                      {totalGradedPapers}/{papers.length}
+                    </Badge>
                   </div>
 
                   {/* Engagement gates strip */}
@@ -448,217 +406,234 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
 
               {/* Scrollable body */}
               <ScrollArea className="flex-1 min-h-0">
-                <div className="p-4 space-y-3">
-                  {activeCriterion && (
-                    <>
-                      {/* Main criterion card — matches grading card treatment */}
-                      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-                        <div className="p-4 space-y-4">
-                          <div>
-                            <h3 className="text-sm font-semibold text-foreground leading-tight">{activeCriterion.name}</h3>
-                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                              {activeCriterion.levelLabels.join(' → ')}
-                            </p>
+                <div className="p-4">
+                  {activeCriterion && (() => {
+                    const pointEvidence = mappedEvidence.filter(e => e.paperId === activePaperId && e.criterionId === activeCriterion.id)
+                    const isModeActiveHere = textSelectionMode.active && textSelectionMode.criterionId === activeCriterion.id
+                    return (
+                      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden divide-y divide-border">
+
+                        {/* Criterion name */}
+                        <div className="px-4 pt-4 pb-3">
+                          <h3 className="text-sm font-semibold text-foreground leading-tight">{activeCriterion.name}</h3>
+                        </div>
+
+                        {/* Score */}
+                        <div className="px-4 py-4 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="eyebrow text-muted-foreground/60">Score</span>
+                            <div className="flex items-baseline gap-0.5">
+                              <span className="text-2xl font-semibold text-foreground tabular-nums">
+                                {activeScore > 0 ? activeScore : '--'}
+                              </span>
+                              <span className="text-sm text-muted-foreground/60">/5</span>
+                            </div>
+                            <span className="text-xs text-muted-foreground/50 ml-auto">Adjust:</span>
                           </div>
 
-                          {/* Score row — single-line layout matching grading pattern */}
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-3">
-                              <span className="eyebrow text-muted-foreground">Your score</span>
-                              {activeScore > 0 && (
-                                <div className="flex items-baseline gap-1">
-                                  <span className="text-2xl font-bold text-foreground tabular-nums">{activeScore}</span>
-                                  <span className="text-sm text-muted-foreground">/5</span>
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex gap-1.5">
+                          {/* Compact buttons + expand toggle */}
+                          {!scoreLevelExpanded[activeCriterion.id] && (
+                            <div className="flex gap-1 items-center">
                               {[1, 2, 3, 4, 5].map(v => (
-                                <Button
+                                <button
                                   key={v}
-                                  variant={activeScore === v ? "default" : "outline"}
-                                  size="sm"
                                   onClick={() => handleLevelSelect(activeCriterion.id, v)}
-                                  className="flex-1"
+                                  className={`flex-1 text-xs font-semibold py-1.5 rounded-md border transition-all ${
+                                    activeScore === v
+                                      ? 'bg-foreground text-background border-foreground'
+                                      : 'bg-background text-muted-foreground border-border hover:border-foreground/40'
+                                  }`}
                                 >
                                   {v}
-                                </Button>
+                                </button>
                               ))}
-                            </div>
-                          </div>
-
-                          {/* Reason (shown once score is selected) */}
-                          {activeScore > 0 && (
-                            <div className="space-y-1.5">
-                              <span className="eyebrow text-muted-foreground">Reason for this score</span>
-                              <textarea
-                                value={reasons[activeCriterion.id] ?? ''}
-                                onChange={e => setReasons(r => ({ ...r, [activeCriterion.id]: e.target.value }))}
-                                rows={3}
-                                placeholder="Explain your reasoning for this score…"
-                                className="w-full text-sm leading-relaxed text-foreground bg-background border border-border rounded-md p-2.5 resize-y focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary font-sans min-h-[72px] transition-colors"
-                              />
+                              <button
+                                onClick={() => setScoreLevelExpanded(s => ({ ...s, [activeCriterion.id]: true }))}
+                                className="w-7 h-7 flex items-center justify-center rounded-md border border-border text-muted-foreground/50 hover:border-foreground/40 hover:text-foreground transition-all shrink-0"
+                                title="Show level descriptors"
+                              >
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4h8M2 8h8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+                              </button>
                             </div>
                           )}
 
-                          {/* Feedback */}
-                          <div className="space-y-1.5">
-                            <span className="eyebrow text-muted-foreground">Feedback</span>
-                            <textarea
-                              value={feedbacks[activeCriterion.id] ?? ''}
-                              onChange={e => setFeedbacks(f => ({ ...f, [activeCriterion.id]: e.target.value }))}
-                              rows={4}
-                              placeholder="Write feedback for this criterion…"
-                              className="w-full text-sm leading-relaxed text-foreground bg-background border border-border rounded-md p-2.5 resize-y focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary font-sans min-h-[90px] transition-colors"
-                            />
-                          </div>
+                          {/* Expanded vertical list with descriptors */}
+                          {scoreLevelExpanded[activeCriterion.id] && (
+                            <div className="space-y-1">
+                              {[1, 2, 3, 4, 5].map((v, i) => {
+                                const selected = activeScore === v
+                                return (
+                                  <button
+                                    key={v}
+                                    onClick={() => handleLevelSelect(activeCriterion.id, v)}
+                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg border text-left transition-all ${
+                                      selected
+                                        ? 'bg-foreground text-background border-foreground'
+                                        : 'bg-background border-border hover:border-foreground/40'
+                                    }`}
+                                  >
+                                    <span className={`text-sm font-bold tabular-nums shrink-0 ${selected ? 'text-background' : 'text-foreground'}`}>{v}</span>
+                                    <span className={`text-xs leading-snug ${selected ? 'text-background/80' : 'text-muted-foreground'}`}>
+                                      {activeCriterion.levelLabels[i] ?? `Level ${v}`}
+                                    </span>
+                                  </button>
+                                )
+                              })}
+                              <button
+                                onClick={() => setScoreLevelExpanded(s => ({ ...s, [activeCriterion.id]: false }))}
+                                className="w-full text-xs text-muted-foreground/50 hover:text-foreground py-1 text-center transition-colors"
+                              >
+                                Collapse ↑
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      </div>
 
-                      {/* Evidence accordion — same card treatment */}
-                      {(() => {
-                        const pointEvidence = mappedEvidence.filter(e => e.paperId === activePaperId && e.criterionId === activeCriterion.id)
-                        const isModeActiveHere = textSelectionMode.active && textSelectionMode.criterionId === activeCriterion.id
-                        return (
-                          <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-                            <Button
-                              variant="ghost"
-                              onClick={() => toggleAccordion('evidence')}
-                              className="w-full justify-between"
-                            >
-                              <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center shrink-0 text-primary">
-                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h5M2 9h6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                        {/* Reason */}
+                        <div className="px-4 py-4 space-y-2">
+                          <span className="eyebrow text-muted-foreground">Reason for this score</span>
+                          <Textarea
+                            value={reasons[activeCriterion.id] ?? ''}
+                            onChange={e => setReasons(r => ({ ...r, [activeCriterion.id]: e.target.value }))}
+                            rows={3}
+                            placeholder="Explain your reasoning for this score…"
+                          />
+                        </div>
+
+                        {/* Evidence */}
+                        <div className="px-4 py-4 space-y-3">
+                          <span className="eyebrow text-muted-foreground">Evidence ({pointEvidence.length} linked)</span>
+                          {pointEvidence.length === 0 ? (
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                              No evidence linked. Scores with evidence attached see 40% fewer re-evaluation requests.
+                            </p>
+                          ) : (
+                            <div className="flex flex-wrap gap-1.5">
+                              {pointEvidence.map((ev, i) => (
+                                <div
+                                  key={ev.id}
+                                  className="group/ev inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-md border border-border bg-muted/30 text-xs"
+                                  title={ev.text}
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" aria-hidden />
+                                  <span className="font-medium text-foreground">Evidence #{i + 1}</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    onClick={() => removeEvidence(ev.id)}
+                                    className="opacity-60 hover:opacity-100"
+                                    aria-label={`Remove evidence ${i + 1}`}
+                                  >
+                                    <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                                  </Button>
                                 </div>
-                                Evidence ({pointEvidence.length} linked)
-                              </div>
-                              <ChevronRight className={`h-4 w-4 text-muted-foreground/40 transition-transform shrink-0 ${accordionOpen.evidence ? 'rotate-90' : ''}`} />
+                              ))}
+                            </div>
+                          )}
+                          {isModeActiveHere ? (
+                            <Button variant="default" size="sm" onClick={cancelSelectionMode} className="w-full">
+                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+                                <path d="M4.5 5.5l-2 2a2.4 2.4 0 0 0 3.4 3.4l2-2M7.5 5.5l2-2a2.4 2.4 0 0 0-3.4-3.4l-2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                              </svg>
+                              Selecting evidence…
                             </Button>
-                            {accordionOpen.evidence && (
-                              <div className="border-t border-border p-3.5 space-y-3">
+                          ) : (
+                            <Button variant="outline" size="sm" onClick={() => enterSelectionMode(activeCriterion.id)} className="w-full border-dashed">
+                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+                                <path d="M4.5 5.5l-2 2a2.4 2.4 0 0 0 3.4 3.4l2-2M7.5 5.5l2-2a2.4 2.4 0 0 0-3.4-3.4l-2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                              </svg>
+                              + Add evidence
+                            </Button>
+                          )}
+                        </div>
 
-                                {/* Empty-state card OR evidence chips */}
-                                {pointEvidence.length === 0 ? (
-                                  <div className="rounded-lg border border-dashed border-primary/40 bg-primary/[0.04] py-8 px-4 text-center space-y-1">
-                                    <p className="text-sm font-semibold text-primary">No evidence linked yet</p>
-                                    <p className="text-xs italic text-primary/70">
-                                      Select text in the manuscript to map it here
-                                    </p>
-                                  </div>
-                                ) : (
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {pointEvidence.map((ev, i) => (
-                                      <div
-                                        key={ev.id}
-                                        className="group/ev inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-md border border-border bg-muted/30 text-xs"
-                                        title={ev.text}
-                                      >
-                                        <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" aria-hidden />
-                                        <span className="font-medium text-foreground">Evidence #{i + 1}</span>
-                                        <Button
-                                          variant="ghost"
-                                          size="icon-xs"
-                                          onClick={() => removeEvidence(ev.id)}
-                                          className="opacity-60 hover:opacity-100"
-                                          aria-label={`Remove evidence ${i + 1}`}
-                                        >
-                                          <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
-                                        </Button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
+                        {/* Feedback */}
+                        <div className="px-4 py-4 space-y-2">
+                          <span className="eyebrow text-muted-foreground">Feedback</span>
+                          <Textarea
+                            value={feedbacks[activeCriterion.id] ?? ''}
+                            onChange={e => setFeedbacks(f => ({ ...f, [activeCriterion.id]: e.target.value }))}
+                            rows={4}
+                            placeholder="Write feedback for this criterion…"
+                          />
+                        </div>
 
-                                {/* Add-evidence button — swaps to "Selecting evidence…" when active */}
-                                {isModeActiveHere ? (
-                                  <Button
-                                    variant="default"
-                                    size="sm"
-                                    onClick={cancelSelectionMode}
-                                    className="w-full"
-                                  >
-                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
-                                      <path d="M4.5 5.5l-2 2a2.4 2.4 0 0 0 3.4 3.4l2-2M7.5 5.5l2-2a2.4 2.4 0 0 0-3.4-3.4l-2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                                    </svg>
-                                    Selecting evidence…
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => enterSelectionMode(activeCriterion.id)}
-                                    className="w-full border-dashed"
-                                  >
-                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
-                                      <path d="M4.5 5.5l-2 2a2.4 2.4 0 0 0 3.4 3.4l2-2M7.5 5.5l2-2a2.4 2.4 0 0 0-3.4-3.4l-2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                                    </svg>
-                                    + Add evidence
-                                  </Button>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })()}
-                    </>
-                  )}
+                        {/* Confirm */}
+                        <div className="px-4 py-3 flex justify-end">
+                          <Button size="sm" className="eyebrow rounded-full px-5 gap-1.5">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Confirm
+                          </Button>
+                        </div>
+
+                      </div>
+                    )
+                  })()}
                 </div>
               </ScrollArea>
 
               {/* Footer */}
-              <div className="px-4 py-3 border-t border-border bg-background shrink-0 space-y-2">
-                {isLastCriterion && (
-                  <div className="flex items-center justify-between text-xs text-muted-foreground pb-1">
-                    <span>Paper {currentPaperIndex + 1} of {papers.length}</span>
-                    <span>{totalGradedPapers} complete</span>
+              <div className="px-4 pt-3 pb-4 border-t border-border bg-background shrink-0 space-y-3">
+                {/* Total score */}
+                <div>
+                  <span className="eyebrow text-muted-foreground/60">Total</span>
+                  <div className="flex items-baseline gap-2 mt-0.5">
+                    <span className="text-3xl font-bold tabular-nums text-foreground">
+                      {paperScores.reduce((s, sc) => s + sc.instructorLevel, 0)}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      / {criteria.length * 5}
+                    </span>
                   </div>
-                )}
-                <div className="flex items-center justify-between gap-2">
+                </div>
+
+                {/* Navigation */}
+                <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setActiveCriterionIdx(i => Math.max(0, i - 1))}
                     disabled={activeCriterionIdx === 0}
+                    className="shrink-0"
                   >
-                    <ChevronLeft /> Previous
+                    <ChevronLeft className="h-4 w-4" /> Previous
                   </Button>
 
-                  <div className="flex items-center gap-1.5">
-                    <Button variant="outline" size="sm">
-                      Save
-                    </Button>
+                  <Button variant="outline" size="sm" className="shrink-0">
+                    Save
+                  </Button>
 
-                    {!isLastCriterion ? (
-                      <Button
-                        size="sm"
-                        onClick={() => setActiveCriterionIdx(i => i + 1)}
-                      >
-                        Next criterion <ArrowRight />
-                      </Button>
-                    ) : (
-                      <Tooltip>
-                        <TooltipTrigger render={<span className="inline-flex" />}>
-                          <Button
-                            size="sm"
-                            disabled={!isGateUnlocked}
-                            onClick={isGateUnlocked ? handleNext : undefined}
-                          >
-                            {isGateUnlocked ? <Unlock /> : <Lock />}
-                            {isLastPaper ? 'View delta' : 'Next paper'}
-                            <ArrowRight />
-                          </Button>
-                        </TooltipTrigger>
-                        {!isGateUnlocked && (
-                          <TooltipContent className="max-w-xs p-3 space-y-1 mb-2">
-                            <p className="text-xs font-semibold text-foreground">Protocol gate locked</p>
-                            <p className="text-xs text-muted-foreground leading-relaxed">
-                              Scroll the manuscript, spend 3s reviewing, and score all {criteria.length} criteria.
-                            </p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    )}
-                  </div>
+                  {!isLastCriterion ? (
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setActiveCriterionIdx(i => i + 1)}
+                    >
+                      Next criterion <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Tooltip>
+                      <TooltipTrigger render={<span className="inline-flex flex-1" />}>
+                        <Button
+                          size="sm"
+                          className="w-full"
+                          disabled={!isGateUnlocked}
+                          onClick={isGateUnlocked ? handleNext : undefined}
+                        >
+                          {isGateUnlocked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                          {isLastPaper ? 'View delta' : 'Next paper'}
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      {!isGateUnlocked && (
+                        <TooltipContent className="max-w-xs p-3 space-y-1 mb-2">
+                          <p className="text-xs font-semibold text-foreground">Protocol gate locked</p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            Scroll the manuscript, spend 3s reviewing, and score all {criteria.length} criteria.
+                          </p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  )}
                 </div>
               </div>
             </div>

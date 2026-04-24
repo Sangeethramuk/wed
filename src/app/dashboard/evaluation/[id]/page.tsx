@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState } from "react"
+import { use, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { useGradingStore } from "@/lib/store/grading-store"
@@ -15,7 +15,9 @@ import {
   Clock,
   AlertTriangle,
   Send,
-  Zap
+  Zap,
+  EyeOff,
+  ArrowRight
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -32,6 +34,8 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
     progressiveNudges,
     triggerSpotCheck,
     markSpotCheckAutoFired,
+    calibration,
+    initCalibration,
   } = useGradingStore()
   const assignment = assignments[id]
   const [activeTab, setActiveTab] = useState("submissions")
@@ -61,6 +65,23 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
       duration: 4000,
     })
   }
+
+  const requiresBlindGrading = assignment?.students.some(s => s.isDoubleBlind)
+  const calibrationComplete = calibration[id]?.phase === 'complete'
+  const blindGateActive = requiresBlindGrading && !calibrationComplete
+
+  // Pre-init so we know the paper count before the user clicks Begin
+  useEffect(() => {
+    if (requiresBlindGrading) initCalibration(id)
+  }, [id, requiresBlindGrading, initCalibration])
+
+  const cal = calibration[id]
+  const blindTotalCount = cal?.papers.length ?? 0
+  const blindGradedCount = cal?.papers.filter(p =>
+    cal.scores.filter(s => s.paperId === p.paperId).every(s => s.instructorLevel > 0) && cal.criteria.length > 0
+  ).length ?? 0
+  const blindRemainingCount = blindTotalCount - blindGradedCount
+  const blindHasStarted = blindGradedCount > 0
 
   if (!assignment) {
     return (
@@ -131,13 +152,24 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Button
-                size="lg"
-                className="rounded-full px-8 shadow-xl shadow-primary/20 hover:scale-105 transition-all"
-                onClick={() => router.push(`/dashboard/evaluation/${id}/grading`)}
-              >
-                Enter Grading Desk
-              </Button>
+              {blindGateActive ? (
+                <Button
+                  size="lg"
+                  className="rounded-full px-8 shadow-xl shadow-primary/20 hover:scale-105 transition-all gap-2"
+                  onClick={() => router.push(`/dashboard/evaluation/${id}/calibrate`)}
+                >
+                  <EyeOff className="h-4 w-4" />
+                  Start Blind Grading
+                </Button>
+              ) : (
+                <Button
+                  size="lg"
+                  className="rounded-full px-8 shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+                  onClick={() => router.push(`/dashboard/evaluation/${id}/grading`)}
+                >
+                  Enter Grading Desk
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -172,79 +204,135 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
         </div>
 
         <TabsContent value="submissions" className="space-y-8 outline-none mt-6">
-          {/* Stats Cards Row */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <Card className="overflow-hidden border-border/40 shadow-sm bg-card/40 backdrop-blur-sm group hover:border-primary/30 transition-all hover:translate-y-[-2px]">
-                  <CardContent className="p-4 space-y-3">
-                    <div className={`p-2 rounded-xl w-fit ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
-                      <stat.icon className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-muted-foreground/50 tracking-wider uppercase">{stat.label}</p>
-                      <p className="text-2xl font-bold text-foreground tabular-nums">{stat.value}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Cohort-level publish — final step after all per-student grades
-              are submitted. Spot-check gate fires here if the instructor
-              ignored nudges repeatedly during the session. */}
-          <Card className="border-primary/20 bg-primary/5">
-            <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <p className="eyebrow text-primary">Ready to finalize</p>
-                <h3 className="text-lg font-semibold text-foreground">
-                  {cohortPublished ? "Cohort grades published" : "Publish cohort grades"}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {cohortPublished
-                    ? "All submissions for this assignment have been released to students."
-                    : "Review the cohort below, then publish to release grades to all students in this assignment."}
-                </p>
+          {blindGateActive ? (
+            /* ── Blind grading gate ── */
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="rounded-3xl border border-border/50 bg-card/30 backdrop-blur-xl flex flex-col items-center justify-center min-h-[520px] p-12 text-center space-y-8"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <EyeOff className="h-7 w-7 text-primary/60" />
               </div>
-              <Button
-                size="lg"
-                onClick={handlePublishCohort}
-                disabled={cohortPublished}
-                variant={cohortPublished ? "outline" : "default"}
-                className={cohortPublished
-                  ? "gap-2 border-[color:var(--status-success)]/40 text-[color:var(--status-success)] bg-[color:var(--status-success-bg)]"
-                  : "gap-2"}
-              >
-                {cohortPublished ? (
+
+              <div className="space-y-3 max-w-md">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                  {blindHasStarted ? `${blindRemainingCount} submission${blindRemainingCount !== 1 ? 's' : ''} to go` : 'Blind grading required'}
+                </h2>
+                {blindHasStarted ? (
                   <>
-                    <CheckCircle2 className="h-4 w-4" />
-                    Published
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      You've graded <span className="font-semibold text-foreground">{blindGradedCount} of {blindTotalCount}</span> benchmark submissions.
+                      Setting this benchmark makes the remaining grading faster and more consistent.
+                    </p>
+                    <p className="text-xs text-muted-foreground/60">
+                      We'll show the AI comparison and full submissions list once all {blindTotalCount} are done.
+                    </p>
                   </>
                 ) : (
                   <>
-                    <Send className="h-4 w-4" />
-                    Publish cohort grades
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      You'll manually grade <span className="font-semibold text-foreground">{blindTotalCount} submission{blindTotalCount !== 1 ? 's' : ''}</span> without seeing AI scores first.
+                      Setting the benchmark makes the remaining grading faster and more consistent.
+                    </p>
+                    <p className="text-xs text-muted-foreground/60">
+                      We'll show the AI comparison and full submissions list once you're done.
+                    </p>
                   </>
                 )}
-              </Button>
-            </CardContent>
-          </Card>
+              </div>
 
-          {/* Full Width Submissions Table */}
-          <div className="rounded-3xl overflow-hidden border border-border/50 shadow-2xl bg-card/30 backdrop-blur-xl h-[800px]">
-            <TriageSidebar
-              selectedStudentId=""
-              onStudentSelect={handleStudentSelect}
-              gradedSubmissions={gradedSubmissions}
-              onBulkApprove={handleBulkApprove}
-            />
-          </div>
+              <Button
+                size="lg"
+                className="rounded-full px-10 shadow-xl shadow-primary/20 hover:scale-105 transition-all gap-2"
+                onClick={() => router.push(`/dashboard/evaluation/${id}/calibrate`)}
+              >
+                {blindHasStarted ? 'Continue' : 'Begin'}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+
+              <p className="text-xs text-muted-foreground/40 italic">
+                Submissions list is locked until blind grading is complete
+              </p>
+            </motion.div>
+          ) : (
+            <>
+              {/* Cohort-level publish — final step after all per-student grades
+                  are submitted. Spot-check gate fires here if the instructor
+                  ignored nudges repeatedly during the session. */}
+              <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <p className="eyebrow text-primary">Ready to finalize</p>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      {cohortPublished ? "Cohort grades published" : "Publish cohort grades"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {cohortPublished
+                        ? "All submissions for this assignment have been released to students."
+                        : "Review the cohort below, then publish to release grades to all students in this assignment."}
+                    </p>
+                  </div>
+                  <Button
+                    size="lg"
+                    onClick={handlePublishCohort}
+                    disabled={cohortPublished}
+                    variant={cohortPublished ? "outline" : "default"}
+                    className={cohortPublished
+                      ? "gap-2 border-[color:var(--status-success)]/40 text-[color:var(--status-success)] bg-[color:var(--status-success-bg)]"
+                      : "gap-2"}
+                  >
+                    {cohortPublished ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4" />
+                        Published
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        Publish cohort grades
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Stats Cards Row */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                {stats.map((stat, i) => (
+                  <motion.div
+                    key={stat.label}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.1 }}
+                  >
+                    <Card className="overflow-hidden border-border/40 shadow-sm bg-card/40 backdrop-blur-sm group hover:border-primary/30 transition-all hover:translate-y-[-2px]">
+                      <CardContent className="p-4 space-y-3">
+                        <div className={`p-2 rounded-xl w-fit ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
+                          <stat.icon className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-muted-foreground/50 tracking-wider uppercase">{stat.label}</p>
+                          <p className="text-2xl font-bold text-foreground tabular-nums">{stat.value}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Full Width Submissions Table */}
+              <div className="rounded-3xl overflow-hidden border border-border/50 shadow-2xl bg-card/30 backdrop-blur-xl h-[800px]">
+                <TriageSidebar
+                  selectedStudentId=""
+                  onStudentSelect={handleStudentSelect}
+                  gradedSubmissions={gradedSubmissions}
+                  onBulkApprove={handleBulkApprove}
+                />
+              </div>
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="analytics" className="outline-none">

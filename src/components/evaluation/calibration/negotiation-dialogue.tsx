@@ -46,7 +46,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
   const cal = calibration[assignmentId]
 
   // ── UI state ─────────────────────────────────────────────────────────────
-  const [activeIdx, setActiveIdx] = useState(0)
+  const [activeIdx, setActiveIdx] = useState(-1)
   const [activePaperIdx, setActivePaperIdx] = useState(0)
   const [aiOpen, setAiOpen] = useState<Record<string, boolean>>({})
   const [compareOn, setCompareOn] = useState<Record<string, boolean>>({})
@@ -69,6 +69,17 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
   const discrepancies: CalibrationScore[] = [...scores]
     .filter(s => s.instructorLevel > 0 && s.delta >= 1)
     .sort((a, b) => b.delta - a.delta)
+
+  // Group by paper (preserving paper order), sort criteria within each paper by delta desc
+  const discrepanciesByPaper = papers
+    .map((paper, idx) => ({
+      paper,
+      paperIdx: idx,
+      items: discrepancies
+        .filter(s => s.paperId === paper.paperId)
+        .sort((a, b) => b.delta - a.delta),
+    }))
+    .filter(g => g.items.length > 0)
 
   const resolvedCount = discrepancies.filter(
     s => s.status === "accepted" || s.status === "resolved"
@@ -103,7 +114,17 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
 
   // ── Navigation ────────────────────────────────────────────────────────────
   const navigateTo = (idx: number) => {
+    if (idx === activeIdx) {
+      setActiveIdx(-1)
+      return
+    }
     setActiveIdx(idx)
+    // Sync left panel to the paper this discrepancy belongs to
+    const disc = discrepancies[idx]
+    if (disc) {
+      const paperIdx = papers.findIndex(p => p.paperId === disc.paperId)
+      if (paperIdx !== -1) setActivePaperIdx(paperIdx)
+    }
     setTimeout(() => {
       cardRefs.current[idx]?.scrollIntoView({ behavior: "smooth", block: "start" })
     }, 60)
@@ -167,7 +188,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
         </button>
         <span className="text-xs font-medium text-background/90">Reviewing differences</span>
         <span className="text-xs font-mono bg-background/15 rounded-full px-2.5 py-[2px] shrink-0">
-          {activeIdx + 1} of {totalCount}
+          {activeIdx >= 0 ? `${activeIdx + 1} of ${totalCount}` : `${totalCount} gaps`}
         </span>
         <div className="flex-1 h-[3px] bg-background/20 rounded-full overflow-hidden">
           <div
@@ -190,7 +211,7 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
           <div className="shrink-0 px-5 py-2.5 border-b border-border/30 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="text-xs font-semibold font-mono bg-muted/50 border border-border/50 rounded px-2 py-0.5 text-muted-foreground">
-                {papers[activePaperIdx]?.anonymizedLabel ?? "Paper 1"}
+                Paper {activePaperIdx + 1}
               </span>
               <span className="text-xs text-muted-foreground/70">
                 {papers.length} papers
@@ -245,23 +266,32 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
           </div>
         </div>
 
-        {/* ── Right: discrepancy cards — native scroll ── */}
+        {/* ── Right: discrepancy cards grouped by paper ── */}
         <div className="flex-1 min-h-0 overflow-y-auto bg-muted/20">
-            <div className="px-3.5 py-4 pb-20 flex flex-col gap-3">
-              {discrepancies.map((disc, idx) => {
-                const key = scoreKey(disc)
-                const isActive = idx === activeIdx
-                const isResolved = disc.status === "accepted" || disc.status === "resolved"
-                const criterion = criteria.find(c => c.id === disc.criterionId)
-                const paper = papers.find(p => p.paperId === disc.paperId)
-                const dc = deltaColors(disc.delta)
-                const isAiOpen = aiOpen[key] ?? false
-                const isCompare = compareOn[key] ?? false
-                const isAdj = adjustMode[key] ?? false
-                const adjLvl = adjustLevel[key] ?? 0
-                const fb = feedbacks[key] ?? ""
+            <div className="px-3.5 py-4 pb-20 flex flex-col gap-5">
+              {discrepanciesByPaper.map(({ paper, paperIdx, items }) => (
+                <div key={paper.paperId} className="flex flex-col gap-2">
+                  {/* Paper group header */}
+                  <div className="flex items-center gap-2 px-1">
+                    <span className="text-xs font-bold text-foreground">Paper {paperIdx + 1}</span>
+                    <div className="flex-1 h-px bg-border/40" />
+                    <span className="text-xs text-muted-foreground/50">{items.length} difference{items.length !== 1 ? 's' : ''}</span>
+                  </div>
 
-                return (
+                  {items.map(disc => {
+                    const idx = discrepancies.indexOf(disc)
+                    const key = scoreKey(disc)
+                    const isActive = idx === activeIdx
+                    const isResolved = disc.status === "accepted" || disc.status === "resolved"
+                    const criterion = criteria.find(c => c.id === disc.criterionId)
+                    const dc = deltaColors(disc.delta)
+                    const isAiOpen = aiOpen[key] ?? false
+                    const isCompare = compareOn[key] ?? false
+                    const isAdj = adjustMode[key] ?? false
+                    const adjLvl = adjustLevel[key] ?? 0
+                    const fb = feedbacks[key] ?? ""
+
+                    return (
                   <div
                     key={key}
                     ref={el => { cardRefs.current[idx] = el }}
@@ -288,9 +318,6 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-foreground truncate leading-tight">
                           {criterion?.name}
-                        </p>
-                        <p className="text-xs font-mono text-muted-foreground/70 leading-tight">
-                          {paper?.anonymizedLabel}
                         </p>
                       </div>
 
@@ -581,8 +608,10 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
                       </div>
                     )}
                   </div>
-                )
-              })}
+                    )
+                  })}
+                </div>
+              ))}
             </div>
         </div>
       </div>
