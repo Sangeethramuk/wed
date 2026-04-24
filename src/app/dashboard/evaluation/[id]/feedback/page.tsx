@@ -197,20 +197,23 @@ export default function FeedbackPage() {
     // 1. Mark current student as submitted
     submitFinalFeedback(activeStudent.id);
 
-    // 2. Toast so the instructor sees confirmation
+    // 2. The grading page stored the real cohort student id (STU-NNN) in
+    //    `activeStudentId`. The `activeStudent` object resolved above is the
+    //    fallback from DEFAULT_ASSIGNMENTS (rohan/meghna/…) used only for
+    //    rendering — don't use it to compute "next". Prefer activeStudentId.
+    const realStuId = (activeStudentId as string | null) ?? activeStudent.id;
+    const stuMatch = realStuId.match(/^STU-(\d+)$/);
+    const urlAssignmentId = (assignmentId as string) ?? assignment.id;
+
+    // 3. Toast so the instructor sees confirmation.
     toast.success(`Grades saved and submitted for ${activeStudent.name}`, {
       description: "Opening the next student's paper…",
       duration: 3500,
     });
 
-    // 3. Compute the next student. The feedback page's `assignment.students`
-    //    only ever has the 1–2 DEFAULT_ASSIGNMENTS students, but the grading
-    //    desk iterates a generated 60-student cohort keyed `STU-100`..`STU-159`.
-    //    Increment the numeric suffix of activeStudentId to target the next
-    //    seat in that cohort; if it doesn't match that shape, fall back to
-    //    whatever comes next in the stored assignment.
-    const stuMatch = activeStudent.id.match(/^STU-(\d+)$/);
-    const urlAssignmentId = (assignmentId as string) ?? assignment.id;
+    // 4. Compute the next student. Increments the STU-NNN suffix against
+    //    the generated 60-seat cohort (100–159). Falls back to the stored
+    //    assignment.students array only when the id doesn't match that shape.
     const nextStuId = stuMatch
       ? (() => {
           const next = parseInt(stuMatch[1], 10) + 1;
@@ -221,7 +224,7 @@ export default function FeedbackPage() {
       ? assignment.students[assignment.students.findIndex(s => s.id === activeStudent.id) + 1]
       : null;
 
-    // 4. Dwell briefly so the toast registers before the route changes.
+    // 5. Dwell briefly so the toast registers before the route changes.
     setTimeout(() => {
       if (nextStuId) {
         setActiveStudent(nextStuId);
@@ -230,8 +233,8 @@ export default function FeedbackPage() {
         setActiveStudent(fallbackNext.id);
         router.push(`/dashboard/evaluation/${urlAssignmentId}/grading?studentId=${fallbackNext.id}`);
       } else {
-        // Last student — route back to the assignment details so the
-        // instructor can review the cohort and publish.
+        // Last student — back to the assignment details so the instructor
+        // can review the cohort and publish.
         router.push(`/dashboard/evaluation/${urlAssignmentId}`);
       }
     }, 1200);
