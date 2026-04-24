@@ -230,15 +230,18 @@ export function SpotCheckModal() {
             </div>
 
             {/* BODY */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-5">
+            <div className={cn(
+              "flex-1 min-h-0 overflow-hidden",
+              scStep >= 0 && scStep < 5 ? "grid grid-cols-[360px_1fr]" : "overflow-y-auto p-5"
+            )}>
 
               {/* INTRO */}
               {scStep === -1 && (
                 <div className="space-y-4">
-                  <p className="text-sm text-foreground leading-relaxed">
+                  <p className="text-sm text-slate-700 leading-relaxed">
                     Grading pace picked up toward the end of this batch — sometimes that&apos;s when small errors slip in. A quick re-check catches them before grades reach students.
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-slate-500">
                     Any changes save to the session.
                   </p>
                 </div>
@@ -249,7 +252,18 @@ export function SpotCheckModal() {
                 const q = SC_QUESTIONS[scStep]
                 const conf = confidenceStyles[q.conf]
                 return (
-                  <div>
+                  <>
+                    {/* LEFT — Preview pane (placeholder; chunk 4 fills it) */}
+                    <aside
+                      className="border-r border-slate-200 overflow-y-auto p-5"
+                      style={{ backgroundColor: '#F8F9FA' }}
+                    >
+                      <div className="text-xs font-semibold tracking-wider text-slate-400">Preview pane</div>
+                      <div className="mt-2 text-xs text-slate-400">(paper-style evidence context — coming in chunk 4)</div>
+                    </aside>
+
+                    {/* RIGHT — Questions pane */}
+                    <div className="overflow-y-auto p-5">
                     {/* Student strip */}
                     <div className="flex items-center gap-2.5 p-2.5 rounded-lg mb-3.5 border border-border bg-muted">
                       <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 border", ACCENT_BG, ACCENT_BORDER, ACCENT_TEXT)}>
@@ -382,7 +396,8 @@ export function SpotCheckModal() {
                         />
                       </div>
                     )}
-                  </div>
+                    </div>
+                  </>
                 )
               })()}
 
