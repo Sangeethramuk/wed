@@ -148,30 +148,38 @@ export function SpotCheckModal() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 10 }}
             transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-            className="bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
-            style={{ width: 560, maxWidth: 'calc(100vw - 32px)', maxHeight: 'calc(100vh - 60px)' }}
+            className="bg-white border border-slate-200 rounded-2xl flex flex-col overflow-hidden"
+            style={{
+              width: scStep >= 0 && scStep < 5 ? 920 : 560,
+              maxWidth: 'calc(100vw - 32px)',
+              maxHeight: 'calc(100vh - 60px)',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* HEADER */}
-            <div className="px-5 pt-4 border-b border-border flex-shrink-0" style={{ paddingBottom: scStep >= 0 && scStep < 5 ? 0 : 16 }}>
+            <div className="px-5 pt-4 border-b border-slate-200 flex-shrink-0" style={{ paddingBottom: scStep >= 0 && scStep < 5 ? 0 : 16 }}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border", ACCENT_BG, ACCENT_BORDER)}>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={ACCENT_TEXT}>
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border"
+                    style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: '#1F4E8C' }}>
                       <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.3" />
                       <path d="M8 5.5v3.5M8 10.5v.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                     </svg>
                   </div>
                   <div>
-                    <div className="text-sm font-semibold tracking-tight">Let&apos;s double-check a few</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-sm font-semibold tracking-tight text-slate-900">Let&apos;s double-check a few</div>
+                    <div className="text-xs text-slate-500">
                       {scStep === -1 ? '5 items · ~2 min' : scStep === 5 ? 'All done' : `Question ${scStep + 1} of 5`}
                     </div>
                   </div>
                 </div>
                 <button
                   onClick={dismissSpotCheck}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors border border-border"
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors border border-slate-200"
                 >
                   <X className="w-3 h-3" />
                 </button>
