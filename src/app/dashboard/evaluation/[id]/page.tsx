@@ -23,7 +23,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { TriageSidebar } from "@/components/evaluation/triage-sidebar"
 import { motion } from "framer-motion"
 
 export default function AssignmentDetails({ params }: { params: Promise<{ id: string }> }) {
@@ -104,13 +103,6 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
     { label: "Good to go", value: 40, icon: CheckCircle2, accent: "#10B981" },
   ]
 
-  const handleStudentSelect = (studentId: string) => {
-    router.push(`/dashboard/evaluation/${id}/grading?studentId=${studentId}`)
-  }
-
-  const handleBulkApprove = (ids: string[]) => {
-    setGradedSubmissions(prev => [...new Set([...prev, ...ids])])
-  }
 
   return (
     <div
@@ -363,18 +355,35 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
                 ))}
               </div>
 
-              {/* Full Width Submissions Table — TriageSidebar keeps its own
-                  chrome; wrapper just provides the guide's card surface. */}
+              {/* Submission table removed — the grading desk already surfaces
+                  the cohort and lets the instructor navigate between students.
+                  A compact CTA replaces the previous TriageSidebar block. */}
               <div
-                className="rounded-xl overflow-hidden border border-slate-200 bg-white h-[800px]"
+                className="rounded-xl border border-slate-200 bg-white p-12 flex flex-col items-center justify-center text-center space-y-4"
                 style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
               >
-                <TriageSidebar
-                  selectedStudentId=""
-                  onStudentSelect={handleStudentSelect}
-                  gradedSubmissions={gradedSubmissions}
-                  onBulkApprove={handleBulkApprove}
-                />
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center border"
+                  style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }}
+                >
+                  <Users className="h-6 w-6" style={{ color: '#1F4E8C' }} />
+                </div>
+                <div className="space-y-1 max-w-md">
+                  <h3 className="text-lg font-semibold text-slate-900">All submissions are ready to grade</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed">
+                    Enter the grading desk to browse students, review submissions, and confirm scores.
+                  </p>
+                </div>
+                <button
+                  onClick={() => router.push(`/dashboard/evaluation/${id}/grading`)}
+                  className="inline-flex items-center gap-2 h-11 px-6 rounded-lg text-sm font-semibold text-white transition-colors"
+                  style={{ backgroundColor: '#1F4E8C' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1E3A5F' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#1F4E8C' }}
+                >
+                  Enter Grading Desk
+                  <ArrowRight className="h-4 w-4" />
+                </button>
               </div>
             </>
           )}
