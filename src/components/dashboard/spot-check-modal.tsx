@@ -188,13 +188,13 @@ export function SpotCheckModal() {
               {scStep >= 0 && scStep < 5 && (
                 <div className="pb-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="flex-1 h-1 rounded-full overflow-hidden bg-muted">
+                    <div className="flex-1 h-1 rounded-full overflow-hidden bg-slate-100">
                       <div
-                        className={cn("h-full rounded-full transition-all duration-500", ACCENT_SOLID)}
-                        style={{ width: `${(answeredCount / 5) * 100}%` }}
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${(answeredCount / 5) * 100}%`, backgroundColor: '#1F4E8C' }}
                       />
                     </div>
-                    <span className="text-xs font-mono text-muted-foreground/70 flex-shrink-0">{answeredCount} / 5</span>
+                    <span className="text-xs font-mono text-slate-500 flex-shrink-0 tabular-nums">{answeredCount} / 5</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     {SC_QUESTIONS.map((_, i) => {
@@ -202,20 +202,25 @@ export function SpotCheckModal() {
                       const isCurrent = i === scStep
                       const isDone = !!res
                       const isOverride = res?.status === 'override'
+                      // Per the guide: solid navy for done, light-blue bg +
+                      // navy border for current, amber for overrides, slate
+                      // for pending. Connectors slate-200.
+                      const dotStyle: React.CSSProperties = isOverride
+                        ? { backgroundColor: '#FFFBEB', borderColor: '#F59E0B', color: '#B45309' }
+                        : isDone
+                          ? { backgroundColor: '#1F4E8C', borderColor: '#1F4E8C', color: '#FFFFFF' }
+                          : isCurrent
+                            ? { backgroundColor: '#EFF6FF', borderColor: '#1F4E8C', color: '#1F4E8C' }
+                            : { backgroundColor: '#F8FAFC', borderColor: '#E2E8F0', color: '#94A3B8' }
                       return (
                         <div key={i} className="flex items-center" style={{ flex: i < 4 ? '1 1 auto' : 'none' }}>
                           <div
-                            className={cn(
-                              "w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-all border-[1.5px]",
-                              isOverride && cn(statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text),
-                              !isOverride && isDone && cn(ACCENT_SOLID, "border-[color:var(--category-2)] text-primary-foreground"),
-                              !isOverride && !isDone && isCurrent && cn(ACCENT_BG, "border-[color:var(--category-2)]", ACCENT_TEXT),
-                              !isOverride && !isDone && !isCurrent && "bg-muted border-border text-muted-foreground",
-                            )}
+                            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-colors border-[1.5px]"
+                            style={dotStyle}
                           >
                             {isOverride ? '!' : isDone ? '✓' : i + 1}
                           </div>
-                          {i < 4 && <div className="flex-1 h-px mx-1 bg-border" />}
+                          {i < 4 && <div className="flex-1 h-px mx-1 bg-slate-200" />}
                         </div>
                       )
                     })}
