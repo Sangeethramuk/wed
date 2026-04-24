@@ -97,7 +97,16 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     )
   }
 
-  const { assignments, activeStudentId, setActiveStudent, triggerSpotCheck } = useGradingStore()
+  const {
+    assignments,
+    activeStudentId,
+    setActiveStudent,
+    triggerSpotCheck,
+    progressiveNudges,
+    incrementIgnoredNudge,
+    markSpotCheckAutoFired,
+    resetProgressiveNudges,
+  } = useGradingStore()
   const assignment = assignments[id]
   
   // Resolve active student from multiple sources
@@ -332,13 +341,12 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     B?: string
     C?: { streakAt: number }
   }>({})
-  // Escalation counter — counts un-productive dismissals (Skip on B, X on A/C)
-  // across the session. Consumed by `handlePublishGrades` to decide whether the
-  // instructor must pass a spot-check before finalization.
-  const [ignoredNudgeCount, setIgnoredNudgeCount] = useState(0)
-  const [spotCheckAutoFired, setSpotCheckAutoFired] = useState(false)
-  // Transient flash on the Publish button when publish succeeds without
-  // triggering the spot-check gate.
+  // Escalation counter lives in the grading store (session-global) so the
+  // cohort-level Publish action on the submissions-list page can read it too.
+  // Ticked by dismissNudgeA / dismissNudgeB / dismissNudgeC below.
+  const { ignoredCount: ignoredNudgeCount } = progressiveNudges
+  // Transient flash on the Submit button when a single-student submission
+  // succeeds.
   const [publishSuccess, setPublishSuccess] = useState(false)
 
   // Telemetry mutators — each corresponds to one observable instructor action.
@@ -409,36 +417,29 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     setLastConfirmed(null)
     setDemoForce({ A: false, B: false, C: false })
     setNudgeDismissState({})
-    setIgnoredNudgeCount(0)
-    setSpotCheckAutoFired(false)
+    resetProgressiveNudges()
     setPublishSuccess(false)
   }
 
   /**
-   * Publish-grades gate: the one place the Level-3 failsafe fires.
+   * Per-student submit: saves the current student's grades and advances.
    *
-   * - If the instructor has dismissed too many nudges without engaging, the
-   *   spot-check modal opens first (they verify, then re-try Publish).
-   * - Otherwise: flash the button green briefly, show a toast, and auto-
-   *   navigate to the next student in the cohort. On the last student,
-   *   route back to the submissions list.
+   * NO spot-check gate here — the failsafe lives on the cohort-level Publish
+   * button on the submissions-list page, which fires only when the instructor
+   * is ready to finalize the whole cohort after grading everyone.
+   *
+   * Flow: flash the button green, show a "Grades saved and submitted" toast,
+   * then router.push to the next student (or back to submissions on the last).
    */
-  const handlePublishGrades = () => {
-    if (!spotCheckAutoFired && ignoredNudgeCount >= ESCALATION_DISMISS_THRESHOLD) {
-      setSpotCheckAutoFired(true)
-      triggerSpotCheck()
-      return
-    }
+  const handleSubmitStudent = () => {
     setPublishSuccess(true)
     const studentName = currentStudent?.name ?? "this student"
     const idx = allSubmissions.findIndex(s => s.id === selectedSubmission)
     const next = idx >= 0 && idx < allSubmissions.length - 1 ? allSubmissions[idx + 1] : null
-    toast.success(`Grades submitted for ${studentName}`, {
-      description: next ? `Opening ${next.name}…` : "All cohort submissions graded.",
+    toast.success(`Grades saved and submitted for ${studentName}`, {
+      description: next ? `Opening ${next.name}…` : "Review the cohort before publishing.",
       duration: 3500,
     })
-    // Brief delay so the instructor sees the button flash + toast before the
-    // URL changes under their cursor.
     setTimeout(() => {
       setPublishSuccess(false)
       if (next) {
@@ -666,21 +667,21 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
   // Dismiss handlers — snapshot the current counter so the nudge re-appears
   // only when the instructor repeats the behavior. Each un-productive dismiss
-  // (Skip/X, NOT Reopen evidence) ticks the escalation counter.
+  // (Skip/X, NOT Reopen evidence) ticks the store-level escalation counter.
   const dismissNudgeA = () => {
     setNudgeDismissState(prev => ({ ...prev, A: { confirmCountAt: confirmedCount } }))
     setDemoForce(f => ({ ...f, A: false }))
-    setIgnoredNudgeCount(n => n + 1)
+    incrementIgnoredNudge()
   }
   const dismissNudgeB = () => {
     setNudgeDismissState(prev => ({ ...prev, B: nudgeBCriterion ?? undefined }))
     setDemoForce(f => ({ ...f, B: false }))
-    setIgnoredNudgeCount(n => n + 1)
+    incrementIgnoredNudge()
   }
   const dismissNudgeC = () => {
     setNudgeDismissState(prev => ({ ...prev, C: { streakAt: sessionTelemetry.consecutiveAgreements } }))
     setDemoForce(f => ({ ...f, C: false }))
-    setIgnoredNudgeCount(n => n + 1)
+    incrementIgnoredNudge()
   }
   const reopenFromNudgeB = () => {
     const idx = rubricPoints.findIndex(p => p.id === nudgeBCriterion)
@@ -1111,11 +1112,11 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                     <TooltipContent>Revision History</TooltipContent>
                   </Tooltip>
 
-                  {/* Publish grades — the single finalization gate. If the
-                      instructor has ignored too many nudges, opens the
-                      spot-check modal first; otherwise flashes success. */}
+                  {/* Submit grades — per-student action. Saves + advances to
+                      the next student. No spot-check gate here; the
+                      cohort-level Publish lives on the submissions-list page. */}
                   <Button
-                    onClick={handlePublishGrades}
+                    onClick={handleSubmitStudent}
                     size="sm"
                     variant={publishSuccess ? "outline" : "default"}
                     className={publishSuccess ? "gap-1.5 border-[color:var(--status-success)]/40 text-[color:var(--status-success)] bg-[color:var(--status-success-bg)]" : "gap-1.5"}
@@ -1123,12 +1124,12 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                     {publishSuccess ? (
                       <>
                         <CheckCircle2 className="h-4 w-4" />
-                        Published
+                        Submitted
                       </>
                     ) : (
                       <>
                         <Upload className="h-4 w-4" />
-                        Publish grades
+                        Submit grades
                       </>
                     )}
                   </Button>
@@ -1911,17 +1912,14 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
       onTriggerB={() => { setNudgeDismissState(p => ({ ...p, B: undefined })); setDemoForce(f => ({ ...f, B: true })) }}
       onTriggerC={() => { setNudgeDismissState(p => ({ ...p, C: undefined })); setDemoForce(f => ({ ...f, C: true })) }}
       onSimulateEscalation={() => {
-        // Fast-forward the counter to threshold and perform the publish action
-        // in one step — exercises the gate exactly as it would fire after a
-        // real session of dismissed nudges.
+        // Fast-forward the store counter to threshold + fire the spot-check
+        // modal directly — simulates the flow a presenter would see if they
+        // ignored 3 nudges then hit Publish on the submissions-list page.
         setDemoForce({ A: false, B: false, C: false })
-        setSpotCheckAutoFired(false)
-        setIgnoredNudgeCount(ESCALATION_DISMISS_THRESHOLD)
-        // Defer to next tick so state has committed before the gate reads it.
-        setTimeout(() => {
-          setSpotCheckAutoFired(true)
-          triggerSpotCheck()
-        }, 0)
+        resetProgressiveNudges()
+        for (let i = 0; i < ESCALATION_DISMISS_THRESHOLD; i++) incrementIgnoredNudge()
+        markSpotCheckAutoFired()
+        triggerSpotCheck()
       }}
       onOpenSpotCheck={() => triggerSpotCheck()}
       onResetTelemetry={resetTelemetry}

@@ -624,6 +624,17 @@ interface GradingState {
   triggerSpotCheck: () => void;
   dismissSpotCheck: () => void;
 
+  // Progressive-engagement session telemetry — tracks un-productive nudge
+  // dismissals across the whole grading session so the cohort-level Publish
+  // action (on the submissions-list page) can gate on it.
+  progressiveNudges: {
+    ignoredCount: number;
+    spotCheckAutoFired: boolean;
+  };
+  incrementIgnoredNudge: () => void;
+  markSpotCheckAutoFired: () => void;
+  resetProgressiveNudges: () => void;
+
   // Actions
   selectAssignment: (id: string) => void;
   setPhase: (phase: GradingPhase) => void;
@@ -677,6 +688,20 @@ export const useGradingStore = create<GradingState>()(
 
       triggerSpotCheck: () => set({ spotCheckActive: true }),
       dismissSpotCheck: () => set({ spotCheckActive: false }),
+
+      progressiveNudges: { ignoredCount: 0, spotCheckAutoFired: false },
+      incrementIgnoredNudge: () => set((state) => ({
+        progressiveNudges: {
+          ...state.progressiveNudges,
+          ignoredCount: state.progressiveNudges.ignoredCount + 1,
+        },
+      })),
+      markSpotCheckAutoFired: () => set((state) => ({
+        progressiveNudges: { ...state.progressiveNudges, spotCheckAutoFired: true },
+      })),
+      resetProgressiveNudges: () => set({
+        progressiveNudges: { ignoredCount: 0, spotCheckAutoFired: false },
+      }),
       selectAssignment: (id) => set({ currentAssignmentId: id, phase: 'blind' }),
       setPhase: (phase) => set({ phase }),
       setActiveStudent: (id) => set({ activeStudentId: id }),
