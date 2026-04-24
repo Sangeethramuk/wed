@@ -568,7 +568,7 @@ export const usePreEvalStore = create<PreEvalState>()(
       
       setCreationMode: (mode) => {
         const update: Partial<PreEvalState> = { creationMode: mode, selectedHistoryId: null };
-        if (mode === "scratch") {
+        if (mode === "scratch" || mode === "suggestions") {
           update.assignment = { ...get().assignment, ...initialAssignment };
         }
         set(update);

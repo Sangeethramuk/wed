@@ -29,7 +29,8 @@ import { cn } from "@/lib/utils"
 const mainNavItems = [
   { title: "Home", url: "/dashboard", icon: Home },
   { title: "Prepare Assignment", url: "/dashboard/pre-evaluation", icon: PlusCircle },
-  { title: "Assignments", url: "/dashboard/evaluation", icon: ClipboardCheck },
+  { title: "Assignments", url: "/dashboard/assignments", icon: ClipboardCheck },
+  { title: "Grading Desk", url: "/dashboard/evaluation", icon: ClipboardCheck },
   { title: "Re-evaluation", url: "/dashboard/re-evaluation/triage", icon: RefreshCcw },
   { title: "Result Insights", url: "/dashboard/post-evaluation", icon: BarChart3 },
 ]
@@ -38,6 +39,7 @@ const HIDE_WHEN_COLLAPSED = "group-data-[collapsible=icon]:hidden"
 
 function isItemActive(pathname: string, itemUrl: string) {
   if (itemUrl === "/dashboard") return pathname === "/dashboard"
+  if (itemUrl === "/dashboard/assignments") return pathname.startsWith("/dashboard/assignments") || pathname.startsWith("/dashboard/pre-evaluation")
   return pathname.startsWith(itemUrl)
 }
 

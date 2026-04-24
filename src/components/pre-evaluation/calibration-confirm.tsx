@@ -40,7 +40,7 @@ export function CalibrationConfirm() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="px-8 pb-8">
-                <div className="p-5 rounded-xl bg-background/50 border border-[color:var(--status-success)]/10 flex items-center justify-between group">
+                <div className="p-5 rounded-xl bg-card border border-[color:var(--status-success)]/10 flex items-center justify-between group">
                   <div className="flex items-center gap-3">
                     <div className="h-2 w-2 rounded-full bg-[color:var(--status-success)] animate-pulse" />
                     <span className="eyebrow opacity-40 group-hover:opacity-100 transition-opacity">Institutional Alignment</span>
@@ -64,14 +64,14 @@ export function CalibrationConfirm() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 px-8 pb-8">
-                <div className="flex items-start gap-5 p-6 rounded-xl bg-background/50 border border-[color:var(--status-warning)]/10 group hover:border-[color:var(--status-warning)]/40 transition-all cursor-pointer hover:bg-background shadow-none hover:shadow-lg hover:shadow-amber-500/5">
+                <div className="flex items-start gap-5 p-6 rounded-xl bg-card border border-[color:var(--status-warning)]/10 group hover:border-[color:var(--status-warning)]/40 transition-all cursor-pointer hover:bg-muted/20 shadow-none hover:shadow-lg hover:shadow-amber-500/5">
                   <div className="eyebrow px-3 py-1 rounded-md bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] mt-1">Option 1</div>
                   <div className="space-y-1 flex-1">
                     <p className="text-lg font-semibold tracking-tight">Interactive Calibration</p>
                     <p className="text-xs font-semibold text-muted-foreground opacity-60 leading-relaxed">The AI will observe your grading of the first 5 student responses to align with your personal bias.</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-5 p-6 rounded-xl bg-background/30 border border-border/40 group hover:border-primary/40 transition-all cursor-pointer hover:bg-background shadow-none hover:shadow-lg hover:shadow-primary/5">
+                <div className="flex items-start gap-5 p-6 rounded-xl bg-card border border-border/40 group hover:border-primary/40 transition-all cursor-pointer hover:bg-muted/20 shadow-none hover:shadow-lg hover:shadow-primary/5">
                   <div className="eyebrow px-3 py-1 rounded-md bg-muted text-muted-foreground mt-1">Option 2</div>
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center justify-between">
@@ -87,7 +87,7 @@ export function CalibrationConfirm() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Tooltip>
-              <TooltipTrigger className="border border-border/20 rounded-xl overflow-hidden shadow-none bg-muted/[0.02] hover:bg-background transition-all hover:border-primary/20 cursor-help">
+              <TooltipTrigger className="border border-border/20 rounded-xl overflow-hidden shadow-none bg-card hover:bg-muted/20 transition-all hover:border-primary/20 cursor-help">
                 <CardContent className="pt-6 pb-6 px-6 space-y-2">
                   <p className="eyebrow text-muted-foreground opacity-30">Assignment Scope</p>
                   <p className="text-sm font-semibold tracking-tight secondary-text">Multiple Files (Artifacts)</p>
@@ -97,7 +97,7 @@ export function CalibrationConfirm() {
             </Tooltip>
 
             <Tooltip>
-              <TooltipTrigger className="border border-border/20 rounded-xl overflow-hidden shadow-none bg-muted/[0.02] hover:bg-background transition-all hover:border-primary/20 cursor-help">
+              <TooltipTrigger className="border border-border/20 rounded-xl overflow-hidden shadow-none bg-card hover:bg-muted/20 transition-all hover:border-primary/20 cursor-help">
                 <CardContent className="pt-6 pb-6 px-6 space-y-2">
                   <p className="eyebrow text-muted-foreground opacity-30">Framework Mapping</p>
                   <p className="text-sm font-semibold tracking-tight secondary-text">3 Linked CO-POs</p>
@@ -107,7 +107,7 @@ export function CalibrationConfirm() {
             </Tooltip>
 
             <Tooltip>
-              <TooltipTrigger className="border border-border/20 rounded-xl overflow-hidden shadow-none bg-muted/[0.02] hover:bg-background transition-all hover:border-primary/20 cursor-help">
+              <TooltipTrigger className="border border-border/20 rounded-xl overflow-hidden shadow-none bg-card hover:bg-muted/20 transition-all hover:border-primary/20 cursor-help">
                 <CardContent className="pt-6 pb-6 px-6 space-y-2">
                   <p className="eyebrow text-muted-foreground opacity-30">Class Size</p>
                   <p className="text-sm font-semibold tracking-tight secondary-text">~45 Students</p>
