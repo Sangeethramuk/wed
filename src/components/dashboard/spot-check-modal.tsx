@@ -395,30 +395,33 @@ export function SpotCheckModal() {
 
                     {/* Override panel */}
                     {overridePanelOpen && (
-                      <div className={cn("mt-3 rounded-lg p-3.5 border", statusStyles.warning.bg, statusStyles.warning.border)}>
-                        <div className={cn("flex items-center gap-1.5 text-xs font-semibold mb-3", statusStyles.warning.text)}>
+                      <div
+                        className="mt-3 rounded-lg p-4 border"
+                        style={{ backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs font-semibold mb-3" style={{ color: '#B45309' }}>
                           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v5M6.5 8.5v.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" /><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" strokeWidth="1.1" /></svg>
                           Override — change the score
                         </div>
 
                         <div className="flex items-center gap-2 mb-2.5">
-                          <span className="text-xs text-muted-foreground w-14 flex-shrink-0">AI score</span>
-                          <span className="text-sm font-semibold font-mono text-muted-foreground/70">{q.score} / {q.maxScore}</span>
+                          <span className="text-xs text-slate-500 w-14 flex-shrink-0">AI score</span>
+                          <span className="text-sm font-semibold font-mono text-slate-700">{q.score} / {q.maxScore}</span>
                         </div>
 
                         <div className="flex items-center gap-2 mb-3">
-                          <span className="text-xs text-muted-foreground w-14 flex-shrink-0">Your score</span>
+                          <span className="text-xs text-slate-500 w-14 flex-shrink-0">Your score</span>
                           <div className="flex gap-1">
                             {[1, 2, 3, 4, 5].map(v => (
                               <button
                                 key={v}
                                 onClick={() => setPickedScore(v)}
-                                className={cn(
-                                  "w-8 h-8 rounded-md text-xs font-medium transition-all border",
+                                className="w-8 h-8 rounded-lg text-xs font-semibold transition-colors border"
+                                style={
                                   pickedScore === v
-                                    ? cn("bg-[color:var(--status-warning)] border-[color:var(--status-warning)] text-primary-foreground")
-                                    : "bg-background border-border text-muted-foreground",
-                                )}
+                                    ? { backgroundColor: '#F59E0B', borderColor: '#F59E0B', color: '#FFFFFF' }
+                                    : { backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', color: '#64748B' }
+                                }
                               >
                                 {v}
                               </button>
@@ -426,28 +429,28 @@ export function SpotCheckModal() {
                           </div>
                         </div>
 
-                        <div className={cn("text-xs font-semibold tracking-wider mb-1.5", statusStyles.warning.text)}>Reason for override</div>
+                        <div className="text-xs font-semibold tracking-wider mb-1.5" style={{ color: '#B45309' }}>Reason for override</div>
                         <div className="flex flex-col gap-1 mb-3">
                           {OVERRIDE_REASONS.map(r => (
                             <button
                               key={r}
                               onClick={() => setPickedReason(r)}
-                              className={cn(
-                                "flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-left transition-all border",
+                              className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs text-left transition-colors border"
+                              style={
                                 pickedReason === r
-                                  ? cn(statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text, "font-medium")
-                                  : "bg-background border-border text-muted-foreground",
-                              )}
+                                  ? { backgroundColor: '#FFFFFF', borderColor: '#F59E0B', color: '#B45309', fontWeight: 600 }
+                                  : { backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', color: '#64748B' }
+                              }
                             >
                               <div
-                                className={cn(
-                                  "w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 border-[1.5px]",
+                                className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 border-[1.5px]"
+                                style={
                                   pickedReason === r
-                                    ? "border-[color:var(--status-warning)] bg-[color:var(--status-warning)]"
-                                    : "border-border bg-transparent",
-                                )}
+                                    ? { borderColor: '#F59E0B', backgroundColor: '#F59E0B' }
+                                    : { borderColor: '#E2E8F0', backgroundColor: 'transparent' }
+                                }
                               >
-                                {pickedReason === r && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />}
+                                {pickedReason === r && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                               </div>
                               {r}
                             </button>
@@ -455,7 +458,7 @@ export function SpotCheckModal() {
                         </div>
 
                         <textarea
-                          className="w-full text-xs px-2.5 py-2 rounded-md resize-none border border-border bg-background text-foreground focus:outline-none"
+                          className="w-full text-xs px-3 py-2 rounded-lg resize-none border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                           style={{ minHeight: 50 }}
                           placeholder="Optional: add a brief note to help the AI improve…"
                           rows={2}
