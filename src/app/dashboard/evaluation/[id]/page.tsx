@@ -124,54 +124,61 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
         Back to Assignments
       </button>
 
-      {/* Hero Card */}
-      <div className="relative overflow-hidden rounded-3xl border border-border/50 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl shadow-2xl">
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-64 w-64 rounded-full bg-[color:var(--status-info)]/5 blur-3xl" />
-
-        <div className="relative p-8 md:p-12">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-4 max-w-2xl">
-              <div className="space-y-1">
-                <p className="eyebrow text-primary/60 font-bold tracking-[0.2em] uppercase text-[10px]">
-                  Assignment Overview
-                </p>
-                <h1 className="text-4xl md:text-5xl font-serif italic tracking-tight text-foreground leading-tight">
-                  {assignment.title}
-                </h1>
-              </div>
-              <p className="text-muted-foreground/70 leading-relaxed text-sm md:text-base font-medium italic">
-                &quot;{assignment.description}&quot;
+      {/* Hero Card — per EDUCAITORS_DS_GUIDE.md: white surface, slate-200 border,
+          inline subtle shadow, slate text ramp, navy CTA with hex hover. */}
+      <div
+        className="rounded-xl border border-slate-200 bg-white p-8 md:p-10"
+        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+      >
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-4 max-w-2xl">
+            <div className="space-y-1">
+              <p className="text-xs font-semibold tracking-wider text-slate-400">
+                Assignment Overview
               </p>
-              <div className="flex flex-wrap gap-3">
-                <Badge variant="outline" className="bg-background/50 backdrop-blur-sm border-border/40 py-1.5 px-3 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                  #{assignment.id.toUpperCase()}
-                </Badge>
-                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 py-1.5 px-3 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                  Target Fix: {assignment.targetFix.toUpperCase()}
-                </Badge>
-              </div>
+              <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 leading-tight">
+                {assignment.title}
+              </h1>
             </div>
-            <div className="flex items-center gap-4">
-              {blindGateActive ? (
-                <Button
-                  size="lg"
-                  className="rounded-full px-8 shadow-xl shadow-primary/20 hover:scale-105 transition-all gap-2"
-                  onClick={() => router.push(`/dashboard/evaluation/${id}/calibrate`)}
-                >
-                  <EyeOff className="h-4 w-4" />
-                  Start Blind Grading
-                </Button>
-              ) : (
-                <Button
-                  size="lg"
-                  className="rounded-full px-8 shadow-xl shadow-primary/20 hover:scale-105 transition-all"
-                  onClick={() => router.push(`/dashboard/evaluation/${id}/grading`)}
-                >
-                  Enter Grading Desk
-                </Button>
-              )}
+            <p className="text-sm md:text-base text-slate-500 leading-relaxed">
+              {assignment.description}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                #{assignment.id.toUpperCase()}
+              </span>
+              <span
+                className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold"
+                style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE', color: '#1F4E8C' }}
+              >
+                Target Fix: {assignment.targetFix.toUpperCase()}
+              </span>
             </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {blindGateActive ? (
+              <button
+                onClick={() => router.push(`/dashboard/evaluation/${id}/calibrate`)}
+                className="inline-flex items-center gap-2 h-11 px-6 rounded-lg text-sm font-semibold text-white transition-colors"
+                style={{ backgroundColor: '#1F4E8C' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1E3A5F' }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#1F4E8C' }}
+              >
+                <EyeOff className="h-4 w-4" />
+                Start Blind Grading
+              </button>
+            ) : (
+              <button
+                onClick={() => router.push(`/dashboard/evaluation/${id}/grading`)}
+                className="inline-flex items-center gap-2 h-11 px-6 rounded-lg text-sm font-semibold text-white transition-colors"
+                style={{ backgroundColor: '#1F4E8C' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1E3A5F' }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#1F4E8C' }}
+              >
+                Enter Grading Desk
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
