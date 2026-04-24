@@ -224,54 +224,60 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
 
         <TabsContent value="submissions" className="space-y-8 outline-none mt-6">
           {blindGateActive ? (
-            /* ── Blind grading gate ── */
+            /* ── Blind grading gate — white card, slate palette, navy CTA ── */
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="rounded-3xl border border-border/50 bg-card/30 backdrop-blur-xl flex flex-col items-center justify-center min-h-[520px] p-12 text-center space-y-8"
+              className="rounded-xl border border-slate-200 bg-white flex flex-col items-center justify-center min-h-[520px] p-12 text-center space-y-8"
+              style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
             >
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                <EyeOff className="h-7 w-7 text-primary/60" />
+              <div
+                className="w-16 h-16 rounded-2xl flex items-center justify-center border"
+                style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }}
+              >
+                <EyeOff className="h-7 w-7" style={{ color: '#1F4E8C' }} />
               </div>
 
               <div className="space-y-3 max-w-md">
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
                   {blindHasStarted ? `${blindRemainingCount} submission${blindRemainingCount !== 1 ? 's' : ''} to go` : 'Blind grading required'}
                 </h2>
                 {blindHasStarted ? (
                   <>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      You've graded <span className="font-semibold text-foreground">{blindGradedCount} of {blindTotalCount}</span> benchmark submissions.
+                    <p className="text-sm text-slate-500 leading-relaxed">
+                      You've graded <span className="font-semibold text-slate-900">{blindGradedCount} of {blindTotalCount}</span> benchmark submissions.
                       Setting this benchmark makes the remaining grading faster and more consistent.
                     </p>
-                    <p className="text-xs text-muted-foreground/60">
+                    <p className="text-xs text-slate-400">
                       We'll show the AI comparison and full submissions list once all {blindTotalCount} are done.
                     </p>
                   </>
                 ) : (
                   <>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      You'll manually grade <span className="font-semibold text-foreground">{blindTotalCount} submission{blindTotalCount !== 1 ? 's' : ''}</span> without seeing AI scores first.
+                    <p className="text-sm text-slate-500 leading-relaxed">
+                      You'll manually grade <span className="font-semibold text-slate-900">{blindTotalCount} submission{blindTotalCount !== 1 ? 's' : ''}</span> without seeing AI scores first.
                       Setting the benchmark makes the remaining grading faster and more consistent.
                     </p>
-                    <p className="text-xs text-muted-foreground/60">
+                    <p className="text-xs text-slate-400">
                       We'll show the AI comparison and full submissions list once you're done.
                     </p>
                   </>
                 )}
               </div>
 
-              <Button
-                size="lg"
-                className="rounded-full px-10 shadow-xl shadow-primary/20 hover:scale-105 transition-all gap-2"
+              <button
                 onClick={() => router.push(`/dashboard/evaluation/${id}/calibrate`)}
+                className="inline-flex items-center gap-2 h-11 px-8 rounded-lg text-sm font-semibold text-white transition-colors"
+                style={{ backgroundColor: '#1F4E8C' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1E3A5F' }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#1F4E8C' }}
               >
                 {blindHasStarted ? 'Continue' : 'Begin'}
                 <ArrowRight className="h-4 w-4" />
-              </Button>
+              </button>
 
-              <p className="text-xs text-muted-foreground/40 italic">
+              <p className="text-xs text-slate-400">
                 Submissions list is locked until blind grading is complete
               </p>
             </motion.div>
