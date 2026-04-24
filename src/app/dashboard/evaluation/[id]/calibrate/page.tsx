@@ -3,7 +3,6 @@
 import { use, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useGradingStore } from "@/lib/store/grading-store"
-import { SampleReview } from "@/components/evaluation/calibration/sample-review"
 import { BlindGradingPanel } from "@/components/evaluation/calibration/blind-grading-panel"
 import { DeltaMatrix } from "@/components/evaluation/calibration/delta-matrix"
 import { NegotiationDialogue } from "@/components/evaluation/calibration/negotiation-dialogue"
@@ -33,7 +32,10 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Empty deps - run once on mount
 
-  // Skip sample_review — flow now starts at blind_grading
+  // The calibration intro lives on Assignment Details as the blind-gating
+  // card (first-time vs continue copy). Once the user clicks Begin/Continue
+  // there and lands on /calibrate, we skip any sample_review phase and go
+  // straight into blind grading.
   useEffect(() => {
     if (cal?.phase === "sample_review") {
       setCalibrationPhase(id, "blind_grading")

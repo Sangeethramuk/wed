@@ -393,6 +393,48 @@ export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
         }
       }
     ]
+  },
+  'VLSI-LAB-02': {
+    id: 'VLSI-LAB-02',
+    title: 'VLSI Design — Lab Record 2',
+    description: 'Digital VLSI design lab covering combinational + sequential circuits.',
+    targetFix: 'f1',
+    students: [
+      {
+        id: 'VL-001',
+        name: 'Priya Raghavan',
+        roll: 'EC25-VL-001',
+        status: 'clean',
+        isDoubleBlind: false,
+        progress: 100,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'Circuit Correctness', level: 5, confidence: 0.95, reasoning: 'All testbenches pass.', evidence: [] },
+          c2: { id: 'c2', name: 'Design Quality', level: 4, confidence: 0.9, reasoning: 'Clean RTL, well-commented.', evidence: [] },
+        }
+      }
+    ]
+  },
+  'SIG-VIVA-01': {
+    id: 'SIG-VIVA-01',
+    title: 'Signal Processing — Viva Voce',
+    description: 'Oral examination covering Fourier analysis and filter design.',
+    targetFix: 'f1',
+    students: [
+      {
+        id: 'SG-001',
+        name: 'Kartik Iyer',
+        roll: 'EC25-SG-001',
+        status: 'clean',
+        isDoubleBlind: false,
+        progress: 100,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'Conceptual Understanding', level: 4, confidence: 0.9, reasoning: 'Strong grasp of frequency-domain concepts.', evidence: [] },
+          c2: { id: 'c2', name: 'Problem Solving', level: 4, confidence: 0.85, reasoning: 'Worked through filter-design problem correctly.', evidence: [] },
+        }
+      }
+    ]
   }
 };
 
