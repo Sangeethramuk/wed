@@ -724,7 +724,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-8 h-8 text-xs bg-background border-border focus-visible:ring-primary/20" placeholder="Filter cohort..." />
+                <Input suppressHydrationWarning value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-8 h-8 text-xs bg-background border-border focus-visible:ring-primary/20" placeholder="Filter cohort..." />
               </div>
 
               {/* Bulk Approve — only visible in Verified tab */}
@@ -875,9 +875,10 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                 <div className="flex items-center gap-4">
                   <Tooltip>
                     <TooltipTrigger>
-                      <div 
-                        role="button" 
-                        tabIndex={0} 
+                      <div
+                        role="button"
+                        suppressHydrationWarning
+                        tabIndex={0}
                         onClick={() => setRevisionHistoryOpen(true)}
                         className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer focus:outline-none border border-border relative"
                       >
