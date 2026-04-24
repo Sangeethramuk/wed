@@ -116,7 +116,8 @@ const TAG_META: Record<TagKey, { label: string; icon: typeof Clock; className: s
   pending: {
     label: "Pending",
     icon: Clock,
-    className: "border-border bg-muted/40 text-muted-foreground",
+    className:
+      "border-border bg-muted/40 text-muted-foreground",
   },
   verified: {
     label: "Verified",
@@ -159,6 +160,9 @@ export type NudgeVisibility = { A: boolean; B: string | null; C: boolean }
 /**
  * Pure derivation of natural nudge triggers from telemetry.
  * A and C are booleans; B carries the criterion id that just fast-confirmed (or null).
+ *
+ * Callers may OR these with demo-panel force flags so a nudge can be shown
+ * without the underlying behavior occurring.
  */
 export function deriveNudges(
   telemetry: SessionTelemetry,
@@ -166,12 +170,14 @@ export function deriveNudges(
   rubricCriterionIds: string[],
   lastConfirmedCriterion: { id: string; at: number } | null
 ): NudgeVisibility {
+  // Nudge A — instructor confirmed 2+ criteria but manuscript scroll < 75%
   const confirmedCount = rubricCriterionIds.filter(
     (cid) => telemetry.byCriterion[telemetryKey(studentId, cid)]?.confirmedAt
   ).length
   const maxScroll = telemetry.maxScrollByStudent[studentId] ?? 0
   const nudgeA = confirmedCount >= 2 && maxScroll < 0.75
 
+  // Nudge B — the most-recent Confirm happened in < FAST_CONFIRM_MS and had no evidence + no override
   let nudgeB: string | null = null
   if (lastConfirmedCriterion) {
     const t = telemetry.byCriterion[telemetryKey(studentId, lastConfirmedCriterion.id)]
@@ -181,6 +187,7 @@ export function deriveNudges(
     }
   }
 
+  // Nudge C — 6+ consecutive agreements
   const nudgeC = telemetry.consecutiveAgreements >= 6
 
   return { A: nudgeA, B: nudgeB, C: nudgeC }
@@ -194,6 +201,18 @@ type NudgeProps = {
 
 type NudgeSeverity = "info" | "warning"
 
+/**
+ * Shared layout for the 3 floating nudge cards. Previously wrapped the
+ * shadcn Alert primitive, but Alert's internal 2-column grid (icon + content)
+ * cramped titles on narrow viewports. This custom card gives:
+ *
+ *   - Solid bg-background (toast-opaque — no bleed-through from rubric content)
+ *   - shadow-xl for floating depth
+ *   - 4px severity-colored left accent (preserves info/warning signal)
+ *   - Header row: icon + title + close button on one line; title wraps freely
+ *   - Description: full width under the header, comfortable line-length
+ *   - Actions: stacked at bottom, left-aligned
+ */
 function NudgeCard({
   severity,
   icon: Icon,
@@ -303,11 +322,18 @@ export type DemoControls = {
   onTriggerA: () => void
   onTriggerB: () => void
   onTriggerC: () => void
+  /** Simulate 3 ignored nudges — auto-fires the spot-check failsafe. */
   onSimulateEscalation: () => void
   onOpenSpotCheck: () => void
   onResetTelemetry: () => void
 }
 
+/**
+ * Floating panel (bottom-right of the grading workspace) that exposes
+ * every nudge flow and the existing spot-check modal without requiring
+ * the instructor to grade through a real session. Prototype-only — add
+ * a feature flag in production.
+ */
 export function DemoControlPanel(ctrl: DemoControls) {
   return (
     <div className="fixed bottom-6 right-6 z-[100]">
@@ -327,32 +353,62 @@ export function DemoControlPanel(ctrl: DemoControls) {
           </div>
           <Separator className="my-1" />
           <p className="eyebrow text-muted-foreground px-2 py-1">Progressive nudges</p>
-          <Button variant="ghost" size="sm" className="w-full justify-start gap-2 font-normal" onClick={ctrl.onTriggerA}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 font-normal"
+            onClick={ctrl.onTriggerA}
+          >
             <Play className="h-3.5 w-3.5 text-[color:var(--status-info)]" />
             Nudge A — incomplete scroll
           </Button>
-          <Button variant="ghost" size="sm" className="w-full justify-start gap-2 font-normal" onClick={ctrl.onTriggerB}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 font-normal"
+            onClick={ctrl.onTriggerB}
+          >
             <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
             Nudge B — fast confirm
           </Button>
-          <Button variant="ghost" size="sm" className="w-full justify-start gap-2 font-normal" onClick={ctrl.onTriggerC}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 font-normal"
+            onClick={ctrl.onTriggerC}
+          >
             <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
             Nudge C — agreement streak
           </Button>
           <Separator className="my-1" />
           <p className="eyebrow text-muted-foreground px-2 py-1">Finalization gate</p>
-          <Button variant="ghost" size="sm" className="w-full justify-start gap-2 font-normal" onClick={ctrl.onSimulateEscalation}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 font-normal"
+            onClick={ctrl.onSimulateEscalation}
+          >
             <AlertTriangle className="h-3.5 w-3.5 text-[color:var(--status-error)]" />
             Simulate low-engagement publish
           </Button>
           <Separator className="my-1" />
           <p className="eyebrow text-muted-foreground px-2 py-1">Spot check</p>
-          <Button variant="ghost" size="sm" className="w-full justify-start gap-2 font-normal" onClick={ctrl.onOpenSpotCheck}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 font-normal"
+            onClick={ctrl.onOpenSpotCheck}
+          >
             <ScanSearch className="h-3.5 w-3.5 text-primary" />
             Open spot-check modal
           </Button>
           <Separator className="my-1" />
-          <Button variant="ghost" size="sm" className="w-full justify-start gap-2 font-normal text-muted-foreground" onClick={ctrl.onResetTelemetry}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 font-normal text-muted-foreground"
+            onClick={ctrl.onResetTelemetry}
+          >
             <RotateCcw className="h-3.5 w-3.5" />
             Reset session telemetry
           </Button>
@@ -364,6 +420,14 @@ export function DemoControlPanel(ctrl: DemoControls) {
 
 // ---------- FloatingNudgeStack ----------
 
+/**
+ * Fixed-position slide-in container that renders the three progressive nudges
+ * in the top-right corner of the viewport. Replaces the inline rubric-sidebar
+ * banners — nudges no longer steal vertical space from the rubric panel.
+ *
+ * Each nudge animates in from the right on mount and out on unmount via
+ * framer-motion. Stacking order is B (most contextual) → A → C from top.
+ */
 export function FloatingNudgeStack({
   showA,
   showBCriterionLabel,
@@ -374,6 +438,7 @@ export function FloatingNudgeStack({
   onReopenEvidence,
 }: {
   showA: boolean
+  /** Criterion label to show in Nudge B, or null if Nudge B is not active. */
   showBCriterionLabel: string | null
   showC: boolean
   onDismissA: () => void
@@ -428,3 +493,4 @@ export function FloatingNudgeStack({
     </div>
   )
 }
+

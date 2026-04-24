@@ -2,7 +2,9 @@
 
 import { use, useState } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { useGradingStore } from "@/lib/store/grading-store"
+import { ESCALATION_DISMISS_THRESHOLD } from "@/components/evaluation/progressive-nudges"
 import {
   ChevronLeft,
   Users,
@@ -12,8 +14,8 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
-  Zap,
   Send,
+  Zap
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -21,16 +23,44 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { TriageSidebar } from "@/components/evaluation/triage-sidebar"
 import { motion } from "framer-motion"
-import { toast } from "sonner"
-import { ESCALATION_DISMISS_THRESHOLD } from "@/components/evaluation/progressive-nudges"
 
 export default function AssignmentDetails({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
-  const { assignments, progressiveNudges, triggerSpotCheck, markSpotCheckAutoFired, resetProgressiveNudges } = useGradingStore()
+  const {
+    assignments,
+    progressiveNudges,
+    triggerSpotCheck,
+    markSpotCheckAutoFired,
+  } = useGradingStore()
   const assignment = assignments[id]
   const [activeTab, setActiveTab] = useState("submissions")
   const [gradedSubmissions, setGradedSubmissions] = useState<string[]>([])
+  const [cohortPublished, setCohortPublished] = useState(false)
+
+  /**
+   * Cohort-level publish — the LEVEL-3 failsafe gate.
+   *
+   * Reads `progressiveNudges.ignoredCount` from the grading store (ticked by
+   * each un-productive nudge dismissal on the per-student grading desk).
+   * If the instructor is trying to finalize after ignoring ≥
+   * ESCALATION_DISMISS_THRESHOLD nudges, the spot-check modal opens first.
+   * Otherwise: toast success + lock the button.
+   */
+  const handlePublishCohort = () => {
+    if (cohortPublished) return
+    const { ignoredCount, spotCheckAutoFired } = progressiveNudges
+    if (!spotCheckAutoFired && ignoredCount >= ESCALATION_DISMISS_THRESHOLD) {
+      markSpotCheckAutoFired()
+      triggerSpotCheck()
+      return
+    }
+    setCohortPublished(true)
+    toast.success("Cohort grades published", {
+      description: `All 60 submissions for ${assignment?.title ?? "this assignment"} finalized.`,
+      duration: 4000,
+    })
+  }
 
   if (!assignment) {
     return (
@@ -57,24 +87,6 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
 
   const handleBulkApprove = (ids: string[]) => {
     setGradedSubmissions(prev => [...new Set([...prev, ...ids])])
-  }
-
-  const handlePublishCohort = () => {
-    if (
-      progressiveNudges.ignoredCount >= ESCALATION_DISMISS_THRESHOLD &&
-      !progressiveNudges.spotCheckAutoFired
-    ) {
-      markSpotCheckAutoFired()
-      triggerSpotCheck()
-      toast.warning("Spot check required before publishing", {
-        description: "Low engagement detected — please review a few grades before publishing.",
-      })
-      return
-    }
-    resetProgressiveNudges()
-    toast.success("Grades published successfully", {
-      description: `All grades for ${assignment.title} have been published to students.`,
-    })
   }
 
   return (
@@ -118,16 +130,7 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
                 </Badge>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button
-                size="lg"
-                variant="outline"
-                className="rounded-full px-6"
-                onClick={handlePublishCohort}
-              >
-                <Send className="h-4 w-4 mr-2" />
-                Publish Grades
-              </Button>
+            <div className="flex items-center gap-4">
               <Button
                 size="lg"
                 className="rounded-full px-8 shadow-xl shadow-primary/20 hover:scale-105 transition-all"
@@ -192,6 +195,46 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
               </motion.div>
             ))}
           </div>
+
+          {/* Cohort-level publish — final step after all per-student grades
+              are submitted. Spot-check gate fires here if the instructor
+              ignored nudges repeatedly during the session. */}
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <p className="eyebrow text-primary">Ready to finalize</p>
+                <h3 className="text-lg font-semibold text-foreground">
+                  {cohortPublished ? "Cohort grades published" : "Publish cohort grades"}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {cohortPublished
+                    ? "All submissions for this assignment have been released to students."
+                    : "Review the cohort below, then publish to release grades to all students in this assignment."}
+                </p>
+              </div>
+              <Button
+                size="lg"
+                onClick={handlePublishCohort}
+                disabled={cohortPublished}
+                variant={cohortPublished ? "outline" : "default"}
+                className={cohortPublished
+                  ? "gap-2 border-[color:var(--status-success)]/40 text-[color:var(--status-success)] bg-[color:var(--status-success-bg)]"
+                  : "gap-2"}
+              >
+                {cohortPublished ? (
+                  <>
+                    <CheckCircle2 className="h-4 w-4" />
+                    Published
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4" />
+                    Publish cohort grades
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
 
           {/* Full Width Submissions Table */}
           <div className="rounded-3xl overflow-hidden border border-border/50 shadow-2xl bg-card/30 backdrop-blur-xl h-[800px]">

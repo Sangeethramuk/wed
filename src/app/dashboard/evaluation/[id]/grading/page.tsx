@@ -18,6 +18,17 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  CriterionStatusTag,
+  DemoControlPanel,
+  ESCALATION_DISMISS_THRESHOLD,
+  FloatingNudgeStack,
+  type SessionTelemetry,
+  deriveNudges,
+  deriveTag,
+  emptySessionTelemetry,
+  telemetryKey,
+} from "@/components/evaluation/progressive-nudges"
 import { Separator } from "@/components/ui/separator"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
@@ -44,7 +55,6 @@ import {
   ArrowDown,
   Link as LinkIcon,
   Edit2,
-  Upload,
   X
 } from "lucide-react"
 import Link from "next/link"
@@ -58,16 +68,6 @@ import { FeedbackGenerating } from "@/components/evaluation/feedback/feedback-ge
 import { InternalNotesPanel } from "@/components/evaluation/feedback/internal-notes-panel"
 import { generateCriterionFeedback } from "@/lib/feedback-generator"
 import { useGradingStore as useFeedbackStore } from "@/lib/store/grading-store"
-import {
-  FloatingNudgeStack,
-  DemoControlPanel,
-  CriterionStatusTag,
-  emptySessionTelemetry,
-  deriveTag,
-  deriveNudges,
-  telemetryKey,
-  type SessionTelemetry,
-} from "@/components/evaluation/progressive-nudges"
 
 function GradingDeskContent({ params }: { params: { id: string } }) {
   const { id } = params
@@ -95,7 +95,16 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     )
   }
 
-  const { assignments, activeStudentId, setActiveStudent } = useGradingStore()
+  const {
+    assignments,
+    activeStudentId,
+    setActiveStudent,
+    triggerSpotCheck,
+    progressiveNudges,
+    incrementIgnoredNudge,
+    markSpotCheckAutoFired,
+    resetProgressiveNudges,
+  } = useGradingStore()
   const assignment = assignments[id]
   
   // Resolve active student from multiple sources
@@ -164,23 +173,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false)
   const [overallFeedback, setOverallFeedback] = useState("")
   
-  // Progressive nudge telemetry
-  const [sessionTelemetry, setSessionTelemetry] = useState<SessionTelemetry>(emptySessionTelemetry)
-  const [dismissedNudgeA, setDismissedNudgeA] = useState(false)
-  const [dismissedNudgeB, setDismissedNudgeB] = useState(false)
-  const [dismissedNudgeC, setDismissedNudgeC] = useState(false)
-  const [lastConfirmedCriterion, setLastConfirmedCriterion] = useState<{ id: string; at: number } | null>(null)
-
-  const { incrementIgnoredNudge, resetProgressiveNudges } = useGradingStore()
-
-  // Reset per-student nudge dismissals when switching students
-  useEffect(() => {
-    setDismissedNudgeA(false)
-    setDismissedNudgeB(false)
-    setDismissedNudgeC(false)
-    setLastConfirmedCriterion(null)
-  }, [selectedSubmission])
-
   // AI Feedback flow state
   const {
     criterionFeedbacks,
@@ -205,7 +197,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   useEffect(() => {
     const seeded: { id: string; text: string; criterionId: string }[] = []
     const seen = new Set<string>()
-    let firstSeedText: string | null = null
     for (const page of manuscript.pages) {
       for (const el of page.elements) {
         if (el.type === 'paragraph' && el.highlight && !seen.has(el.highlight.criterionId)) {
@@ -217,18 +208,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
           // trim to the nearest word boundary
           const trimmed = raw.slice(0, raw.lastIndexOf(' ') > 20 ? raw.lastIndexOf(' ') : raw.length)
           seeded.push({ id: `seed-${el.highlight.criterionId}`, text: trimmed, criterionId: el.highlight.criterionId })
-          if (!firstSeedText) firstSeedText = trimmed
         }
-      }
-    }
-    // Prototype demo: link the first seeded excerpt to TWO additional criteria so
-    // the multi-criteria evidence popover has something to show. Hovering that
-    // highlight will then list all three linked criteria (c1/c2/c3 or whichever
-    // is present), each with its own color accent.
-    if (firstSeedText) {
-      const extraCriteria = ['c2', 'c3', 'c4'].filter(c => !seeded.some(s => s.text === firstSeedText && s.criterionId === c))
-      for (const extra of extraCriteria.slice(0, 2)) {
-        seeded.push({ id: `seed-shared-${extra}`, text: firstSeedText, criterionId: extra })
       }
     }
     setMappedEvidence(seeded)
@@ -339,6 +319,106 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
   const [criterionState, setCriterionState] = useState<Record<string, { score: number, isOverridden: boolean, feedback: string, confirmed: boolean, instructorReasoning?: string }>>({})
 
+  // ---------- Progressive-assurance telemetry (Phase 1) ----------
+  // Drives the Verified / Quick review / Not verified tags on criterion cards and
+  // the 3 contextual nudges (incomplete scroll / fast confirm / agreement streak).
+  // See src/components/evaluation/progressive-nudges.tsx for derivation.
+  const [sessionTelemetry, setSessionTelemetry] = useState<SessionTelemetry>(emptySessionTelemetry)
+  // Most-recent Confirm that could warrant Nudge B (kept separately from telemetry
+  // so the nudge can auto-clear after a few seconds without losing the telemetry).
+  const [lastConfirmed, setLastConfirmed] = useState<{ id: string; at: number } | null>(null)
+  // Demo-panel force flags — OR'd with natural derivation so a presenter can trigger
+  // any nudge without performing the behavior that normally produces it.
+  const [demoForce, setDemoForce] = useState<{ A: boolean; B: boolean; C: boolean }>({ A: false, B: false, C: false })
+  // Recurrence-aware dismissal state — a dismissal is "not now", not "never".
+  // Each entry remembers the counter at dismiss time so the nudge reappears
+  // when the instructor repeats the same behavior (another confirm, another
+  // fast-confirm on a different criterion, another +6 agreement streak).
+  const [nudgeDismissState, setNudgeDismissState] = useState<{
+    A?: { confirmCountAt: number }
+    B?: string
+    C?: { streakAt: number }
+  }>({})
+  // Escalation counter lives in the grading store (session-global) so the
+  // cohort-level Publish action on the submissions-list page can read it too.
+  // Ticked by dismissNudgeA / dismissNudgeB / dismissNudgeC below.
+  const { ignoredCount: ignoredNudgeCount } = progressiveNudges
+
+  // Telemetry mutators — each corresponds to one observable instructor action.
+  const markCriterionOpened = (criterionId: string) => {
+    const key = telemetryKey(selectedSubmission, criterionId)
+    setSessionTelemetry(prev => {
+      if (prev.byCriterion[key]?.openedAt) return prev
+      return {
+        ...prev,
+        byCriterion: {
+          ...prev.byCriterion,
+          [key]: {
+            ...(prev.byCriterion[key] ?? { evidenceOpens: 0, wasOverridden: false, hasReasoning: false }),
+            openedAt: Date.now(),
+          },
+        },
+      }
+    })
+  }
+  const markEvidenceOpened = (criterionId: string) => {
+    const key = telemetryKey(selectedSubmission, criterionId)
+    setSessionTelemetry(prev => ({
+      ...prev,
+      byCriterion: {
+        ...prev.byCriterion,
+        [key]: {
+          ...(prev.byCriterion[key] ?? { evidenceOpens: 0, wasOverridden: false, hasReasoning: false }),
+          evidenceOpens: (prev.byCriterion[key]?.evidenceOpens ?? 0) + 1,
+        },
+      },
+    }))
+  }
+  const markCriterionConfirmed = (criterionId: string, opts: { overridden: boolean; reasoning?: string }) => {
+    const key = telemetryKey(selectedSubmission, criterionId)
+    const now = Date.now()
+    setSessionTelemetry(prev => ({
+      ...prev,
+      byCriterion: {
+        ...prev.byCriterion,
+        [key]: {
+          ...(prev.byCriterion[key] ?? { evidenceOpens: 0, wasOverridden: false, hasReasoning: false }),
+          confirmedAt: now,
+          wasOverridden: opts.overridden,
+          hasReasoning: (prev.byCriterion[key]?.hasReasoning ?? false) || Boolean(opts.reasoning?.trim().length),
+        },
+      },
+      consecutiveAgreements: opts.overridden ? 0 : prev.consecutiveAgreements + 1,
+    }))
+    setLastConfirmed({ id: criterionId, at: now })
+    // If this criterion now has evidence or override, clear its Nudge-B dismiss
+    // so a future fast-confirm on this same criterion can re-trigger.
+    if (opts.overridden || opts.reasoning?.trim().length) {
+      setNudgeDismissState(prev => (prev.B === criterionId ? { ...prev, B: undefined } : prev))
+    }
+  }
+  const markScrollProgress = (pct: number) => {
+    setSessionTelemetry(prev => {
+      const current = prev.maxScrollByStudent[selectedSubmission] ?? 0
+      if (pct <= current) return prev
+      return {
+        ...prev,
+        maxScrollByStudent: { ...prev.maxScrollByStudent, [selectedSubmission]: pct },
+      }
+    })
+  }
+  const resetTelemetry = () => {
+    setSessionTelemetry(emptySessionTelemetry())
+    setLastConfirmed(null)
+    setDemoForce({ A: false, B: false, C: false })
+    setNudgeDismissState({})
+    resetProgressiveNudges()
+  }
+
+  // Note: the useEffect that marks the active criterion as "opened" + the
+  // derived nudge visibility live below the `activeRubricCriterionIdx`
+  // declaration (search for PROGRESSIVE_NUDGE_DERIVATION).
+
   const calculateTotalScore = () => {
     return rubricPoints.reduce((total, point) => {
       const state = criterionState[point.id]
@@ -353,30 +433,20 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   const currentTotalScore = calculateTotalScore()  
   const handleScoreConfirm = (id: string, aiScore: number) => {
     setCriterionState(prev => ({ ...prev, [id]: { ...prev[id], score: aiScore, isOverridden: false, confirmed: true } }))
+    markCriterionConfirmed(id, { overridden: false })
     addRevisionEvent({
       type: 'score_confirmed',
       criterionId: id,
       criterionLabel: rubricPoints.find(p => p.id === id)?.label || '',
       details: { newScore: aiScore }
     })
-    const now = Date.now()
-    const tKey = telemetryKey(selectedSubmission, id)
-    setSessionTelemetry(prev => ({
-      ...prev,
-      byCriterion: {
-        ...prev.byCriterion,
-        [tKey]: { ...(prev.byCriterion[tKey] ?? { evidenceOpens: 0, wasOverridden: false, hasReasoning: false }), confirmedAt: now },
-      },
-      consecutiveAgreements: prev.consecutiveAgreements + 1,
-    }))
-    setLastConfirmedCriterion({ id, at: now })
-    setDismissedNudgeB(false)
     const nextIndex = rubricPoints.findIndex(p => p.id === id) + 1
     if (nextIndex < rubricPoints.length) setActiveRubricCriterionIdx(nextIndex)
   }
 
   const handleOverrideScore = (id: string, newScore: number) => {
     setCriterionState(prev => ({ ...prev, [id]: { ...prev[id], score: newScore, isOverridden: true, confirmed: true } }))
+    markCriterionConfirmed(id, { overridden: true, reasoning: criterionState[id]?.instructorReasoning })
   }
   
   const addRevisionEvent = (event: Omit<RevisionEvent, 'id' | 'timestamp' | 'actor'>) => {
@@ -388,22 +458,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     }])
   }
 
-  const recordCriterionOpened = (cid: string) => {
-    const key = telemetryKey(selectedSubmission, cid)
-    setSessionTelemetry(prev => {
-      if (prev.byCriterion[key]?.openedAt) return prev
-      return {
-        ...prev,
-        byCriterion: {
-          ...prev.byCriterion,
-          [key]: { ...(prev.byCriterion[key] ?? { evidenceOpens: 0, wasOverridden: false, hasReasoning: false }), openedAt: Date.now() },
-        },
-      }
-    })
-  }
-
   const handleScoreLevelClick = (criterionId: string, proposedScore: number, aiScore: number) => {
-    recordCriterionOpened(criterionId)
     if (proposedScore === aiScore) {
       handleScoreConfirm(criterionId, aiScore)
       setActiveOverrideId(null)
@@ -469,22 +524,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
         }
       })
     }
-    const now = Date.now()
-    const tKey = telemetryKey(selectedSubmission, criterionId)
-    setSessionTelemetry(prev => ({
-      ...prev,
-      byCriterion: {
-        ...prev.byCriterion,
-        [tKey]: {
-          ...(prev.byCriterion[tKey] ?? { evidenceOpens: 0, wasOverridden: false, hasReasoning: false }),
-          confirmedAt: now,
-          wasOverridden: true,
-          hasReasoning: (draft.reasoning.trim().length > 0 || draft.scoreReasoning.trim().length > 0),
-        },
-      },
-      consecutiveAgreements: 0,
-    }))
-    setLastConfirmedCriterion({ id: criterionId, at: now })
     setActiveOverrideId(null)
     setTextSelectionMode({ active: false, criterionId: null })
     setOverrideDrafts(prev => {
@@ -555,6 +594,68 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
   // isSpotCheckActive + dismissSpotCheck come from grading store (triggered by header button)
   const [activeRubricCriterionIdx, setActiveRubricCriterionIdx] = useState(0)
+
+  // PROGRESSIVE_NUDGE_DERIVATION — relocated here so `activeRubricCriterionIdx`
+  // is in scope. The active criterion at mount / student-change is effectively
+  // "opened" — wire that into telemetry so duration clocks start ticking.
+  useEffect(() => {
+    const activeId = rubricPoints[activeRubricCriterionIdx]?.id
+    if (activeId) markCriterionOpened(activeId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSubmission, activeRubricCriterionIdx])
+
+  // Level 3 failsafe is now gated by the Publish-grades action (see
+  // `handlePublishGrades` below). The mid-session auto-trigger was removed —
+  // the spot-check only fires when the instructor tries to finalize grades
+  // with too many ignored nudges behind them.
+
+  // Derived visibility — natural triggers + demo-force flags, filtered by
+  // recurrence-aware dismissal. Dismissals auto-expire when the behavior
+  // recurs (more confirms / different criterion / bigger streak).
+  const naturalNudges = deriveNudges(sessionTelemetry, selectedSubmission, rubricPoints.map(p => p.id), lastConfirmed)
+  const confirmedCount = rubricPoints.filter(
+    (p) => sessionTelemetry.byCriterion[telemetryKey(selectedSubmission, p.id)]?.confirmedAt
+  ).length
+  const showNudgeA =
+    (naturalNudges.A || demoForce.A) &&
+    (!nudgeDismissState.A || confirmedCount > nudgeDismissState.A.confirmCountAt)
+  const nudgeBCriterion = demoForce.B
+    ? rubricPoints[activeRubricCriterionIdx]?.id ?? null
+    : naturalNudges.B
+  const showNudgeB = Boolean(nudgeBCriterion) && nudgeDismissState.B !== nudgeBCriterion
+  const showNudgeC =
+    (naturalNudges.C || demoForce.C) &&
+    (!nudgeDismissState.C || sessionTelemetry.consecutiveAgreements >= nudgeDismissState.C.streakAt + 6)
+  const nudgeBCriterionLabel = showNudgeB && nudgeBCriterion
+    ? rubricPoints.find(p => p.id === nudgeBCriterion)?.label ?? nudgeBCriterion
+    : null
+
+  // Dismiss handlers — snapshot the current counter so the nudge re-appears
+  // only when the instructor repeats the behavior. Each un-productive dismiss
+  // (Skip/X, NOT Reopen evidence) ticks the store-level escalation counter.
+  const dismissNudgeA = () => {
+    setNudgeDismissState(prev => ({ ...prev, A: { confirmCountAt: confirmedCount } }))
+    setDemoForce(f => ({ ...f, A: false }))
+    incrementIgnoredNudge()
+  }
+  const dismissNudgeB = () => {
+    setNudgeDismissState(prev => ({ ...prev, B: nudgeBCriterion ?? undefined }))
+    setDemoForce(f => ({ ...f, B: false }))
+    incrementIgnoredNudge()
+  }
+  const dismissNudgeC = () => {
+    setNudgeDismissState(prev => ({ ...prev, C: { streakAt: sessionTelemetry.consecutiveAgreements } }))
+    setDemoForce(f => ({ ...f, C: false }))
+    incrementIgnoredNudge()
+  }
+  const reopenFromNudgeB = () => {
+    const idx = rubricPoints.findIndex(p => p.id === nudgeBCriterion)
+    if (idx >= 0) setActiveRubricCriterionIdx(idx)
+    // Productive action — marks Nudge B resolved WITHOUT ticking the
+    // escalation counter (the instructor did the right thing).
+    setNudgeDismissState(prev => ({ ...prev, B: nudgeBCriterion ?? undefined }))
+    setDemoForce(f => ({ ...f, B: false }))
+  }
   const [rubricAccordionOpen, setRubricAccordionOpen] = useState<Record<string, boolean>>({})
   const [rubricReviewStripOpen, setRubricReviewStripOpen] = useState<Record<string, boolean>>({})
   const [scoreLevelExpanded, setScoreLevelExpanded] = useState<Record<string, boolean>>({})
@@ -612,20 +713,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     setRecordingId(criterionId)
   }
   
-  const scrollToEvidence = (evidenceId: string, criterionId?: string) => {
-    if (criterionId) {
-      const tKey = telemetryKey(selectedSubmission, criterionId)
-      setSessionTelemetry(prev => ({
-        ...prev,
-        byCriterion: {
-          ...prev.byCriterion,
-          [tKey]: {
-            ...(prev.byCriterion[tKey] ?? { evidenceOpens: 0, wasOverridden: false, hasReasoning: false }),
-            evidenceOpens: (prev.byCriterion[tKey]?.evidenceOpens ?? 0) + 1,
-          },
-        },
-      }))
-    }
+  const scrollToEvidence = (evidenceId: string) => {
     const el = document.getElementById(`evidence-${evidenceId}`)
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -633,6 +721,10 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
       el.classList.add('animate-pulse')
       setTimeout(() => el.classList.remove('animate-pulse'), 2000)
     }
+    // Tick telemetry for the currently-active criterion so Nudge B / tag logic
+    // knows the instructor actually opened evidence.
+    const activeId = rubricPoints[activeRubricCriterionIdx]?.id
+    if (activeId) markEvidenceOpened(activeId)
   }
 
   // Mock data for 4 pages
@@ -766,13 +858,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     )
   }
 
-  const nudges = deriveNudges(sessionTelemetry, selectedSubmission, rubricPoints.map(p => p.id), lastConfirmedCriterion)
-  const showNudgeA = nudges.A && !dismissedNudgeA
-  const showNudgeBLabel = !dismissedNudgeB && nudges.B
-    ? (rubricPoints.find(p => p.id === nudges.B)?.label ?? nudges.B)
-    : null
-  const showNudgeC = nudges.C && !dismissedNudgeC
-
   return (
     <TooltipProvider delay={0}>
       <div className={`h-[calc(100vh-4rem)] overflow-hidden border rounded-xl bg-background transition-all ${isPaused ? 'opacity-50 grayscale-[0.5] pointer-events-none' : ''}`}>
@@ -826,7 +911,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input suppressHydrationWarning value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-8 h-8 text-xs bg-background border-border focus-visible:ring-primary/20" placeholder="Filter cohort..." />
+                <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-8 h-8 text-xs bg-background border-border focus-visible:ring-primary/20" placeholder="Filter cohort..." />
               </div>
 
               {/* Bulk Approve — only visible in Verified tab */}
@@ -974,12 +1059,11 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                   </TabsList>
                 </Tabs>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <Tooltip>
                     <TooltipTrigger>
                       <div
                         role="button"
-                        suppressHydrationWarning
                         tabIndex={0}
                         onClick={() => setRevisionHistoryOpen(true)}
                         className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer focus:outline-none border border-border relative"
@@ -992,7 +1076,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                     </TooltipTrigger>
                     <TooltipContent>Revision History</TooltipContent>
                   </Tooltip>
-
                 </div>
               </div>
             </header>
@@ -1050,12 +1133,18 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                 onScrollCapture={(e) => {
                   const target = e.currentTarget as HTMLElement
                   const containerHeight = target.clientHeight
-                  const scrollPct = target.scrollHeight > 0 ? (target.scrollTop + target.clientHeight) / target.scrollHeight : 0
-                  setSessionTelemetry(prev => {
-                    const existing = prev.maxScrollByStudent[selectedSubmission] ?? 0
-                    if (scrollPct <= existing) return prev
-                    return { ...prev, maxScrollByStudent: { ...prev.maxScrollByStudent, [selectedSubmission]: scrollPct } }
-                  })
+
+                  // Compute scroll-percent over the scrollable viewport for Nudge A.
+                  // ScrollArea's Radix viewport lives inside target; find it.
+                  const viewport = target.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement | null
+                  if (viewport) {
+                    const { scrollTop, scrollHeight, clientHeight } = viewport
+                    const denom = scrollHeight - clientHeight
+                    if (denom > 0) {
+                      const pct = Math.min(1, Math.max(0, (scrollTop + clientHeight) / scrollHeight))
+                      markScrollProgress(pct)
+                    }
+                  }
 
                   for (let i = 1; i <= totalPages; i++) {
                     const pageEl = document.getElementById(`page-${i}`)
@@ -1198,7 +1287,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                       const active = idx === activeRubricCriterionIdx
                       const lowConfidence = (p.aiConfidence ?? 1) < LOW_CONFIDENCE_THRESHOLD
                       return (
-                        <Button key={p.id} variant="ghost" size="sm" onClick={() => setActiveRubricCriterionIdx(idx)} className="flex-1 h-auto flex-col gap-1 py-1 relative">
+                        <Button key={p.id} variant="ghost" size="sm" onClick={() => { setActiveRubricCriterionIdx(idx); markCriterionOpened(p.id) }} className="flex-1 h-auto flex-col gap-1 py-1 relative">
                           <div className="relative">
                             <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
                               done ? 'bg-foreground border-foreground' :
@@ -1219,7 +1308,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                             ) : null}
                           </div>
                           <span className={`text-xs font-bold transition-colors ${active ? 'text-foreground' : 'text-muted-foreground/50'}`}>C{p.id}</span>
-                          <CriterionStatusTag tag={deriveTag(sessionTelemetry.byCriterion[telemetryKey(selectedSubmission, p.id)])} />
                         </Button>
                       )
                     })}
@@ -1228,6 +1316,9 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
                 <ScrollArea className="flex-1 min-h-0">
                   <div className="p-4 space-y-5">
+                    {/* Progressive-assurance nudges now render in a floating
+                        top-right stack via <FloatingNudgeStack /> at the page
+                        top level — no space carved out of the rubric sidebar. */}
                     <div className="rounded-xl border border-border bg-background shadow-sm overflow-hidden">
                       <div className="p-4 space-y-5">
 
@@ -1239,7 +1330,10 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                               Review Required
                             </div>
                           )}
-                          <h3 className="text-sm font-bold text-foreground leading-tight pr-2">{point.label}</h3>
+                          <div className="flex items-start justify-between gap-2 pr-2">
+                            <h3 className="text-sm font-bold text-foreground leading-tight">{point.label}</h3>
+                            <CriterionStatusTag tag={deriveTag(sessionTelemetry.byCriterion[telemetryKey(selectedSubmission, point.id)])} />
+                          </div>
                         </div>
 
                         {/* Score + selector */}
@@ -1749,33 +1843,29 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     />
     <FloatingNudgeStack
       showA={showNudgeA}
-      showBCriterionLabel={showNudgeBLabel}
+      showBCriterionLabel={nudgeBCriterionLabel}
       showC={showNudgeC}
-      onDismissA={() => { setDismissedNudgeA(true); incrementIgnoredNudge() }}
-      onDismissB={() => { setDismissedNudgeB(true); incrementIgnoredNudge() }}
-      onDismissC={() => { setDismissedNudgeC(true); incrementIgnoredNudge() }}
-      onReopenEvidence={() => {
-        setDismissedNudgeB(true)
-        const cid = nudges.B
-        if (cid) {
-          const idx = rubricPoints.findIndex(p => p.id === cid)
-          if (idx >= 0) setActiveRubricCriterionIdx(idx)
-        }
-      }}
+      onDismissA={dismissNudgeA}
+      onDismissB={dismissNudgeB}
+      onDismissC={dismissNudgeC}
+      onReopenEvidence={reopenFromNudgeB}
     />
     <DemoControlPanel
-      onTriggerA={() => setSessionTelemetry(prev => ({ ...prev, byCriterion: { ...prev.byCriterion, [telemetryKey(selectedSubmission, 'c1')]: { evidenceOpens: 0, wasOverridden: false, hasReasoning: false, confirmedAt: Date.now(), openedAt: Date.now() - 5000 }, [telemetryKey(selectedSubmission, 'c2')]: { evidenceOpens: 0, wasOverridden: false, hasReasoning: false, confirmedAt: Date.now(), openedAt: Date.now() - 5000 } } }))}
-      onTriggerB={() => {
-        const now = Date.now()
-        const tKey = telemetryKey(selectedSubmission, 'c1')
-        setSessionTelemetry(prev => ({ ...prev, byCriterion: { ...prev.byCriterion, [tKey]: { evidenceOpens: 0, wasOverridden: false, hasReasoning: false, confirmedAt: now, openedAt: now - 3000 } } }))
-        setLastConfirmedCriterion({ id: 'c1', at: now })
-        setDismissedNudgeB(false)
+      onTriggerA={() => { setNudgeDismissState(p => ({ ...p, A: undefined })); setDemoForce(f => ({ ...f, A: true })) }}
+      onTriggerB={() => { setNudgeDismissState(p => ({ ...p, B: undefined })); setDemoForce(f => ({ ...f, B: true })) }}
+      onTriggerC={() => { setNudgeDismissState(p => ({ ...p, C: undefined })); setDemoForce(f => ({ ...f, C: true })) }}
+      onSimulateEscalation={() => {
+        // Fast-forward the store counter to threshold + fire the spot-check
+        // modal directly — simulates the flow a presenter would see if they
+        // ignored 3 nudges then hit Publish on the submissions-list page.
+        setDemoForce({ A: false, B: false, C: false })
+        resetProgressiveNudges()
+        for (let i = 0; i < ESCALATION_DISMISS_THRESHOLD; i++) incrementIgnoredNudge()
+        markSpotCheckAutoFired()
+        triggerSpotCheck()
       }}
-      onTriggerC={() => setSessionTelemetry(prev => ({ ...prev, consecutiveAgreements: 6 }))}
-      onSimulateEscalation={() => { incrementIgnoredNudge(); incrementIgnoredNudge(); incrementIgnoredNudge() }}
-      onOpenSpotCheck={() => useGradingStore.getState().triggerSpotCheck()}
-      onResetTelemetry={() => { setSessionTelemetry(emptySessionTelemetry()); setLastConfirmedCriterion(null); setDismissedNudgeA(false); setDismissedNudgeB(false); setDismissedNudgeC(false); resetProgressiveNudges() }}
+      onOpenSpotCheck={() => triggerSpotCheck()}
+      onResetTelemetry={resetTelemetry}
     />
     </TooltipProvider>
   )
