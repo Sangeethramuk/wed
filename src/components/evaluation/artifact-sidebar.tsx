@@ -222,6 +222,7 @@ export default function ArtifactSidebar({
             </Badge>
           )}
           <button
+            suppressHydrationWarning
             onClick={() => setExpanded(!expanded)}
             className="h-5 w-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors shrink-0"
           >
@@ -239,6 +240,7 @@ export default function ArtifactSidebar({
               return (
                 <button
                   key={artifact.id}
+                  suppressHydrationWarning
                   onClick={() => handleClick(artifact)}
                   disabled={artifact.isPrimary}
                   className={`w-full rounded-md transition-colors ${

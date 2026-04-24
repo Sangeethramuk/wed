@@ -126,7 +126,7 @@ export default function ReEvalWorkspacePage() {
     <div className="flex flex-col h-[calc(100vh-2rem)] bg-muted/40/50 rounded-xl border border-border/10 overflow-hidden shadow-sm">
       {/* Institutional Topbar */}
       <div className="h-16 px-6 flex items-center justify-between bg-background/80 backdrop-blur-md border-b border-border flex-shrink-0 z-50">
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="sm"
@@ -137,7 +137,7 @@ export default function ReEvalWorkspacePage() {
             Re-evaluation requests
           </Button>
           
-          <div className="w-px h-6 bg-border/10" />
+          <div className="w-px h-4 bg-slate-200" />
           
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-semibold tracking-tight text-foreground flex items-center gap-2">
