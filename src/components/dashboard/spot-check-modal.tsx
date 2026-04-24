@@ -308,56 +308,79 @@ export function SpotCheckModal() {
                     {/* RIGHT — Questions pane */}
                     <div className="overflow-y-auto p-5">
                     {/* Student strip */}
-                    <div className="flex items-center gap-2.5 p-2.5 rounded-lg mb-3.5 border border-border bg-muted">
-                      <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 border", ACCENT_BG, ACCENT_BORDER, ACCENT_TEXT)}>
+                    <div className="flex items-center gap-2.5 p-2.5 rounded-lg mb-3.5 border border-slate-200 bg-slate-50">
+                      <div
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 border"
+                        style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE', color: '#1F4E8C' }}
+                      >
                         {q.initials}
                       </div>
                       <div>
-                        <div className="text-sm font-semibold leading-tight">{q.student}</div>
-                        <div className="text-xs font-mono text-muted-foreground/70">{q.roll} · Criterion {q.critNum}</div>
+                        <div className="text-sm font-semibold leading-tight text-slate-900">{q.student}</div>
+                        <div className="text-xs font-mono text-slate-500">{q.roll} · Criterion {q.critNum}</div>
                       </div>
                     </div>
 
                     {/* Criterion */}
-                    <div className="text-xs font-semibold tracking-wider text-muted-foreground/60 mb-0.5">Criterion {q.critNum} of 5</div>
-                    <div className="text-sm font-semibold mb-0.5">{q.criterion}</div>
-                    <p className="text-xs text-muted-foreground leading-relaxed mb-3.5">{q.desc}</p>
+                    <div className="text-xs font-semibold tracking-wider text-slate-400 mb-0.5">Criterion {q.critNum} of 5</div>
+                    <div className="text-base font-semibold text-slate-900 mb-0.5">{q.criterion}</div>
+                    <p className="text-xs text-slate-500 leading-relaxed mb-3.5">{q.desc}</p>
 
                     {/* Score strip */}
-                    <div className="flex items-center gap-3.5 p-3 rounded-lg mb-3.5 border border-border bg-muted">
+                    <div className="flex items-center gap-3.5 p-3 rounded-lg mb-3.5 border border-slate-200 bg-white" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
                       <div>
-                        <span className={cn("text-3xl font-semibold leading-none font-mono", ACCENT_TEXT)}>{q.score}</span>
-                        <span className="text-sm text-muted-foreground/70 ml-0.5"> / {q.maxScore}</span>
+                        <span className="text-3xl font-semibold leading-none tabular-nums" style={{ color: '#1F4E8C' }}>{q.score}</span>
+                        <span className="text-sm text-slate-400 ml-0.5"> / {q.maxScore}</span>
                       </div>
-                      <div className="w-px h-7 bg-border" />
+                      <div className="w-px h-7 bg-slate-200" />
                       <div className="flex flex-col gap-1">
-                        <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold", conf.bg, conf.text)}>
-                          <span className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", conf.dot)} />
+                        <span
+                          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold w-fit"
+                          style={
+                            q.conf === 'high'
+                              ? { backgroundColor: '#ECFDF5', color: '#047857' }
+                              : q.conf === 'med'
+                                ? { backgroundColor: '#FFFBEB', color: '#B45309' }
+                                : { backgroundColor: '#FEF2F2', color: '#B91C1C' }
+                          }
+                        >
+                          <span
+                            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                            style={{
+                              backgroundColor:
+                                q.conf === 'high' ? '#10B981' :
+                                q.conf === 'med' ? '#F59E0B' :
+                                '#EF4444'
+                            }}
+                          />
                           {q.confLabel}
                         </span>
-                        <span className="text-xs text-muted-foreground/60">{q.criterion}</span>
+                        <span className="text-xs text-slate-500">{q.criterion}</span>
                       </div>
                     </div>
 
-                    {/* Evidence */}
-                    <div className="text-xs font-semibold tracking-wider text-muted-foreground/60 mb-1.5">Evidence extracted by AI</div>
-                    <div className={cn("text-xs text-muted-foreground leading-relaxed italic border-l-[3px] rounded-r-md px-3 py-2.5 mb-1 bg-muted", "border-l-[color:var(--category-2)]")}>
+                    {/* Evidence (right pane summary, complementing the preview) */}
+                    <div className="text-xs font-semibold tracking-wider text-slate-400 mb-1.5">Evidence extracted by AI</div>
+                    <div
+                      className="text-xs text-slate-600 leading-relaxed italic border-l-[3px] rounded-r-md px-3 py-2.5 mb-1 bg-slate-50"
+                      style={{ borderLeftColor: '#1F4E8C' }}
+                    >
                       {q.evidence}
                     </div>
-                    <div className="text-xs font-mono text-muted-foreground/60 mb-3.5">{q.evLoc}</div>
+                    <div className="text-xs font-mono text-slate-400 mb-3.5">{q.evLoc}</div>
 
                     {/* Confirm question */}
-                    <div className="text-sm font-medium text-foreground mb-3">Does this score reflect the evidence?</div>
+                    <div className="text-sm font-semibold text-slate-900 mb-3">Does this score reflect the evidence?</div>
 
                     {/* Override toggle button */}
                     <button
                       onClick={toggleOverride}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all border",
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border"
+                      style={
                         overridePanelOpen
-                          ? "bg-muted border-border text-muted-foreground"
-                          : cn(statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text),
-                      )}
+                          ? { backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', color: '#64748B' }
+                          : { backgroundColor: '#FFFBEB', borderColor: '#FDE68A', color: '#B45309' }
+                      }
                     >
                       {overridePanelOpen
                         ? <><X className="w-3 h-3" /> Cancel override</>
