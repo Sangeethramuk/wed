@@ -21,6 +21,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import {
   CriterionStatusTag,
   DemoControlPanel,
+  ESCALATION_DISMISS_THRESHOLD,
   FloatingNudgeStack,
   type SessionTelemetry,
   deriveNudges,
@@ -330,6 +331,11 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     B?: string
     C?: { streakAt: number }
   }>({})
+  // Escalation counter — counts un-productive dismissals (Skip on B, X on A/C)
+  // across the session. When it crosses ESCALATION_DISMISS_THRESHOLD the
+  // spot-check modal auto-fires once.
+  const [ignoredNudgeCount, setIgnoredNudgeCount] = useState(0)
+  const [spotCheckAutoFired, setSpotCheckAutoFired] = useState(false)
 
   // Telemetry mutators — each corresponds to one observable instructor action.
   const markCriterionOpened = (criterionId: string) => {
@@ -399,6 +405,8 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     setLastConfirmed(null)
     setDemoForce({ A: false, B: false, C: false })
     setNudgeDismissState({})
+    setIgnoredNudgeCount(0)
+    setSpotCheckAutoFired(false)
   }
 
   // Note: the useEffect that marks the active criterion as "opened" + the
@@ -590,6 +598,17 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSubmission, activeRubricCriterionIdx])
 
+  // Level 3 failsafe — when the instructor has ignored ESCALATION_DISMISS_THRESHOLD
+  // nudges without taking the productive action, auto-fire the spot-check modal
+  // ONCE. Further dismissals don't re-fire (instructor explicitly dismissed the
+  // spot check too). Reset by `resetTelemetry`.
+  useEffect(() => {
+    if (!spotCheckAutoFired && ignoredNudgeCount >= ESCALATION_DISMISS_THRESHOLD) {
+      setSpotCheckAutoFired(true)
+      triggerSpotCheck()
+    }
+  }, [ignoredNudgeCount, spotCheckAutoFired, triggerSpotCheck])
+
   // Derived visibility — natural triggers + demo-force flags, filtered by
   // recurrence-aware dismissal. Dismissals auto-expire when the behavior
   // recurs (more confirms / different criterion / bigger streak).
@@ -612,24 +631,28 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     : null
 
   // Dismiss handlers — snapshot the current counter so the nudge re-appears
-  // only when the instructor repeats the behavior.
+  // only when the instructor repeats the behavior. Each un-productive dismiss
+  // (Skip/X, NOT Reopen evidence) ticks the escalation counter.
   const dismissNudgeA = () => {
     setNudgeDismissState(prev => ({ ...prev, A: { confirmCountAt: confirmedCount } }))
     setDemoForce(f => ({ ...f, A: false }))
+    setIgnoredNudgeCount(n => n + 1)
   }
   const dismissNudgeB = () => {
     setNudgeDismissState(prev => ({ ...prev, B: nudgeBCriterion ?? undefined }))
     setDemoForce(f => ({ ...f, B: false }))
+    setIgnoredNudgeCount(n => n + 1)
   }
   const dismissNudgeC = () => {
     setNudgeDismissState(prev => ({ ...prev, C: { streakAt: sessionTelemetry.consecutiveAgreements } }))
     setDemoForce(f => ({ ...f, C: false }))
+    setIgnoredNudgeCount(n => n + 1)
   }
   const reopenFromNudgeB = () => {
     const idx = rubricPoints.findIndex(p => p.id === nudgeBCriterion)
     if (idx >= 0) setActiveRubricCriterionIdx(idx)
-    // Clearing dismiss + force so the next natural re-trigger (e.g., another
-    // fast-confirm on the same criterion) still works after this one resolves.
+    // Productive action — marks Nudge B resolved WITHOUT ticking the
+    // escalation counter (the instructor did the right thing).
     setNudgeDismissState(prev => ({ ...prev, B: nudgeBCriterion ?? undefined }))
     setDemoForce(f => ({ ...f, B: false }))
   }
@@ -1832,6 +1855,14 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
       onTriggerA={() => { setNudgeDismissState(p => ({ ...p, A: undefined })); setDemoForce(f => ({ ...f, A: true })) }}
       onTriggerB={() => { setNudgeDismissState(p => ({ ...p, B: undefined })); setDemoForce(f => ({ ...f, B: true })) }}
       onTriggerC={() => { setNudgeDismissState(p => ({ ...p, C: undefined })); setDemoForce(f => ({ ...f, C: true })) }}
+      onSimulateEscalation={() => {
+        // Fast-forward the escalation counter to the threshold; the auto-trigger
+        // useEffect fires the spot-check modal. Clears demoForce so no nudges
+        // are flashing while the spot-check opens.
+        setDemoForce({ A: false, B: false, C: false })
+        setSpotCheckAutoFired(false)
+        setIgnoredNudgeCount(ESCALATION_DISMISS_THRESHOLD)
+      }}
       onOpenSpotCheck={() => triggerSpotCheck()}
       onResetTelemetry={resetTelemetry}
     />

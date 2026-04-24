@@ -90,6 +90,17 @@ export type TagKey = "pending" | "verified" | "quick-review" | "not-verified"
 /** Threshold below which a Confirm counts as "quick" and may warrant a nudge. */
 export const FAST_CONFIRM_MS = 8_000
 
+/**
+ * How many times the instructor can dismiss a nudge without taking the
+ * productive action before the session escalates to Level 3 (failsafe
+ * spot check). Each un-productive dismiss ticks the counter:
+ *   - Nudge A — X dismiss (not paired with scrolling past 75%)
+ *   - Nudge B — Skip (not Reopen evidence)
+ *   - Nudge C — X dismiss (not paired with an override)
+ * Reaching the threshold auto-triggers the existing spot-check modal once.
+ */
+export const ESCALATION_DISMISS_THRESHOLD = 3
+
 export function deriveTag(t: CriterionTelemetry | undefined): TagKey {
   if (!t?.confirmedAt) return "pending"
   const duration = t.openedAt ? t.confirmedAt - t.openedAt : Infinity
@@ -311,6 +322,8 @@ export type DemoControls = {
   onTriggerA: () => void
   onTriggerB: () => void
   onTriggerC: () => void
+  /** Simulate 3 ignored nudges — auto-fires the spot-check failsafe. */
+  onSimulateEscalation: () => void
   onOpenSpotCheck: () => void
   onResetTelemetry: () => void
 }
@@ -366,6 +379,17 @@ export function DemoControlPanel(ctrl: DemoControls) {
           >
             <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
             Nudge C — agreement streak
+          </Button>
+          <Separator className="my-1" />
+          <p className="eyebrow text-muted-foreground px-2 py-1">Escalation</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 font-normal"
+            onClick={ctrl.onSimulateEscalation}
+          >
+            <AlertTriangle className="h-3.5 w-3.5 text-[color:var(--status-error)]" />
+            Simulate 3 ignored nudges
           </Button>
           <Separator className="my-1" />
           <p className="eyebrow text-muted-foreground px-2 py-1">Spot check</p>
