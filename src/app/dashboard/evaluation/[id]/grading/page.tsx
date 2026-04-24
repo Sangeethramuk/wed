@@ -673,58 +673,60 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
   return (
     <TooltipProvider delay={0}>
-      <div className={`h-[calc(100vh-4rem)] overflow-hidden border rounded-xl bg-background transition-all ${isPaused ? 'opacity-50 grayscale-[0.5] pointer-events-none' : ''}`}>
+      <div
+        className={`h-[calc(100vh-4rem)] overflow-hidden border border-slate-200 rounded-xl transition-all ${isPaused ? 'opacity-50 grayscale-[0.5] pointer-events-none' : ''}`}
+        style={{ backgroundColor: '#F8F9FA', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+      >
       <ResizablePanelGroup orientation="horizontal">
         {/* Left Panel: Triage Sidebar */}
-        <ResizablePanel defaultSize={20} minSize={15} className="bg-muted/5">
-          <div className="flex flex-col h-full border-r border-border">
-             <div className="p-4 border-b border-border space-y-4">
+        <ResizablePanel defaultSize={20} minSize={15}>
+          <div className="flex flex-col h-full border-r border-slate-200 bg-white">
+             <div className="p-4 border-b border-slate-200 space-y-4">
                <div className="flex items-center justify-between">
-                 <h2 className="eyebrow text-muted-foreground/80">Triage Sidebar</h2>
+                 <h2 className="text-xs font-semibold tracking-wider text-slate-400">Triage Sidebar</h2>
                  <div className="flex flex-col items-end gap-1">
-                   <Badge variant="outline" className="rounded-full bg-background border-border text-xs font-semibold">
+                   <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-500">
                      {gradedSubmissions.length} / {allSubmissions.length} Completed
-                   </Badge>
-                   <div className="w-32 h-1.5 bg-muted rounded-full overflow-hidden">
-                     <div 
-                       className="h-full bg-primary transition-all duration-500" 
-                       style={{ width: `${(gradedSubmissions.length / allSubmissions.length) * 100}%` }} 
+                   </span>
+                   <div className="w-32 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                     <div
+                       className="h-full transition-all duration-500"
+                       style={{ width: `${(gradedSubmissions.length / allSubmissions.length) * 100}%`, backgroundColor: '#1F4E8C' }}
                      />
                    </div>
                  </div>
                </div>
-              
-              {/* Triage Categories */}
-              <div className="grid grid-cols-4 gap-1 p-1 bg-muted/50 rounded-lg border border-border/50">
-                <Button
-                  variant={triageFilter === 'all' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setTriageFilter("all")}
-                  className="w-full"
-                >All</Button>
-                <Button
-                  variant={triageFilter === 'critical' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setTriageFilter("critical")}
-                  className="w-full"
-                >Crit</Button>
-                <Button
-                  variant={triageFilter === 'focus' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setTriageFilter("focus")}
-                  className="w-full"
-                >Focus</Button>
-                <Button
-                  variant={triageFilter === 'verified' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setTriageFilter("verified")}
-                  className="w-full"
-                >Veri</Button>
+
+              {/* Triage Categories — guide's segmented-control pattern */}
+              <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-lg">
+                {(['all', 'critical', 'focus', 'verified'] as const).map((f) => {
+                  const active = triageFilter === f
+                  return (
+                    <button
+                      key={f}
+                      onClick={() => setTriageFilter(f)}
+                      className="h-7 rounded-md text-xs font-semibold transition-colors"
+                      style={{
+                        backgroundColor: active ? '#FFFFFF' : 'transparent',
+                        color: active ? '#0F172A' : '#64748B',
+                        boxShadow: active ? '0 1px 3px rgba(0,0,0,0.04)' : undefined,
+                      }}
+                    >
+                      {f === 'all' ? 'All' : f === 'critical' ? 'Crit' : f === 'focus' ? 'Focus' : 'Veri'}
+                    </button>
+                  )
+                })}
               </div>
 
               <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-8 h-8 text-xs bg-background border-border focus-visible:ring-primary/20" placeholder="Filter cohort..." />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Filter cohort..."
+                  className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                />
               </div>
 
               {/* Bulk Approve — only visible in Verified tab */}
@@ -766,25 +768,40 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                       setIsFixed(false)
                       setCurrentPage(1)
                     }}
-                    className={`w-full flex items-center justify-between p-3 rounded-lg transition-all text-left text-sm cursor-pointer border-l-2 ${
-                      selectedSubmission === sub.id 
-                        ? 'bg-primary/5 border-l-primary text-foreground' 
-                        : 'hover:bg-muted/50 border-l-transparent text-muted-foreground'
-                    }`}
+                    className="w-full flex items-center justify-between p-3 rounded-lg transition-colors text-left text-sm cursor-pointer border-l-2"
+                    style={
+                      selectedSubmission === sub.id
+                        ? { backgroundColor: '#EFF6FF', borderLeftColor: '#1F4E8C' }
+                        : { borderLeftColor: 'transparent' }
+                    }
+                    onMouseEnter={(e) => { if (selectedSubmission !== sub.id) e.currentTarget.style.backgroundColor = '#F8FAFC' }}
+                    onMouseLeave={(e) => { if (selectedSubmission !== sub.id) e.currentTarget.style.backgroundColor = 'transparent' }}
                   >
                     <div className="flex flex-col gap-1.5 flex-1">
                        <div className="flex items-center gap-2">
                          {gradedSubmissions.includes(sub.id) ? (
-                           <CheckCircle2 className="h-3 w-3 text-[color:var(--status-success)]" />
+                           <CheckCircle2 className="h-3 w-3" style={{ color: '#10B981' }} />
                          ) : (
-                           <div className={`w-1.5 h-1.5 rounded-full ${
-                               sub.category === 'critical' ? 'bg-destructive shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 
-                               sub.category === 'focus' ? 'bg-[color:var(--status-warning)]' : 'bg-[color:var(--status-success)]'
-                           }`} />
+                           <div
+                             className="w-1.5 h-1.5 rounded-full"
+                             style={{
+                               backgroundColor:
+                                 sub.category === 'critical' ? '#EF4444' :
+                                 sub.category === 'focus' ? '#F59E0B' :
+                                 '#10B981',
+                             }}
+                           />
                          )}
-                         <span className={`eyebrow tracking-tight ${selectedSubmission === sub.id ? 'text-primary' : 'text-foreground/70'} ${gradedSubmissions.includes(sub.id) ? 'line-through opacity-60' : ''}`}>{sub.name}</span>
-                         {selectedSubmission === sub.id && !gradedSubmissions.includes(sub.id) && <Sparkles className="h-2.5 w-2.5 text-primary" />}
-                         {gradedSubmissions.includes(sub.id) && <span className="eyebrow text-[color:var(--status-success)]">Done</span>}
+                         <span
+                           className="text-xs font-semibold tracking-wider"
+                           style={{
+                             color: selectedSubmission === sub.id ? '#1F4E8C' : '#475569',
+                             textDecoration: gradedSubmissions.includes(sub.id) ? 'line-through' : undefined,
+                             opacity: gradedSubmissions.includes(sub.id) ? 0.6 : 1,
+                           }}
+                         >{sub.name}</span>
+                         {selectedSubmission === sub.id && !gradedSubmissions.includes(sub.id) && <Sparkles className="h-2.5 w-2.5" style={{ color: '#1F4E8C' }} />}
+                         {gradedSubmissions.includes(sub.id) && <span className="text-xs font-semibold" style={{ color: '#10B981' }}>Done</span>}
                        </div>
                        <div className="flex items-center gap-2 ml-3.5">
                          <span className="text-xs font-semibold text-muted-foreground/40 tabular-nums">{sub.code}</span>
@@ -842,48 +859,46 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
         {/* Center Panel: Document Viewer */}
         <ResizablePanel defaultSize={50} minSize={30}>
-          <div className="h-full flex flex-col bg-muted/10">
-            <header className="p-4 border-b border-border bg-background flex flex-col gap-4 z-10 shrink-0">
+          <div className="h-full flex flex-col" style={{ backgroundColor: '#F8F9FA' }}>
+            <header className="p-4 border-b border-slate-200 bg-white flex flex-col gap-4 z-10 shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="flex flex-col">
-                    <span className="eyebrow text-primary/60 mb-0.5">Authoring Identity</span>
+                    <span className="text-xs font-semibold tracking-wider text-slate-400 mb-0.5">Authoring Identity</span>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-sm font-semibold tracking-tight text-foreground">{currentStudent?.name || "Evaluating..."}</h2>
+                      <h2 className="text-sm font-semibold tracking-tight text-slate-900">{currentStudent?.name || "Evaluating..."}</h2>
                       {currentStudent && !currentStudent.checkpoints.timeline ? (
-                        <Badge
-                          variant="outline"
-                          className="text-[11px] h-5 px-2 rounded-full border-[color:var(--status-warning)]/40 bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)]"
+                        <span
+                          className="inline-flex items-center text-[11px] font-semibold h-5 px-2 rounded-full border"
+                          style={{ backgroundColor: '#FFFBEB', color: '#B45309', borderColor: '#FDE68A' }}
                         >
                           Late submission — 10% penalty
-                        </Badge>
+                        </span>
                       ) : null}
                     </div>
                   </div>
                 </div>
 
-                {/* Scanned vs OCR Original view toggle — DS Tabs primitive per
-                    CONTRIBUTING.md. State is tracked now; downstream rendering
-                    can branch on `manuscriptView` once the OCR view is wired. */}
+                {/* Scanned vs OCR Original — keep DS Tabs primitive, restyle chrome slate */}
                 <Tabs value={manuscriptView} onValueChange={(v) => setManuscriptView(v as "scanned" | "ocr")}>
-                  <TabsList className="border border-border">
-                    <TabsTrigger value="scanned" className="px-4">Scanned</TabsTrigger>
-                    <TabsTrigger value="ocr" className="px-4">OCR Original</TabsTrigger>
+                  <TabsList className="border border-slate-200 bg-slate-100">
+                    <TabsTrigger value="scanned" className="px-4 data-[state=active]:bg-white data-[state=active]:text-slate-900 text-slate-600">Scanned</TabsTrigger>
+                    <TabsTrigger value="ocr" className="px-4 data-[state=active]:bg-white data-[state=active]:text-slate-900 text-slate-600">OCR Original</TabsTrigger>
                   </TabsList>
                 </Tabs>
 
                 <div className="flex items-center gap-4">
                   <Tooltip>
                     <TooltipTrigger>
-                      <div 
-                        role="button" 
-                        tabIndex={0} 
+                      <div
+                        role="button"
+                        tabIndex={0}
                         onClick={() => setRevisionHistoryOpen(true)}
-                        className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer focus:outline-none border border-border relative"
+                        className="h-9 w-9 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer focus:outline-none border border-slate-200 relative"
                       >
                         <History className="h-4.5 w-4.5" />
                         {revisionEvents.length > 0 && (
-                          <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center">{revisionEvents.length}</span>
+                          <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full text-white text-xs font-semibold flex items-center justify-center" style={{ backgroundColor: '#1F4E8C' }}>{revisionEvents.length}</span>
                         )}
                       </div>
                     </TooltipTrigger>
@@ -1073,79 +1088,92 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
             const pointEvidence = mappedEvidence.filter(e => e.criterionId === point.id)
 
             return (
-              <div className="h-full flex flex-col border-l border-border bg-background overflow-hidden">
+              <div className="h-full flex flex-col border-l border-slate-200 bg-white overflow-hidden">
                 {/* Sticky header */}
-                <div className="p-4 border-b border-border bg-background shrink-0 space-y-3">
+                <div className="p-4 border-b border-slate-200 bg-white shrink-0 space-y-3">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-semibold tracking-tight text-foreground">Rubric evaluation</h2>
-                    <Badge variant="outline" className="rounded-full text-xs font-semibold px-2 h-5 bg-background">
+                    <h2 className="text-sm font-semibold tracking-tight text-slate-900">Rubric evaluation</h2>
+                    <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-500">
                       {confirmedCount} of {rubricPoints.length} scored
-                    </Badge>
+                    </span>
                   </div>
-                  <Progress value={(confirmedCount / rubricPoints.length) * 100} className="h-1" />
+                  <div className="h-1 w-full rounded-full bg-slate-100 overflow-hidden">
+                    <div
+                      className="h-full transition-all"
+                      style={{ width: `${(confirmedCount / rubricPoints.length) * 100}%`, backgroundColor: '#1F4E8C' }}
+                    />
+                  </div>
                   <div className="flex gap-1">
                     {rubricPoints.map((p, idx) => {
                       const done = !!criterionState[p.id]?.confirmed
                       const active = idx === activeRubricCriterionIdx
                       const lowConfidence = (p.aiConfidence ?? 1) < LOW_CONFIDENCE_THRESHOLD
                       return (
-                        <Button key={p.id} variant="ghost" size="sm" onClick={() => setActiveRubricCriterionIdx(idx)} className="flex-1 h-auto flex-col gap-1 py-1 relative">
+                        <Button key={p.id} variant="ghost" size="sm" onClick={() => setActiveRubricCriterionIdx(idx)} className="flex-1 h-auto flex-col gap-1 py-1 relative hover:bg-slate-50">
                           <div className="relative">
-                            <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
-                              done ? 'bg-foreground border-foreground' :
-                              active ? 'border-[color:var(--category-2)]/30 bg-background' :
-                              'border-border bg-background'
-                            }`}>
-                              {active && !done && <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--category-2)]" />}
+                            <div
+                              className="w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all"
+                              style={{
+                                backgroundColor: done ? '#1F4E8C' : '#FFFFFF',
+                                borderColor: done ? '#1F4E8C' : active ? '#1F4E8C' : '#E2E8F0',
+                              }}
+                            >
+                              {active && !done && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#1F4E8C' }} />}
                             </div>
                             {lowConfidence && !done ? (
                               <Tooltip>
                                 <TooltipTrigger>
-                                  <span className="absolute -top-2 -right-2 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background">
-                                    <AlertTriangle className="h-3 w-3 text-[color:var(--status-warning)]" />
+                                  <span className="absolute -top-2 -right-2 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-white">
+                                    <AlertTriangle className="h-3 w-3" style={{ color: '#F59E0B' }} />
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent>AI confidence is low for this criterion — please review.</TooltipContent>
                               </Tooltip>
                             ) : null}
                           </div>
-                          <span className={`text-xs font-bold transition-colors ${active ? 'text-foreground' : 'text-muted-foreground/50'}`}>C{p.id}</span>
+                          <span className="text-xs font-bold transition-colors" style={{ color: active || done ? '#0F172A' : '#94A3B8' }}>C{p.id}</span>
                         </Button>
                       )
                     })}
                   </div>
                 </div>
 
-                <ScrollArea className="flex-1 min-h-0">
+                <ScrollArea className="flex-1 min-h-0" style={{ backgroundColor: '#F8F9FA' }}>
                   <div className="p-4 space-y-5">
-                    <div className="rounded-xl border border-border bg-background shadow-sm overflow-hidden">
-                      <div className="p-4 space-y-5">
+                    <div
+                      className="rounded-xl border border-slate-200 bg-white overflow-hidden"
+                      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+                    >
+                      <div className="p-5 space-y-5">
 
                         {/* Title row + badge */}
                         <div className="relative">
                           {point.status === 'REVIEW_NEEDED' && (
-                            <div className="absolute -top-4 -right-4 flex items-center gap-1 bg-orange-500 text-white text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-bl-lg rounded-tr-xl shadow-sm">
+                            <div
+                              className="absolute -top-5 -right-5 flex items-center gap-1 text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-bl-lg rounded-tr-xl"
+                              style={{ backgroundColor: '#F59E0B', color: '#FFFFFF' }}
+                            >
                               <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1L1 9h8L5 1z" fill="white" fillOpacity="0.3" stroke="white" strokeWidth="0.8" strokeLinejoin="round"/><path d="M5 4.5v2M5 7.5v.5" stroke="white" strokeWidth="0.9" strokeLinecap="round"/></svg>
                               Review Required
                             </div>
                           )}
-                          <h3 className="text-sm font-bold text-foreground leading-tight pr-2">{point.label}</h3>
+                          <h3 className="text-lg font-semibold text-slate-900 leading-tight pr-2">{point.label}</h3>
                         </div>
 
                         {/* Score + selector */}
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
-                            <span className="eyebrow text-muted-foreground/60">Score</span>
+                            <span className="text-xs font-semibold tracking-wider text-slate-400">Score</span>
                             <div className="flex items-baseline gap-0.5">
-                              <span className="text-2xl font-semibold text-foreground tabular-nums">{(state.score ?? point.aiScore).toFixed(1)}</span>
-                              <span className="text-sm text-muted-foreground/60">/{point.maxPoints}</span>
+                              <span className="text-2xl font-semibold text-slate-900 tabular-nums">{(state.score ?? point.aiScore).toFixed(1)}</span>
+                              <span className="text-sm text-slate-400">/{point.maxPoints}</span>
                             </div>
                             {state.isOverridden && (
-                              <span className="ml-1 text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                              <span className="ml-1 text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full" style={{ backgroundColor: '#EFF6FF', color: '#1F4E8C', border: '1px solid #BFDBFE' }}>
                                 Overridden
                               </span>
                             )}
-                            <span className="text-xs text-muted-foreground/50 ml-auto">Adjust:</span>
+                            <span className="text-xs text-slate-400 ml-auto">Adjust:</span>
                           </div>
 
                           {/* Compact horizontal score buttons + expand toggle */}
@@ -1160,11 +1188,12 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                                   <button
                                     key={lvl.val}
                                     onClick={() => handleScoreLevelClick(point.id, lvl.points, point.aiScore)}
-                                    className={`flex-1 text-xs font-semibold py-1.5 rounded-md border transition-all ${
-                                      selected
-                                        ? 'bg-foreground text-background border-foreground'
-                                        : 'bg-background text-muted-foreground border-border hover:border-foreground/40'
-                                    }`}
+                                    className="flex-1 text-xs font-semibold py-2 rounded-lg border transition-colors"
+                                    style={{
+                                      backgroundColor: selected ? '#1F4E8C' : '#FFFFFF',
+                                      color: selected ? '#FFFFFF' : '#64748B',
+                                      borderColor: selected ? '#1F4E8C' : '#E2E8F0',
+                                    }}
                                   >
                                     {lvl.points}
                                   </button>
@@ -1172,7 +1201,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                               })}
                               <button
                                 onClick={() => setScoreLevelExpanded(s => ({ ...s, [point.id]: true }))}
-                                className="w-7 h-7 flex items-center justify-center rounded-md border border-border text-muted-foreground/50 hover:border-foreground/40 hover:text-foreground transition-all shrink-0"
+                                className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600 transition-colors shrink-0"
                                 title="Show level descriptors"
                               >
                                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4h8M2 8h8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
@@ -1435,54 +1464,56 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                 {/* Internal Notes */}
                 <InternalNotesPanel />
 
-                <div className="p-4 border-t border-border bg-background shrink-0 space-y-3">
+                <div className="p-4 border-t border-slate-200 bg-white shrink-0 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="eyebrow text-muted-foreground">Total</p>
+                      <p className="text-xs font-semibold tracking-wider text-slate-400">Total</p>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-xl font-semibold tracking-tight text-foreground tabular-nums">{Math.round((currentTotalScore / totalMaxPoints) * 100)}</span>
-                        <span className="text-xs text-muted-foreground font-bold">/ 100</span>
-                        <span className="text-xs text-muted-foreground/50 ml-1">({currentTotalScore.toFixed(1)}/{totalMaxPoints}pts)</span>
+                        <span className="text-xl font-semibold tracking-tight text-slate-900 tabular-nums">{Math.round((currentTotalScore / totalMaxPoints) * 100)}</span>
+                        <span className="text-xs text-slate-500 font-semibold">/ 100</span>
+                        <span className="text-xs text-slate-400 ml-1">({currentTotalScore.toFixed(1)}/{totalMaxPoints}pts)</span>
                       </div>
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    <button
                       disabled={activeRubricCriterionIdx === 0}
                       onClick={() => setActiveRubricCriterionIdx(i => i - 1)}
+                      className="px-3 h-9 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
                     >
                       Previous
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    </button>
+                    <button
                       onClick={() => handleScoreConfirm(point.id, state.score ?? point.aiScore)}
+                      className="px-3 h-9 rounded-lg text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors"
                     >
                       Save
-                    </Button>
+                    </button>
                     {isLastCriterion ? (
-                      <Button
-                        size="sm"
+                      <button
                         disabled={!allConfirmed}
                         onClick={() => {
                           if (allConfirmed) {
                             router.push(`/dashboard/evaluation/${id}/feedback`)
                           }
                         }}
-                        className="flex-1"
+                        className="flex-1 h-9 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-colors"
+                        style={{ backgroundColor: allConfirmed ? '#1F4E8C' : '#94A3B8' }}
+                        onMouseEnter={(e) => { if (allConfirmed) e.currentTarget.style.backgroundColor = '#1E3A5F' }}
+                        onMouseLeave={(e) => { if (allConfirmed) e.currentTarget.style.backgroundColor = '#1F4E8C' }}
                       >
                         {allConfirmed ? 'Overall feedback →' : `· ${rubricPoints.length - confirmedCount} remaining`}
-                      </Button>
+                      </button>
                     ) : (
-                      <Button
-                        size="sm"
+                      <button
                         onClick={() => setActiveRubricCriterionIdx(i => i + 1)}
-                        className="flex-1"
+                        className="flex-1 h-9 rounded-lg text-sm font-semibold text-white transition-colors"
+                        style={{ backgroundColor: '#1F4E8C' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1E3A5F' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#1F4E8C' }}
                       >
                         Next criterion
-                      </Button>
+                      </button>
                     )}
                   </div>
                 </div>
