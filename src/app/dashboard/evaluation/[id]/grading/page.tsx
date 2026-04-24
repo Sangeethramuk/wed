@@ -19,12 +19,9 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent } from "@/components/ui/card"
 import {
-  AgreementStreakNudge,
   CriterionStatusTag,
   DemoControlPanel,
-  FAST_CONFIRM_MS,
-  FastConfirmNudge,
-  IncompleteScrollNudge,
+  FloatingNudgeStack,
   type SessionTelemetry,
   deriveNudges,
   deriveTag,
@@ -324,8 +321,15 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   // Demo-panel force flags — OR'd with natural derivation so a presenter can trigger
   // any nudge without performing the behavior that normally produces it.
   const [demoForce, setDemoForce] = useState<{ A: boolean; B: boolean; C: boolean }>({ A: false, B: false, C: false })
-  // Per-nudge dismiss flags — cleared when the underlying condition changes.
-  const [dismissedNudges, setDismissedNudges] = useState<{ A: boolean; B: string | null; C: boolean }>({ A: false, B: null, C: false })
+  // Recurrence-aware dismissal state — a dismissal is "not now", not "never".
+  // Each entry remembers the counter at dismiss time so the nudge reappears
+  // when the instructor repeats the same behavior (another confirm, another
+  // fast-confirm on a different criterion, another +6 agreement streak).
+  const [nudgeDismissState, setNudgeDismissState] = useState<{
+    A?: { confirmCountAt: number }
+    B?: string
+    C?: { streakAt: number }
+  }>({})
 
   // Telemetry mutators — each corresponds to one observable instructor action.
   const markCriterionOpened = (criterionId: string) => {
@@ -374,9 +378,11 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
       consecutiveAgreements: opts.overridden ? 0 : prev.consecutiveAgreements + 1,
     }))
     setLastConfirmed({ id: criterionId, at: now })
-    // Clear any stale Nudge-B dismiss from a prior criterion so the nudge
-    // can fire fresh on this one if the conditions match.
-    setDismissedNudges(prev => ({ ...prev, B: prev.B === criterionId ? prev.B : null }))
+    // If this criterion now has evidence or override, clear its Nudge-B dismiss
+    // so a future fast-confirm on this same criterion can re-trigger.
+    if (opts.overridden || opts.reasoning?.trim().length) {
+      setNudgeDismissState(prev => (prev.B === criterionId ? { ...prev, B: undefined } : prev))
+    }
   }
   const markScrollProgress = (pct: number) => {
     setSessionTelemetry(prev => {
@@ -392,7 +398,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     setSessionTelemetry(emptySessionTelemetry())
     setLastConfirmed(null)
     setDemoForce({ A: false, B: false, C: false })
-    setDismissedNudges({ A: false, B: null, C: false })
+    setNudgeDismissState({})
   }
 
   // Note: the useEffect that marks the active criterion as "opened" + the
@@ -584,12 +590,49 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSubmission, activeRubricCriterionIdx])
 
-  // Derived visibility — OR natural triggers with demo-force flags, AND-NOT dismissed.
+  // Derived visibility — natural triggers + demo-force flags, filtered by
+  // recurrence-aware dismissal. Dismissals auto-expire when the behavior
+  // recurs (more confirms / different criterion / bigger streak).
   const naturalNudges = deriveNudges(sessionTelemetry, selectedSubmission, rubricPoints.map(p => p.id), lastConfirmed)
-  const showNudgeA = (naturalNudges.A || demoForce.A) && !dismissedNudges.A
-  const nudgeBCriterion = demoForce.B ? rubricPoints[activeRubricCriterionIdx]?.id ?? null : naturalNudges.B
-  const showNudgeB = nudgeBCriterion && dismissedNudges.B !== nudgeBCriterion
-  const showNudgeC = (naturalNudges.C || demoForce.C) && !dismissedNudges.C
+  const confirmedCount = rubricPoints.filter(
+    (p) => sessionTelemetry.byCriterion[telemetryKey(selectedSubmission, p.id)]?.confirmedAt
+  ).length
+  const showNudgeA =
+    (naturalNudges.A || demoForce.A) &&
+    (!nudgeDismissState.A || confirmedCount > nudgeDismissState.A.confirmCountAt)
+  const nudgeBCriterion = demoForce.B
+    ? rubricPoints[activeRubricCriterionIdx]?.id ?? null
+    : naturalNudges.B
+  const showNudgeB = Boolean(nudgeBCriterion) && nudgeDismissState.B !== nudgeBCriterion
+  const showNudgeC =
+    (naturalNudges.C || demoForce.C) &&
+    (!nudgeDismissState.C || sessionTelemetry.consecutiveAgreements >= nudgeDismissState.C.streakAt + 6)
+  const nudgeBCriterionLabel = showNudgeB && nudgeBCriterion
+    ? rubricPoints.find(p => p.id === nudgeBCriterion)?.label ?? nudgeBCriterion
+    : null
+
+  // Dismiss handlers — snapshot the current counter so the nudge re-appears
+  // only when the instructor repeats the behavior.
+  const dismissNudgeA = () => {
+    setNudgeDismissState(prev => ({ ...prev, A: { confirmCountAt: confirmedCount } }))
+    setDemoForce(f => ({ ...f, A: false }))
+  }
+  const dismissNudgeB = () => {
+    setNudgeDismissState(prev => ({ ...prev, B: nudgeBCriterion ?? undefined }))
+    setDemoForce(f => ({ ...f, B: false }))
+  }
+  const dismissNudgeC = () => {
+    setNudgeDismissState(prev => ({ ...prev, C: { streakAt: sessionTelemetry.consecutiveAgreements } }))
+    setDemoForce(f => ({ ...f, C: false }))
+  }
+  const reopenFromNudgeB = () => {
+    const idx = rubricPoints.findIndex(p => p.id === nudgeBCriterion)
+    if (idx >= 0) setActiveRubricCriterionIdx(idx)
+    // Clearing dismiss + force so the next natural re-trigger (e.g., another
+    // fast-confirm on the same criterion) still works after this one resolves.
+    setNudgeDismissState(prev => ({ ...prev, B: nudgeBCriterion ?? undefined }))
+    setDemoForce(f => ({ ...f, B: false }))
+  }
   const [rubricAccordionOpen, setRubricAccordionOpen] = useState<Record<string, boolean>>({})
   const [rubricReviewStripOpen, setRubricReviewStripOpen] = useState<Record<string, boolean>>({})
   const [scoreLevelExpanded, setScoreLevelExpanded] = useState<Record<string, boolean>>({})
@@ -1251,21 +1294,9 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
                 <ScrollArea className="flex-1 min-h-0">
                   <div className="p-4 space-y-5">
-                    {/* Progressive-assurance nudges — inline, non-blocking, self-clearing. */}
-                    {(showNudgeC || showNudgeA) && (
-                      <div className="space-y-2">
-                        {showNudgeC && (
-                          <AgreementStreakNudge
-                            onDismiss={() => { setDismissedNudges(p => ({ ...p, C: true })); setDemoForce(f => ({ ...f, C: false })) }}
-                          />
-                        )}
-                        {showNudgeA && (
-                          <IncompleteScrollNudge
-                            onDismiss={() => { setDismissedNudges(p => ({ ...p, A: true })); setDemoForce(f => ({ ...f, A: false })) }}
-                          />
-                        )}
-                      </div>
-                    )}
+                    {/* Progressive-assurance nudges now render in a floating
+                        top-right stack via <FloatingNudgeStack /> at the page
+                        top level — no space carved out of the rubric sidebar. */}
                     <div className="rounded-xl border border-border bg-background shadow-sm overflow-hidden">
                       <div className="p-4 space-y-5">
 
@@ -1580,24 +1611,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
                       </div>
                     </div>
-                    {/* Nudge B — contextual to the just-confirmed criterion. */}
-                    {showNudgeB && nudgeBCriterion && (
-                      <FastConfirmNudge
-                        criterionLabel={rubricPoints.find(p => p.id === nudgeBCriterion)?.label ?? nudgeBCriterion}
-                        onReopen={() => {
-                          // Bring instructor back to this criterion + nudge them to open evidence.
-                          const idx = rubricPoints.findIndex(p => p.id === nudgeBCriterion)
-                          if (idx >= 0) setActiveRubricCriterionIdx(idx)
-                          // Clear this nudge — the reopen action is the resolution.
-                          setDismissedNudges(p => ({ ...p, B: nudgeBCriterion }))
-                          setDemoForce(f => ({ ...f, B: false }))
-                        }}
-                        onDismiss={() => {
-                          setDismissedNudges(p => ({ ...p, B: nudgeBCriterion }))
-                          setDemoForce(f => ({ ...f, B: false }))
-                        }}
-                      />
-                    )}
                   </div>
                 </ScrollArea>
 
@@ -1806,10 +1819,19 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
       events={revisionEvents}
       studentName={currentStudent?.name || 'Unknown'}
     />
+    <FloatingNudgeStack
+      showA={showNudgeA}
+      showBCriterionLabel={nudgeBCriterionLabel}
+      showC={showNudgeC}
+      onDismissA={dismissNudgeA}
+      onDismissB={dismissNudgeB}
+      onDismissC={dismissNudgeC}
+      onReopenEvidence={reopenFromNudgeB}
+    />
     <DemoControlPanel
-      onTriggerA={() => { setDismissedNudges(p => ({ ...p, A: false })); setDemoForce(f => ({ ...f, A: true })) }}
-      onTriggerB={() => { setDismissedNudges(p => ({ ...p, B: null })); setDemoForce(f => ({ ...f, B: true })) }}
-      onTriggerC={() => { setDismissedNudges(p => ({ ...p, C: false })); setDemoForce(f => ({ ...f, C: true })) }}
+      onTriggerA={() => { setNudgeDismissState(p => ({ ...p, A: undefined })); setDemoForce(f => ({ ...f, A: true })) }}
+      onTriggerB={() => { setNudgeDismissState(p => ({ ...p, B: undefined })); setDemoForce(f => ({ ...f, B: true })) }}
+      onTriggerC={() => { setNudgeDismissState(p => ({ ...p, C: undefined })); setDemoForce(f => ({ ...f, C: true })) }}
       onOpenSpotCheck={() => triggerSpotCheck()}
       onResetTelemetry={resetTelemetry}
     />

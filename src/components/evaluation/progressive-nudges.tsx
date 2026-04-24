@@ -33,6 +33,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react"
+import { AnimatePresence, motion } from "framer-motion"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -352,6 +353,82 @@ export function DemoControlPanel(ctrl: DemoControls) {
           </Button>
         </PopoverContent>
       </Popover>
+    </div>
+  )
+}
+
+// ---------- FloatingNudgeStack ----------
+
+/**
+ * Fixed-position slide-in container that renders the three progressive nudges
+ * in the top-right corner of the viewport. Replaces the inline rubric-sidebar
+ * banners — nudges no longer steal vertical space from the rubric panel.
+ *
+ * Each nudge animates in from the right on mount and out on unmount via
+ * framer-motion. Stacking order is B (most contextual) → A → C from top.
+ */
+export function FloatingNudgeStack({
+  showA,
+  showBCriterionLabel,
+  showC,
+  onDismissA,
+  onDismissB,
+  onDismissC,
+  onReopenEvidence,
+}: {
+  showA: boolean
+  /** Criterion label to show in Nudge B, or null if Nudge B is not active. */
+  showBCriterionLabel: string | null
+  showC: boolean
+  onDismissA: () => void
+  onDismissB: () => void
+  onDismissC: () => void
+  onReopenEvidence: () => void
+}) {
+  return (
+    <div className="fixed top-20 right-6 z-40 flex flex-col gap-3 w-[22rem] max-w-[calc(100vw-3rem)] pointer-events-none">
+      <AnimatePresence initial={false}>
+        {showBCriterionLabel && (
+          <motion.div
+            key="nudge-B"
+            initial={{ opacity: 0, x: 60 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 60 }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            className="pointer-events-auto"
+          >
+            <FastConfirmNudge
+              criterionLabel={showBCriterionLabel}
+              onReopen={onReopenEvidence}
+              onDismiss={onDismissB}
+            />
+          </motion.div>
+        )}
+        {showA && (
+          <motion.div
+            key="nudge-A"
+            initial={{ opacity: 0, x: 60 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 60 }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            className="pointer-events-auto"
+          >
+            <IncompleteScrollNudge onDismiss={onDismissA} />
+          </motion.div>
+        )}
+        {showC && (
+          <motion.div
+            key="nudge-C"
+            initial={{ opacity: 0, x: 60 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 60 }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            className="pointer-events-auto"
+          >
+            <AgreementStreakNudge onDismiss={onDismissC} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
