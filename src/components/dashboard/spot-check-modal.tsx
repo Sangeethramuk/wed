@@ -476,17 +476,20 @@ export function SpotCheckModal() {
                 const confirmedCount = scResults.filter(r => r.status === 'confirmed').length
                 return (
                   <div>
-                    <div className={cn("w-[50px] h-[50px] rounded-full flex items-center justify-center mb-4 border-[1.5px]", statusStyles.success.bg, statusStyles.success.border)}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className={statusStyles.success.text}>
+                    <div
+                      className="w-[50px] h-[50px] rounded-full flex items-center justify-center mb-4 border-[1.5px]"
+                      style={{ backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }}
+                    >
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: '#10B981' }}>
                         <path d="M5 12l5 5L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
-                    <div className="text-lg font-semibold tracking-tight mb-1.5">
+                    <div className="text-lg font-semibold tracking-tight text-slate-900 mb-1.5">
                       {overrideCount === 0
                         ? 'Spot check complete'
                         : `Spot check complete — ${overrideCount} override${overrideCount > 1 ? 's' : ''} logged`}
                     </div>
-                    <p className="text-sm text-muted-foreground leading-[1.75] mb-4">
+                    <p className="text-sm text-slate-500 leading-[1.75] mb-4">
                       {overrideCount === 0
                         ? '5 of 5 scores confirmed. All evidence matches — the session is accurate and ready to close.'
                         : `${confirmedCount} confirmed, ${overrideCount} overridden. Your corrections have been saved and sent as learning signals.`}
@@ -496,16 +499,22 @@ export function SpotCheckModal() {
                       {scResults.map((r, i) => {
                         const q = SC_QUESTIONS[r.idx]
                         const isOverride = r.status === 'override'
-                        const tone = isOverride ? statusStyles.warning : statusStyles.success
+                        const rowStyle = isOverride
+                          ? { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }
+                          : { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }
+                        const pillStyle = isOverride
+                          ? { backgroundColor: '#FFFFFF', borderColor: '#F59E0B', color: '#B45309' }
+                          : { backgroundColor: '#FFFFFF', borderColor: '#10B981', color: '#047857' }
                         return (
                           <div
                             key={i}
-                            className={cn("flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm border", tone.bg, tone.border)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm border"
+                            style={rowStyle}
                           >
                             <span className="text-sm flex-shrink-0">{isOverride ? '⚠' : '✓'}</span>
-                            <span className="flex-1 font-medium">{q.student}</span>
-                            <span className="text-xs font-mono text-muted-foreground/70">{q.criterion}</span>
-                            <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full border", tone.bg, tone.border, tone.text)}>
+                            <span className="flex-1 font-semibold text-slate-900">{q.student}</span>
+                            <span className="text-xs font-mono text-slate-500">{q.criterion}</span>
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full border" style={pillStyle}>
                               {isOverride ? `Override → ${(r as Extract<SCResult, { status: 'override' }>).newScore}/5` : 'Confirmed'}
                             </span>
                           </div>
@@ -513,9 +522,9 @@ export function SpotCheckModal() {
                       })}
                     </div>
 
-                    <div className="flex justify-between items-center px-3 py-3 rounded-lg text-sm border bg-muted/30">
-                      <span className="text-muted-foreground">Overrides logged</span>
-                      <span className="font-semibold font-mono">{overrideCount}</span>
+                    <div className="flex justify-between items-center px-3 py-3 rounded-lg text-sm border border-slate-200 bg-slate-50">
+                      <span className="text-slate-500">Overrides logged</span>
+                      <span className="font-semibold font-mono text-slate-900">{overrideCount}</span>
                     </div>
                   </div>
                 )
@@ -523,12 +532,12 @@ export function SpotCheckModal() {
             </div>
 
             {/* FOOTER */}
-            <div className="px-5 py-3 border-t bg-muted/30 flex items-center justify-between gap-2.5 flex-shrink-0">
+            <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-2.5 flex-shrink-0">
               <div>
                 {scStep < 5 && (
                   <button
                     onClick={dismissSpotCheck}
-                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted/50"
+                    className="text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors px-3 py-2 rounded-lg hover:bg-slate-100"
                   >
                     {scStep === -1 ? 'Skip' : 'Save & exit'}
                   </button>
@@ -538,7 +547,7 @@ export function SpotCheckModal() {
                 {scStep > 0 && scStep < 5 && (
                   <button
                     onClick={goBack}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium border border-border text-muted-foreground transition-colors hover:bg-muted/50"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold border border-slate-200 bg-white text-slate-700 transition-colors hover:bg-slate-50"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                     Back
@@ -547,13 +556,18 @@ export function SpotCheckModal() {
                 <button
                   onClick={goNext}
                   disabled={isNextDisabled}
-                  className={cn(
-                    "flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium text-primary-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
-                    scStep === 5 ? "bg-[color:var(--status-success)]" : "bg-primary",
-                  )}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: scStep === 5 ? '#10B981' : '#1F4E8C' }}
+                  onMouseEnter={(e) => {
+                    if (isNextDisabled) return
+                    e.currentTarget.style.backgroundColor = scStep === 5 ? '#059669' : '#1E3A5F'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = scStep === 5 ? '#10B981' : '#1F4E8C'
+                  }}
                 >
                   {scStep === -1 && <><span>Start re-check</span><ChevronRight className="w-3.5 h-3.5" /></>}
-                  {scStep >= 0 && scStep < 5 && overridePanelOpen && <><span>Save override & continue</span><ChevronRight className="w-3.5 h-3.5" /></>}
+                  {scStep >= 0 && scStep < 5 && overridePanelOpen && <><span>Save override &amp; continue</span><ChevronRight className="w-3.5 h-3.5" /></>}
                   {scStep >= 0 && scStep < 5 && !overridePanelOpen && <><span>Score looks correct</span><Check className="w-3.5 h-3.5" /></>}
                   {scStep === 5 && <><span>Close session</span><ChevronRight className="w-3.5 h-3.5" /></>}
                 </button>
