@@ -12,20 +12,18 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, CloudCheck } from "lucide-react"
-import Link from "next/link"
 
 const PHASE_STEPS = [
-  { id: "sample_review", label: "Sample Review", step: 1 },
-  { id: "blind_grading", label: "Blind Grading", step: 2 },
-  { id: "delta_review", label: "Delta Report", step: 3 },
-  { id: "negotiation", label: "Negotiation", step: 4 },
-  { id: "complete", label: "Complete", step: 5 },
+  { id: "blind_grading", label: "Blind Grading", step: 1 },
+  { id: "delta_review", label: "Scoring Summary", step: 2 },
+  { id: "negotiation", label: "Review Differences", step: 3 },
+  { id: "complete", label: "Complete", step: 4 },
 ]
 
 export default function CalibratePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
-  const { calibration, initCalibration } = useGradingStore()
+  const { calibration, initCalibration, setCalibrationPhase } = useGradingStore()
 
   const cal = calibration[id]
 
@@ -34,6 +32,13 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
     initCalibration(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Empty deps - run once on mount
+
+  // Skip sample_review — flow now starts at blind_grading
+  useEffect(() => {
+    if (cal?.phase === "sample_review") {
+      setCalibrationPhase(id, "blind_grading")
+    }
+  }, [cal?.phase, id, setCalibrationPhase])
 
   // Redirect when calibration completes
   useEffect(() => {
@@ -71,18 +76,25 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
         <div className="max-w-6xl mx-auto w-full">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <Link href="/dashboard/evaluation">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft /> Triage desk
+              {cal.phase === "blind_grading" ? (
+                <Button variant="ghost" size="sm" onClick={() => router.push(`/dashboard/evaluation/${id}`)}>
+                  <ArrowLeft /> Back
                 </Button>
-              </Link>
+              ) : (
+                <Button variant="ghost" size="sm" onClick={() => {
+                  const prevStep = PHASE_STEPS.find(s => s.step === (currentStep?.step ?? 1) - 1)
+                  if (prevStep) setCalibrationPhase(id, prevStep.id as Parameters<typeof setCalibrationPhase>[1])
+                }}>
+                  <ArrowLeft /> Back
+                </Button>
+              )}
               <Separator orientation="vertical" className="h-4" />
               <div className="flex items-center gap-2 text-sm">
                 <span className="font-semibold text-foreground">
                   Step {currentStep?.step ?? 1} of {PHASE_STEPS.length - 1}
                 </span>
                 <span className="text-muted-foreground">— {currentStep?.label}</span>
-                {nextStep && cal.phase !== "negotiation" && (
+                {nextStep && nextStep.id !== "complete" && (
                   <>
                     <span className="text-muted-foreground/40">·</span>
                     <span className="text-muted-foreground/70">Next: {nextStep.label}</span>
@@ -116,7 +128,6 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
 
       {/* Step content */}
       <div className="flex-1">
-        {cal.phase === "sample_review" && <SampleReview assignmentId={id} />}
         {cal.phase === "blind_grading" && <BlindGradingPanel assignmentId={id} />}
         {cal.phase === "delta_review" && <DeltaMatrix assignmentId={id} />}
         {cal.phase === "negotiation" && <NegotiationDialogue assignmentId={id} />}
