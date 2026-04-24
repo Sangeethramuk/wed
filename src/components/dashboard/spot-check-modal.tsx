@@ -253,13 +253,56 @@ export function SpotCheckModal() {
                 const conf = confidenceStyles[q.conf]
                 return (
                   <>
-                    {/* LEFT — Preview pane (placeholder; chunk 4 fills it) */}
+                    {/* LEFT — Preview pane: paper-style card with the
+                        evidence passage shown in context. Surrounding text
+                        is synthetic filler so the instructor can see WHERE
+                        in the paper the AI pulled this sentence from. */}
                     <aside
                       className="border-r border-slate-200 overflow-y-auto p-5"
                       style={{ backgroundColor: '#F8F9FA' }}
                     >
-                      <div className="text-xs font-semibold tracking-wider text-slate-400">Preview pane</div>
-                      <div className="mt-2 text-xs text-slate-400">(paper-style evidence context — coming in chunk 4)</div>
+                      <div className="text-xs font-semibold tracking-wider text-slate-400 mb-2">Student submission</div>
+                      <div
+                        className="bg-white border border-slate-200 rounded-xl p-5 space-y-3"
+                        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+                      >
+                        {/* Paper metadata */}
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                          <div>
+                            <div className="text-sm font-semibold text-slate-900 leading-tight">{q.student}</div>
+                            <div className="text-xs text-slate-500 font-mono">{q.roll}</div>
+                          </div>
+                          <span className="text-xs font-semibold tracking-wider text-slate-400">
+                            {q.evLoc}
+                          </span>
+                        </div>
+
+                        {/* Synthetic lead-in paragraph */}
+                        <p className="text-xs text-slate-400 leading-relaxed">
+                          The section opens with a brief motivation, describing the performance challenges that emerge as datasets scale beyond a few million rows. The author then transitions into the mechanics of the solution.
+                        </p>
+
+                        {/* The evidence — highlighted */}
+                        <p className="text-sm text-slate-900 leading-relaxed">
+                          <span
+                            className="rounded-sm px-1 py-0.5 box-decoration-clone"
+                            style={{ backgroundColor: 'rgba(245, 158, 11, 0.18)' }}
+                          >
+                            {q.evidence}
+                          </span>
+                        </p>
+
+                        {/* Synthetic lead-out */}
+                        <p className="text-xs text-slate-400 leading-relaxed">
+                          The discussion continues with a concrete example comparing query latency with and without the index, followed by a note on write-time overhead.
+                        </p>
+
+                        {/* Excerpt attribution */}
+                        <div className="pt-2 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-400">
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h8M2 9h5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                          <span>Excerpt from the student&apos;s submission</span>
+                        </div>
+                      </div>
                     </aside>
 
                     {/* RIGHT — Questions pane */}
