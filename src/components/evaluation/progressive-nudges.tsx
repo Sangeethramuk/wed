@@ -34,7 +34,6 @@ import {
   X,
 } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -189,38 +188,79 @@ type NudgeProps = {
   onDismiss: () => void
 }
 
+type NudgeSeverity = "info" | "warning"
+
 /**
- * Shared className for nudge cards rendered in the floating toast stack:
- * solid bg-background (overriding the Alert variant's translucent `-bg`
- * token, which is intentionally ~10% alpha for inline tints), heavy shadow
- * so the card reads as a floating surface, and a 4px severity-colored left
- * border so the variant meaning stays visible.
+ * Shared layout for the 3 floating nudge cards. Previously wrapped the
+ * shadcn Alert primitive, but Alert's internal 2-column grid (icon + content)
+ * cramped titles on narrow viewports. This custom card gives:
+ *
+ *   - Solid bg-background (toast-opaque — no bleed-through from rubric content)
+ *   - shadow-xl for floating depth
+ *   - 4px severity-colored left accent (preserves info/warning signal)
+ *   - Header row: icon + title + close button on one line; title wraps freely
+ *   - Description: full width under the header, comfortable line-length
+ *   - Actions: stacked at bottom, left-aligned
  */
-const FLOAT_NUDGE_BASE = "bg-background shadow-xl"
-const FLOAT_NUDGE_INFO = `${FLOAT_NUDGE_BASE} border-l-4 border-l-[color:var(--status-info)]`
-const FLOAT_NUDGE_WARN = `${FLOAT_NUDGE_BASE} border-l-4 border-l-[color:var(--status-warning)]`
+function NudgeCard({
+  severity,
+  icon: Icon,
+  title,
+  description,
+  actions,
+  onDismiss,
+}: {
+  severity: NudgeSeverity
+  icon: typeof Clock
+  title: React.ReactNode
+  description: React.ReactNode
+  actions?: React.ReactNode
+  onDismiss?: () => void
+}) {
+  const accent =
+    severity === "info"
+      ? "border-l-[color:var(--status-info)]"
+      : "border-l-[color:var(--status-warning)]"
+  const iconColor =
+    severity === "info"
+      ? "text-[color:var(--status-info)]"
+      : "text-[color:var(--status-warning)]"
+  return (
+    <div
+      role="status"
+      className={`relative w-full rounded-lg border border-border ${accent} border-l-4 bg-background shadow-xl p-4`}
+    >
+      <div className="flex items-start gap-3 pr-6">
+        <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${iconColor}`} />
+        <p className="text-sm font-semibold text-foreground leading-snug flex-1">{title}</p>
+      </div>
+      <p className="text-xs text-muted-foreground leading-relaxed mt-1.5 pl-7 pr-1">
+        {description}
+      </p>
+      {actions && <div className="flex items-center gap-2 mt-3 pl-7">{actions}</div>}
+      {onDismiss && (
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label="Dismiss"
+          className="absolute top-2 right-2 h-6 w-6 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
+  )
+}
 
 export function IncompleteScrollNudge({ onDismiss }: NudgeProps) {
   return (
-    <Alert variant="info" className={FLOAT_NUDGE_INFO}>
-      <Sparkles className="h-4 w-4" />
-      <AlertTitle className="text-sm font-semibold">
-        Quick check — the last section might still have evidence
-      </AlertTitle>
-      <AlertDescription className="text-xs">
-        Scrolling through the rest of the paper makes sure your grades cover
-        everything — and keeps this session from needing a final review.
-      </AlertDescription>
-      <Button
-        size="sm"
-        variant="ghost"
-        className="absolute top-1.5 right-1.5 h-6 w-6 p-0"
-        onClick={onDismiss}
-        aria-label="Dismiss"
-      >
-        <X className="h-3 w-3" />
-      </Button>
-    </Alert>
+    <NudgeCard
+      severity="info"
+      icon={Sparkles}
+      title="Quick check — the last section might still have evidence"
+      description="Scrolling through the rest of the paper makes sure your grades cover everything — and keeps this session from needing a final review."
+      onDismiss={onDismiss}
+    />
   )
 }
 
@@ -234,48 +274,34 @@ export function FastConfirmNudge({
   onDismiss: () => void
 }) {
   return (
-    <Alert variant="warning" className={FLOAT_NUDGE_WARN}>
-      <Clock className="h-4 w-4" />
-      <AlertTitle className="text-sm font-semibold">
-        You confirmed {criterionLabel} in a few seconds
-      </AlertTitle>
-      <AlertDescription className="text-xs">
-        A quick evidence scroll makes this grade stick — evidence-backed
-        scores don&apos;t get pulled into a final review.
-      </AlertDescription>
-      <div className="flex items-center gap-2 mt-2">
-        <Button size="sm" variant="default" onClick={onReopen}>
-          Reopen evidence
-        </Button>
-        <Button size="sm" variant="ghost" onClick={onDismiss}>
-          Skip
-        </Button>
-      </div>
-    </Alert>
+    <NudgeCard
+      severity="warning"
+      icon={Clock}
+      title={<>You confirmed <span className="text-foreground">{criterionLabel}</span> in a few seconds</>}
+      description="A quick evidence scroll makes this grade stick — evidence-backed scores don't get pulled into a final review."
+      actions={
+        <>
+          <Button size="sm" variant="default" onClick={onReopen}>
+            Reopen evidence
+          </Button>
+          <Button size="sm" variant="ghost" onClick={onDismiss}>
+            Skip
+          </Button>
+        </>
+      }
+    />
   )
 }
 
 export function AgreementStreakNudge({ onDismiss }: NudgeProps) {
   return (
-    <Alert variant="warning" className={FLOAT_NUDGE_WARN}>
-      <AlertTriangle className="h-4 w-4" />
-      <AlertTitle className="text-sm font-semibold">
-        You&apos;ve agreed with the AI 6 times in a row
-      </AlertTitle>
-      <AlertDescription className="text-xs">
-        Taking a harder look at this next one — even a single override —
-        keeps your session sharp and the final grades easier to defend.
-      </AlertDescription>
-      <Button
-        size="sm"
-        variant="ghost"
-        className="absolute top-1.5 right-1.5 h-6 w-6 p-0"
-        onClick={onDismiss}
-        aria-label="Dismiss"
-      >
-        <X className="h-3 w-3" />
-      </Button>
-    </Alert>
+    <NudgeCard
+      severity="warning"
+      icon={AlertTriangle}
+      title="You've agreed with the AI 6 times in a row"
+      description="Taking a harder look at this next one — even a single override — keeps your session sharp and the final grades easier to defend."
+      onDismiss={onDismiss}
+    />
   )
 }
 
