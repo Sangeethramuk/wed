@@ -1,7 +1,7 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
+import { Suspense, useMemo, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { useGradingStore } from "@/lib/store/grading-store"
@@ -52,13 +52,28 @@ const BANDS = [
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function EvaluationResults() {
+export default function EvaluationResultsPage() {
+  return (
+    <Suspense fallback={null}>
+      <EvaluationResults />
+    </Suspense>
+  )
+}
+
+function EvaluationResults() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { assignments, currentAssignmentId, criterionFeedbacks, overallFeedback } = useGradingStore()
   const [sortBy, setSortBy] = useState<"score" | "name" | "grade">("score")
 
-  // Resolve assignment — fall back to first available if navigate directly
-  const assignmentId = currentAssignmentId ?? Object.keys(assignments)[0] ?? null
+  // Resolve assignment: URL ?id=... wins (e.g., opened from the Triage row),
+  // falls back to store currentAssignmentId, then first available.
+  const idFromQuery = searchParams.get("id")
+  const assignmentId =
+    (idFromQuery && assignments[idFromQuery] ? idFromQuery : null)
+    ?? currentAssignmentId
+    ?? Object.keys(assignments)[0]
+    ?? null
   const assignment   = assignmentId ? assignments[assignmentId] : null
   const students     = assignment?.students ?? []
 
@@ -158,7 +173,7 @@ export default function EvaluationResults() {
           <Button variant="outline">
             <Download /> Export report
           </Button>
-          <Link href="/dashboard/post-evaluation">
+          <Link href={assignmentId ? `/dashboard/evaluation/publish?id=${assignmentId}` : "/dashboard/evaluation/publish"}>
             <Button>
               <Sparkles className="h-4 w-4" /> Publish outcomes
             </Button>

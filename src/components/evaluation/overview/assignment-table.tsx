@@ -76,6 +76,14 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
   const isCalibrated = calData?.phase === "complete" || assignment.calibrationState === "complete"
 
   const handleAction = () => {
+    if (assignment.gradingStatus === "complete") {
+      router.push(`/dashboard/evaluation/results?id=${assignment.id}`)
+      return
+    }
+    if (!isCalibrated) {
+      router.push(`/dashboard/evaluation/${assignment.id}/calibrate`)
+      return
+    }
     router.push(`/dashboard/evaluation/${assignment.id}`)
   }
 
