@@ -185,25 +185,34 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="submissions" className="space-y-8" onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between border-b border-border/50 pb-1">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-0">
           <TabsList className="bg-transparent h-auto p-0 gap-8">
             <TabsTrigger
               value="submissions"
-              className="px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none eyebrow text-xs font-bold tracking-widest text-muted-foreground/60 data-[state=active]:text-foreground transition-all"
+              className="px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 rounded-none text-xs font-semibold tracking-wider text-slate-500 hover:text-slate-700 data-[state=active]:text-slate-900 transition-colors"
+              style={{
+                borderBottomColor: activeTab === "submissions" ? '#1F4E8C' : 'transparent',
+              }}
             >
               <LayoutDashboard className="mr-2 h-4 w-4" />
               Submissions
             </TabsTrigger>
             <TabsTrigger
               value="analytics"
-              className="px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none eyebrow text-xs font-bold tracking-widest text-muted-foreground/60 data-[state=active]:text-foreground transition-all"
+              className="px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 rounded-none text-xs font-semibold tracking-wider text-slate-500 hover:text-slate-700 data-[state=active]:text-slate-900 transition-colors"
+              style={{
+                borderBottomColor: activeTab === "analytics" ? '#1F4E8C' : 'transparent',
+              }}
             >
               <BarChart3 className="mr-2 h-4 w-4" />
               Analytics
             </TabsTrigger>
             <TabsTrigger
               value="preview"
-              className="px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none eyebrow text-xs font-bold tracking-widest text-muted-foreground/60 data-[state=active]:text-foreground transition-all"
+              className="px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 rounded-none text-xs font-semibold tracking-wider text-slate-500 hover:text-slate-700 data-[state=active]:text-slate-900 transition-colors"
+              style={{
+                borderBottomColor: activeTab === "preview" ? '#1F4E8C' : 'transparent',
+              }}
             >
               <Eye className="mr-2 h-4 w-4" />
               Preview
