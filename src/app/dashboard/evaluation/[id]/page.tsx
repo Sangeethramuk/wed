@@ -94,12 +94,14 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
     )
   }
 
-  const stats = [
-    { label: "Total Papers", value: 60, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Pending", value: 60 - gradedSubmissions.length, icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { label: "Critical", value: 8, icon: AlertTriangle, color: "text-destructive", bg: "bg-destructive/10" },
-    { label: "Focus", value: 12, icon: Zap, color: "text-purple-500", bg: "bg-purple-500/10" },
-    { label: "Good to go", value: 40, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+  // Stats per EDUCAITORS_DS_GUIDE.md: hex accents, number takes the accent,
+  // icon sits in a soft-tinted square of the same hue, slate-400 label.
+  const stats: { label: string; value: number; icon: typeof Users; accent: string }[] = [
+    { label: "Total Papers", value: 60, icon: Users, accent: "#1F4E8C" },
+    { label: "Pending", value: 60 - gradedSubmissions.length, icon: Clock, accent: "#F59E0B" },
+    { label: "Critical", value: 8, icon: AlertTriangle, accent: "#EF4444" },
+    { label: "Focus", value: 12, icon: Zap, accent: "#1F4E8C" },
+    { label: "Good to go", value: 40, icon: CheckCircle2, accent: "#10B981" },
   ]
 
   const handleStudentSelect = (studentId: string) => {
@@ -315,7 +317,7 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
                 </CardContent>
               </Card>
 
-              {/* Stats Cards Row */}
+              {/* Stats Cards Row — white cards, inline shadow, hex accents */}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                 {stats.map((stat, i) => (
                   <motion.div
@@ -324,17 +326,23 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.1 }}
                   >
-                    <Card className="overflow-hidden border-border/40 shadow-sm bg-card/40 backdrop-blur-sm group hover:border-primary/30 transition-all hover:translate-y-[-2px]">
-                      <CardContent className="p-4 space-y-3">
-                        <div className={`p-2 rounded-xl w-fit ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
-                          <stat.icon className="h-4 w-4" />
+                    <div
+                      className="rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-slate-300"
+                      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold tracking-wider text-slate-400">{stat.label}</p>
+                          <p
+                            className="text-2xl font-semibold tracking-tight tabular-nums"
+                            style={{ color: stat.accent }}
+                          >
+                            {stat.value}
+                          </p>
                         </div>
-                        <div>
-                          <p className="text-[10px] font-bold text-muted-foreground/50 tracking-wider uppercase">{stat.label}</p>
-                          <p className="text-2xl font-bold text-foreground tabular-nums">{stat.value}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        <stat.icon className="h-5 w-5 mt-0.5 opacity-80" style={{ color: stat.accent }} />
+                      </div>
+                    </div>
                   </motion.div>
                 ))}
               </div>
