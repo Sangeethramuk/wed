@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import { 
   Star, CircleDot, Lightbulb, AlertTriangle, 
   ChevronUp, ChevronDown, CheckCircle2, Pencil, 
@@ -196,18 +197,44 @@ export default function FeedbackPage() {
     // 1. Mark current student as submitted
     submitFinalFeedback(activeStudent.id);
 
-    // 2. Find next student in roster
-    const currentIndex = assignment.students.findIndex(s => s.id === activeStudent.id);
-    const nextStudent = assignment.students[currentIndex + 1];
+    // 2. Toast so the instructor sees confirmation
+    toast.success(`Grades saved and submitted for ${activeStudent.name}`, {
+      description: "Opening the next student's paper…",
+      duration: 3500,
+    });
 
-    if (nextStudent) {
-      // 3. If there is a next student, move to them and go back to Desk
-      setActiveStudent(nextStudent.id);
-      router.push(`/dashboard/evaluation/${assignment.id}`);
-    } else {
-      // 4. If last student, finalize and go to results
-      router.push('/dashboard/evaluation/results');
-    }
+    // 3. Compute the next student. The feedback page's `assignment.students`
+    //    only ever has the 1–2 DEFAULT_ASSIGNMENTS students, but the grading
+    //    desk iterates a generated 60-student cohort keyed `STU-100`..`STU-159`.
+    //    Increment the numeric suffix of activeStudentId to target the next
+    //    seat in that cohort; if it doesn't match that shape, fall back to
+    //    whatever comes next in the stored assignment.
+    const stuMatch = activeStudent.id.match(/^STU-(\d+)$/);
+    const urlAssignmentId = (assignmentId as string) ?? assignment.id;
+    const nextStuId = stuMatch
+      ? (() => {
+          const next = parseInt(stuMatch[1], 10) + 1;
+          return next <= 159 ? `STU-${next}` : null;
+        })()
+      : null;
+    const fallbackNext = !stuMatch
+      ? assignment.students[assignment.students.findIndex(s => s.id === activeStudent.id) + 1]
+      : null;
+
+    // 4. Dwell briefly so the toast registers before the route changes.
+    setTimeout(() => {
+      if (nextStuId) {
+        setActiveStudent(nextStuId);
+        router.push(`/dashboard/evaluation/${urlAssignmentId}/grading?studentId=${nextStuId}`);
+      } else if (fallbackNext) {
+        setActiveStudent(fallbackNext.id);
+        router.push(`/dashboard/evaluation/${urlAssignmentId}/grading?studentId=${fallbackNext.id}`);
+      } else {
+        // Last student — route back to the assignment details so the
+        // instructor can review the cohort and publish.
+        router.push(`/dashboard/evaluation/${urlAssignmentId}`);
+      }
+    }, 1200);
   };
 
   const handleCopy = () => {
