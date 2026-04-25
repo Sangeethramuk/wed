@@ -153,7 +153,7 @@ export default function ReEvaluationDashboard() {
           <div className="flex items-start justify-between mb-6">
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <span className="eyebrow text-muted-foreground/40">IIM Bangalore</span>
+                <span className="eyebrow text-muted-foreground/40">Symbiosis University</span>
                 <span className="text-muted-foreground/20 text-xs">·</span>
                 <span className="eyebrow text-primary/80">Re-Evaluation Module</span>
               </div>

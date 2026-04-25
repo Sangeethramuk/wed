@@ -389,7 +389,14 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
         </TabsContent>
 
         <TabsContent value="preview" className="outline-none pt-6">
-          <AssignmentPreviewBody assignment={previewAssignment} rubric={previewRubric} />
+          <AssignmentPreviewBody
+            assignment={{
+              ...previewAssignment,
+              title: assignment?.title ?? previewAssignment.title,
+              brief: assignment?.description ?? previewAssignment.brief,
+            }}
+            rubric={previewRubric}
+          />
         </TabsContent>
       </Tabs>
     </div>
