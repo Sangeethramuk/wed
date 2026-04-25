@@ -319,13 +319,20 @@ export function AgreementStreakNudge({ onDismiss }: NudgeProps) {
 // ---------- Demo control panel ----------
 
 export type DemoControls = {
-  onTriggerA: () => void
-  onTriggerB: () => void
-  onTriggerC: () => void
+  onTriggerA?: () => void
+  onTriggerB?: () => void
+  onTriggerC?: () => void
   /** Simulate 3 ignored nudges — auto-fires the spot-check failsafe. */
-  onSimulateEscalation: () => void
-  onOpenSpotCheck: () => void
-  onResetTelemetry: () => void
+  onSimulateEscalation?: () => void
+  onOpenSpotCheck?: () => void
+  onResetTelemetry?: () => void
+  // ── Calibration flow demo (mounted on /calibrate) ──────────────────────
+  /** Jump to the delta-review state with seeded discrepancies. */
+  onShowDeltaReview?: () => void
+  /** Jump to the negotiation state with seeded discrepancies. */
+  onShowNegotiation?: () => void
+  /** Trigger the final \"Updating Calibration\" loading modal. */
+  onShowCalibrationComplete?: () => void
 }
 
 /**
@@ -335,6 +342,10 @@ export type DemoControls = {
  * a feature flag in production.
  */
 export function DemoControlPanel(ctrl: DemoControls) {
+  const hasNudges = ctrl.onTriggerA || ctrl.onTriggerB || ctrl.onTriggerC
+  const hasCalibration =
+    ctrl.onShowDeltaReview || ctrl.onShowNegotiation || ctrl.onShowCalibrationComplete
+
   return (
     <div className="fixed bottom-6 right-6 z-[100]">
       <Popover>
@@ -351,67 +362,133 @@ export function DemoControlPanel(ctrl: DemoControls) {
               Trigger every flow without grading a full session.
             </p>
           </div>
-          <Separator className="my-1" />
-          <p className="eyebrow text-muted-foreground px-2 py-1">Progressive nudges</p>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-2 font-normal"
-            onClick={ctrl.onTriggerA}
-          >
-            <Play className="h-3.5 w-3.5 text-[color:var(--status-info)]" />
-            Nudge A — incomplete scroll
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-2 font-normal"
-            onClick={ctrl.onTriggerB}
-          >
-            <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
-            Nudge B — fast confirm
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-2 font-normal"
-            onClick={ctrl.onTriggerC}
-          >
-            <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
-            Nudge C — agreement streak
-          </Button>
-          <Separator className="my-1" />
-          <p className="eyebrow text-muted-foreground px-2 py-1">Finalization gate</p>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-2 font-normal"
-            onClick={ctrl.onSimulateEscalation}
-          >
-            <AlertTriangle className="h-3.5 w-3.5 text-[color:var(--status-error)]" />
-            Simulate low-engagement publish
-          </Button>
-          <Separator className="my-1" />
-          <p className="eyebrow text-muted-foreground px-2 py-1">Spot check</p>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-2 font-normal"
-            onClick={ctrl.onOpenSpotCheck}
-          >
-            <ScanSearch className="h-3.5 w-3.5 text-primary" />
-            Open spot-check modal
-          </Button>
-          <Separator className="my-1" />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-2 font-normal text-muted-foreground"
-            onClick={ctrl.onResetTelemetry}
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            Reset session telemetry
-          </Button>
+
+          {hasCalibration && (
+            <>
+              <Separator className="my-1" />
+              <p className="eyebrow text-muted-foreground px-2 py-1">Calibration flow</p>
+              {ctrl.onShowDeltaReview && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start gap-2 font-normal"
+                  onClick={ctrl.onShowDeltaReview}
+                >
+                  <Play className="h-3.5 w-3.5 text-[color:var(--status-info)]" />
+                  Show delta review
+                </Button>
+              )}
+              {ctrl.onShowNegotiation && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start gap-2 font-normal"
+                  onClick={ctrl.onShowNegotiation}
+                >
+                  <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
+                  Show resolve differences
+                </Button>
+              )}
+              {ctrl.onShowCalibrationComplete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start gap-2 font-normal"
+                  onClick={ctrl.onShowCalibrationComplete}
+                >
+                  <Play className="h-3.5 w-3.5 text-[color:var(--status-success)]" />
+                  Show completion modal
+                </Button>
+              )}
+            </>
+          )}
+
+          {hasNudges && (
+            <>
+              <Separator className="my-1" />
+              <p className="eyebrow text-muted-foreground px-2 py-1">Progressive nudges</p>
+              {ctrl.onTriggerA && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start gap-2 font-normal"
+                  onClick={ctrl.onTriggerA}
+                >
+                  <Play className="h-3.5 w-3.5 text-[color:var(--status-info)]" />
+                  Nudge A — incomplete scroll
+                </Button>
+              )}
+              {ctrl.onTriggerB && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start gap-2 font-normal"
+                  onClick={ctrl.onTriggerB}
+                >
+                  <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
+                  Nudge B — fast confirm
+                </Button>
+              )}
+              {ctrl.onTriggerC && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start gap-2 font-normal"
+                  onClick={ctrl.onTriggerC}
+                >
+                  <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
+                  Nudge C — agreement streak
+                </Button>
+              )}
+            </>
+          )}
+
+          {ctrl.onSimulateEscalation && (
+            <>
+              <Separator className="my-1" />
+              <p className="eyebrow text-muted-foreground px-2 py-1">Finalization gate</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 font-normal"
+                onClick={ctrl.onSimulateEscalation}
+              >
+                <AlertTriangle className="h-3.5 w-3.5 text-[color:var(--status-error)]" />
+                Simulate low-engagement publish
+              </Button>
+            </>
+          )}
+
+          {ctrl.onOpenSpotCheck && (
+            <>
+              <Separator className="my-1" />
+              <p className="eyebrow text-muted-foreground px-2 py-1">Spot check</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 font-normal"
+                onClick={ctrl.onOpenSpotCheck}
+              >
+                <ScanSearch className="h-3.5 w-3.5 text-primary" />
+                Open spot-check modal
+              </Button>
+            </>
+          )}
+
+          {ctrl.onResetTelemetry && (
+            <>
+              <Separator className="my-1" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 font-normal text-muted-foreground"
+                onClick={ctrl.onResetTelemetry}
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Reset session telemetry
+              </Button>
+            </>
+          )}
         </PopoverContent>
       </Popover>
     </div>

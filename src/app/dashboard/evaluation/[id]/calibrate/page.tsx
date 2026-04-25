@@ -6,6 +6,7 @@ import { useGradingStore } from "@/lib/store/grading-store"
 import { BlindGradingPanel } from "@/components/evaluation/calibration/blind-grading-panel"
 import { DeltaMatrix } from "@/components/evaluation/calibration/delta-matrix"
 import { NegotiationDialogue } from "@/components/evaluation/calibration/negotiation-dialogue"
+import { DemoControlPanel } from "@/components/evaluation/progressive-nudges"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -22,7 +23,14 @@ const PHASE_STEPS = [
 export default function CalibratePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
-  const { calibration, initCalibration, setCalibrationPhase } = useGradingStore()
+  const {
+    calibration,
+    initCalibration,
+    setCalibrationPhase,
+    seedCalibrationForDemo,
+    resolveAllCalibrationScores,
+    triggerSpotCheck,
+  } = useGradingStore()
 
   const cal = calibration[id]
 
@@ -135,7 +143,25 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
         {cal.phase === "negotiation" && <NegotiationDialogue assignmentId={id} />}
       </div>
 
-
+      {/* Demo controls — quick access to flow states for presentations. */}
+      <DemoControlPanel
+        onShowDeltaReview={() => {
+          seedCalibrationForDemo(id)
+          setCalibrationPhase(id, "delta_review")
+        }}
+        onShowNegotiation={() => {
+          seedCalibrationForDemo(id)
+          setCalibrationPhase(id, "negotiation")
+        }}
+        onShowCalibrationComplete={() => {
+          seedCalibrationForDemo(id)
+          setCalibrationPhase(id, "negotiation")
+          // Resolve everything on the next tick so NegotiationDialogue
+          // mounts first and its useEffect fires the modal.
+          setTimeout(() => resolveAllCalibrationScores(id), 50)
+        }}
+        onOpenSpotCheck={() => triggerSpotCheck()}
+      />
     </div>
   )
 }
