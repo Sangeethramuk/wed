@@ -1,9 +1,7 @@
 "use client"
 
 import { usePreEvalStore } from "@/lib/store/pre-evaluation-store"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Clock, ChevronDown } from "lucide-react"
 
 export const MOCK_COURSES = [
@@ -51,61 +49,58 @@ export function CourseSelection() {
   }
 
   return (
-    <TooltipProvider delay={100}>
-      <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-20 pt-6 px-4">
-        <div className="space-y-4">
-          <h1 className="text-4xl font-semibold tracking-tight secondary-text">Select course to get started</h1>
-          <Button variant="outline" size="sm" className="group">
-            Department: Computer science
-            <ChevronDown className="h-3 w-3 opacity-40 group-hover:opacity-80" />
-          </Button>
-        </div>
+    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-20 pt-6 px-6">
 
-        {/* Course cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {MOCK_COURSES.map((course) => (
-            <Card
-              key={course.id}
-              className="group relative overflow-hidden cursor-pointer hover:border-primary/20 transition-all border-border/20 bg-card rounded-xl flex flex-col shadow-none"
-              onClick={() => handleSelect(course.name)}
-            >
-              <CardHeader className="pb-3 pt-5 px-5">
-                <CardTitle className="text-lg font-semibold tracking-tight">{course.name}</CardTitle>
-                <CardDescription className="eyebrow flex items-center gap-2 text-xs opacity-80 mt-0.5">
-                  {course.code} <span className="opacity-40">•</span> {course.semester}
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="px-5 pb-5 flex-1 flex flex-col justify-end">
-                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border/10">
-                  <div className="space-y-1">
-                    <span className="eyebrow text-muted-foreground opacity-30">Published</span>
-                    <div className="flex items-center gap-1.5 text-xs font-semibold">
-                      <Tooltip>
-                        <TooltipTrigger className="cursor-default text-xs font-semibold">
-                          {course.assignmentCount} Active
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                          <p className="text-xs font-medium">Deadline window still open</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="eyebrow text-muted-foreground opacity-30">Last Created</span>
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                      <Clock className="h-3 w-3 opacity-50" />
-                      <span>{course.lastAssignment}</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-
-              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-            </Card>
-          ))}
-        </div>
+      {/* Page heading + filter */}
+      <div className="space-y-4">
+        <h1 className="text-2xl font-semibold text-slate-900">Select course to get started</h1>
+        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 hover:border-slate-300 transition-colors">
+          Department: Computer science
+          <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+        </button>
       </div>
-    </TooltipProvider>
+
+      {/* Course cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {MOCK_COURSES.map((course) => (
+          <div
+            key={course.id}
+            onClick={() => handleSelect(course.name)}
+            className="bg-white border border-slate-200 rounded-xl p-5 cursor-pointer flex flex-col gap-4 hover:border-slate-300 hover:shadow-md transition-all duration-150"
+            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+          >
+            {/* Card top */}
+            <div className="space-y-1">
+              <h2 className="text-base font-semibold text-slate-900">{course.name}</h2>
+              <p className="text-xs text-slate-400">{course.code} · {course.semester}</p>
+            </div>
+
+            {/* Card bottom */}
+            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100">
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">Published</p>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <p className="text-sm font-semibold text-slate-900 cursor-default">
+                      {course.assignmentCount} Active
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p className="text-xs font-medium">Deadline window still open</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">Last Created</p>
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-3 w-3 text-slate-400" />
+                  <span className="text-sm text-slate-500">{course.lastAssignment}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

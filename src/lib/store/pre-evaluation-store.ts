@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-export type Step = 1 | 2 | 3 | 4 | 5 | 6;
+export type Step = 1 | 2 | 3 | 4;
 
 export interface AuditEvent {
   id: string;
@@ -167,7 +167,7 @@ export interface DraftAssignment {
   type: AssignmentType;
   course: string;
   semester: string;
-  step: 2 | 3 | 4 | 5 | 6;
+  step: 2 | 3 | 4;
   lastEdited: string;
 }
 
@@ -553,7 +553,7 @@ export const usePreEvalStore = create<PreEvalState>()(
 
       setStep: (step) => set({ currentStep: step }),
       nextStep: () => set((state) => ({
-        currentStep: Math.min(state.currentStep + 1, 6) as Step,
+        currentStep: Math.min(state.currentStep + 1, 4) as Step,
       })),
       prevStep: () => set((state) => ({
         currentStep: Math.max(state.currentStep - 1, 1) as Step,

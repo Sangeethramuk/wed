@@ -75,16 +75,16 @@ export function RubricTweak() {
   return (
     <TooltipProvider delay={120}>
       <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 pt-6 px-4">
-        <div className="flex items-center justify-between border-b border-border/10 pb-6 -mx-4 px-4 pt-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-6 -mx-4 px-4 pt-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={prevStep}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="space-y-0">
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-black tracking-tight secondary-text">Grading Rubric</h1>
+                <h1 className="text-2xl font-semibold text-slate-900">Grading Rubric</h1>
               </div>
-              <p className="text-[10px] font-semibold text-muted-foreground/40 uppercase tracking-widest">Define your grade levels — pre-loaded from institutional standards</p>
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Define your grade levels — pre-loaded from institutional standards</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -92,7 +92,7 @@ export function RubricTweak() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 hover:text-primary rounded-md"
+                className="h-9 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-primary rounded-md"
                 onClick={resetRubricToDefault}
               >
                 <RotateCcw className="h-3 w-3 mr-1.5" />
@@ -109,15 +109,15 @@ export function RubricTweak() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[11px] font-black uppercase tracking-widest text-primary/80 leading-tight">Pre-filled for you</p>
-            <p className="text-[10px] font-medium text-muted-foreground leading-tight mt-0.5">
-              Rubric loaded from <span className="font-black text-foreground/80">{assignment.institution.name}</span> standards. Edit criteria, weights, and descriptions — structure and grade levels are locked.
+            <p className="text-[10px] font-medium text-slate-500 leading-tight mt-0.5">
+              Rubric loaded from <span className="font-black text-slate-700">{assignment.institution.name}</span> standards. Edit criteria, weights, and descriptions — structure and grade levels are locked.
             </p>
           </div>
         </div>
 
         {/* Toolbar */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-3 text-muted-foreground/70 text-[10px] font-semibold">
+          <div className="flex items-center gap-3 text-slate-500 text-[10px] font-semibold">
             <span className="inline-flex items-center gap-1.5">
               <Lock className="h-3 w-3 opacity-60" />
               <span>Structure & levels locked</span>
@@ -131,31 +131,31 @@ export function RubricTweak() {
           <div className="flex items-center gap-2">
             <span className={cn(
               "eyebrow text-[10px] font-black tabular-nums",
-              alignmentScore === 100 ? "text-[color:var(--status-success)]" : alignmentScore >= 60 ? "text-[color:var(--status-warning)]" : "text-muted-foreground/40"
+              alignmentScore === 100 ? "text-[color:var(--status-success)]" : alignmentScore >= 60 ? "text-[color:var(--status-warning)]" : "text-slate-400"
             )}>{alignmentScore}% described</span>
           </div>
         </div>
 
         {/* Rubric Grid */}
-        <Card className="border border-border/20 overflow-hidden rounded-xl bg-card shadow-none">
+        <Card className="border border-slate-200 overflow-hidden rounded-xl bg-white " style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-muted/[0.02] border-b border-border/10">
-                  <th className="p-4 text-left w-[280px] sticky left-0 z-10 bg-card border-r border-border/10">
+                <tr className="bg-slate-50 border-b border-slate-100">
+                  <th className="p-4 text-left w-[280px] sticky left-0 z-10 bg-white border-r border-slate-100">
                     <div className="flex items-center gap-1.5">
                       <Pencil className="h-3 w-3 text-primary" />
-                      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Criterion</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Criterion</span>
                     </div>
                   </th>
                   {["Exemplary", "Proficient", "Developing", "Beginning"].map((level, i) => (
-                    <th key={level} className="p-3 text-center border-r border-border/10 min-w-[200px]">
+                    <th key={level} className="p-3 text-center border-r border-slate-100 min-w-[200px]">
                       <div className="flex flex-col items-center gap-1">
                         <div className="flex items-center gap-1.5">
-                          <Lock className="h-2.5 w-2.5 text-muted-foreground/40" />
+                          <Lock className="h-2.5 w-2.5 text-slate-400" />
                           <span className={cn(
                             "text-[10px] font-black uppercase tracking-widest",
-                            i === 0 ? "text-primary" : "text-muted-foreground/60"
+                            i === 0 ? "text-primary" : "text-slate-400"
                           )}>{level}</span>
                         </div>
                         <LevelScoreEditor
@@ -173,8 +173,8 @@ export function RubricTweak() {
               </thead>
               <tbody>
                 {rubric.map((crit, rowIdx) => (
-                  <tr key={crit.id} className="border-b border-border/10 hover:bg-primary/[0.01] group">
-                    <td className="p-4 border-r border-border/10 bg-card align-top sticky left-0 z-10 w-[280px]">
+                  <tr key={crit.id} className="border-b border-slate-100 hover:bg-slate-50/50 group">
+                    <td className="p-4 border-r border-slate-100 bg-white align-top sticky left-0 z-10 w-[280px]">
                       <CriterionCell
                         crit={crit}
                         rowIdx={rowIdx}
@@ -184,7 +184,7 @@ export function RubricTweak() {
                       />
                     </td>
                     {crit.levels.map((lvl) => (
-                      <td key={lvl.label} className="p-3 border-r border-border/10 align-top">
+                      <td key={lvl.label} className="p-3 border-r border-slate-100 align-top">
                         <LevelDescriptionCell
                           critName={crit.name || "this criterion"}
                           levelLabel={lvl.label}
@@ -203,10 +203,10 @@ export function RubricTweak() {
                   </tr>
                 ))}
                 {/* Weight total footer */}
-                <tr className="bg-card">
-                  <td className="p-3 border-r border-border/10 sticky left-0 z-10 bg-card">
+                <tr className="bg-white">
+                  <td className="p-3 border-r border-slate-100 sticky left-0 z-10 bg-white">
                     <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Total weight</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Total weight</span>
                       <span className={cn(
                         "text-sm font-black tabular-nums",
                         weightsBalanced ? "text-emerald-600" : "text-amber-600"
@@ -227,7 +227,7 @@ export function RubricTweak() {
         </Card>
 
         {/* Helper footer */}
-        <div className="flex items-start gap-2 text-muted-foreground/60">
+        <div className="flex items-start gap-2 text-slate-400">
           <Info className="h-3.5 w-3.5 opacity-60 mt-0.5 shrink-0" />
           <p className="text-[11px] font-medium opacity-70 leading-relaxed">
             Write descriptions that a second grader could use to grade consistently. Be specific — what would you actually see in an Exemplary submission? Avoid vague terms like &ldquo;good&rdquo; or &ldquo;great&rdquo;.
@@ -272,9 +272,9 @@ function LevelScoreEditor({
           const val = e.target.value.replace(/[^0-9]/g, "")
           onChange(Math.min(100, Number(val) || 0))
         }}
-        className="h-6 w-12 text-center text-[10px] font-black tabular-nums bg-muted/10 border border-border/40 rounded-md focus-visible:ring-primary/10 px-1"
+        className="h-6 w-12 text-center text-[10px] font-black tabular-nums bg-slate-100 border border-slate-200 rounded-md focus-visible:ring-primary/10 px-1"
       />
-      <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest">%</span>
+      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">%</span>
     </div>
   )
 }
@@ -305,13 +305,13 @@ function CriterionCell({
 
   return (
     <div className="space-y-2">
-      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">#{rowIdx + 1}</span>
+      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">#{rowIdx + 1}</span>
       <Input
         value={crit.name}
         placeholder="e.g. Technical Accuracy"
         className={cn(
-          "h-9 font-semibold text-xs bg-background border rounded-md px-3 focus-visible:ring-primary/10",
-          hasNameIssue ? "border-amber-500/40" : "border-border/40"
+          "h-9 font-semibold text-xs bg-white border rounded-md px-3 focus-visible:ring-primary/10",
+          hasNameIssue ? "border-amber-500/40" : "border-slate-200"
         )}
         onChange={(e) => onNameChange(e.target.value)}
       />
@@ -328,7 +328,7 @@ function CriterionCell({
               <p className="text-xs font-bold text-primary-foreground leading-snug">{CO_DEFINITIONS[crit.linkedCO] ?? crit.linkedCO}</p>
             </TooltipContent>
           </Tooltip>
-          <span className="text-[9px] font-medium text-muted-foreground/40">{blooms}</span>
+          <span className="text-[9px] font-medium text-slate-400">{blooms}</span>
         </div>
         <div className="flex items-center gap-1">
           <Input
@@ -340,9 +340,9 @@ function CriterionCell({
               const val = e.target.value.replace(/[^0-9]/g, "")
               onWeightChange(Math.min(100, Number(val) || 0))
             }}
-            className="h-7 w-12 text-right text-[10px] font-black tabular-nums bg-muted/10 border border-border/40 rounded-md focus-visible:ring-primary/10 pr-1"
+            className="h-7 w-12 text-right text-[10px] font-black tabular-nums bg-slate-100 border border-slate-200 rounded-md focus-visible:ring-primary/10 pr-1"
           />
-          <span className="text-[9px] font-black text-muted-foreground/40">%</span>
+          <span className="text-[9px] font-black text-slate-400">%</span>
         </div>
       </div>
     </div>
@@ -376,8 +376,8 @@ function LevelDescriptionCell({
         value={description}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          "min-h-[110px] text-[11px] font-medium leading-relaxed bg-background/40 border focus-visible:ring-primary/10 p-2.5 rounded-md resize-none placeholder:opacity-30",
-          showWarning ? "border-amber-500/30" : "border-border/40"
+          "min-h-[110px] text-[11px] font-medium leading-relaxed bg-white border focus-visible:ring-primary/10 p-2.5 rounded-md resize-none placeholder:opacity-30",
+          showWarning ? "border-amber-500/30" : "border-slate-200"
         )}
       />
       <div className="flex items-center gap-1.5 min-h-[16px]">
