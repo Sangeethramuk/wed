@@ -52,13 +52,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/10">
-      <SidebarHeader className="border-b border-border/10 h-16 justify-center px-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:items-center">
+      <SidebarHeader className="border-b border-border/10 h-16 justify-center items-center px-0">
         <SidebarMenu>
-          <SidebarMenuItem>
+          <SidebarMenuItem className="flex justify-center">
             <SidebarMenuButton
               size="lg"
               render={<Link href="/dashboard" />}
-              className="hover:bg-transparent group-data-[collapsible=icon]:justify-center"
+              className="hover:bg-transparent justify-center w-auto"
               tooltip="Symbiosis University"
             >
               <div className="flex aspect-square size-10 items-center justify-center rounded-full bg-red-50 text-red-600 shrink-0 border border-red-100 shadow-sm group-data-[collapsible=icon]:size-8">
