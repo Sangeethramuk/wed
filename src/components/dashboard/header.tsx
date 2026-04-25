@@ -1,7 +1,6 @@
 "use client"
 
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,28 +10,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Bell, Search, ScanSearch } from "lucide-react"
+import { Bell, Search } from "lucide-react"
 import { ThemeSwitcher } from "@/components/theme-switcher"
-import { useGradingStore } from "@/lib/store/grading-store"
 import { SpotCheckModal } from "@/components/dashboard/spot-check-modal"
 
 export function DashboardHeader() {
-  const { triggerSpotCheck } = useGradingStore()
-
   return (
     <>
     <header className="flex h-16 items-center gap-3 border-b border-border bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <SidebarTrigger />
 
       <div className="flex flex-1 items-center justify-end gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={triggerSpotCheck}
-        >
-          <ScanSearch />
-          Spot check
-        </Button>
         <ThemeSwitcher />
         <Button variant="ghost" size="icon-sm">
           <Search />
