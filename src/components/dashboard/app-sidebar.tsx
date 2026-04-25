@@ -52,13 +52,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/10">
-      <SidebarHeader className="border-b border-border/10 h-16 justify-center px-4">
+      <SidebarHeader className="border-b border-border/10 h-16 justify-center px-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:items-center">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
               render={<Link href="/dashboard" />}
-              className="hover:bg-transparent"
+              className="hover:bg-transparent group-data-[collapsible=icon]:justify-center"
               tooltip="Symbiosis University"
             >
               <div className="flex aspect-square size-10 items-center justify-center rounded-full bg-red-50 text-red-600 shrink-0 border border-red-100 shadow-sm group-data-[collapsible=icon]:size-8">
@@ -72,18 +72,19 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 pt-4">
-        <SidebarGroup>
-          <SidebarMenu className="gap-1">
+      <SidebarContent className="px-2 pt-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:items-center">
+        <SidebarGroup className="group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center">
+          <SidebarMenu className="gap-1 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:w-auto">
             {mainNavItems.map((item) => {
               const isActive = pathname === item.url || (item.url !== "/dashboard" && pathname?.startsWith(item.url))
               return (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.title} className="group-data-[collapsible=icon]:w-auto">
                   <SidebarMenuButton
                     render={<Link href={item.url} />}
                     tooltip={item.title}
                     className={cn(
-                      "h-11 px-4 rounded-xl transition-all duration-200 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center",
+                      "h-11 px-4 rounded-xl transition-all duration-200",
+                      "group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl",
                       isActive
                         ? "bg-[#2563EB]/5 text-[#2563EB] font-bold shadow-sm"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -99,16 +100,22 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border/10 p-6 space-y-4 group-data-[collapsible=icon]:p-2">
-        <div className="flex flex-col gap-4">
-          <Link href="#" className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors group">
-            <div className="p-1.5 rounded-lg bg-muted/50 group-hover:bg-muted transition-colors">
+      <SidebarFooter className="border-t border-border/10 p-6 space-y-4 group-data-[collapsible=icon]:p-3 group-data-[collapsible=icon]:items-center">
+        <div className="flex flex-col gap-4 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:w-auto">
+          <Link
+            href="#"
+            className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors group group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:hover:bg-muted/50"
+          >
+            <div className="p-1.5 rounded-lg bg-muted/50 group-hover:bg-muted transition-colors group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:bg-transparent">
               <HelpCircle className="size-4" />
             </div>
             <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">Help & Information</span>
           </Link>
-          <Link href="#" className="flex items-center gap-3 text-red-500/80 hover:text-red-600 transition-colors group">
-            <div className="p-1.5 rounded-lg bg-red-50 group-hover:bg-red-100 transition-colors">
+          <Link
+            href="#"
+            className="flex items-center gap-3 text-red-500/80 hover:text-red-600 transition-colors group group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:hover:bg-red-50/60"
+          >
+            <div className="p-1.5 rounded-lg bg-red-50 group-hover:bg-red-100 transition-colors group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:bg-transparent">
               <LogOut className="size-4" />
             </div>
             <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">Log out</span>
