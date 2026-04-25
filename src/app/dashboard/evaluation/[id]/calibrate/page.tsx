@@ -134,8 +134,6 @@ export default function CalibratePage({ params }: { params: Promise<{ id: string
         {cal.phase === "delta_review" && <DeltaMatrix assignmentId={id} />}
         {cal.phase === "negotiation" && <NegotiationDialogue assignmentId={id} />}
       </div>
-
-
     </div>
   )
 }

@@ -695,6 +695,13 @@ interface GradingState {
   addEvidenceExchange: (assignmentId: string, paperId: string, criterionId: string, exchange: Omit<EvidenceExchange, 'id' | 'timestamp'>) => void;
   resolveScore: (assignmentId: string, paperId: string, criterionId: string, status: 'accepted' | 'resolved') => void;
   completeCalibration: (assignmentId: string) => void;
+  /** Demo helper: populate instructor levels with a mix of agreement and
+   *  discrepancies so the delta-review and negotiation panels have content
+   *  without an instructor having to grade through a full session. */
+  seedCalibrationForDemo: (assignmentId: string) => void;
+  /** Demo helper: marks every score as resolved so the negotiation page's
+   *  completion modal fires immediately. */
+  resolveAllCalibrationScores: (assignmentId: string) => void;
 
   // Feedback & Notes State
   internalNotes: Record<string, InternalNote[]>; // studentId -> notes
@@ -1039,6 +1046,51 @@ export const useGradingStore = create<GradingState>()(
         const cal = state.calibration[assignmentId];
         if (!cal) return state;
         return { calibration: { ...state.calibration, [assignmentId]: { ...cal, phase: 'complete' } } };
+      }),
+
+      seedCalibrationForDemo: (assignmentId) => set((state) => {
+        const cal = state.calibration[assignmentId];
+        if (!cal) return state;
+        // Seed each score's instructorLevel with a mix:
+        // - some matching AI (no discrepancy)
+        // - some +1/-1 off (creates visible deltas for the matrix and gaps
+        //   for the negotiation page to resolve)
+        const scores = cal.scores.map((s, i) => {
+          const offset = i % 3 === 0 ? 0 : (i % 2 === 0 ? 1 : -1);
+          const instructorLevel = Math.max(1, Math.min(4, s.aiLevel + offset));
+          return {
+            ...s,
+            instructorLevel,
+            delta: Math.abs(instructorLevel - s.aiLevel),
+            status: 'pending' as const,
+          };
+        });
+        const gradedScores = scores.filter(s => s.instructorLevel > 0);
+        const aggregateDelta = gradedScores.length > 0
+          ? (gradedScores.reduce((sum, s) => sum + (s.delta / 4) * 100, 0) / gradedScores.length)
+          : 0;
+        return {
+          calibration: {
+            ...state.calibration,
+            [assignmentId]: { ...cal, scores, aggregateDelta },
+          },
+        };
+      }),
+
+      resolveAllCalibrationScores: (assignmentId) => set((state) => {
+        const cal = state.calibration[assignmentId];
+        if (!cal) return state;
+        const scores = cal.scores.map(s => {
+          const instructorLevel = s.instructorLevel > 0 ? s.instructorLevel : s.aiLevel;
+          const delta = Math.abs(instructorLevel - s.aiLevel);
+          return { ...s, instructorLevel, delta, status: 'resolved' as const };
+        });
+        return {
+          calibration: {
+            ...state.calibration,
+            [assignmentId]: { ...cal, scores },
+          },
+        };
       }),
 
       // --- Feedback Actions ---
