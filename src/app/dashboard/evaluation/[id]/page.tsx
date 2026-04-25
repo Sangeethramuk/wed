@@ -25,7 +25,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { TriageSidebar } from "@/components/evaluation/triage-sidebar"
+import { AssignmentSubmissionsTable } from "@/components/evaluation/assignment-submissions-table"
 import { motion } from "framer-motion"
+import { Empty, EmptyContent, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
 
 export default function AssignmentDetails({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -117,12 +119,9 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
 
   // Stats per EDUCAITORS_DS_GUIDE.md: hex accents, number takes the accent,
   // icon sits in a soft-tinted square of the same hue, slate-400 label.
-  const stats: { label: string; value: number; icon: typeof Users; accent: string }[] = [
-    { label: "Total Papers", value: 60, icon: Users, accent: "#1F4E8C" },
-    { label: "Pending", value: 60 - gradedSubmissions.length, icon: Clock, accent: "#F59E0B" },
-    { label: "Critical", value: 8, icon: AlertTriangle, accent: "#EF4444" },
-    { label: "Focus", value: 12, icon: Zap, accent: "#1F4E8C" },
-    { label: "Good to go", value: 40, icon: CheckCircle2, accent: "#10B981" },
+  const stats: { label: string; value: string; subtext?: string; icon: typeof Users; accent: string }[] = [
+    { label: "Submissions", value: "42 / 50 Submitted", icon: Users, accent: "#1F4E8C" },
+    { label: "To Grade", value: "14 Remaining", icon: Clock, accent: "#F59E0B" },
   ]
 
   const handleStudentSelect = (studentId: string) => {
@@ -132,6 +131,11 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
   const handleBulkApprove = (ids: string[]) => {
     setGradedSubmissions(prev => [...new Set([...prev, ...ids])])
   }
+
+  // Check if all submissions are ready (for publish button enablement)
+  // Since we are using mock data in the table, we'll assume there are 14 more to grade
+  const allSubmissionsReady = false 
+  const remainingToGrade = 14
 
   return (
     <div
@@ -156,7 +160,7 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div className="space-y-3 max-w-3xl">
           <p className="text-xs font-semibold tracking-wider text-slate-400">
-            Assignment Overview
+            Computer Science • Class 10A
           </p>
           <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 leading-tight">
             {assignment.title}
@@ -164,37 +168,39 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
           <p className="text-sm md:text-base text-slate-500 leading-relaxed">
             {assignment.description}
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-4 pt-1">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+              <Clock className="h-3.5 w-3.5" />
+              Deadline: <span className="text-slate-900">Oct 24, 2024</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+              <Users className="h-3.5 w-3.5" />
+              Total Students: <span className="text-slate-900">50</span>
+            </div>
             <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">
               #{assignment.id.toUpperCase()}
             </span>
-            <span
-              className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold"
-              style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE', color: '#1F4E8C' }}
-            >
-              Target Fix: {assignment.targetFix.toUpperCase()}
-            </span>
           </div>
         </div>
-        {/* Publish CTA — only present once cohort grading is complete.
-            After publish the button reflects the locked 'Published' state
-            with the guide's emerald palette. Spot-check escalation gate
-            still runs inside handlePublishCohort. */}
-        {gradingComplete && (
+        {/* Publish Grades Button — disabled until all ready.
+            Added tooltip on hover if disabled. */}
+        <div className="group relative">
           <button
             onClick={handlePublishCohort}
-            disabled={cohortPublished}
+            disabled={!allSubmissionsReady || cohortPublished}
             className="inline-flex items-center gap-2 h-11 px-6 rounded-lg text-sm font-semibold transition-colors disabled:cursor-not-allowed shrink-0"
             style={
               cohortPublished
                 ? { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0', borderWidth: 1, color: '#047857' }
-                : { backgroundColor: '#1F4E8C', color: '#FFFFFF' }
+                : !allSubmissionsReady 
+                  ? { backgroundColor: '#F1F5F9', color: '#94A3B8', border: '1px solid #E2E8F0' }
+                  : { backgroundColor: '#1F4E8C', color: '#FFFFFF' }
             }
             onMouseEnter={(e) => {
-              if (!cohortPublished) e.currentTarget.style.backgroundColor = '#1E3A5F'
+              if (allSubmissionsReady && !cohortPublished) e.currentTarget.style.backgroundColor = '#1E3A5F'
             }}
             onMouseLeave={(e) => {
-              if (!cohortPublished) e.currentTarget.style.backgroundColor = '#1F4E8C'
+              if (allSubmissionsReady && !cohortPublished) e.currentTarget.style.backgroundColor = '#1F4E8C'
             }}
           >
             {cohortPublished ? (
@@ -205,11 +211,16 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
             ) : (
               <>
                 <Send className="h-4 w-4" />
-                Publish cohort grades
+                Publish grades
               </>
             )}
           </button>
-        )}
+          {!allSubmissionsReady && !cohortPublished && (
+            <div className="absolute top-full right-0 mt-2 p-2 bg-slate-900 text-white text-[10px] rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+              You still need to grade {remainingToGrade} submissions
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Main Content Tabs */}
@@ -324,81 +335,67 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
                     transition={{ delay: i * 0.1 }}
                   >
                     <div
-                      className="rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-slate-300"
+                      className="rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-slate-300 h-full"
                       style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
                     >
-                      <div className="flex items-start justify-between">
+                      <div className="flex flex-col h-full justify-between gap-3">
+                        <div className="flex items-start justify-between">
+                          <p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">{stat.label}</p>
+                          <div 
+                            className="p-1.5 rounded-lg"
+                            style={{ backgroundColor: `${stat.accent}10` }}
+                          >
+                            <stat.icon className="h-4 w-4" style={{ color: stat.accent }} />
+                          </div>
+                        </div>
                         <div className="space-y-1">
-                          <p className="text-xs font-semibold tracking-wider text-slate-400">{stat.label}</p>
                           <p
-                            className="text-2xl font-semibold tracking-tight tabular-nums"
-                            style={{ color: stat.accent }}
+                            className="text-lg font-bold tracking-tight text-slate-900"
                           >
                             {stat.value}
                           </p>
+                          <p className="text-xs text-slate-500 font-medium whitespace-pre-line">
+                            {stat.subtext}
+                          </p>
                         </div>
-                        <stat.icon className="h-5 w-5 mt-0.5 opacity-80" style={{ color: stat.accent }} />
                       </div>
                     </div>
                   </motion.div>
                 ))}
               </div>
 
-              {/* Full Width Submissions Table — TriageSidebar keeps its own
-                  chrome; wrapper just provides the guide's card surface. */}
-              <div
-                className="rounded-xl overflow-hidden border border-slate-200 bg-white h-[800px]"
-                style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-              >
-                <TriageSidebar
-                  selectedStudentId=""
-                  onStudentSelect={handleStudentSelect}
-                  gradedSubmissions={gradedSubmissions}
-                  onBulkApprove={handleBulkApprove}
-                />
-              </div>
+              {/* Full Width Submissions Table */}
+              <AssignmentSubmissionsTable onRowClick={handleStudentSelect} />
             </>
           )}
         </TabsContent>
 
-        <TabsContent value="analytics" className="outline-none">
-          <div
-            className="rounded-xl border border-slate-200 bg-white p-20 text-center"
-            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-          >
-            <div className="space-y-4 max-w-sm mx-auto">
-              <div
-                className="mx-auto w-16 h-16 rounded-full flex items-center justify-center border"
-                style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }}
-              >
-                <BarChart3 className="h-8 w-8" style={{ color: '#1F4E8C' }} />
-              </div>
-              <h3 className="text-xl font-semibold tracking-tight text-slate-900">Analytics coming soon</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
+        <TabsContent value="analytics" className="outline-none pt-6">
+          <Empty className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.04)] py-24">
+            <EmptyContent>
+              <EmptyMedia variant="icon" className="bg-blue-50 text-[#1F4E8C] size-12">
+                <BarChart3 className="size-6" />
+              </EmptyMedia>
+              <EmptyTitle className="text-lg font-semibold text-slate-900">No data available yet</EmptyTitle>
+              <EmptyDescription className="text-slate-500">
                 Advanced performance tracking and cohort benchmarking metrics are being calibrated for this course.
-              </p>
-            </div>
-          </div>
+              </EmptyDescription>
+            </EmptyContent>
+          </Empty>
         </TabsContent>
 
-        <TabsContent value="preview" className="outline-none">
-          <div
-            className="rounded-xl border border-slate-200 bg-white p-20 text-center"
-            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-          >
-            <div className="space-y-4 max-w-sm mx-auto">
-              <div
-                className="mx-auto w-16 h-16 rounded-full flex items-center justify-center border"
-                style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }}
-              >
-                <Eye className="h-8 w-8" style={{ color: '#1F4E8C' }} />
-              </div>
-              <h3 className="text-xl font-semibold tracking-tight text-slate-900">Assignment Preview</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
+        <TabsContent value="preview" className="outline-none pt-6">
+          <Empty className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.04)] py-24">
+            <EmptyContent>
+              <EmptyMedia variant="icon" className="bg-blue-50 text-[#1F4E8C] size-12">
+                <Eye className="size-6" />
+              </EmptyMedia>
+              <EmptyTitle className="text-lg font-semibold text-slate-900">No data available yet</EmptyTitle>
+              <EmptyDescription className="text-slate-500">
                 Preview the assignment as it appears to students. Coming soon in the next update.
-              </p>
-            </div>
-          </div>
+              </EmptyDescription>
+            </EmptyContent>
+          </Empty>
         </TabsContent>
       </Tabs>
     </div>
