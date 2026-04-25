@@ -180,9 +180,9 @@ export default function FeedbackPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-white font-sans select-none overflow-hidden">
+    <div className="flex flex-col h-screen bg-white font-sans select-none overflow-hidden border-t border-slate-200">
       {/* 1:1 Layout Header - Cleaned up */}
-      <header className="h-16 border-b border-slate-200 bg-[#F8F9FA] flex items-center justify-between px-8 shrink-0 z-50">
+      <header className="h-14 border-b border-slate-200 bg-[#F8F9FA] flex items-center justify-between px-8 shrink-0 z-50">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-lg hover:bg-slate-50">

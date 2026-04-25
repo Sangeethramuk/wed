@@ -17,9 +17,9 @@ export function InstructorFeedbackPanel({ value, onChange, onVoiceClick, onFinal
   const isDisabled = !value.trim();
 
   return (
-    <div className="shrink-0 border-t border-slate-100 bg-white px-8 py-3 transition-all duration-300">
+    <div className="shrink-0 border-t border-slate-100 bg-white px-8 py-2 transition-all duration-300">
       <div className="max-w-3xl mx-auto">
-        <div className={`flex items-center justify-between cursor-pointer group ${isCollapsed ? 'mb-0' : 'mb-4'}`} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <div className={`flex items-center justify-between cursor-pointer group ${isCollapsed ? 'mb-0' : 'mb-2'}`} onClick={() => setIsCollapsed(!isCollapsed)}>
           <div className="space-y-0.5">
             <h4 className="text-[12px] font-bold text-slate-900 tracking-tight flex items-center gap-2">
               <MessageSquare className="w-3.5 h-3.5 text-[#1F4E8C]" />
@@ -51,7 +51,7 @@ export function InstructorFeedbackPanel({ value, onChange, onVoiceClick, onFinal
                   <textarea
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    className="w-full min-h-[80px] p-4 text-[14px] leading-relaxed text-slate-700 bg-[#F8F9FA] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1F4E8C]/5 focus:border-[#1F4E8C]/30 transition-all placeholder:text-slate-300 placeholder:italic font-medium"
+                    className="w-full min-h-[60px] p-3 text-[13px] leading-relaxed text-slate-700 bg-[#F8F9FA] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1F4E8C]/5 focus:border-[#1F4E8C]/30 transition-all placeholder:text-slate-300 placeholder:italic font-medium"
                     placeholder="Add a personal note... e.g. Good improvement from last submission. Please meet me if you need help."
                   />
                   <div className="absolute bottom-3 right-3">
