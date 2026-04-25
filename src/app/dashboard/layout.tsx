@@ -9,7 +9,12 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <SidebarProvider>
+    <SidebarProvider
+      style={{
+        "--sidebar-width": "17rem",
+        "--sidebar-width-icon": "4rem",
+      } as React.CSSProperties}
+    >
       <AppSidebar />
       <SidebarInset className="h-svh overflow-hidden">
         <DashboardHeader />
