@@ -48,7 +48,7 @@ const mainNavItems = [
   },
   {
     title: "Result Insights",
-    url: "/dashboard/evaluation/results",
+    url: "/dashboard/post-evaluation",
     icon: BarChart3,
   },
 ]

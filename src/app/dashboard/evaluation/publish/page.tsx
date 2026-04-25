@@ -20,8 +20,7 @@ import {
   Sparkles,
   Save,
   Rocket,
-  Loader2,
-  FileDown
+  Loader2
 } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
@@ -553,9 +552,11 @@ function PublishResultsContent() {
                 transition={{ delay: 0.8 }}
                 className="space-y-3 pt-2"
               >
-                <Button className="w-full h-13 font-bold rounded-xl bg-primary text-white shadow-xl shadow-primary/10 transition-transform active:scale-95">
-                  Preview Student View
-                </Button>
+                <Link href="/dashboard" className="block w-full">
+                  <Button className="w-full h-13 font-bold rounded-xl bg-primary text-white shadow-xl shadow-primary/10 transition-transform active:scale-95">
+                    Return to dashboard
+                  </Button>
+                </Link>
                 <Link href={`/dashboard/evaluation/results?id=${assignmentId}`} className="block w-full">
                   <Button 
                     variant="ghost" 
@@ -564,10 +565,6 @@ function PublishResultsContent() {
                     Return to Report
                   </Button>
                 </Link>
-                <Button variant="link" className="text-xs font-bold text-primary/60 hover:text-primary">
-                  <FileDown className="mr-2 h-3.5 w-3.5" />
-                  Download Release Summary
-                </Button>
               </motion.div>
             </motion.div>
           </div>
