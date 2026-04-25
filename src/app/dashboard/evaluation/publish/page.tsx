@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -24,17 +24,21 @@ import {
   FileDown
 } from "lucide-react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { cn } from "@/lib/utils"
 
-export default function PublishResultsPage() {
+function PublishResultsContent() {
+  const searchParams = useSearchParams()
+  const assignmentId = searchParams.get("id") || "SWE-PH2"
+  
   const [releaseTime, setReleaseTime] = useState<"standard" | "immediate" | "custom">("standard")
   const [appealsEnabled, setAppealsEnabled] = useState(false)
   const [appealDuration, setAppealDuration] = useState("7 Days")
   const [appealRules, setAppealRules] = useState({
-    appealWindow: true,
-    oneAppeal: true,
-    viewFeedback: true,
-    aiPrescreen: true,
+    appealWindow: false,
+    oneAppeal: false,
+    viewFeedback: false,
+    aiPrescreen: false,
   })
   const [isAcknowledged, setIsAcknowledged] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -75,12 +79,18 @@ export default function PublishResultsPage() {
     }
   ]
 
+  const assignmentInfo = {
+    course: assignmentId === "DB-Q1" ? "Symbiosis University" : "Advanced Algorithm Design",
+    name: assignmentId === "DB-Q1" ? "Database Queries - Quiz 1" : "Final Project",
+    students: assignmentId === "DB-Q1" ? "1 Students" : "45 Students"
+  }
+
   return (
     <div className="min-h-screen bg-muted/40 -m-4 p-8 animate-in fade-in duration-500">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header Section */}
         <header className="space-y-4">
-          <Link href="/dashboard/evaluation/results">
+          <Link href={`/dashboard/evaluation/results?id=${assignmentId}`}>
             <Button variant="ghost" size="sm" className="pl-0 text-muted-foreground hover:text-foreground transition-colors group">
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" /> Back to Insights
             </Button>
@@ -99,7 +109,7 @@ export default function PublishResultsPage() {
             {/* Section 1: Release Timing */}
             <Card className="bg-white shadow-sm border-border/50 overflow-hidden">
               <CardHeader className="pb-4 bg-white">
-                <CardTitle className="text-lg font-bold tracking-tight">Choose Release Time</CardTitle>
+                <CardTitle className="text-xl font-bold tracking-tight">Choose Release Time</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2.5 pb-6">
                 {releaseOptions.map((option) => (
@@ -144,12 +154,23 @@ export default function PublishResultsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <CardTitle className="text-xl font-bold tracking-tight">Student Appeals</CardTitle>
-                    <CardDescription className="text-sm font-medium text-muted-foreground leading-none">
+                    <CardDescription className="text-sm font-normal text-muted-foreground leading-none">
                       Allow students to request a review after results are published.
                     </CardDescription>
                   </div>
                   <div 
-                    onClick={() => setAppealsEnabled(!appealsEnabled)}
+                    onClick={() => {
+                      const nextState = !appealsEnabled
+                      setAppealsEnabled(nextState)
+                      if (nextState) {
+                        setAppealRules({
+                          appealWindow: false,
+                          oneAppeal: false,
+                          viewFeedback: false,
+                          aiPrescreen: false,
+                        })
+                      }
+                    }}
                     className={cn(
                       "w-11 h-6 rounded-full p-1 cursor-pointer transition-colors flex items-center",
                       appealsEnabled ? "bg-primary" : "bg-muted-foreground/20"
@@ -269,36 +290,34 @@ export default function PublishResultsPage() {
 
             {/* 2. Combined Summary Card */}
             <Card className="bg-white shadow-xl border-border/20 overflow-hidden">
-              <CardHeader className="pb-0 border-b border-border/5">
-                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground/60">Summary</CardTitle>
-              </CardHeader>
               <CardContent className="p-0">
+                {/* Summary Header */}
+                <div className="px-6 pt-6 pb-2">
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">Summary</h2>
+                </div>
+                
                 {/* Project Details Section */}
-                <div className="px-6 pt-2 pb-6 space-y-5">
-                  <div className="grid gap-4">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-wide">Course Name</p>
-                      <p className="text-[13px] font-bold text-foreground leading-snug">Advanced Algorithm Design</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-wide">Assignment Name</p>
-                      <p className="text-[13px] font-bold text-foreground leading-snug">Final Project</p>
-                    </div>
-                    <div className="flex justify-between items-start pt-1">
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-wide">Publishing Date</p>
-                        <p className="text-[13px] font-bold text-primary">
-                          {releaseOptions.find(o => o.id === releaseTime)?.subtitle || "Immediately"}
-                        </p>
-                      </div>
-                      <div className="space-y-1 text-right">
-                        <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-wide">Class Strength</p>
-                        <p className="text-[13px] font-bold text-foreground">45 Students</p>
-                      </div>
-                    </div>
+                <div className="px-6 pt-1 pb-6 space-y-4">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-wide">Course Name</p>
+                    <p className="text-[13px] font-bold text-foreground leading-snug">{assignmentInfo.course}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-wide">Assignment Name</p>
+                    <p className="text-[13px] font-bold text-foreground leading-snug">{assignmentInfo.name}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-wide">Class Strength</p>
+                    <p className="text-[13px] font-bold text-foreground">{assignmentInfo.students}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-wide">Publishing Date</p>
+                    <p className="text-[13px] font-bold text-primary">
+                      {releaseOptions.find(o => o.id === releaseTime)?.subtitle || "Immediately"}
+                    </p>
                   </div>
 
-                  <div className="pt-4 border-t border-border/10 space-y-3">
+                  <div className="pt-3 border-t border-border/10 space-y-3">
                     <div className="flex items-center gap-3 text-[12px] font-bold text-emerald-600">
                       <CheckCircle2 className="h-4 w-4" />
                       All students graded
@@ -325,7 +344,7 @@ export default function PublishResultsPage() {
                     >
                       <div className={cn(
                         "h-4 w-4 rounded border shrink-0 mt-0.5 transition-all flex items-center justify-center",
-                        isAcknowledged ? "bg-primary border-primary text-white" : "border-border/60 bg-white group-hover:border-primary/50"
+                        isAcknowledged ? "bg-primary border-primary text-white" : "border-border bg-white group-hover:border-primary/50"
                       )}>
                         {isAcknowledged && <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }}><CheckCircle2 className="h-3 w-3" /></motion.div>}
                       </div>
@@ -366,10 +385,6 @@ export default function PublishResultsPage() {
                         </>
                       )}
                     </Button>
-                    <Button variant="outline" className="w-full h-12 font-bold rounded-xl border-border/40 text-sm hover:bg-muted/30 transition-colors bg-white">
-                      <Save className="mr-2 h-4 w-4" />
-                      Save for Later
-                    </Button>
                     <p className="text-[9px] text-center text-muted-foreground/40 pt-2 italic">
                       Protocol v2.4.1 • Secure Release
                     </p>
@@ -402,43 +417,56 @@ export default function PublishResultsPage() {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="relative w-full max-w-[440px] bg-white rounded-[24px] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.12)] border border-white p-8 text-center space-y-8 overflow-hidden"
             >
-              {/* Animated Success Visual */}
+              {/* Ultra-Smooth Celebratory Success Visual */}
               <div className="flex flex-col items-center">
-                <div className="relative h-20 w-20 flex items-center justify-center">
+                <div className="relative h-24 w-24 flex items-center justify-center">
+                  
+                  {/* Outer Diffused Ripple Layers */}
                   <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="absolute inset-0 rounded-full bg-emerald-500/5"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1.8, opacity: 0 }}
+                    transition={{ duration: 1.5, ease: "easeOut", repeat: Infinity, repeatDelay: 1 }}
+                    className="absolute inset-0 rounded-full border border-emerald-500/20"
                   />
                   <motion.div 
                     initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: [0.8, 1.2, 1], opacity: 1 }}
-                    transition={{ delay: 1.2, duration: 0.6 }}
-                    className="absolute inset-0 rounded-full border border-emerald-500/20"
+                    animate={{ scale: 1.4, opacity: 0 }}
+                    transition={{ duration: 1.2, ease: "easeOut", repeat: Infinity, repeatDelay: 1.3 }}
+                    className="absolute inset-0 rounded-full border border-emerald-500/30"
                   />
-                  <svg className="h-20 w-20 transform -rotate-90">
+                  
+                  {/* Soft Emerald Gradient Glow */}
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                    className="absolute inset-0 rounded-full bg-gradient-to-tr from-emerald-500/10 via-emerald-400/5 to-transparent blur-sm"
+                  />
+
+                  {/* Main Circle Ring */}
+                  <svg className="absolute inset-0 h-24 w-24 transform -rotate-90">
                     <motion.circle
-                      cx="40"
-                      cy="40"
-                      r="38"
+                      cx="48"
+                      cy="48"
+                      r="44"
                       stroke="currentColor"
-                      strokeWidth="2"
+                      strokeWidth="2.5"
                       fill="transparent"
-                      className="text-emerald-500"
+                      className="text-emerald-500/80"
                       initial={{ pathLength: 0 }}
                       animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.8, ease: "easeInOut" }}
+                      transition={{ 
+                        duration: 0.9, 
+                        ease: [0.16, 1, 0.3, 1] // Custom organic ease
+                      }}
                     />
                   </svg>
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-                    className="absolute inset-0 flex items-center justify-center"
-                  >
+
+                  {/* Organic Checkmark Animation */}
+                  <div className="relative z-10 flex items-center justify-center">
                     <motion.svg 
                       viewBox="0 0 24 24" 
-                      className="h-8 w-8 text-emerald-500"
+                      className="h-10 w-10 text-emerald-600"
                       fill="none" 
                       stroke="currentColor" 
                       strokeWidth="3.5" 
@@ -447,12 +475,28 @@ export default function PublishResultsPage() {
                     >
                       <motion.polyline 
                         points="20 6 9 17 4 12" 
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ duration: 0.5, delay: 0.7 }}
+                        initial={{ pathLength: 0, scale: 0.8 }}
+                        animate={{ pathLength: 1, scale: 1 }}
+                        transition={{ 
+                          pathLength: { duration: 0.6, delay: 0.4, ease: "easeInOut" },
+                          scale: { 
+                            type: "spring", 
+                            stiffness: 260, 
+                            damping: 20, 
+                            delay: 0.4 
+                          }
+                        }}
                       />
                     </motion.svg>
-                  </motion.div>
+                  </div>
+
+                  {/* Weightless Center Fill */}
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
+                    className="absolute h-20 w-20 rounded-full bg-emerald-50/50 backdrop-blur-[2px]"
+                  />
                 </div>
               </div>
 
@@ -472,7 +516,7 @@ export default function PublishResultsPage() {
                   transition={{ delay: 0.5 }}
                   className="text-muted-foreground font-medium"
                 >
-                  45 students can now view grades and feedback.
+                  {assignmentInfo.students} can now view grades and feedback.
                 </motion.p>
               </div>
 
@@ -512,12 +556,12 @@ export default function PublishResultsPage() {
                 <Button className="w-full h-13 font-bold rounded-xl bg-primary text-white shadow-xl shadow-primary/10 transition-transform active:scale-95">
                   Preview Student View
                 </Button>
-                <Link href="/dashboard" className="block w-full">
+                <Link href={`/dashboard/evaluation/results?id=${assignmentId}`} className="block w-full">
                   <Button 
                     variant="ghost" 
                     className="w-full h-11 font-bold rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30"
                   >
-                    Return to Dashboard
+                    Return to Report
                   </Button>
                 </Link>
                 <Button variant="link" className="text-xs font-bold text-primary/60 hover:text-primary">
@@ -530,5 +574,13 @@ export default function PublishResultsPage() {
         )}
       </AnimatePresence>
     </div>
+  )
+}
+
+export default function PublishResultsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading Publish Settings...</div>}>
+      <PublishResultsContent />
+    </Suspense>
   )
 }

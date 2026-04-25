@@ -7,8 +7,9 @@ import {
   ClipboardCheck,
   BarChart3,
   RefreshCcw,
+  FileText,
   HelpCircle,
-  LogOut,
+  LogOut
 } from "lucide-react"
 
 import {
@@ -16,7 +17,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -26,106 +26,111 @@ import {
 import { cn } from "@/lib/utils"
 
 const mainNavItems = [
-  { title: "Home", url: "/dashboard", icon: Home },
-  { title: "Assignments", url: "/dashboard/assignments", icon: ClipboardCheck },
-  { title: "Grading Desk", url: "/dashboard/evaluation", icon: ClipboardCheck },
-  { title: "Re-evaluation", url: "/dashboard/re-evaluation/triage", icon: RefreshCcw },
-  { title: "Result Insights", url: "/dashboard/post-evaluation", icon: BarChart3 },
+  {
+    title: "Home",
+    url: "/dashboard",
+    icon: Home,
+  },
+  {
+    title: "Assignments",
+    url: "/dashboard/pre-evaluation",
+    icon: FileText,
+  },
+  {
+    title: "Grading Desk",
+    url: "/dashboard/evaluation",
+    icon: ClipboardCheck,
+  },
+  {
+    title: "Re-evaluation",
+    url: "/dashboard/re-evaluation/triage",
+    icon: RefreshCcw,
+  },
+  {
+    title: "Result Insights",
+    url: "/dashboard/evaluation/results",
+    icon: BarChart3,
+  },
 ]
 
-const HIDE_WHEN_COLLAPSED = "group-data-[collapsible=icon]:hidden"
-
-function isItemActive(pathname: string, itemUrl: string) {
-  if (itemUrl === "/dashboard") return pathname === "/dashboard"
-  if (itemUrl === "/dashboard/assignments") return pathname.startsWith("/dashboard/assignments") || pathname.startsWith("/dashboard/pre-evaluation")
-  return pathname.startsWith(itemUrl)
-}
-
 export function AppSidebar() {
-  const pathname = usePathname() ?? ""
+  const pathname = usePathname()
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border h-16 justify-center px-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:items-center">
+    <Sidebar collapsible="icon" className="border-r border-border/10">
+      <SidebarHeader className="border-b border-border/10 h-16 justify-center px-4">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
-              render={<Link href="/dashboard" />}
+              asChild
+              className="hover:bg-transparent"
               tooltip="Symbiosis University"
-              className="group-data-[collapsible=icon]:justify-center"
             >
-              <div className="flex aspect-square size-9 items-center justify-center rounded-full bg-destructive/10 text-destructive shrink-0">
-                <span className="text-xs font-semibold">SIU</span>
-              </div>
-              <div className={cn("flex flex-col leading-tight min-w-0", HIDE_WHEN_COLLAPSED)}>
-                <span className="font-semibold text-sm truncate">Symbiosis University</span>
-              </div>
+              <Link href="/dashboard">
+                <div className="flex aspect-square size-10 items-center justify-center rounded-full bg-red-50 text-red-600 shrink-0 border border-red-100 shadow-sm group-data-[collapsible=icon]:size-8">
+                  <span className="text-[10px] font-black tracking-tighter group-data-[collapsible=icon]:text-[8px]">SIU</span>
+                </div>
+                <div className="flex flex-col gap-0.5 leading-none ml-2 group-data-[collapsible=icon]:hidden">
+                  <span className="font-bold text-sm tracking-tight text-[#1E293B]">Symbiosis University</span>
+                </div>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:pt-3">
-        <SidebarGroup className="group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:items-center">
-          <SidebarGroupContent className="group-data-[collapsible=icon]:w-full">
-            <SidebarMenu className="gap-1 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:items-center">
-              {mainNavItems.map((item) => {
-                const active = isItemActive(pathname, item.url)
-                return (
-                  <SidebarMenuItem key={item.title} className="group-data-[collapsible=icon]:w-auto">
-                    <SidebarMenuButton
-                      size="lg"
-                      isActive={active}
-                      render={<Link href={item.url} />}
-                      tooltip={item.title}
-                      className={cn(
-                        "group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center",
-                        active && "bg-primary/10 text-primary data-active:bg-primary/10 data-active:text-primary hover:bg-primary/15 hover:text-primary",
-                      )}
-                    >
-                      <item.icon className="size-5" />
-                      <span className={cn("text-sm font-medium", HIDE_WHEN_COLLAPSED)}>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
+      <SidebarContent className="px-2 pt-4">
+        <SidebarGroup>
+          <SidebarMenu className="gap-1">
+            {mainNavItems.map((item) => {
+              const isActive = pathname === item.url || (item.url !== "/dashboard" && pathname?.startsWith(item.url))
+              return (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip={item.title}
+                    className={cn(
+                      "h-11 px-4 rounded-xl transition-all duration-200 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center",
+                      isActive 
+                        ? "bg-[#2563EB]/5 text-[#2563EB] font-bold shadow-sm" 
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
+                  >
+                    <Link href={item.url}>
+                      <item.icon className={cn("size-5 shrink-0", !isActive && "text-muted-foreground/60")} />
+                      <span className="text-[14px] group-data-[collapsible=icon]:hidden ml-1">{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )
+            })}
+          </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border px-3 py-4 gap-1 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:items-center">
-        <SidebarMenu className="gap-1 group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:items-center">
-          <SidebarMenuItem className="group-data-[collapsible=icon]:w-auto">
-            <SidebarMenuButton
-              size="lg"
-              tooltip="Help & Information"
-              className="group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center"
-            >
-              <HelpCircle className="size-5" />
-              <span className={cn("text-sm font-medium", HIDE_WHEN_COLLAPSED)}>Help & Information</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem className="group-data-[collapsible=icon]:w-auto">
-            <SidebarMenuButton
-              size="lg"
-              tooltip="Log out"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center"
-            >
-              <LogOut className="size-5" />
-              <span className={cn("text-sm font-medium", HIDE_WHEN_COLLAPSED)}>Log out</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-        <div
-          className={cn(
-            "flex w-full items-center justify-center pt-3 mt-1 border-t border-sidebar-border/60",
-            HIDE_WHEN_COLLAPSED,
-          )}
-        >
-          <span className="text-xs text-muted-foreground/70 tracking-wider">
-            Powered by <span className="font-semibold text-foreground">EducAItors</span>
+      <SidebarFooter className="border-t border-border/10 p-6 space-y-4 group-data-[collapsible=icon]:p-2">
+        <div className="flex flex-col gap-4">
+          <Link href="#" className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors group">
+            <div className="p-1.5 rounded-lg bg-muted/50 group-hover:bg-muted transition-colors">
+              <HelpCircle className="size-4" />
+            </div>
+            <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">Help & Information</span>
+          </Link>
+          <Link href="#" className="flex items-center gap-3 text-red-500/80 hover:text-red-600 transition-colors group">
+            <div className="p-1.5 rounded-lg bg-red-50 group-hover:bg-red-100 transition-colors">
+              <LogOut className="size-4" />
+            </div>
+            <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">Log out</span>
+          </Link>
+        </div>
+
+        <div className="flex w-full flex-col items-center justify-center gap-1.5 pt-4 opacity-40 group-data-[collapsible=icon]:hidden">
+          <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest text-center">
+            Powered by
+          </span>
+          <span className="font-bold text-muted-foreground text-xs tracking-tight">
+            Educ<span className="text-blue-500">AI</span>tors
           </span>
         </div>
       </SidebarFooter>

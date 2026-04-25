@@ -125,10 +125,9 @@ export default function WorkspacePage() {
              </div>
           </div>
 
-          <Button
-            size="lg"
-            onClick={() => window.location.href = '/dashboard/grading'}
-            className="w-full"
+          <Button 
+            onClick={() => window.location.href = `/dashboard/evaluation/results?id=${currentAssignmentId}`}
+            className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-xl transition-all"
           >
             Return to hub
           </Button>
@@ -219,7 +218,6 @@ export default function WorkspacePage() {
           {/* Workspace Toolbar */}
           <div className="h-11 bg-background border-b border-border flex items-center justify-between px-6 shrink-0">
              <div className="flex gap-6">
-                {/* TODO: migrate to shadcn Tabs primitive */}
                 <Button variant="ghost" size="sm" aria-current="page" className="border-b-2 border-transparent aria-[current=page]:border-foreground rounded-none">
                    <FileText className="w-3.5 h-3.5" /> Normal
                 </Button>

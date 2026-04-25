@@ -70,7 +70,7 @@ function CalibrationBadge({ state }: { state: EvaluationAssignment["calibrationS
 
 function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
   const router = useRouter()
-  const { calibration } = useGradingStore()
+  const { calibration, initCalibration } = useGradingStore()
 
   const calData = calibration[assignment.id]
   const isCalibrated = calData?.phase === "complete" || assignment.calibrationState === "complete"
@@ -80,16 +80,18 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
       router.push(`/dashboard/evaluation/results?id=${assignment.id}`)
       return
     }
-    // Both the calibration CTAs (Begin / Continue) and Enter Desk land on
-    // Assignment Details. That page has the blind-grading-required gate card
-    // (first-time + continuing copy) that acts as the calibration intro.
-    // The Enter Desk rows pass the gate via the overview's calibrationState
-    // and see the regular submissions content instead.
+    
+    if (!isCalibrated) {
+      if (!calData) initCalibration(assignment.id)
+      router.push(`/dashboard/evaluation/${assignment.id}/calibrate`)
+      return
+    }
+    
     router.push(`/dashboard/evaluation/${assignment.id}`)
   }
 
   const actionLabel = () => {
-    if (assignment.gradingStatus === "complete") return "View Results"
+    if (assignment.gradingStatus === "complete") return "View Insights"
     if (!isCalibrated && (!calData || calData.phase === "not_started")) return "Begin Calibration"
     if (!isCalibrated && calData?.phase && calData.phase !== "complete") return "Continue Calibration"
     return "Enter Desk"
@@ -150,19 +152,21 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
       {/* Flags */}
       <div className="w-14 shrink-0 flex justify-center">
         {assignment.integrityFlags > 0 ? (
-          <Tooltip>
-            <TooltipTrigger>
-              <span
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold border animate-pulse cursor-help"
-                style={{ backgroundColor: "#FEF2F2", color: "#EF4444", borderColor: "#FECACA" }}
-              >
-                <ShieldAlert className="h-2.5 w-2.5" /> {assignment.integrityFlags}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              {assignment.integrityFlags} integrity flag{assignment.integrityFlags > 1 ? "s" : ""} detected
-            </TooltipContent>
-          </Tooltip>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold border animate-pulse cursor-help"
+                  style={{ backgroundColor: "#FEF2F2", color: "#EF4444", borderColor: "#FECACA" }}
+                >
+                  <ShieldAlert className="h-2.5 w-2.5" /> {assignment.integrityFlags}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {assignment.integrityFlags} integrity flag{assignment.integrityFlags > 1 ? "s" : ""} detected
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         ) : (
           <span className="text-xs text-slate-300">—</span>
         )}
@@ -242,12 +246,16 @@ function DeptGroup({ department, assignments }: { department: string; assignment
           </span>
         </div>
         <div className="flex items-center gap-5 text-xs text-slate-500">
-          <Tooltip>
-            <TooltipTrigger render={<span className="flex items-center gap-1.5 cursor-help font-semibold" />}>
-              <BarChart3 className="h-3 w-3" /> Avg Cal: {avgCal}%
-            </TooltipTrigger>
-            <TooltipContent>Average calibration confidence across this department</TooltipContent>
-          </Tooltip>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-1.5 cursor-help font-semibold">
+                  <BarChart3 className="h-3 w-3" /> Avg Cal: {avgCal}%
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Average calibration confidence across this department</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           {totalFlags > 0 && (
             <span className="flex items-center gap-1.5 font-semibold" style={{ color: "#F59E0B" }}>
               <AlertCircle className="h-3 w-3" /> {totalFlags} flag{totalFlags !== 1 ? "s" : ""}
