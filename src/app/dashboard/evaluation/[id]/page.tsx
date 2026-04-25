@@ -99,6 +99,10 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
   const overviewCalProgress = overviewAssignment?.calibrationStatus ?? 0
   const blindHasStarted = blindGradedCount > 0 || overviewCalProgress > 0
   const blindRemainingCount = Math.max(blindTotalCount - blindGradedCount, 0)
+  // Publish CTA in the metadata bar only appears once cohort grading reads
+  // complete on the Triage overview store. The standalone "Ready to finalize"
+  // card has been removed in favor of this metadata-bar CTA.
+  const gradingComplete = overviewAssignment?.gradingStatus === 'complete'
 
   if (!assignment) {
     return (
@@ -143,63 +147,69 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
         Back to Assignments
       </button>
 
-      {/* Hero Card — per EDUCAITORS_DS_GUIDE.md: white surface, slate-200 border,
-          inline subtle shadow, slate text ramp, navy CTA with hex hover. */}
-      <div
-        className="rounded-xl border border-slate-200 bg-white p-8 md:p-10"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-      >
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-4 max-w-2xl">
-            <div className="space-y-1">
-              <p className="text-xs font-semibold tracking-wider text-slate-400">
-                Assignment Overview
-              </p>
-              <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 leading-tight">
-                {assignment.title}
-              </h1>
-            </div>
-            <p className="text-sm md:text-base text-slate-500 leading-relaxed">
-              {assignment.description}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                #{assignment.id.toUpperCase()}
-              </span>
-              <span
-                className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold"
-                style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE', color: '#1F4E8C' }}
-              >
-                Target Fix: {assignment.targetFix.toUpperCase()}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {blindGateActive ? (
-              <button
-                onClick={() => router.push(`/dashboard/evaluation/${id}/calibrate`)}
-                className="inline-flex items-center gap-2 h-11 px-6 rounded-lg text-sm font-semibold text-white transition-colors"
-                style={{ backgroundColor: '#1F4E8C' }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1E3A5F' }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#1F4E8C' }}
-              >
-                <EyeOff className="h-4 w-4" />
-                Start Blind Grading
-              </button>
-            ) : (
-              <button
-                onClick={() => router.push(`/dashboard/evaluation/${id}/grading`)}
-                className="inline-flex items-center gap-2 h-11 px-6 rounded-lg text-sm font-semibold text-white transition-colors"
-                style={{ backgroundColor: '#1F4E8C' }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1E3A5F' }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#1F4E8C' }}
-              >
-                Enter Grading Desk
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            )}
+      {/* Metadata panel — flat (no card chrome). Eyebrow + title +
+          description + badges live on the left, the Publish cohort grades
+          CTA is the only action and only appears when the cohort grading
+          status reads complete (and after publish locks in 'Published'
+          confirmation). Per-assignment workflow entry happens via the
+          submissions cohort table rows below — no hero CTA here. */}
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div className="space-y-3 max-w-3xl">
+          <p className="text-xs font-semibold tracking-wider text-slate-400">
+            Assignment Overview
+          </p>
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 leading-tight">
+            {assignment.title}
+          </h1>
+          <p className="text-sm md:text-base text-slate-500 leading-relaxed">
+            {assignment.description}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">
+              #{assignment.id.toUpperCase()}
+            </span>
+            <span
+              className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold"
+              style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE', color: '#1F4E8C' }}
+            >
+              Target Fix: {assignment.targetFix.toUpperCase()}
+            </span>
           </div>
         </div>
+        {/* Publish CTA — only present once cohort grading is complete.
+            After publish the button reflects the locked 'Published' state
+            with the guide's emerald palette. Spot-check escalation gate
+            still runs inside handlePublishCohort. */}
+        {gradingComplete && (
+          <button
+            onClick={handlePublishCohort}
+            disabled={cohortPublished}
+            className="inline-flex items-center gap-2 h-11 px-6 rounded-lg text-sm font-semibold transition-colors disabled:cursor-not-allowed shrink-0"
+            style={
+              cohortPublished
+                ? { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0', borderWidth: 1, color: '#047857' }
+                : { backgroundColor: '#1F4E8C', color: '#FFFFFF' }
+            }
+            onMouseEnter={(e) => {
+              if (!cohortPublished) e.currentTarget.style.backgroundColor = '#1E3A5F'
+            }}
+            onMouseLeave={(e) => {
+              if (!cohortPublished) e.currentTarget.style.backgroundColor = '#1F4E8C'
+            }}
+          >
+            {cohortPublished ? (
+              <>
+                <CheckCircle2 className="h-4 w-4" />
+                Published
+              </>
+            ) : (
+              <>
+                <Send className="h-4 w-4" />
+                Publish cohort grades
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Main Content Tabs */}
@@ -304,56 +314,6 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
             </motion.div>
           ) : (
             <>
-              {/* Cohort-level publish — guide-compliant white card with subtle
-                  shadow; brand-navy CTA flips to a soft-emerald 'Published'
-                  pill after success. Spot-check gate stays unchanged. */}
-              <div
-                className="rounded-xl border border-slate-200 bg-white"
-                style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-              >
-                <div className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold tracking-wider" style={{ color: '#1F4E8C' }}>Ready to finalize</p>
-                    <h3 className="text-lg font-semibold text-slate-900">
-                      {cohortPublished ? "Cohort grades published" : "Publish cohort grades"}
-                    </h3>
-                    <p className="text-sm text-slate-500">
-                      {cohortPublished
-                        ? "All submissions for this assignment have been released to students."
-                        : "Review the cohort below, then publish to release grades to all students in this assignment."}
-                    </p>
-                  </div>
-                  <button
-                    onClick={handlePublishCohort}
-                    disabled={cohortPublished}
-                    className="inline-flex items-center gap-2 h-11 px-6 rounded-lg text-sm font-semibold transition-colors disabled:cursor-not-allowed"
-                    style={
-                      cohortPublished
-                        ? { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0', borderWidth: 1, color: '#047857' }
-                        : { backgroundColor: '#1F4E8C', color: '#FFFFFF' }
-                    }
-                    onMouseEnter={(e) => {
-                      if (!cohortPublished) e.currentTarget.style.backgroundColor = '#1E3A5F'
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!cohortPublished) e.currentTarget.style.backgroundColor = '#1F4E8C'
-                    }}
-                  >
-                    {cohortPublished ? (
-                      <>
-                        <CheckCircle2 className="h-4 w-4" />
-                        Published
-                      </>
-                    ) : (
-                      <>
-                        <Send className="h-4 w-4" />
-                        Publish cohort grades
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
               {/* Stats Cards Row — white cards, inline shadow, hex accents */}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                 {stats.map((stat, i) => (
