@@ -24,7 +24,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { TriageSidebar } from "@/components/evaluation/triage-sidebar"
 import { motion } from "framer-motion"
 
 export default function AssignmentDetails({ params }: { params: Promise<{ id: string }> }) {
@@ -40,7 +39,6 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
   } = useGradingStore()
   const assignment = assignments[id]
   const [activeTab, setActiveTab] = useState("submissions")
-  const [gradedSubmissions, setGradedSubmissions] = useState<string[]>([])
   const [cohortPublished, setCohortPublished] = useState(false)
 
   /**
@@ -119,19 +117,11 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
   // icon sits in a soft-tinted square of the same hue, slate-400 label.
   const stats: { label: string; value: number; icon: typeof Users; accent: string }[] = [
     { label: "Total Papers", value: 60, icon: Users, accent: "#1F4E8C" },
-    { label: "Pending", value: 60 - gradedSubmissions.length, icon: Clock, accent: "#F59E0B" },
+    { label: "Pending", value: 60, icon: Clock, accent: "#F59E0B" },
     { label: "Critical", value: 8, icon: AlertTriangle, accent: "#EF4444" },
     { label: "Focus", value: 12, icon: Zap, accent: "#1F4E8C" },
     { label: "Good to go", value: 40, icon: CheckCircle2, accent: "#10B981" },
   ]
-
-  const handleStudentSelect = (studentId: string) => {
-    router.push(`/dashboard/evaluation/${id}/grading?studentId=${studentId}`)
-  }
-
-  const handleBulkApprove = (ids: string[]) => {
-    setGradedSubmissions(prev => [...new Set([...prev, ...ids])])
-  }
 
   return (
     <div
@@ -344,19 +334,6 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
                 ))}
               </div>
 
-              {/* Full Width Submissions Table — TriageSidebar keeps its own
-                  chrome; wrapper just provides the guide's card surface. */}
-              <div
-                className="rounded-xl overflow-hidden border border-slate-200 bg-white h-[800px]"
-                style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-              >
-                <TriageSidebar
-                  selectedStudentId=""
-                  onStudentSelect={handleStudentSelect}
-                  gradedSubmissions={gradedSubmissions}
-                  onBulkApprove={handleBulkApprove}
-                />
-              </div>
             </>
           )}
         </TabsContent>
