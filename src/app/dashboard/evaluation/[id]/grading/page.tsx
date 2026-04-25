@@ -285,18 +285,20 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     updateCriterionFeedback: updateCriterionFeedbackAction,
     approveCriterionFeedback: approveCriterionFeedbackAction,
     regenerateCriterionFeedback: regenerateCriterionFeedbackAction,
+    feedbackCache,
   } = useFeedbackStore()
 
   // Keyed feedback for current student
   const studentCriterionFeedbacks = criterionFeedbacks[selectedSubmission] || {}
 
-  const confirmFeedback = (cid: string, data: any) => confirmFeedbackAction(selectedSubmission, cid, data)
-  const updateCriterionFeedback = (cid: string, text: string) => updateCriterionFeedbackAction(selectedSubmission, cid, text)
+  const confirmFeedback = (cid: string, score: number, data: any) => confirmFeedbackAction(selectedSubmission, cid, score, data)
+  const updateCriterionFeedback = (cid: string, score: number, text: string) => updateCriterionFeedbackAction(selectedSubmission, cid, score, text)
   const approveCriterionFeedback = (cid: string) => approveCriterionFeedbackAction(selectedSubmission, cid)
-  const regenerateCriterionFeedback = (cid: string, nt: string, ntier: any, nlbl: string) => regenerateCriterionFeedbackAction(selectedSubmission, cid, nt, ntier, nlbl)
+  const regenerateCriterionFeedback = (cid: string, score: number, nt: string, ntier: any, nlbl: string) => regenerateCriterionFeedbackAction(selectedSubmission, cid, score, nt, ntier, nlbl)
 
   const manuscript = useMemo(() => generateManuscript(selectedSubmission), [selectedSubmission])
   const artifacts = useMemo(() => generateArtifacts(selectedSubmission), [selectedSubmission])
+
 
   // Pre-seed one evidence excerpt per criterion from the manuscript's highlighted paragraphs
   useEffect(() => {
@@ -531,17 +533,37 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
   const totalMaxPoints = rubricPoints.reduce((sum, p) => sum + p.maxPoints, 0)
   const currentTotalScore = calculateTotalScore()  
-  const handleScoreConfirm = (id: string, aiScore: number) => {
-    setCriterionState(prev => ({ ...prev, [id]: { ...prev[id], score: aiScore, isOverridden: false, confirmed: true } }))
-    markCriterionConfirmed(id, { overridden: false })
+  const handleScoreConfirm = (id: string) => {
+    const point = rubricPoints.find(p => p.id === id)
+    if (!point) return
+
+    const state = criterionState[id]
+    const finalScore = state?.score ?? point.aiScore
+    const isOverridden = state?.isOverridden ?? false
+
+    setCriterionState(prev => ({ 
+      ...prev, 
+      [id]: { 
+        ...prev[id], 
+        score: finalScore, 
+        isOverridden, 
+        confirmed: true 
+      } 
+    }))
+    
+    markCriterionConfirmed(id, { overridden: isOverridden })
+    
     addRevisionEvent({
       type: 'score_confirmed',
       criterionId: id,
-      criterionLabel: rubricPoints.find(p => p.id === id)?.label || '',
-      details: { newScore: aiScore }
+      criterionLabel: point.label,
+      details: { newScore: finalScore }
     })
+
     const nextIndex = rubricPoints.findIndex(p => p.id === id) + 1
-    if (nextIndex < rubricPoints.length) setActiveRubricCriterionIdx(nextIndex)
+    if (nextIndex < rubricPoints.length) {
+      setActiveRubricCriterionIdx(nextIndex)
+    }
   }
 
   const handleOverrideScore = (id: string, newScore: number) => {
@@ -560,7 +582,15 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
   const handleScoreLevelClick = (criterionId: string, proposedScore: number, aiScore: number) => {
     if (proposedScore === aiScore) {
-      handleScoreConfirm(criterionId, aiScore)
+      setCriterionState(prev => ({ 
+        ...prev, 
+        [criterionId]: { 
+          ...prev[criterionId], 
+          score: proposedScore, 
+          isOverridden: false, 
+          confirmed: false 
+        } 
+      }))
       setActiveOverrideId(null)
       return
     }
@@ -594,8 +624,17 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     if (!draft || (draft.reasonCategory === '' && draft.reasoning.trim().length === 0)) return
     setCriterionState(prev => ({
       ...prev,
-      [criterionId]: { ...prev[criterionId], score: draft.proposedScore, isOverridden: true, confirmed: true, instructorReasoning: draft.scoreReasoning }
+      [criterionId]: { 
+        ...prev[criterionId], 
+        score: draft.proposedScore, 
+        isOverridden: true, 
+        confirmed: false, // Wait for final confirm
+        instructorReasoning: draft.scoreReasoning 
+      }
     }))
+    
+    // Trigger feedback generation for the new score
+    handleAutoRefreshFeedback(criterionId, rubricPoints.find(p => p.id === criterionId)?.label || '', draft.proposedScore)
     addRevisionEvent({
       type: 'override',
       criterionId,
@@ -678,7 +717,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     const criterionKey = pointId
     setTimeout(() => {
       const fb = generateCriterionFeedback(pointLabel, Math.round(score / 2), [], '')
-      confirmFeedback(criterionKey, {
+      confirmFeedback(criterionKey, score, {
         tier: fb.tier,
         tierLabel: fb.tierLabel,
         feedbackText: fb.feedbackText,
@@ -694,6 +733,95 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
   // isSpotCheckActive + dismissSpotCheck come from grading store (triggered by header button)
   const [activeRubricCriterionIdx, setActiveRubricCriterionIdx] = useState(0)
+
+  // NEW: Feedback behavior layer state
+  const [feedbackLoading, setFeedbackLoading] = useState(false)
+  const [promptData, setPromptData] = useState<{ criterionId: string, oldScore: number, newScore: number } | null>(null)
+  const lastScoreRef = useRef<Record<string, number>>({})
+
+  // Watch for score changes to trigger feedback logic
+  useEffect(() => {
+    const point = rubricPoints[activeRubricCriterionIdx]
+    const state = criterionState[point.id]
+    const currentScore = state?.score ?? point.aiScore
+    const prevScore = lastScoreRef.current[point.id]
+    const criterionKey = point.id
+    const storeFb = studentCriterionFeedbacks[criterionKey]
+
+    // Initialize ref if empty
+    if (prevScore === undefined) {
+      lastScoreRef.current[point.id] = currentScore
+      
+      // State A: Initial AI suggestion - generate if missing
+      if (!storeFb && !feedbackLoading && currentScore === point.aiScore) {
+        handleAutoRefreshFeedback(criterionKey, point.label, currentScore, true)
+      }
+      return
+    }
+
+    // If score hasn't changed, but feedback is missing for AI score, generate it
+    if (prevScore === currentScore) {
+      if (!storeFb && !feedbackLoading && currentScore === point.aiScore) {
+        handleAutoRefreshFeedback(criterionKey, point.label, currentScore, true)
+      }
+      return
+    }
+
+    // Update ref for next time
+    lastScoreRef.current[point.id] = currentScore
+
+    // If we changed to the AI score (State Restore), restore/generate it
+    if (currentScore === point.aiScore) {
+      handleAutoRefreshFeedback(criterionKey, point.label, currentScore)
+      return
+    }
+
+    // If it's an override, we handle generation in handleConfirmOverride
+    // Here we just let the rendering layer show the helper state
+  }, [selectedSubmission, activeRubricCriterionIdx, criterionState])
+
+  const handleAutoRefreshFeedback = async (cid: string, label: string, score: number, instant = false) => {
+    const cached = feedbackCache[selectedSubmission]?.[cid]?.[score]
+    
+    setFeedbackLoading(true)
+
+    if (cached) {
+      // Simulate quick "re-grounding" from cache
+      if (!instant) await new Promise(r => setTimeout(r, 600))
+      confirmFeedback(cid, score, {
+        tier: cached.tier as any,
+        tierLabel: cached.tierLabel,
+        feedbackText: cached.feedbackText,
+        thinkingPrompt: cached.thinkingPrompt,
+      })
+    } else {
+      // Simulate full generation
+      if (!instant) await new Promise(r => setTimeout(r, 1500))
+      const fb = generateCriterionFeedback(label, Math.round(score / 2), [], '')
+      confirmFeedback(cid, score, {
+        tier: fb.tier as any,
+        tierLabel: fb.tierLabel,
+        feedbackText: fb.feedbackText,
+        thinkingPrompt: fb.thinkingPrompt,
+      })
+    }
+    
+    setFeedbackLoading(false)
+  }
+
+  const handleKeepFeedback = () => {
+    setPromptData(null)
+    // We keep the existing feedback in the store (no action needed)
+  }
+
+  const handleRefreshFeedback = () => {
+    if (!promptData) return
+    const point = rubricPoints.find(p => p.id === promptData.criterionId)
+    if (point) {
+      handleAutoRefreshFeedback(promptData.criterionId, point.label, promptData.newScore)
+    }
+    setPromptData(null)
+  }
 
   // PROGRESSIVE_NUDGE_DERIVATION — relocated here so `activeRubricCriterionIdx`
   // is in scope. The active criterion at mount / student-change is effectively
@@ -1531,46 +1659,46 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                           const criterionKey = point.id;
                           const storeFb = studentCriterionFeedbacks[criterionKey];
                           const currentScore = state.score ?? point.aiScore;
+                          const isOverridePending = activeOverrideId === point.id && draft?.proposedScore !== point.aiScore;
                           
-                          // If not confirmed yet, we can show a skeleton or the generated draft
-                          if (!storeFb) {
+                          if (feedbackLoading) {
                             return (
                               <div className="space-y-4 pt-4 border-t border-border/40">
-                                <span className="eyebrow text-muted-foreground/50 block text-xs">Feedback Draft</span>
-                                <div 
-                                  className="p-8 border border-dashed border-border/60 rounded-xl bg-muted/20 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-muted/30 transition-colors"
-                                  onClick={() => {
-                                    const draft = generateCriterionFeedback(point.label, Math.round(currentScore / 2), [], '');
-                                    confirmFeedback(criterionKey, { 
-                                      tier: draft.tier as any, 
-                                      tierLabel: draft.tierLabel, 
-                                      feedbackText: draft.feedbackText, 
-                                      thinkingPrompt: draft.thinkingPrompt 
-                                    });
-                                  }}
-                                >
-                                  <Sparkles className="w-5 h-5 text-primary/40" />
-                                  <span className="text-xs font-semibold text-muted-foreground/60">Generate and Confirm Feedback</span>
-                                </div>
+                                <FeedbackGenerating />
+                              </div>
+                            );
+                          }
+
+                          if (promptData && promptData.criterionId === criterionKey) {
+                            // ... manual edit prompt logic ...
+                          }
+
+                          // If no feedback at all yet (first load)
+                          if (!storeFb && !isOverridePending) {
+                            return (
+                              <div className="space-y-4 pt-4 border-t border-border/40">
+                                <FeedbackGenerating />
                               </div>
                             );
                           }
 
                           return (
                             <CriterionFeedbackCard
-                              tier={storeFb.tier as any}
-                              tierLabel={storeFb.tierLabel}
-                              feedbackText={storeFb.feedbackText}
-                              thinkingPrompt={storeFb.thinkingPrompt}
-                              authorship={storeFb.authorship}
-                              isApproved={storeFb.isApproved}
-                              regenCount={storeFb.regenCount}
-                              onEdit={(text) => updateCriterionFeedback(criterionKey, text)}
+                              tier={storeFb?.tier as any || 'gap'}
+                              tierLabel={storeFb?.tierLabel || 'Pending'}
+                              feedbackText={storeFb?.feedbackText || ''}
+                              authorship={storeFb?.authorship || 'ai_generated'}
+                              isApproved={storeFb?.isApproved || false}
+                              regenCount={storeFb?.regenCount || 0}
+                              score={currentScore}
+                              maxScore={point.maxPoints}
+                              isPendingOverride={isOverridePending}
+                              onEdit={(text) => updateCriterionFeedback(criterionKey, currentScore, text)}
                               onRegenerate={() => {
                                 const regen = generateCriterionFeedback(point.label, Math.round(currentScore / 2), [], '');
-                                regenerateCriterionFeedback(criterionKey, regen.feedbackText, regen.tier as any, regen.tierLabel);
+                                regenerateCriterionFeedback(criterionKey, currentScore, regen.feedbackText, regen.tier as any, regen.tierLabel);
                               }}
-                              onApprove={() => approveCriterionFeedback(criterionKey)}
+                              onApprove={() => handleScoreConfirm(criterionKey)}
                             />
                           );
                         })()}

@@ -22,24 +22,24 @@ export function generateCriterionFeedback(
   let feedbackText = '';
   let thinkingPrompt = '';
 
-  if (level >= 4.5) {
+  if (level >= 5) {
     tier = 'perfect';
-    tierLabel = 'Excellent Work';
-    feedbackText = `Your approach to ${name} is exceptional. The evidence clearly demonstrates mastery of this criterion. You have successfully met and exceeded the core requirements. Keep up this level of detail and rigor.`;
-  } else if (level >= 3.5) {
+    tierLabel = 'Exceeds Expectations';
+    feedbackText = `Outstanding work on ${name}. Your response demonstrates a deep and accurate understanding, with specific evidence from the manuscript perfectly integrated. This is a model for professional-grade analysis.`;
+  } else if (level >= 4) {
     tier = 'minor';
-    tierLabel = 'Minor Adjustments';
-    feedbackText = `Good work on ${name}. You have a solid foundation, but there are a few minor areas that could be polished. Consider reviewing the evidence you provided and adding a bit more depth to your explanation to ensure complete clarity.`;
+    tierLabel = 'Meets Expectations';
+    feedbackText = `Strong performance in ${name}. You've accurately identified the core requirements and supported them with clear evidence. To elevate this further, consider adding more depth to your explanation of the underlying constraints.`;
   } else if (level >= 2.5) {
     tier = 'gap';
-    tierLabel = 'Significant Gap';
-    feedbackText = `There is a significant gap in your implementation of ${name}. While you have touched on the concept, the execution lacks the necessary depth and connection to the rubric requirements. Please review the core concepts and re-evaluate your approach.`;
-    thinkingPrompt = `Consider how the evidence you provided aligns with the core principles of ${name}. What specific details are missing that would bridge the gap between your current work and a comprehensive understanding?`;
+    tierLabel = 'Meets Expectations with Issues';
+    feedbackText = `Balanced work on ${name}. While you've successfully addressed several core requirements, there are gaps in the evidence provided. Specifically, the connection between your implementation and the stated outcomes needs to be more explicitly grounded in the manuscript text to meet the full requirements.`;
+    thinkingPrompt = `Review the evidence provided for ${name}. What specific manuscript details are currently missing that would strengthen the link between your implementation and the required outcomes?`;
   } else {
     tier = 'major';
-    tierLabel = 'Major Revision Needed';
-    feedbackText = `Your work on ${name} requires substantial revision. The current submission does not meet the basic expectations outlined in the rubric. It is crucial to revisit the foundational materials and completely rework this section.`;
-    thinkingPrompt = `You need to start from first principles. What is the fundamental goal of ${name}, and why does your current evidence fail to support it? Focus on building a logically sound argument from the ground up.`;
+    tierLabel = 'Below Expectations';
+    feedbackText = `I appreciate your attempt at ${name}, but there are clear gaps between your response and the rubric requirements. The current analysis lacks sufficient evidence and does not yet meet the basic expectations. Focus on rebuilding this section by first identifying the foundational goals and then mapping them to specific manuscript excerpts.`;
+    thinkingPrompt = `Revisit the foundational goals for ${name}. How can you rework your analysis to build a logically sound argument supported by direct evidence from the manuscript?`;
   }
 
   if (reasoning) {

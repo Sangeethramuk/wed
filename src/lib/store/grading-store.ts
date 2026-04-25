@@ -699,14 +699,15 @@ interface GradingState {
   // Feedback & Notes State
   internalNotes: Record<string, InternalNote[]>; // studentId -> notes
   criterionFeedbacks: Record<string, Record<string, CriterionFeedbackState>>; // studentId -> criterionId -> feedback
+  feedbackCache: Record<string, Record<string, Record<number, CriterionFeedbackState>>>; // studentId -> criterionId -> score -> feedback
   overallFeedback: Record<string, OverallFeedbackState>; // studentId -> feedback
 
   // Feedback Actions
   addInternalNote: (studentId: string, note: Omit<InternalNote, 'id' | 'timestamp'>) => void;
-  confirmCriterionScore: (studentId: string, criterionId: string, data: Pick<CriterionFeedbackState, 'tier' | 'tierLabel' | 'feedbackText' | 'thinkingPrompt'>) => void;
-  updateCriterionFeedback: (studentId: string, criterionId: string, text: string) => void;
+  confirmCriterionScore: (studentId: string, criterionId: string, score: number, data: Pick<CriterionFeedbackState, 'tier' | 'tierLabel' | 'feedbackText' | 'thinkingPrompt'>) => void;
+  updateCriterionFeedback: (studentId: string, criterionId: string, score: number, text: string) => void;
   approveCriterionFeedback: (studentId: string, criterionId: string) => void;
-  regenerateCriterionFeedback: (studentId: string, criterionId: string, newText: string, newTier: FeedbackTier, newTierLabel: string) => void;
+  regenerateCriterionFeedback: (studentId: string, criterionId: string, score: number, newText: string, newTier: FeedbackTier, newTierLabel: string) => void;
   setOverallFeedback: (studentId: string, data: OverallFeedbackState) => void;
   updateOverallFeedbackText: (studentId: string, text: string) => void;
   setSolutionSteps: (studentId: string, steps: SolutionStep[]) => void;
@@ -728,6 +729,7 @@ export const useGradingStore = create<GradingState>()(
       phase: 'selection',
       spotCheckActive: false,
       calibration: {},
+      feedbackCache: {},
       internalNotes: {
         'rohan': [
           {
@@ -1054,35 +1056,72 @@ export const useGradingStore = create<GradingState>()(
         },
       })),
 
-      confirmCriterionScore: (studentId, criterionId, data) => set((state) => ({
-        criterionFeedbacks: {
-          ...state.criterionFeedbacks,
-          [studentId]: {
-            ...(state.criterionFeedbacks[studentId] || {}),
-            [criterionId]: {
-              ...data,
-              criterionId,
-              authorship: 'ai_generated',
-              isConfirmed: true,
-              isApproved: false,
-              regenCount: 0,
-            },
-          }
-        },
-      })),
+      confirmCriterionScore: (studentId, criterionId, score, data) => set((state) => {
+        const newFeedback: CriterionFeedbackState = {
+          ...data,
+          criterionId,
+          authorship: 'ai_generated',
+          isConfirmed: true,
+          isApproved: false,
+          regenCount: 0,
+        };
 
-      updateCriterionFeedback: (studentId, criterionId, text) => set((state) => {
+        const studentCache = state.feedbackCache[studentId] || {};
+        const criterionCache = studentCache[criterionId] || {};
+
+        return {
+          criterionFeedbacks: {
+            ...state.criterionFeedbacks,
+            [studentId]: {
+              ...(state.criterionFeedbacks[studentId] || {}),
+              [criterionId]: newFeedback,
+            }
+          },
+          feedbackCache: {
+            ...state.feedbackCache,
+            [studentId]: {
+              ...studentCache,
+              [criterionId]: {
+                ...criterionCache,
+                [score]: newFeedback,
+              }
+            }
+          }
+        };
+      }),
+
+      updateCriterionFeedback: (studentId, criterionId, score, text) => set((state) => {
         const studentFb = state.criterionFeedbacks[studentId] || {};
         const fb = studentFb[criterionId];
         if (!fb) return state;
+
+        const updatedFeedback: CriterionFeedbackState = { 
+          ...fb, 
+          feedbackText: text, 
+          authorship: 'instructor_edited' 
+        };
+
+        const studentCache = state.feedbackCache[studentId] || {};
+        const criterionCache = studentCache[criterionId] || {};
+
         return {
           criterionFeedbacks: {
             ...state.criterionFeedbacks,
             [studentId]: {
               ...studentFb,
-              [criterionId]: { ...fb, feedbackText: text, authorship: 'instructor_edited' },
+              [criterionId]: updatedFeedback,
             }
           },
+          feedbackCache: {
+            ...state.feedbackCache,
+            [studentId]: {
+              ...studentCache,
+              [criterionId]: {
+                ...criterionCache,
+                [score]: updatedFeedback,
+              }
+            }
+          }
         };
       }),
 
@@ -1101,25 +1140,41 @@ export const useGradingStore = create<GradingState>()(
         };
       }),
 
-      regenerateCriterionFeedback: (studentId, criterionId, newText, newTier, newTierLabel) => set((state) => {
+      regenerateCriterionFeedback: (studentId, criterionId, score, newText, newTier, newTierLabel) => set((state) => {
         const studentFb = state.criterionFeedbacks[studentId] || {};
         const fb = studentFb[criterionId];
         if (!fb || fb.regenCount >= 2) return state;
+
+        const updatedFeedback: CriterionFeedbackState = {
+          ...fb,
+          feedbackText: newText,
+          tier: newTier,
+          tierLabel: newTierLabel,
+          regenCount: fb.regenCount + 1,
+          authorship: 'regenerated',
+        };
+
+        const studentCache = state.feedbackCache[studentId] || {};
+        const criterionCache = studentCache[criterionId] || {};
+
         return {
           criterionFeedbacks: {
             ...state.criterionFeedbacks,
             [studentId]: {
               ...studentFb,
-              [criterionId]: {
-                ...fb,
-                feedbackText: newText,
-                tier: newTier,
-                tierLabel: newTierLabel,
-                regenCount: fb.regenCount + 1,
-                authorship: 'regenerated',
-              },
+              [criterionId]: updatedFeedback,
             }
           },
+          feedbackCache: {
+            ...state.feedbackCache,
+            [studentId]: {
+              ...studentCache,
+              [criterionId]: {
+                ...criterionCache,
+                [score]: updatedFeedback,
+              }
+            }
+          }
         };
       }),
 

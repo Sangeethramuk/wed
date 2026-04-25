@@ -154,14 +154,16 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
         {assignment.integrityFlags > 0 ? (
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger asChild>
-                <span
-                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold border animate-pulse cursor-help"
-                  style={{ backgroundColor: "#FEF2F2", color: "#EF4444", borderColor: "#FECACA" }}
-                >
-                  <ShieldAlert className="h-2.5 w-2.5" /> {assignment.integrityFlags}
-                </span>
-              </TooltipTrigger>
+              <TooltipTrigger 
+                render={
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold border animate-pulse cursor-help"
+                    style={{ backgroundColor: "#FEF2F2", color: "#EF4444", borderColor: "#FECACA" }}
+                  >
+                    <ShieldAlert className="h-2.5 w-2.5" /> {assignment.integrityFlags}
+                  </span>
+                } 
+              />
               <TooltipContent>
                 {assignment.integrityFlags} integrity flag{assignment.integrityFlags > 1 ? "s" : ""} detected
               </TooltipContent>
@@ -234,9 +236,17 @@ function DeptGroup({ department, assignments }: { department: string; assignment
       style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
     >
       {/* Group header */}
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors text-left"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
+            setOpen((o) => !o)
+          }
+        }}
+        className="w-full flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors text-left cursor-pointer"
       >
         <div className="flex items-center gap-2 flex-1">
           <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#1F4E8C" }} />
@@ -248,11 +258,13 @@ function DeptGroup({ department, assignments }: { department: string; assignment
         <div className="flex items-center gap-5 text-xs text-slate-500">
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-1.5 cursor-help font-semibold">
-                  <BarChart3 className="h-3 w-3" /> Avg Cal: {avgCal}%
-                </div>
-              </TooltipTrigger>
+              <TooltipTrigger 
+                render={
+                  <div className="flex items-center gap-1.5 cursor-help font-semibold">
+                    <BarChart3 className="h-3 w-3" /> Avg Cal: {avgCal}%
+                  </div>
+                } 
+              />
               <TooltipContent>Average calibration confidence across this department</TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -267,7 +279,7 @@ function DeptGroup({ department, assignments }: { department: string; assignment
         ) : (
           <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
         )}
-      </button>
+      </div>
 
       {/* Column headers */}
       {open && (
