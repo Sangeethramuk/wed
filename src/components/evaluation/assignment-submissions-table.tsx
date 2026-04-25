@@ -169,13 +169,15 @@ export function AssignmentSubmissionsTable({ onRowClick }: AssignmentSubmissions
             />
           </div>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="h-10 border-slate-200 bg-white text-slate-600 gap-2 rounded-lg text-sm font-medium">
-                <Filter className="h-4 w-4 text-slate-400" />
-                Status: {statusFilter}
-                <ChevronDown className="h-4 w-4 opacity-50" />
-              </Button>
-            </DropdownMenuTrigger>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="outline" className="h-10 border-slate-200 bg-white text-slate-600 gap-2 rounded-lg text-sm font-medium">
+                  <Filter className="h-4 w-4 text-slate-400" />
+                  Status: {statusFilter}
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              }
+            />
             <DropdownMenuContent align="end" className="w-48">
               {["All", "Not Started", "In Progress", "Ready to Release"].map((status) => (
                 <DropdownMenuItem key={status} onClick={() => setStatusFilter(status)}>
@@ -185,12 +187,14 @@ export function AssignmentSubmissionsTable({ onRowClick }: AssignmentSubmissions
             </DropdownMenuContent>
           </DropdownMenu>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="h-10 border-slate-200 bg-white text-slate-600 gap-2 rounded-lg text-sm font-medium">
-                Submission: {submissionFilter}
-                <ChevronDown className="h-4 w-4 opacity-50" />
-              </Button>
-            </DropdownMenuTrigger>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="outline" className="h-10 border-slate-200 bg-white text-slate-600 gap-2 rounded-lg text-sm font-medium">
+                  Submission: {submissionFilter}
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              }
+            />
             <DropdownMenuContent align="end" className="w-48">
               {["All", "On Time", "Late", "Missing"].map((sub) => (
                 <DropdownMenuItem key={sub} onClick={() => setSubmissionFilter(sub)}>
@@ -204,12 +208,14 @@ export function AssignmentSubmissionsTable({ onRowClick }: AssignmentSubmissions
         <div className="flex items-center gap-3">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Sort by</span>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="h-10 border-slate-200 bg-white text-slate-900 gap-2 rounded-lg text-sm font-semibold min-w-[180px] justify-between">
-                {sortBy}
-                <ChevronDown className="h-4 w-4 opacity-50" />
-              </Button>
-            </DropdownMenuTrigger>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="outline" className="h-10 border-slate-200 bg-white text-slate-900 gap-2 rounded-lg text-sm font-semibold min-w-[180px] justify-between">
+                  {sortBy}
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              }
+            />
             <DropdownMenuContent align="end" className="w-56">
               {[
                 "Issues (High → Low)",
@@ -268,14 +274,16 @@ export function AssignmentSubmissionsTable({ onRowClick }: AssignmentSubmissions
                     {row.issues.length > 0 ? (
                       <TooltipProvider>
                         <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full cursor-help bg-amber-50 text-amber-700 border border-amber-100">
-                              <AlertTriangle className="h-3 w-3" />
-                              <span className="text-[10px] font-bold">
-                                {row.issues.length} {row.issues.length === 1 ? 'issue' : 'issues'}
-                              </span>
-                            </div>
-                          </TooltipTrigger>
+                          <TooltipTrigger
+                            render={
+                              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full cursor-help bg-amber-50 text-amber-700 border border-amber-100">
+                                <AlertTriangle className="h-3 w-3" />
+                                <span className="text-[10px] font-bold">
+                                  {row.issues.length} {row.issues.length === 1 ? 'issue' : 'issues'}
+                                </span>
+                              </div>
+                            }
+                          />
                           <TooltipContent side="right" className="p-3 bg-white border border-slate-200 shadow-xl rounded-lg">
                             <div className="space-y-2">
                               <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">Detected Issues</p>
