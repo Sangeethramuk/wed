@@ -19,7 +19,7 @@ export function InstructorFeedbackPanel({ value, onChange, onVoiceClick, onFinal
   const handleFinalSubmit = () => {
     setIsSaved(true);
     setTimeout(() => {
-      onFinalSubmit();
+      onFinalSubmit?.();
     }, 2000);
   };
 

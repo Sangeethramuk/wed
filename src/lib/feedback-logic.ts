@@ -120,7 +120,8 @@ export function generateDynamicOverallFeedback(
     strengths: strengths.slice(0, 2),
     keyGaps: keyGaps.slice(0, 2),
     improvementDirection: improvementDirection.slice(0, 2),
-    closingNote
+    closingNote,
+    instructorNote: ""
   };
 }
 
