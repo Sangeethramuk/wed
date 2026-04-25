@@ -237,7 +237,7 @@ export default function FeedbackPage() {
                   if (val === 'APPEND_TO_DRAFT') {
                     if (instructorNote.trim() && feedbackDraft) {
                       const currentSnapshot = feedbackDraft.performanceSnapshot;
-                      const newSnapshot = `${instructorNote.trim()}\n\n${currentSnapshot}`;
+                      const newSnapshot = `INSTRUCTOR'S FEEDBACK\n${instructorNote.trim()}\n\n${currentSnapshot}`;
                       handleUpdateSection('performanceSnapshot', newSnapshot);
                       setInstructorNote('');
                       toast.success('Note added to summary draft');
