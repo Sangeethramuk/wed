@@ -272,7 +272,7 @@ const initialAssignment: Assignment = {
   deadline: "",
   latePolicy: "no-late",
   institution: {
-    name: "IIM Bangalore",
+    name: "Symbiosis University",
     dept: "Faculty of Computer Science & Engineering",
     accreditation: ["NAAC A++", "NBA Accredited", "Tier-1 Institutional Grant"],
   }
