@@ -3,6 +3,7 @@
 import { useState, use, useEffect, useMemo, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useGradingStore } from "@/lib/store/grading-store"
+import { useEvaluationOverviewStore } from "@/lib/store/evaluation-overview-store"
 import { generateManuscript, generateArtifacts } from "@/lib/manuscript-generator"
 import ManuscriptRenderer, { CRITERION_COLORS } from "@/components/evaluation/manuscript-renderer"
 import ArtifactSidebar from "@/components/evaluation/artifact-sidebar"
@@ -72,8 +73,13 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   const searchParams = useSearchParams()
   const studentIdFromUrl = searchParams.get("studentId")
   const { calibration } = useGradingStore()
+  const overviewAssignment = useEvaluationOverviewStore(s =>
+    s.assignments.find(a => a.id === id)
+  )
   const cal = calibration[id]
-  const isCalibrated = cal?.phase === "complete"
+  const isCalibrated =
+    cal?.phase === "complete" ||
+    overviewAssignment?.calibrationState === "complete"
 
   useEffect(() => {
     if (cal !== undefined && !isCalibrated) {
