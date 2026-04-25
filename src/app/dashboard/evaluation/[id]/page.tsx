@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge"
 import { TriageSidebar } from "@/components/evaluation/triage-sidebar"
 import { AssignmentSubmissionsTable } from "@/components/evaluation/assignment-submissions-table"
 import { AssignmentPreviewBody } from "@/components/pre-evaluation/student-preview"
+import { AssignmentAnalytics } from "@/components/evaluation/assignment-analytics"
 import { usePreEvalStore } from "@/lib/store/pre-evaluation-store"
 import { motion } from "framer-motion"
 import { Empty, EmptyContent, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
@@ -375,17 +376,11 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
         </TabsContent>
 
         <TabsContent value="analytics" className="outline-none pt-6">
-          <Empty className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.04)] py-24">
-            <EmptyContent>
-              <EmptyMedia variant="icon" className="bg-blue-50 text-[#1F4E8C] size-12">
-                <BarChart3 className="size-6" />
-              </EmptyMedia>
-              <EmptyTitle className="text-lg font-semibold text-slate-900">No data available yet</EmptyTitle>
-              <EmptyDescription className="text-slate-500">
-                Advanced performance tracking and cohort benchmarking metrics are being calibrated for this course.
-              </EmptyDescription>
-            </EmptyContent>
-          </Empty>
+          <AssignmentAnalytics
+            assignmentId={id}
+            assignmentTitle={assignment?.title ?? "Assignment"}
+            totalSubmissions={overviewAssignment?.totalSubmissions ?? assignment?.students.length ?? 30}
+          />
         </TabsContent>
 
         <TabsContent value="preview" className="outline-none pt-6">
