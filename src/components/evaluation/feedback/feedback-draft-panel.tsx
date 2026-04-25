@@ -88,14 +88,14 @@ export function FeedbackDraftPanel({
         </div>
 
         {/* Feedback Sections */}
-        <div className="space-y-10 relative">
+        <div className="space-y-7 relative">
           {sections.map((section) => {
             const content = feedback[section.key];
             const isEdited = editedSections.has(section.key);
             
             return (
               <div key={section.key} className="group relative">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-[#1F4E8C]/20" />
                     <span className="text-[11px] font-bold tracking-widest text-slate-900 uppercase">
@@ -117,7 +117,7 @@ export function FeedbackDraftPanel({
 
                 <div className="pl-4 border-l-2 border-slate-100 group-hover:border-[#1F4E8C]/20 transition-colors ml-1">
                   {Array.isArray(content) ? (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {content.map((item, i) => (
                         <EditableItem 
                           key={i} 
@@ -161,7 +161,7 @@ function AutoResizingTextarea({ value, onChange }: { value: string; onChange: (v
       ref={ref}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full text-[14px] leading-relaxed text-slate-600 bg-transparent border-none p-0 resize-none focus:outline-none placeholder:text-slate-300 font-medium overflow-hidden"
+      className="w-full text-[14px] leading-snug text-slate-600 bg-transparent border-none p-0 resize-none focus:outline-none placeholder:text-slate-300 font-medium overflow-hidden"
       rows={1}
       onInput={(e) => {
         const target = e.target as HTMLTextAreaElement;
@@ -197,12 +197,12 @@ function EditableItem({ text, onUpdate }: { text: string; onUpdate: (text: strin
 
   return (
     <div className="flex gap-2.5 items-start group/item">
-      <div className="mt-2 w-1.5 h-1.5 rounded-full bg-slate-200 shrink-0" />
+      <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-200 shrink-0" />
       <textarea
         ref={textareaRef}
         value={text}
         onChange={(e) => onUpdate(e.target.value)}
-        className="flex-1 text-[14px] leading-relaxed text-slate-600 bg-transparent border-none p-0 resize-none focus:outline-none placeholder:text-slate-300 font-medium overflow-hidden"
+        className="flex-1 text-[14px] leading-snug text-slate-600 bg-transparent border-none p-0 resize-none focus:outline-none placeholder:text-slate-300 font-medium overflow-hidden"
         rows={1}
         onInput={(e) => {
           const target = e.target as HTMLTextAreaElement;

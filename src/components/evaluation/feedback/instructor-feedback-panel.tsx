@@ -25,15 +25,25 @@ export function InstructorFeedbackPanel({ value, onChange, onVoiceClick }: Instr
             </p>
           </div>
           
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-8 px-3 border-slate-200 text-slate-600 bg-white hover:bg-slate-50 gap-2 rounded-lg text-[11px] font-bold"
-            onClick={onVoiceClick}
-          >
-            <Mic className="w-3.5 h-3.5 text-[#1F4E8C]" />
-            Voice note
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-8 px-3 border-slate-200 text-slate-600 bg-white hover:bg-slate-50 gap-2 rounded-lg text-[11px] font-bold"
+              onClick={onVoiceClick}
+            >
+              <Mic className="w-3.5 h-3.5 text-[#1F4E8C]" />
+              Voice note
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-8 px-3 border-slate-200 text-[#1F4E8C] bg-white hover:bg-blue-50/50 gap-2 rounded-lg text-[11px] font-bold"
+              onClick={() => onChange('APPEND_TO_DRAFT')}
+            >
+              Add feedback
+            </Button>
+          </div>
         </div>
 
         <div className="relative">

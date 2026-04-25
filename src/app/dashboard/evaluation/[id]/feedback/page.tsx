@@ -238,7 +238,19 @@ export default function FeedbackPage() {
           <div className="shrink-0 border-t border-slate-200">
             <InstructorFeedbackPanel 
               value={instructorNote}
-              onChange={setInstructorNote}
+              onChange={(val) => {
+                if (val === 'APPEND_TO_DRAFT') {
+                  if (instructorNote.trim() && feedbackDraft) {
+                    const currentSnapshot = feedbackDraft.performanceSnapshot;
+                    const newSnapshot = `${instructorNote.trim()}\n\n${currentSnapshot}`;
+                    handleUpdateSection('performanceSnapshot', newSnapshot);
+                    setInstructorNote('');
+                    toast.success('Note added to summary draft');
+                  }
+                } else {
+                  setInstructorNote(val);
+                }
+              }}
             />
 
             {/* Footer: Submit & Navigation (Sticky) */}
