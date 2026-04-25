@@ -76,10 +76,6 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
   const isCalibrated = calData?.phase === "complete" || assignment.calibrationState === "complete"
 
   const handleAction = () => {
-    if (assignment.gradingStatus === "complete") {
-      router.push(`/dashboard/evaluation/results?id=${assignment.id}`)
-      return
-    }
     // Both the calibration CTAs (Begin / Continue) and Enter Desk land on
     // Assignment Details. That page has the blind-grading-required gate card
     // (first-time + continuing copy) that acts as the calibration intro.
@@ -89,7 +85,7 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
   }
 
   const actionLabel = () => {
-    if (assignment.gradingStatus === "complete") return "View Results"
+    if (assignment.gradingStatus === "complete") return "View Papers"
     if (!isCalibrated && (!calData || calData.phase === "not_started")) return "Begin Calibration"
     if (!isCalibrated && calData?.phase && calData.phase !== "complete") return "Continue Calibration"
     return "Enter Desk"

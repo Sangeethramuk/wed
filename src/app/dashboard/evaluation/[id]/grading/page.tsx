@@ -63,7 +63,6 @@ import { RevisionHistorySheet, RevisionEvent } from "@/components/evaluation/rev
 import { FeedbackSummaryModal } from "@/components/evaluation/feedback-summary-modal"
 import { CriterionFeedbackCard } from "@/components/evaluation/feedback/criterion-feedback-card"
 import { FeedbackGenerating } from "@/components/evaluation/feedback/feedback-generating"
-import { InternalNotesPanel } from "@/components/evaluation/feedback/internal-notes-panel"
 import { generateCriterionFeedback } from "@/lib/feedback-generator"
 import { useGradingStore as useFeedbackStore } from "@/lib/store/grading-store"
 
@@ -1398,68 +1397,51 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
                         {/* Feedback — plain editable text box */}
                         {(() => {
-                          const criterionKey = point.id
-                          const storeFb = studentCriterionFeedbacks[criterionKey]
-                          const currentScore = state.score ?? point.aiScore
-                          const suggestedFb = !storeFb ? generateCriterionFeedback(point.label, Math.round(currentScore / 2), [], '') : null
-                          const fb = storeFb || { ...suggestedFb, authorship: 'ai_generated' as const, isConfirmed: false, isApproved: false, regenCount: 0 }
-                          const isApproved = fb.isApproved
+                          const criterionKey = point.id;
+                          const storeFb = studentCriterionFeedbacks[criterionKey];
+                          const currentScore = state.score ?? point.aiScore;
+                          
+                          // If not confirmed yet, we can show a skeleton or the generated draft
+                          if (!storeFb) {
+                            return (
+                              <div className="space-y-4 pt-4 border-t border-border/40">
+                                <span className="eyebrow text-muted-foreground/50 block text-xs">Feedback Draft</span>
+                                <div 
+                                  className="p-8 border border-dashed border-border/60 rounded-xl bg-muted/20 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-muted/30 transition-colors"
+                                  onClick={() => {
+                                    const draft = generateCriterionFeedback(point.label, Math.round(currentScore / 2), [], '');
+                                    confirmFeedback(criterionKey, { 
+                                      tier: draft.tier as any, 
+                                      tierLabel: draft.tierLabel, 
+                                      feedbackText: draft.feedbackText, 
+                                      thinkingPrompt: draft.thinkingPrompt 
+                                    });
+                                  }}
+                                >
+                                  <Sparkles className="w-5 h-5 text-primary/40" />
+                                  <span className="text-xs font-semibold text-muted-foreground/60">Generate and Confirm Feedback</span>
+                                </div>
+                              </div>
+                            );
+                          }
 
                           return (
-                            <div className="space-y-2 pt-2 border-t border-border/40">
-                              <span className="eyebrow text-muted-foreground/50 block text-xs">Feedback</span>
-                              <textarea
-                                value={fb.feedbackText}
-                                onChange={e => {
-                                  if (!storeFb) {
-                                    confirmFeedback(criterionKey, { tier: fb.tier as any, tierLabel: fb.tierLabel, feedbackText: e.target.value, thinkingPrompt: fb.thinkingPrompt })
-                                  } else {
-                                    updateCriterionFeedback(criterionKey, e.target.value)
-                                  }
-                                }}
-                                rows={5}
-                                placeholder="Write feedback for this criterion…"
-                                className="w-full text-xs leading-[1.75] text-foreground bg-background border border-border rounded-lg p-3 resize-y focus:outline-none focus:border-primary/50 font-sans min-h-[100px] transition-colors"
-                              />
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  disabled={fb.regenCount >= 2}
-                                  onClick={() => {
-                                    const regen = generateCriterionFeedback(point.label, Math.round(currentScore / 2), [], '')
-                                    if (!storeFb) {
-                                      confirmFeedback(criterionKey, { tier: regen.tier as any, tierLabel: regen.tierLabel, feedbackText: regen.feedbackText, thinkingPrompt: regen.thinkingPrompt })
-                                    } else {
-                                      regenerateCriterionFeedback(criterionKey, regen.feedbackText, regen.tier as any, regen.tierLabel)
-                                    }
-                                  }}
-                                  className="eyebrow h-8 px-2.5 text-muted-foreground/60 gap-1.5 hover:text-foreground"
-                                >
-                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 2C8.5.8 6.5.5 4.5 1.3A5 5 0 0 0 2 9.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><path d="M2 6.5v3H5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                  {fb.regenCount >= 2 ? 'Max uses' : 'Regenerate'}
-                                </Button>
-                                {isApproved ? (
-                                  <Button variant="ghost" size="sm" className="eyebrow h-8 px-4 ml-auto bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border border-[color:var(--status-success)]/30 gap-1.5 cursor-default hover:bg-[color:var(--status-success-bg)] rounded-full">
-                                    <CheckCircle2 className="w-3.5 h-3.5" /> Finalized
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    size="sm"
-                                    className="eyebrow h-8 px-5 bg-foreground text-background gap-1.5 ml-auto rounded-full hover:opacity-90"
-                                    onClick={() => {
-                                      if (!storeFb) {
-                                        confirmFeedback(criterionKey, { tier: fb.tier as any, tierLabel: fb.tierLabel, feedbackText: fb.feedbackText, thinkingPrompt: fb.thinkingPrompt })
-                                      }
-                                      approveCriterionFeedback(criterionKey)
-                                    }}
-                                  >
-                                    <CheckCircle2 className="w-3.5 h-3.5" /> Confirm
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          )
+                            <CriterionFeedbackCard
+                              tier={storeFb.tier as any}
+                              tierLabel={storeFb.tierLabel}
+                              feedbackText={storeFb.feedbackText}
+                              thinkingPrompt={storeFb.thinkingPrompt}
+                              authorship={storeFb.authorship}
+                              isApproved={storeFb.isApproved}
+                              regenCount={storeFb.regenCount}
+                              onEdit={(text) => updateCriterionFeedback(criterionKey, text)}
+                              onRegenerate={() => {
+                                const regen = generateCriterionFeedback(point.label, Math.round(currentScore / 2), [], '');
+                                regenerateCriterionFeedback(criterionKey, regen.feedbackText, regen.tier as any, regen.tierLabel);
+                              }}
+                              onApprove={() => approveCriterionFeedback(criterionKey)}
+                            />
+                          );
                         })()}
 
                       </div>
@@ -1467,8 +1449,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                   </div>
                 </ScrollArea>
 
-                {/* Internal Notes */}
-                <InternalNotesPanel />
+
 
                 <div className="p-4 border-t border-border bg-background shrink-0 space-y-3">
                   <div className="flex items-center justify-between">

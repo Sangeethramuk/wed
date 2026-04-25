@@ -137,9 +137,9 @@ export default function DashboardPage() {
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       ALL PAPERS VERIFIED
                     </div>
-                    <Link href="/dashboard/post-evaluation">
+                    <Link href="/dashboard/evaluation">
                       <Button variant="outline" size="sm" className="h-8 rounded-full px-5 text-[11px] font-black uppercase tracking-tight border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/5">
-                        View Results
+                        View Papers
                       </Button>
                     </Link>
                   </div>
