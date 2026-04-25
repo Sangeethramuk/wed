@@ -1,464 +1,425 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { Suspense, useMemo, useState, useRef, useEffect } from "react"
+import { useGradingStore } from "@/lib/store/grading-store"
+import { Card } from "@/components/ui/card"
 import {
-  BarChart3,
-  Users,
-  ShieldCheck,
-  ArrowLeft,
-  Download,
-  TrendingUp,
-  AlertCircle,
-  CheckCircle2,
-  FileText,
-  Zap,
-  RefreshCw,
-  ChevronRight,
-  Lock,
-  Clock,
-  Settings2,
-  Calendar,
-  Sparkles,
-  Command,
-  ArrowRight,
-  ArrowUpRight,
-  Activity
+  ChevronDown, AlertTriangle, CheckCircle2,
+  ShieldAlert, BarChart3, Lock,
+  ArrowRight, BookOpen
 } from "lucide-react"
-import Link from "next/link"
 import { cn } from "@/lib/utils"
 
-export default function ResultInsights() {
-  const [viewState, setViewState] = useState<"insights" | "release">("insights")
-  const [isSyncing, setIsSyncing] = useState(false)
-  const [releaseTiming, setReleaseTiming] = useState<"monday" | "immediate" | "custom">("monday")
-  const [activeInterventions, setActiveInterventions] = useState<string[]>([])
+function CourseDropdown({
+  courses,
+  selected,
+  onChange,
+}: {
+  courses: { id: string; label: string }[]
+  selected: string | null
+  onChange: (id: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
 
-  const distributionData = [
-    { range: "90-100", count: 12, label: "Outstanding", color: "bg-primary" },
-    { range: "80-89", count: 18, label: "Commendable", color: "bg-primary/80" },
-    { range: "70-79", count: 8, label: "Satisfactory", color: "bg-primary/60" },
-    { range: "60-69", count: 5, label: "Marginal", color: "bg-primary/40" },
-    { range: "<60", count: 2, label: "Unsatisfactory", color: "bg-primary/20" },
-  ]
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", onClickOutside)
+    return () => document.removeEventListener("mousedown", onClickOutside)
+  }, [])
 
-  const maxCount = Math.max(...distributionData.map(d => d.count))
+  const label = selected ? courses.find(c => c.id === selected)?.label : "Select a course"
 
-  const rosterData = [
-    { name: "Rohan Verma", c1: "7", c2: "8", c3: "6", total: "21", grade: "B", status: 'Published' },
-    { name: "Arjun Mehta", c1: "9", c2: "9", c3: "8", total: "26", grade: "A+", status: 'Ready' },
-    { name: "Priya Patel", c1: "7", c2: "8", c3: "7", total: "22", grade: "B+", status: 'Published' },
-    { name: "Sneha K.", c1: "8", c2: "7", c3: "8", total: "23", grade: "A", status: 'Published' },
-    { name: "Ananya S.", c1: "10", c2: "9", c3: "9", total: "28", grade: "A+", status: 'Ready' },
-    { name: "Vikram R.", c1: "6", c2: "7", c3: "5", total: "18", grade: "C+", status: 'Revision' },
-  ]
-
-  const commonGaps = [
-    { label: "Authorization Logic", gap: "34% of students missed state.auth validation", severity: "high", impact: "Security Vulnerability" },
-    { label: "MVC Dependency Injection", gap: "12 submissions had circular constructor refs", severity: "medium", impact: "Runtime Stability" },
-    { label: "Documentation Standards", gap: "API contract missing in 15% of cohort", severity: "low", impact: "Code Maintainability" },
-  ]
-
-  // Shared Header Component
-  const PageHeader = ({ title, subtitle, showBack = true, children }: any) => (
-    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-border/40">
-      <div className="space-y-4">
-        {showBack && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setViewState("insights")}
-          >
-            <ArrowLeft />
-            Back to insights
-          </Button>
-        )}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{title}</h1>
-            <Badge variant="outline" className="eyebrow h-5 px-2 bg-primary/5 text-primary border-primary/20 rounded-full">
-              PROTOCOL P1
-            </Badge>
-          </div>
-          <p className="text-sm font-medium text-muted-foreground">{subtitle}</p>
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-slate-300 transition-colors min-w-[180px] justify-between"
+      >
+        <span className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#1F4E8C] shrink-0" />
+          {label}
+        </span>
+        <ChevronDown className={cn("h-4 w-4 text-slate-400 transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-slate-200 rounded-lg z-50 py-1" style={{ boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)" }}>
+          {courses.map((c, i) => {
+            const colors = ["#1F4E8C", "#10B981", "#6D28D9", "#64748B", "#F59E0B", "#EF4444"]
+            return (
+              <button
+                key={c.id}
+                onClick={() => { onChange(c.id); setOpen(false) }}
+                className="w-full px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2.5"
+              >
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: colors[i % colors.length] }} />
+                {c.label}
+              </button>
+            )
+          })}
         </div>
+      )}
+    </div>
+  )
+}
+
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-32 gap-4">
+      <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+        <BarChart3 className="w-6 h-6 text-slate-400" />
       </div>
-      <div className="flex items-center gap-2">
-        {children}
+      <div className="text-center space-y-1">
+        <p className="text-base font-semibold text-slate-900">Select a course to see insights</p>
+        <p className="text-sm text-slate-400 max-w-xs">
+          Choose a course from the dropdown above to see how your class is doing, which students need attention, and how your grading is going.
+        </p>
       </div>
     </div>
   )
+}
 
-  if (viewState === "release") {
-    return (
-      <div className="max-w-5xl mx-auto py-12 px-8 space-y-10 font-sans select-none animate-in slide-in-from-right-4 fade-in duration-500">
-        <PageHeader 
-          title="Release Configuration" 
-          subtitle="Schedule and publish evaluation outcomes for Software Engineering: Phase 2."
-        >
-          <Button variant="ghost" size="sm">
-            <Settings2 /> Policy audit
-          </Button>
-        </PageHeader>
+export default function PostEvaluationPage() {
+  return (
+    <Suspense fallback={null}>
+      <Insights />
+    </Suspense>
+  )
+}
 
-        <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-10">
-            {/* Batch Status Card */}
-            <Card className="border-border/60 shadow-[0_4px_20px_rgb(0,0,0,0.02)] rounded-[24px] overflow-hidden bg-background">
-              <CardHeader className="p-6 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="eyebrow text-foreground flex items-center gap-2">
-                    <Activity className="w-3.5 h-3.5 text-primary" /> Batch Readiness
-                  </CardTitle>
-                  <CardDescription className="text-xs font-bold text-muted-foreground/50 mt-1">Cohort SE-PH2 Evaluation</CardDescription>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-semibold text-foreground tabular-nums tracking-tight">45<span className="text-muted-foreground/30 text-sm">/45</span></div>
-                  <div className="eyebrow text-[color:var(--status-success)]">100% Processed</div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6 space-y-8">
-                <div className="relative pt-2">
-                  <Progress value={100} className="h-3 rounded-full bg-muted/30" />
-                  <div className="absolute top-0 left-0 w-full h-3 bg-primary/10 blur-md rounded-full -z-10" />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { label: 'High Confidence', count: 35, color: 'text-[color:var(--status-success)]', bg: 'bg-[color:var(--status-success)]/10' },
-                    { label: 'Manual Review', count: 3, color: 'text-[color:var(--status-warning)]', bg: 'bg-[color:var(--status-warning)]/10' },
-                    { label: 'Elevated Cases', count: 5, color: 'text-primary', bg: 'bg-primary/10' },
-                    { label: 'Integrity Alert', count: 2, color: 'text-[color:var(--status-error)]', bg: 'bg-destructive/10' },
-                  ].map((stat) => (
-                    <div key={stat.label} className={cn("p-4 rounded-xl border border-border/40 flex items-center justify-between", stat.bg)}>
-                      <span className="text-xs font-bold text-muted-foreground/80 tracking-tight">{stat.label}</span>
-                      <span className={cn("text-lg font-semibold", stat.color)}>{stat.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+function Insights() {
+  const { assignments, criterionFeedbacks, overallFeedback } = useGradingStore()
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<"courses" | "grading">("courses")
 
-            {/* Timing Selection */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 px-2">
-                 <Clock className="w-4 h-4 text-primary" />
-                 <span className="eyebrow text-foreground">Launch Scheduling</span>
-              </div>
-              <div className="grid gap-4">
-                {[
-                  { key: "monday" as const, title: "Standard Protocol", time: "Monday, 9:00 AM", desc: "Allows maximum window for office hours and follow-up support.", icon: Calendar, badge: "Recommended" },
-                  { key: "immediate" as const, title: "Immediate Release", time: "Effective Instantly", desc: "Bypasses scheduling queue. Students will be notified immediately.", icon: Zap, badge: null },
-                  { key: "custom" as const, title: "Custom Window", time: "Configure Date/Time", desc: "Select a specific future timestamp for cohort-wide publication.", icon: Command, badge: null },
-                ].map((opt) => (
-                  <button
-                    key={opt.key}
-                    onClick={() => setReleaseTiming(opt.key)}
-                    className={cn(
-                      "flex items-start gap-5 p-7 rounded-[24px] border transition-all text-left group",
-                      releaseTiming === opt.key
-                        ? "bg-primary/[0.03] border-primary/40 shadow-sm"
-                        : "bg-background border-border/30 hover:border-border/60 hover:bg-muted/10"
-                    )}
-                  >
-                    <div className={cn(
-                      "mt-1 size-6 rounded-full flex items-center justify-center shrink-0 border-2 transition-all",
-                      releaseTiming === opt.key ? "bg-primary border-primary scale-110" : "border-muted-foreground/20 group-hover:border-muted-foreground/40"
-                    )}>
-                      {releaseTiming === opt.key && <div className="size-2 bg-primary-foreground rounded-full" />}
-                    </div>
-                    <div className="flex-1 space-y-1.5">
-                      <div className="flex items-center justify-between">
-                         <div className="flex items-center gap-3">
-                            <span className={cn("text-sm font-semibold tracking-tight", releaseTiming === opt.key ? "text-primary" : "text-foreground")}>{opt.title}</span>
-                            {opt.badge && <Badge variant="outline" className="eyebrow h-4 px-1.5 bg-[color:var(--status-success)]/10 text-[color:var(--status-success)] border-[color:var(--status-success)]/30 rounded-sm">{opt.badge}</Badge>}
-                         </div>
-                         <opt.icon className={cn("w-4 h-4 opacity-20", releaseTiming === opt.key ? "text-primary opacity-60" : "text-muted-foreground")} />
-                      </div>
-                      <p className="text-sm font-bold text-foreground/80">{opt.time}</p>
-                      <p className="text-xs font-medium text-muted-foreground leading-relaxed">{opt.desc}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+  const courses = useMemo(
+    () => Object.values(assignments).map(a => ({ id: a.id, label: a.title })),
+    [assignments]
+  )
 
-          {/* Impact & Actions Sidebar */}
-          <aside className="space-y-6">
-            <div className="sticky top-8">
-              <Card className="border-primary/20 shadow-[0_20px_50px_rgba(59,130,246,0.08)] rounded-[24px] overflow-hidden bg-primary/5">
-                <CardHeader className="p-6 border-b border-primary/10">
-                   <CardTitle className="eyebrow text-primary">Finalize Batch</CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 space-y-8">
-                  <div className="space-y-6">
-                    <div className="flex gap-4">
-                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><Users className="w-5 h-5 text-primary" /></div>
-                       <div>
-                          <p className="eyebrow text-muted-foreground/60 mb-1">Target Cohort</p>
-                          <p className="text-sm font-bold text-foreground">45 Evaluated Students</p>
-                       </div>
-                    </div>
-                    <div className="flex gap-4">
-                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><ShieldCheck className="w-5 h-5 text-primary" /></div>
-                       <div>
-                          <p className="eyebrow text-muted-foreground/60 mb-1">Audit Status</p>
-                          <p className="text-sm font-bold text-foreground">Verified & Immutable</p>
-                       </div>
-                    </div>
-                  </div>
+  const assignment = selectedId ? assignments[selectedId] : null
+  const students = assignment?.students ?? []
 
-                  <div className="p-5 rounded-xl bg-background border border-primary/20 border-dashed">
-                      <p className="text-xs font-medium text-muted-foreground leading-relaxed italic">
-                        "Publishing will notify all students in the cohort and unlock their solution direction roadmaps."
-                      </p>
-                  </div>
+  const insights = useMemo(() => {
+    if (!assignment || students.length === 0) return null
 
-                  <Button
-                    size="lg"
-                    disabled={isSyncing}
-                    onClick={() => {
-                      setIsSyncing(true)
-                      setTimeout(() => setIsSyncing(false), 2000)
-                    }}
-                    className="w-full"
-                  >
-                    {isSyncing ? (
-                      <><RefreshCw className="mr-3 h-5 w-5 animate-spin" /> Publishing...</>
-                    ) : (
-                      'Finalize launch'
-                    )}
-                  </Button>
-                  <p className="eyebrow text-center text-muted-foreground/40">Protocol Version v.2.4.1</p>
-                </CardContent>
-              </Card>
-            </div>
-          </aside>
-        </main>
-      </div>
-    )
-  }
+    const studentRows = students.map(s => {
+      const criteria = Object.values(s.criteria)
+      const avgLevel = criteria.length > 0 ? criteria.reduce((sum, c) => sum + c.level, 0) / criteria.length : 0
+      const scorePct = Math.round((avgLevel / 5) * 100)
+      return { student: s, scorePct, criteria }
+    })
+
+    const classAvg = Math.round(studentRows.reduce((sum, r) => sum + r.scorePct, 0) / studentRows.length)
+
+    const criterionIds = students.length > 0 ? Object.keys(students[0].criteria) : []
+    const criterionData = criterionIds.map(cid => {
+      const name = students[0].criteria[cid]?.name ?? cid
+      const levels = students.map(s => s.criteria[cid]?.level ?? 0)
+      const below50Count = levels.filter(l => (l / 5) * 100 < 50).length
+      const below60Count = levels.filter(l => (l / 5) * 100 < 60).length
+
+      const editedCount = students.filter(s => criterionFeedbacks[s.id]?.[cid]?.authorship === "instructor_edited").length
+      const agreedCount = students.filter(s => {
+        const fb = criterionFeedbacks[s.id]?.[cid]
+        return fb?.authorship === "ai_generated" && fb?.isConfirmed
+      }).length
+      const confirmedCount = students.filter(s => criterionFeedbacks[s.id]?.[cid]?.isConfirmed).length
+      const agreementPct = confirmedCount > 0 ? Math.round((agreedCount / confirmedCount) * 100) : 0
+
+      return { cid, name, below50Count, below60Count, editedCount, agreementPct, confirmedCount }
+    })
+
+    const strugglingCriteria = [...criterionData]
+      .filter(c => c.below50Count > 0 || c.below60Count > 0)
+      .sort((a, b) => b.below50Count - a.below50Count)
+      .slice(0, 3)
+
+    const atRiskStudents = studentRows
+      .filter(r => r.scorePct < 50 || r.student.status !== "clean")
+      .sort((a, b) => a.scorePct - b.scorePct)
+      .slice(0, 4)
+
+    const totalAIChanges = criterionData.reduce((sum, c) => sum + c.editedCount, 0)
+    const mostEditedCriterion = [...criterionData].sort((a, b) => b.editedCount - a.editedCount)[0]
+    const mostAgreedCriterion = [...criterionData].sort((a, b) => b.agreementPct - a.agreementPct)[0]
+
+    const half = Math.floor(studentRows.length / 2)
+    const sectionAAvg = half > 0 ? Math.round(studentRows.slice(0, half).reduce((s, r) => s + r.scorePct, 0) / half) : 0
+    const sectionBAvg = half > 0 ? Math.round(studentRows.slice(half).reduce((s, r) => s + r.scorePct, 0) / (studentRows.length - half)) : 0
+    const sectionGap = Math.abs(sectionAAvg - sectionBAvg)
+
+    return {
+      classAvg,
+      studentCount: students.length,
+      strugglingCriteria,
+      atRiskStudents,
+      totalAIChanges,
+      mostEditedCriterion,
+      mostAgreedCriterion,
+      sectionAAvg,
+      sectionBAvg,
+      sectionGap,
+    }
+  }, [assignment, students, criterionFeedbacks, overallFeedback])
 
   return (
-    <div className="max-w-7xl mx-auto py-12 px-8 space-y-12 font-sans select-none animate-in fade-in duration-700">
-      {/* Dashboard Top Header */}
-      <PageHeader 
-        title="Instructional Insights" 
-        subtitle="Comprehensive audit and cohort analytics for Software Engineering: Phase 2."
-        showBack={false}
-      >
-        <div className="flex items-center gap-3">
-          <Button variant="outline">
-            <Download /> Export data
-          </Button>
-          <Button onClick={() => setViewState("release")}>
-            <Sparkles /> Publish outcomes
-          </Button>
+    <div className="min-h-screen" style={{ backgroundColor: "#F8F9FA" }}>
+      {/* Privacy banner */}
+      <div className="px-6 pt-4">
+        <div className="flex items-center justify-between px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-500" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+          <span>🔒 Only you see this · Your insights are always private · HOD is notified only if something looks very unusual</span>
+          <button className="text-[#1F4E8C] font-medium hover:underline">Privacy settings →</button>
         </div>
-      </PageHeader>
-
-      {/* KPI Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { label: "Cohort Average", value: 84.2, unit: "%", sub: "+4.2% vs Phase 1", icon: TrendingUp, trend: 'up' },
-          { label: "Completion Rate", value: 100, unit: "%", sub: `45 Submissions`, icon: Users, trend: 'neutral' },
-          { label: "Integrity Score", value: 98, unit: "%", sub: "Clean Audit Log", icon: ShieldCheck, trend: 'up' },
-          { label: "Evaluation Lift", value: 68, unit: "%", sub: "AI Efficiency Gain", icon: Zap, trend: 'up' },
-        ].map((stat) => (
-          <motion.div whileHover={{ y: -4 }} key={stat.label} className="p-7 bg-background border border-border/40 rounded-[28px] shadow-[0_4px_24px_rgb(0,0,0,0.02)] transition-all">
-            <div className="flex items-start justify-between mb-4">
-              <span className="eyebrow text-muted-foreground/40">{stat.label}</span>
-              <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center">
-                 <stat.icon className="h-5 w-5 text-primary opacity-60" />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-4xl font-semibold tracking-tight tabular-nums text-foreground">
-                {stat.value}<span className="text-sm font-bold text-muted-foreground/40 ml-1.5">{stat.unit}</span>
-              </div>
-              <div className={cn(
-                "eyebrow flex items-center gap-1.5",
-                stat.trend === 'up' ? 'text-[color:var(--status-success)]' : 'text-muted-foreground/60'
-              )}>
-                {stat.trend === 'up' && <ArrowUpRight className="w-3.5 h-3.5" />} {stat.sub}
-              </div>
-            </div>
-          </motion.div>
-        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Grade Distribution Chart Card */}
-        <Card className="lg:col-span-2 border-border/40 rounded-[32px] overflow-hidden bg-background shadow-[0_8px_40px_rgb(0,0,0,0.03)]">
-          <CardHeader className="p-10 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-xl font-extrabold tracking-tight text-foreground">Performance Distribution</CardTitle>
-              <CardDescription className="eyebrow text-muted-foreground/40 mt-1">Cohort Frequency Mapping</CardDescription>
-            </div>
-            <Badge variant="outline" className="eyebrow border-border/30 px-3 h-6 bg-background shadow-sm rounded-full">P1 Calibrated</Badge>
-          </CardHeader>
-          <CardContent className="p-10">
-            <div className="flex items-end gap-5 h-72">
-              {distributionData.map((data, i) => {
-                const heightPct = (data.count / maxCount) * 100
-                return (
-                  <div key={data.range} className="flex-1 flex flex-col items-center group relative h-full">
-                    <div className="relative w-full flex flex-col items-center justify-end flex-1">
-                      <motion.div
-                        initial={{ height: 0 }}
-                        animate={{ height: `${heightPct}%` }}
-                        transition={{ duration: 1, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                        className={cn(
-                          "w-full max-w-[80px] rounded-t-2xl transition-all relative overflow-hidden",
-                          data.color,
-                          "hover:brightness-110 shadow-lg shadow-primary/5"
-                        )}
-                      >
-                         <div className="absolute inset-0 bg-background/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </motion.div>
-                      <div className="absolute -top-10 text-xs font-semibold text-foreground opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 px-2 py-1 bg-background border border-border/40 rounded-lg shadow-xl tabular-nums">
-                        {data.count} <span className="text-xs text-muted-foreground">SUBMISSIONS</span>
-                      </div>
-                    </div>
-                    <div className="text-center space-y-1 pt-5 shrink-0">
-                      <p className="text-xs font-semibold text-foreground tracking-tight tabular-nums">{data.range}</p>
-                      <p className="eyebrow text-muted-foreground/30">{data.label}</p>
-                    </div>
+      {/* Controls bar */}
+      <div className="px-6 pt-4 flex items-center gap-3 flex-wrap">
+        <div className="flex items-center bg-slate-100 rounded-lg p-1 gap-0.5">
+          <button
+            onClick={() => setActiveTab("courses")}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all",
+              activeTab === "courses" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            )}
+          >
+            <BookOpen className="h-3.5 w-3.5" /> Courses
+          </button>
+          <button
+            onClick={() => setActiveTab("grading")}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all",
+              activeTab === "grading" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            )}
+          >
+            <BarChart3 className="h-3.5 w-3.5" /> My Grading
+          </button>
+        </div>
+
+        <CourseDropdown courses={courses} selected={selectedId} onChange={setSelectedId} />
+
+        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-slate-300 transition-colors">
+          This Semester <ChevronDown className="h-4 w-4 text-slate-400" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="px-6 py-6 space-y-4">
+        {!selectedId || !insights ? (
+          <EmptyState />
+        ) : (
+          <>
+            {/* Course header */}
+            <Card className="bg-white border border-slate-200 rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#1F4E8C]" />
+                    <h2 className="text-base font-semibold text-slate-900">{assignment!.title}</h2>
                   </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                  <p className="text-xs text-slate-400 pl-4">{insights.studentCount} students</p>
+                </div>
+                <button className="text-xs font-medium text-[#1F4E8C] flex items-center gap-1 hover:underline">
+                  📝 See Insights <ArrowRight className="h-3 w-3" />
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${insights.classAvg}%`,
+                      backgroundColor: insights.classAvg >= 70 ? "#10B981" : insights.classAvg >= 50 ? "#F59E0B" : "#EF4444"
+                    }}
+                  />
+                </div>
+                <span className="text-sm font-semibold text-slate-700 shrink-0">{insights.classAvg}% avg</span>
+              </div>
+            </Card>
 
-        {/* Instructional Interventions Card */}
-        <Card className="border-border/40 rounded-[32px] overflow-hidden bg-background shadow-[0_8px_40px_rgb(0,0,0,0.03)] flex flex-col">
-          <CardHeader className="p-10 border-b border-border/10 bg-muted/5">
-            <div className="flex items-center gap-2 text-primary mb-1">
-              <Sparkles className="h-4 w-4 animate-pulse" />
-              <span className="eyebrow text-muted-foreground/50">Smart Interventions</span>
-            </div>
-            <CardTitle className="text-xl font-extrabold tracking-tight text-foreground leading-tight">Identified Logic Gaps</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 flex-1">
-            <ScrollArea className="h-full">
-               <div className="divide-y divide-border/10">
-                 {commonGaps.map((gap) => (
-                   <div key={gap.label} className="p-8 space-y-3 hover:bg-muted/10 transition-colors group">
-                     <div className="flex items-center justify-between">
-                       <span className="eyebrow text-foreground">{gap.label}</span>
-                       <Badge variant="outline" className={cn(
-                         "eyebrow h-5 rounded-sm",
-                         gap.severity === 'high' ? 'bg-[color:var(--status-warning)]/10 text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30' : 'bg-muted/50 text-muted-foreground border-border/40'
-                       )}>
-                         {gap.severity} RISK
-                       </Badge>
-                     </div>
-                     <p className="text-xs text-muted-foreground leading-relaxed font-semibold">{gap.gap}</p>
-                     <div className="pt-2">
-                       <Button
-                         variant="link"
-                         size="sm"
-                         disabled={activeInterventions.includes(gap.label)}
-                         onClick={() => setActiveInterventions(prev => [...prev, gap.label])}
-                       >
-                         {activeInterventions.includes(gap.label) ? (
-                           <>Intervention deployed <CheckCircle2 /></>
-                         ) : (
-                           <>Initiate intervention <ArrowRight /></>
-                         )}
-                       </Button>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      </div>
+            {/* Where students struggled most */}
+            {insights.strugglingCriteria.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold tracking-wider text-slate-400 mb-2 px-1">WHERE STUDENTS STRUGGLED MOST</p>
+                <div className="space-y-2">
+                  {insights.strugglingCriteria.map((c) => {
+                    const isCritical = c.below50Count > insights.studentCount * 0.4
+                    return (
+                      <Card
+                        key={c.cid}
+                        className="border rounded-xl p-4"
+                        style={{
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                          borderColor: isCritical ? "#FECACA" : "#FDE68A",
+                          backgroundColor: isCritical ? "#FFF5F5" : "#FFFBEB",
+                        }}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className={cn("w-2 h-2 rounded-full shrink-0", isCritical ? "bg-red-500" : "bg-amber-400")} />
+                              <p className="text-sm font-semibold text-slate-900">{c.name}</p>
+                            </div>
+                            <p className="text-xs text-slate-500 pl-4">
+                              {isCritical
+                                ? `${c.below50Count} of ${insights.studentCount} students scored below 50%`
+                                : `${c.below60Count} of ${insights.studentCount} students scored below 60%`}
+                            </p>
+                            <p className="text-xs text-slate-400 italic pl-4">
+                              {isCritical
+                                ? `"This topic may need more time in class next semester"`
+                                : `"Students are getting there — worth more practice examples"`}
+                            </p>
+                          </div>
+                          <button className="text-xs font-medium text-[#1F4E8C] hover:underline whitespace-nowrap flex items-center gap-1 shrink-0 ml-4">
+                            Review criterion <ArrowRight className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </Card>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
-      {/* Cohort Roster Card */}
-      <Card className="border-border/40 rounded-[32px] overflow-hidden bg-background shadow-[0_8px_40px_rgb(0,0,0,0.03)]">
-        <CardHeader className="p-10 border-b border-border/10 bg-muted/5 flex flex-row items-center justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-xl font-extrabold tracking-tight text-foreground">Cohort Roster</CardTitle>
-            <CardDescription className="eyebrow text-muted-foreground/40">Breakdown by Assessment Standard</CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-             <Button variant="ghost" size="sm">Filter range</Button>
-             <Button variant="ghost" size="icon"><Settings2 /></Button>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table className="text-left">
-            <TableHeader className="bg-muted/20 border-b border-border/10">
-              <TableRow>
-                <TableHead className="eyebrow px-10 py-5 text-muted-foreground/50">Student Identity</TableHead>
-                <TableHead className="eyebrow px-6 py-5 text-muted-foreground/50 text-center">Score Matrix</TableHead>
-                <TableHead className="eyebrow px-6 py-5 text-muted-foreground/50 text-center">Protocol Status</TableHead>
-                <TableHead className="eyebrow px-10 py-5 text-muted-foreground/50 text-right">Evaluation Grade</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="divide-y divide-border/10">
-              {rosterData.map((student) => (
-                <TableRow key={student.name} className="hover:bg-muted/5 group">
-                  <TableCell className="px-10 py-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-muted group-hover:bg-primary/5 transition-colors flex items-center justify-center text-xs font-semibold text-muted-foreground group-hover:text-primary">
-                        {student.name.split(' ').map(n => n[0]).join('')}
+            {/* Students who need attention */}
+            {insights.atRiskStudents.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <p className="text-xs font-semibold tracking-wider text-slate-400">STUDENTS WHO NEED ATTENTION</p>
+                  <p className="text-xs text-slate-400">{insights.atRiskStudents.length} student{insights.atRiskStudents.length !== 1 ? "s" : ""}</p>
+                </div>
+                <div className="space-y-2">
+                  {insights.atRiskStudents.map(r => {
+                    const initials = r.student.name.split(" ").map(n => n[0]).join("").slice(0, 2)
+                    const isFlagged = r.student.status !== "clean"
+                    const avatarColors = ["#1F4E8C", "#10B981", "#F59E0B", "#6D28D9"]
+                    const colorIdx = r.student.id.charCodeAt(0) % avatarColors.length
+                    return (
+                      <Card key={r.student.id} className="bg-white border border-slate-200 rounded-xl p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                              style={{ backgroundColor: avatarColors[colorIdx] }}
+                            >
+                              {initials}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-slate-900">{r.student.name}</p>
+                              <p className="text-xs text-slate-400">
+                                {r.scorePct < 50 ? `Below 50% overall (${r.scorePct}%)` : "Integrity flag detected"}
+                              </p>
+                              {isFlagged && (
+                                <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+                                  <ShieldAlert className="h-2.5 w-2.5" /> Flagged
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <button className="text-xs font-medium text-[#1F4E8C] hover:underline flex items-center gap-1 shrink-0">
+                            See submission <ArrowRight className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </Card>
+                    )
+                  })}
+                </div>
+                <button className="w-full mt-2 text-sm font-medium text-[#1F4E8C] hover:underline py-2 text-center">
+                  See all {insights.studentCount} students →
+                </button>
+              </div>
+            )}
+
+            {/* How you graded this course — private */}
+            <div>
+              <p className="text-xs font-semibold tracking-wider text-slate-400 mb-1 px-1">HOW YOU GRADED THIS COURSE</p>
+              <p className="text-xs text-slate-400 px-1 mb-2 flex items-center gap-1">
+                <Lock className="h-3 w-3" /> Only you see this section
+              </p>
+              <div className="space-y-2">
+                {/* AI Score Changes */}
+                <Card className="bg-white border border-slate-200 rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                  <p className="text-xs font-semibold tracking-wider text-slate-400 mb-3">AI SCORE CHANGES · THIS COURSE</p>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-4xl font-semibold text-slate-900 tabular-nums">{insights.totalAIChanges}</span>
+                    <span className="text-sm text-slate-500">scores changed from AI suggestions</span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden mb-2">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.min(100, (insights.totalAIChanges / Math.max(insights.studentCount * 3, 1)) * 100)}%`,
+                        backgroundColor: "#1F4E8C"
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <CheckCircle2 className="h-3 w-3" /> Healthy range
+                    </span>
+                    {insights.mostEditedCriterion && (
+                      <span className="text-xs text-slate-400">Most changes on {insights.mostEditedCriterion.name}</span>
+                    )}
+                  </div>
+                </Card>
+
+                {/* Where you changed AI most */}
+                {insights.mostEditedCriterion && insights.mostEditedCriterion.editedCount > 0 && (
+                  <Card className="bg-white border border-slate-200 rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                    <p className="text-xs font-semibold tracking-wider text-slate-400 mb-3">WHERE YOU CHANGED AI MOST</p>
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-slate-900">{insights.mostEditedCriterion.name}</p>
+                          <span className="text-xs text-slate-400">Changed {insights.mostEditedCriterion.editedCount} time{insights.mostEditedCriterion.editedCount !== 1 ? "s" : ""}</span>
+                        </div>
+                        <p className="text-xs text-slate-500 max-w-sm">
+                          The description for this criterion may need to be clearer — when you change the AI often on one topic, it usually means the grading guide needs more specific language.
+                        </p>
                       </div>
-                      <span className="font-extrabold text-foreground text-sm tracking-tight">{student.name}</span>
+                      <button className="text-xs font-medium text-[#1F4E8C] hover:underline flex items-center gap-1 shrink-0 ml-4 whitespace-nowrap">
+                        Improve this criterion <ArrowRight className="h-3 w-3" />
+                      </button>
                     </div>
-                  </TableCell>
-                  <TableCell className="px-6 py-6 font-mono text-muted-foreground text-center">
-                    <div className="flex items-center justify-center gap-3">
-                      <span className="text-xs font-bold">{student.c1}</span>
-                      <span className="text-muted-foreground/20 text-xs">|</span>
-                      <span className="text-xs font-bold">{student.c2}</span>
-                      <span className="text-muted-foreground/20 text-xs">|</span>
-                      <span className="text-xs font-bold">{student.c3}</span>
-                      <span className="text-muted-foreground/20 text-xs">|</span>
-                      <span className="text-xs font-semibold text-foreground">{student.total}</span>
+                  </Card>
+                )}
+
+                {/* Where you and AI agreed most */}
+                {insights.mostAgreedCriterion && insights.mostAgreedCriterion.agreementPct > 0 && (
+                  <Card className="bg-white border border-slate-200 rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                    <p className="text-xs font-semibold tracking-wider text-slate-400 mb-3">WHERE YOU AND AI AGREED MOST</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-sm font-semibold text-slate-900">{insights.mostAgreedCriterion.name}</p>
+                      <span className="text-xs font-semibold text-emerald-600">{insights.mostAgreedCriterion.agreementPct}% agreement</span>
                     </div>
-                  </TableCell>
-                  <TableCell className="px-6 py-6 text-center">
-                    <Badge variant="outline" className={cn(
-                      "eyebrow h-5 px-2 rounded-full",
-                      student.status === 'Published' ? 'bg-[color:var(--status-success)]/5 text-[color:var(--status-success)] border-[color:var(--status-success)]/30' :
-                      student.status === 'Ready' ? 'bg-primary/5 text-primary border-primary/20' :
-                      'bg-[color:var(--status-warning)]/5 text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30'
-                    )}>
-                      {student.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="px-10 py-6 text-right">
-                    <div className="flex items-center justify-end gap-3">
-                      <span className="text-xl font-semibold tabular-nums tracking-tight text-foreground">{student.grade}</span>
-                      <div className={cn(
-                        "w-1.5 h-6 rounded-full",
-                        student.grade.includes('A') ? 'bg-primary' :
-                        student.grade.includes('B') ? 'bg-[color:var(--status-success)]' :
-                        'bg-[color:var(--status-warning)]'
-                      )} />
+                    <p className="text-xs text-slate-500">
+                      Your grading guide for this criterion is very clear. This is what good looks like.
+                    </p>
+                  </Card>
+                )}
+
+                {/* Section anomaly */}
+                {insights.sectionGap >= 8 && (
+                  <Card className="bg-amber-50 border border-amber-200 rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                    <div className="flex items-start gap-2 mb-2">
+                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <p className="text-sm font-semibold text-amber-700">One thing worth checking</p>
                     </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-      
-      {/* Footer Audit Message */}
-      <div className="text-center pb-12">
-         <p className="eyebrow text-muted-foreground/30">End of Transcript · EducAItors AI Protocol Verified</p>
+                    <p className="text-xs text-amber-600 mb-3 ml-6">
+                      Section A scored {insights.sectionGap}% {insights.sectionAAvg < insights.sectionBAvg ? "lower" : "higher"} than Section B on the same assignment. This could be a genuine performance difference — or worth a quick look before releasing grades.
+                    </p>
+                    <button className="ml-6 text-xs font-medium text-[#1F4E8C] hover:underline flex items-center gap-1">
+                      Compare sections <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </Card>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
