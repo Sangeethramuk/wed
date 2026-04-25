@@ -236,9 +236,9 @@ export default function FeedbackPage() {
                 onChange={(val) => {
                   if (val === 'APPEND_TO_DRAFT') {
                     if (instructorNote.trim() && feedbackDraft) {
-                      const currentSnapshot = feedbackDraft.performanceSnapshot;
-                      const newSnapshot = `INSTRUCTOR'S FEEDBACK\n${instructorNote.trim()}\n\n${currentSnapshot}`;
-                      handleUpdateSection('performanceSnapshot', newSnapshot);
+                      const currentNote = feedbackDraft.instructorNote || '';
+                      const newNote = currentNote ? `${currentNote}\n${instructorNote.trim()}` : instructorNote.trim();
+                      handleUpdateSection('instructorNote', newNote);
                       setInstructorNote('');
                       toast.success('Note added to summary draft');
                     }
