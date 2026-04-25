@@ -7,7 +7,6 @@ import {
   ClipboardCheck,
   BarChart3,
   RefreshCcw,
-  FileText,
   HelpCircle,
   LogOut
 } from "lucide-react"
@@ -30,11 +29,6 @@ const mainNavItems = [
     title: "Home",
     url: "/dashboard",
     icon: Home,
-  },
-  {
-    title: "Assignments",
-    url: "/dashboard/pre-evaluation",
-    icon: FileText,
   },
   {
     title: "Grading Desk",
