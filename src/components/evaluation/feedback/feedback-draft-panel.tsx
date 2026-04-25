@@ -45,9 +45,9 @@ export function FeedbackDraftPanel({
 
   return (
     <div className="w-full bg-white px-8">
-      <div className="max-w-3xl mx-auto py-10">
+      <div className="max-w-3xl mx-auto py-4">
         {/* Header Area */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-2">
           <div className="space-y-1">
             <h3 className="text-[12px] font-bold tracking-widest text-slate-400 uppercase">Comprehensive Assessment Draft</h3>
             <div className="flex items-center gap-3">
@@ -88,14 +88,14 @@ export function FeedbackDraftPanel({
         </div>
 
         {/* Feedback Sections */}
-        <div className="space-y-7 relative">
+        <div className="space-y-4 relative">
           {sections.map((section) => {
             const content = feedback[section.key];
             const isEdited = editedSections.has(section.key);
             
             return (
               <div key={section.key} className="group relative">
-                <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-[#1F4E8C]/20" />
                     <span className="text-[11px] font-bold tracking-widest text-slate-900 uppercase">
