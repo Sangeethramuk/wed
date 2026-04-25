@@ -154,13 +154,8 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
         {assignment.integrityFlags > 0 ? (
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger asChild>
-                <span
-                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold border animate-pulse cursor-help"
-                  style={{ backgroundColor: "#FEF2F2", color: "#EF4444", borderColor: "#FECACA" }}
-                >
-                  <ShieldAlert className="h-2.5 w-2.5" /> {assignment.integrityFlags}
-                </span>
+              <TooltipTrigger render={<span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold border animate-pulse cursor-help" style={{ backgroundColor: "#FEF2F2", color: "#EF4444", borderColor: "#FECACA" }} />}>
+                <ShieldAlert className="h-2.5 w-2.5" /> {assignment.integrityFlags}
               </TooltipTrigger>
               <TooltipContent>
                 {assignment.integrityFlags} integrity flag{assignment.integrityFlags > 1 ? "s" : ""} detected
@@ -248,10 +243,8 @@ function DeptGroup({ department, assignments }: { department: string; assignment
         <div className="flex items-center gap-5 text-xs text-slate-500">
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-1.5 cursor-help font-semibold">
-                  <BarChart3 className="h-3 w-3" /> Avg Cal: {avgCal}%
-                </div>
+              <TooltipTrigger render={<div className="flex items-center gap-1.5 cursor-help font-semibold" />}>
+                <BarChart3 className="h-3 w-3" /> Avg Cal: {avgCal}%
               </TooltipTrigger>
               <TooltipContent>Average calibration confidence across this department</TooltipContent>
             </Tooltip>
