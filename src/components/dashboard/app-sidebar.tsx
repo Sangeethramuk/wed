@@ -31,7 +31,7 @@ const mainNavItems = [
     icon: Home,
   },
   {
-    title: "Grading Desk",
+    title: "Assignments",
     url: "/dashboard/evaluation",
     icon: ClipboardCheck,
   },
