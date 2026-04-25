@@ -31,8 +31,7 @@ import {
 } from "@/components/evaluation/progressive-nudges"
 import { Separator } from "@/components/ui/separator"
 import { motion, AnimatePresence } from "framer-motion"
-import { 
-  Search, 
+import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -48,7 +47,6 @@ import {
   EyeOff,
   Scale,
   MessageSquare,
-  Sparkles,
   ArrowRight,
   ArrowUpRight,
   ArrowUp,
@@ -58,7 +56,6 @@ import {
   X
 } from "lucide-react"
 import Link from "next/link"
-import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { RevisionHistorySheet, RevisionEvent } from "@/components/evaluation/revision-history-sheet"
@@ -131,7 +128,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   // ManuscriptRenderer; 'scanned' shows a skeleton-based handwritten-paper
   // preview for the prototype (no real scan pipeline wired yet).
   const [manuscriptView, setManuscriptView] = useState<"scanned" | "ocr">("ocr")
-  const [triageFilter, setTriageFilter] = useState<"all" | "critical" | "focus" | "verified">("all")
   const [showInsights, setShowInsights] = useState(true)
   const [isPaused, setIsPaused] = useState(false)
   const [dismissedPoints, setDismissedPoints] = useState<string[]>([])
@@ -159,7 +155,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   const [activeOverrideId, setActiveOverrideId] = useState<string | null>(null)
   const [textSelectionMode, setTextSelectionMode] = useState<{ active: boolean, criterionId: string | null }>({ active: false, criterionId: null })
   const [pendingTextSelection, setPendingTextSelection] = useState<{ text: string, page: number } | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
   const [expandedRubricId, setExpandedRubricId] = useState<string>("c1")
   const [overrideReasoning, setOverrideReasoning] = useState<Record<string, string>>({})
   const [generatingFeedbackFor, setGeneratingFeedbackFor] = useState<string | null>(null)
@@ -302,11 +297,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     }
   })
 
-  const submissions = allSubmissions.filter(s => {
-    const matchesFilter = triageFilter === "all" || s.category === triageFilter
-    const matchesSearch = !searchQuery.trim() || s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.code.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesFilter && matchesSearch
-  })
   const currentStudent = allSubmissions.find(s => s.id === selectedSubmission)
 
   const LOW_CONFIDENCE_THRESHOLD = 0.7
@@ -661,13 +651,13 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   const [scoreLevelExpanded, setScoreLevelExpanded] = useState<Record<string, boolean>>({})
 
   const handleConfirmNext = () => {
-    const currentSub = submissions.find(s => s.id === selectedSubmission)
+    const currentSub = allSubmissions.find(s => s.id === selectedSubmission)
     // Trigger spot check only for "Clear" papers and if not already active
     setGradedSubmissions(prev => [...prev, selectedSubmission])
 
     // Find next ungraded submission
-    const currentIndex = submissions.findIndex(s => s.id === selectedSubmission)
-    const nextSub = submissions.slice(currentIndex + 1).find(s => s.status !== "graded") || submissions[0]
+    const currentIndex = allSubmissions.findIndex(s => s.id === selectedSubmission)
+    const nextSub = allSubmissions.slice(currentIndex + 1).find(s => s.status !== "graded") || allSubmissions[0]
 
     setSelectedSubmission(nextSub.id)
     setIsFixed(false)
@@ -862,173 +852,8 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     <TooltipProvider delay={0}>
       <div className={`h-[calc(100vh-4rem)] overflow-hidden border rounded-xl bg-background transition-all ${isPaused ? 'opacity-50 grayscale-[0.5] pointer-events-none' : ''}`}>
       <ResizablePanelGroup orientation="horizontal">
-        {/* Left Panel: Triage Sidebar */}
-        <ResizablePanel defaultSize={20} minSize={15} className="bg-muted/5">
-          <div className="flex flex-col h-full border-r border-border">
-             <div className="p-4 border-b border-border space-y-4">
-               <div className="flex items-center justify-between">
-                 <h2 className="eyebrow text-muted-foreground/80">Triage Sidebar</h2>
-                 <div className="flex flex-col items-end gap-1">
-                   <Badge variant="outline" className="rounded-full bg-background border-border text-xs font-semibold">
-                     {gradedSubmissions.length} / {allSubmissions.length} Completed
-                   </Badge>
-                   <div className="w-32 h-1.5 bg-muted rounded-full overflow-hidden">
-                     <div 
-                       className="h-full bg-primary transition-all duration-500" 
-                       style={{ width: `${(gradedSubmissions.length / allSubmissions.length) * 100}%` }} 
-                     />
-                   </div>
-                 </div>
-               </div>
-              
-              {/* Triage Categories */}
-              <div className="grid grid-cols-4 gap-1 p-1 bg-muted/50 rounded-lg border border-border/50">
-                <Button
-                  variant={triageFilter === 'all' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setTriageFilter("all")}
-                  className="w-full"
-                >All</Button>
-                <Button
-                  variant={triageFilter === 'critical' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setTriageFilter("critical")}
-                  className="w-full"
-                >Crit</Button>
-                <Button
-                  variant={triageFilter === 'focus' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setTriageFilter("focus")}
-                  className="w-full"
-                >Focus</Button>
-                <Button
-                  variant={triageFilter === 'verified' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setTriageFilter("verified")}
-                  className="w-full"
-                >Veri</Button>
-              </div>
-
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-8 h-8 text-xs bg-background border-border focus-visible:ring-primary/20" placeholder="Filter cohort..." />
-              </div>
-
-              {/* Bulk Approve — only visible in Verified tab */}
-              {triageFilter === "verified" && (() => {
-                const pendingVerified = allSubmissions.filter(
-                  s => s.category === "verified" && !gradedSubmissions.includes(s.id)
-                )
-                return pendingVerified.length > 0 ? (
-                  <Button
-                    onClick={() => {
-                      setGradedSubmissions(prev => [...new Set([...prev, ...pendingVerified.map(s => s.id)])])
-                    }}
-                    className="w-full justify-between"
-                  >
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                      <span>Bulk approve all</span>
-                    </div>
-                    <span className="tabular-nums">
-                      {pendingVerified.length}
-                    </span>
-                  </Button>
-                ) : (
-                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[color:var(--status-success-bg)] border border-[color:var(--status-success)]/60">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[color:var(--status-success)] shrink-0" />
-                    <span className="eyebrow text-[color:var(--status-success)]">All Verified Approved</span>
-                  </div>
-                )
-              })()}
-            </div>
-            <ScrollArea className="flex-1">
-              <div className="p-2 space-y-1">
-                {submissions.map((sub) => (
-                  <div
-                    key={sub.id}
-                    role="button"
-                    onClick={() => {
-                      setSelectedSubmission(sub.id)
-                      setIsFixed(false)
-                      setCurrentPage(1)
-                    }}
-                    className={`w-full flex items-center justify-between p-3 rounded-lg transition-all text-left text-sm cursor-pointer border-l-2 ${
-                      selectedSubmission === sub.id 
-                        ? 'bg-primary/5 border-l-primary text-foreground' 
-                        : 'hover:bg-muted/50 border-l-transparent text-muted-foreground'
-                    }`}
-                  >
-                    <div className="flex flex-col gap-1.5 flex-1">
-                       <div className="flex items-center gap-2">
-                         {gradedSubmissions.includes(sub.id) ? (
-                           <CheckCircle2 className="h-3 w-3 text-[color:var(--status-success)]" />
-                         ) : (
-                           <div className={`w-1.5 h-1.5 rounded-full ${
-                               sub.category === 'critical' ? 'bg-destructive shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 
-                               sub.category === 'focus' ? 'bg-[color:var(--status-warning)]' : 'bg-[color:var(--status-success)]'
-                           }`} />
-                         )}
-                         <span className={`eyebrow tracking-tight ${selectedSubmission === sub.id ? 'text-primary' : 'text-foreground/70'} ${gradedSubmissions.includes(sub.id) ? 'line-through opacity-60' : ''}`}>{sub.name}</span>
-                         {selectedSubmission === sub.id && !gradedSubmissions.includes(sub.id) && <Sparkles className="h-2.5 w-2.5 text-primary" />}
-                         {gradedSubmissions.includes(sub.id) && <span className="eyebrow text-[color:var(--status-success)]">Done</span>}
-                       </div>
-                       <div className="flex items-center gap-2 ml-3.5">
-                         <span className="text-xs font-semibold text-muted-foreground/40 tabular-nums">{sub.code}</span>
-                         {!gradedSubmissions.includes(sub.id) && (
-                           <>
-                             <span className="text-xs opacity-40">•</span>
-                             <Tooltip>
-                                 <TooltipTrigger>
-                                     <span className={`eyebrow px-1.5 py-0.5 rounded-sm ${
-                                         (Object.values(sub.checkpoints).filter(Boolean).length) <= 2 ? 'bg-[color:var(--status-error-bg)] text-[color:var(--status-error)]' :
-                                         (Object.values(sub.checkpoints).filter(Boolean).length) <= 4 ? 'bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)]' :
-                                         'bg-primary/5 text-primary'
-                                     }`}>
-                                         Checkpoints: {Object.values(sub.checkpoints).filter(Boolean).length}/5
-                                     </span>
-                                 </TooltipTrigger>
-                                  <TooltipContent 
-                                    side="right"
-                                    className="bg-popover text-popover-foreground border border-border shadow-xl p-3 space-y-2 min-w-[140px]"
-                                  >
-                                      <div className="eyebrow text-popover-foreground/70 border-b border-border/50 pb-1.5 mb-1.5">
-                                          Checkpoints
-                                      </div>
-                                      <div className="space-y-1">
-                                          {Object.entries(sub.checkpoints).map(([key, passed]) => (
-                                              <div key={key} className="flex items-center justify-between gap-4 text-xs">
-                                                  <span className="text-popover-foreground/80 capitalize">{key}</span>
-                                                  <span className={passed ? 'text-[color:var(--status-success)]' : 'text-destructive'}>
-                                                      {passed ? '✓' : '✗'}
-                                                  </span>
-                                              </div>
-                                          ))}
-                                      </div>
-                                  </TooltipContent>
-                             </Tooltip>
-                           </>
-                         )}
-                       </div>
-                     </div>
-                     <div className="flex items-center gap-2">
-                         {!gradedSubmissions.includes(sub.id) && sub.flags > 0 && (
-                           <Badge variant="destructive" className="h-5 px-1.5 rounded-md text-xs font-semibold">
-                               {sub.flags}
-                           </Badge>
-                         )}
-                     </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-        </ResizablePanel>
-
-        <ResizableHandle withHandle className="bg-border" />
-
         {/* Center Panel: Document Viewer */}
-        <ResizablePanel defaultSize={50} minSize={30}>
+        <ResizablePanel defaultSize={60} minSize={30}>
           <div className="h-full flex flex-col bg-muted/10">
             <header className="p-4 border-b border-border bg-background flex flex-col gap-4 z-10 shrink-0">
               <div className="flex items-center justify-between">
@@ -1256,7 +1081,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
         <ResizableHandle withHandle className="bg-border" />
 
         {/* Right Panel: Rubric Suite */}
-        <ResizablePanel defaultSize={35} minSize={25}>
+        <ResizablePanel defaultSize={40} minSize={25}>
           {(() => {
             const point = rubricPoints[activeRubricCriterionIdx]
             const state = criterionState[point.id] || { score: null, isOverridden: false, feedback: '', confirmed: false }
