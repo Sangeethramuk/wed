@@ -18,7 +18,8 @@ import {
   Send,
   Zap,
   EyeOff,
-  ArrowRight
+  ArrowRight,
+  Activity,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -28,6 +29,7 @@ import { TriageSidebar } from "@/components/evaluation/triage-sidebar"
 import { AssignmentSubmissionsTable } from "@/components/evaluation/assignment-submissions-table"
 import { AssignmentPreviewBody } from "@/components/pre-evaluation/student-preview"
 import { AssignmentAnalytics } from "@/components/evaluation/assignment-analytics"
+import { AssignmentMyActivity } from "@/components/evaluation/assignment-my-activity"
 import { usePreEvalStore } from "@/lib/store/pre-evaluation-store"
 import { motion } from "framer-motion"
 import { Empty, EmptyContent, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
@@ -253,6 +255,16 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
               Analytics
             </TabsTrigger>
             <TabsTrigger
+              value="my-activity"
+              className="px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 rounded-none text-xs font-semibold tracking-wider text-slate-500 hover:text-slate-700 data-[state=active]:text-slate-900 transition-colors"
+              style={{
+                borderBottomColor: activeTab === "my-activity" ? '#1F4E8C' : 'transparent',
+              }}
+            >
+              <Activity className="mr-2 h-4 w-4" />
+              My Activity
+            </TabsTrigger>
+            <TabsTrigger
               value="preview"
               className="px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 rounded-none text-xs font-semibold tracking-wider text-slate-500 hover:text-slate-700 data-[state=active]:text-slate-900 transition-colors"
               style={{
@@ -379,6 +391,13 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
           <AssignmentAnalytics
             assignmentId={id}
             assignmentTitle={assignment?.title ?? "Assignment"}
+            totalSubmissions={overviewAssignment?.totalSubmissions ?? assignment?.students.length ?? 30}
+          />
+        </TabsContent>
+
+        <TabsContent value="my-activity" className="outline-none pt-6">
+          <AssignmentMyActivity
+            assignmentId={id}
             totalSubmissions={overviewAssignment?.totalSubmissions ?? assignment?.students.length ?? 30}
           />
         </TabsContent>
