@@ -1,88 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'sonner';
-import { 
-  Star, CircleDot, Lightbulb, AlertTriangle, 
-  ChevronUp, ChevronDown, CheckCircle2, Pencil, 
-  Copy, Undo2, Send, ArrowRight, Star as StarIcon,
-  ChevronLeft
-} from 'lucide-react';
-import { 
-  getTierColors, 
-  type FeedbackTier, 
-  generateOverallFeedback, 
-  generateSolutionSteps 
-} from '@/lib/feedback-generator';
 import { useGradingStore } from '@/lib/store/grading-store';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { ChevronLeft } from 'lucide-react';
 
-// ── Criteria Recap Card (left panel) ──
-function CriteriaRecapCard({ name, level, tier, tierLabel, feedbackSnippet, isExpanded, onToggle }: {
-  name: string; level: number; tier: FeedbackTier; tierLabel: string;
-  feedbackSnippet: string; isExpanded: boolean; onToggle: () => void;
-}) {
-  const colors = getTierColors(tier);
-  const TierIcon = tier === 'perfect' ? StarIcon : tier === 'minor' ? CircleDot : tier === 'gap' ? Lightbulb : AlertTriangle;
-  return (
-    <div className={`rounded-[10px] border ${colors.border} ${colors.bg} overflow-hidden transition-all duration-200 hover:shadow-sm`}>
-      <Button variant="ghost" onClick={onToggle} className="w-full justify-between h-auto py-2.5">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className={`w-6 h-6 rounded-md ${colors.badge} flex items-center justify-center shrink-0`}>
-            <TierIcon className="w-3.5 h-3.5" />
-          </div>
-          <div className="min-w-0">
-            <div className="text-xs font-bold text-foreground truncate tracking-tight">{name}</div>
-            <div className={`eyebrow ${colors.text}`}>{tierLabel}</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0 pl-2 border-l border-border/30 ml-2">
-          <span className="text-xs font-semibold font-mono text-foreground">{level}<span className="text-xs text-muted-foreground/50">/5</span></span>
-          {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground/40" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground/40" />}
-        </div>
-      </Button>
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div 
-            initial={{ height: 0, opacity: 0 }} 
-            animate={{ height: 'auto', opacity: 1 }} 
-            exit={{ height: 0, opacity: 0 }} 
-            className="overflow-hidden"
-          >
-            <div className="px-3 pb-3 pt-0 border-t border-border/10 mt-1">
-              <p className="text-xs text-muted-foreground/80 leading-[1.6] italic mt-2">{feedbackSnippet}</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-// ── Main Page ──
 export default function FeedbackPage() {
   const { id: assignmentId } = useParams();
   const router = useRouter();
   const {
     currentAssignmentId, assignments, activeStudentId,
-    criterionFeedbacks, overallFeedback,
-    setOverallFeedback, updateOverallFeedbackText, 
-    setSolutionSteps, updateSolutionStep,
-    mergeInstructorNote, submitFinalFeedback,
-    selectAssignment, setActiveStudent, syncAssignments
+    overallFeedback, selectAssignment, setActiveStudent, syncAssignments
   } = useGradingStore();
-
-  const [expandedCriteria, setExpandedCriteria] = useState<Record<string, boolean>>({});
-  const [instructorInput, setInstructorInput] = useState('');
-  const [isNoteVisible, setIsNoteVisible] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState('feedback');
-  const [copying, setCopying] = useState(false);
 
   // Sync assignments and assignment state from URL
   useEffect(() => {
@@ -92,482 +22,44 @@ export default function FeedbackPage() {
     }
   }, [assignmentId, currentAssignmentId, selectAssignment, syncAssignments]);
 
-  // The URL id (e.g. `OS-LAB-03`) comes from evaluation-overview-store, but the
-  // grading store keys its DEFAULT_ASSIGNMENTS on a different scheme (`se-101`,
-  // `dbms-202`, etc.). If neither the URL id nor currentAssignmentId resolves,
-  // fall back to the first assignment in the store so the feedback page can
-  // render with sample data instead of hanging on the loading spinner.
   const assignment =
     assignments[assignmentId as string] ||
     (currentAssignmentId ? assignments[currentAssignmentId] : null) ||
     Object.values(assignments)[0] ||
     null;
-  // activeStudentId from the grading desk may be `STU-100` while the resolved
-  // assignment has students keyed as `rohan`, `meghna`, etc. Fall back to the
-  // first student of the resolved assignment when the id doesn't match.
+
   const activeStudent =
     assignment?.students.find(s => s.id === activeStudentId) ||
     assignment?.students[0] ||
     null;
-
-  // Determine specific feedback for this student
-  const studentOverallFeedback = useMemo(() => 
-    activeStudent ? overallFeedback[activeStudent.id] : null
-  , [overallFeedback, activeStudent]);
-
-  const studentCriterionFeedbacks = useMemo(() => 
-    activeStudent ? (criterionFeedbacks[activeStudent.id] || {}) : {}
-  , [criterionFeedbacks, activeStudent]);
-
-  // Generate overall feedback on mount if not present
-  const confirmedCriteria = useMemo(() => {
-    if (!activeStudent) return [];
-    
-    const activeCriteria = Object.values(activeStudent.criteria);
-    const confirmed = activeCriteria
-      .filter(c => studentCriterionFeedbacks[c.id]?.isConfirmed)
-      .map(c => ({
-        name: c.name,
-        level: c.level,
-        maxLevel: 5,
-        feedbackText: studentCriterionFeedbacks[c.id]?.feedbackText ?? '',
-      }));
-    
-    // FALLBACK DATA if no criteria were confirmed
-    if (confirmed.length === 0) {
-      return [
-        { name: 'Architecture & Design', level: 4, maxLevel: 5, feedbackText: 'The system architecture demonstrates a solid understanding of modular design principles. Layer separation is clear, though some coupling persists in the utility layer.' },
-        { name: 'Technical Implementation', level: 3, maxLevel: 5, feedbackText: 'Core technical requirements are met, but error handling across asynchronous boundaries needs more rigorous attention.' },
-        { name: 'Documentation Quality', level: 5, maxLevel: 5, feedbackText: 'Exceptional documentation standards. API contracts are well-defined and samples are immediately runnable.' },
-      ];
-    }
-    return confirmed;
-  }, [activeStudent, studentCriterionFeedbacks]);
-
-  useEffect(() => {
-    if (!studentOverallFeedback && confirmedCriteria.length > 0 && activeStudent) {
-      const content = generateOverallFeedback(confirmedCriteria, activeStudent.name);
-      
-      const sections = [
-        `**Performance Snapshot**\n${content.performanceSnapshot}`,
-        `**Strengths**\n${content.strengths.map(s => `• ${s}`).join('\n')}`,
-        `**Key Gaps**\n${content.keyGaps.map(g => `• ${g}`).join('\n')}`,
-        `**Improvement Direction**\n${content.improvementDirection.map(d => `• ${d}`).join('\n')}`,
-        `**Closing Note**\n${content.closingNote}`,
-      ];
-
-      const docText = sections.join('\n\n');
-
-      setOverallFeedback(activeStudent.id, {
-        studentId: activeStudent.id,
-        documentText: docText,
-        originalDocumentText: docText,
-        instructorNote: '',
-        authorship: 'ai_generated',
-        isSubmitted: false,
-      });
-    }
-  }, [studentOverallFeedback, confirmedCriteria, activeStudent, setOverallFeedback]);
-
-  const solutionSteps = useMemo(() => generateSolutionSteps(confirmedCriteria), [confirmedCriteria]);
-
-  useEffect(() => {
-    if (studentOverallFeedback && !studentOverallFeedback.solutionSteps && confirmedCriteria.length > 0 && activeStudent) {
-      setSolutionSteps(activeStudent.id, solutionSteps);
-    }
-  }, [studentOverallFeedback, solutionSteps, setSolutionSteps, confirmedCriteria, activeStudent]);
-
-  const displaySolutionSteps = studentOverallFeedback?.solutionSteps || solutionSteps;
 
   if (!assignment || !activeStudent) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
         <div className="text-center space-y-4">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="eyebrow text-muted-foreground/40">Restoring Student Record…</p>
+          <p className="text-sm text-muted-foreground/40">Loading Student Record…</p>
         </div>
       </div>
     );
   }
 
-  // Handle final submission with sequential navigation
-  const handleFinalSubmit = () => {
-    if (!activeStudent || !assignment) return;
-
-    // 1. Mark current student as submitted
-    submitFinalFeedback(activeStudent.id);
-
-    // 2. The grading page stored the real cohort student id (STU-NNN) in
-    //    `activeStudentId`. The `activeStudent` object resolved above is the
-    //    fallback from DEFAULT_ASSIGNMENTS (rohan/meghna/…) used only for
-    //    rendering — don't use it to compute "next". Prefer activeStudentId.
-    const realStuId = (activeStudentId as string | null) ?? activeStudent.id;
-    const stuMatch = realStuId.match(/^STU-(\d+)$/);
-    const urlAssignmentId = (assignmentId as string) ?? assignment.id;
-
-    // 3. Toast so the instructor sees confirmation.
-    toast.success(`Grades saved and submitted for ${activeStudent.name}`, {
-      description: "Opening the next student's paper…",
-      duration: 3500,
-    });
-
-    // 4. Compute the next student. Increments the STU-NNN suffix against
-    //    the generated 60-seat cohort (100–159). Falls back to the stored
-    //    assignment.students array only when the id doesn't match that shape.
-    const nextStuId = stuMatch
-      ? (() => {
-          const next = parseInt(stuMatch[1], 10) + 1;
-          return next <= 159 ? `STU-${next}` : null;
-        })()
-      : null;
-    const fallbackNext = !stuMatch
-      ? assignment.students[assignment.students.findIndex(s => s.id === activeStudent.id) + 1]
-      : null;
-
-    // 5. Dwell briefly so the toast registers before the route changes.
-    setTimeout(() => {
-      if (nextStuId) {
-        setActiveStudent(nextStuId);
-        router.push(`/dashboard/evaluation/${urlAssignmentId}/grading?studentId=${nextStuId}`);
-      } else if (fallbackNext) {
-        setActiveStudent(fallbackNext.id);
-        router.push(`/dashboard/evaluation/${urlAssignmentId}/grading?studentId=${fallbackNext.id}`);
-      } else {
-        // Last student — back to the assignment details so the instructor
-        // can review the cohort and publish.
-        router.push(`/dashboard/evaluation/${urlAssignmentId}`);
-      }
-    }, 1200);
-  };
-
-  const handleCopy = () => {
-    if (studentOverallFeedback) {
-      navigator.clipboard.writeText(studentOverallFeedback.documentText);
-      setCopying(true);
-      setTimeout(() => setCopying(false), 2000);
-    }
-  };
-
-  const handleMerge = () => {
-    if (instructorInput.trim() && activeStudent) {
-      mergeInstructorNote(activeStudent.id, instructorInput.trim());
-      if (studentOverallFeedback) {
-        const merged = `**Instructor's Note**\n${instructorInput.trim()}\n\n${studentOverallFeedback.documentText}`;
-        updateOverallFeedbackText(activeStudent.id, merged);
-      }
-      setInstructorInput('');
-    }
-  };
-
-  const isAI = studentOverallFeedback?.authorship === 'ai_generated';
-
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden font-sans select-none">
-      {/* Header */}
-      <header className="h-16 border-b border-border bg-background flex items-center justify-between px-8 shrink-0 z-30">
-        <div className="flex items-center gap-6">
-          <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <div style={{ width: '1px', height: '24px' }} className="bg-border" />
-          <div>
-            <div className="flex items-center gap-2 mb-0.5">
-              <h2 className="text-lg font-bold text-foreground tracking-tight">Final Feedback Summary</h2>
-              <Badge variant="outline" className="text-xs h-4.5 px-1.5 rounded-sm font-mono tracking-tight border-border bg-muted/30">STUDENT RECORD</Badge>
-            </div>
-            <div className="flex items-center gap-2">
-               <span className="eyebrow text-muted-foreground/60 leading-none grow-0">{activeStudent.name}</span>
-               <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-               <span className="text-xs font-mono text-muted-foreground/50">{activeStudent.roll}</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col items-end mr-2">
-             <div className="text-2xl font-semibold text-foreground leading-none font-mono">60<span className="text-sm text-muted-foreground/40 font-medium">/100</span></div>
-             <Badge variant="outline" className="eyebrow h-4 px-1.5 bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30 mt-1">Satisfactory</Badge>
-          </div>
-          <Button variant="ghost" size="icon">✕</Button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 flex overflow-hidden">
-        {/* Left: Criteria Recap */}
-        <aside className="w-[320px] border-r border-border bg-background/50 flex flex-col shrink-0 backdrop-blur-sm">
-          <div className="px-6 py-4 border-b border-border bg-background/80 flex items-center justify-between">
-            <span className="eyebrow text-muted-foreground/60">Criterion Feedback Recap</span>
-            <Badge variant="secondary" className="text-xs font-bold h-5 px-2 bg-muted/50">{confirmedCriteria.length}</Badge>
-          </div>
-          <ScrollArea className="flex-1 p-4">
-            <div className="space-y-2.5">
-              {Object.values(activeStudent.criteria).map(c => {
-                const fb = studentCriterionFeedbacks[c.id];
-                if (!fb?.isConfirmed) return null;
-                return (
-                  <CriteriaRecapCard
-                    key={c.id}
-                    name={c.name}
-                    level={c.level}
-                    tier={fb.tier}
-                    tierLabel={fb.tierLabel}
-                    feedbackSnippet={fb.feedbackText.slice(0, 150) + (fb.feedbackText.length > 150 ? '…' : '')}
-                    isExpanded={!!expandedCriteria[c.id]}
-                    onToggle={() => setExpandedCriteria(prev => ({ ...prev, [c.id]: !prev[c.id] }))}
-                  />
-                );
-              })}
-              {confirmedCriteria.length === 3 && (
-                <div className="p-4 border border-dashed border-border rounded-xl bg-muted/5">
-                   <p className="text-xs text-muted-foreground/50 font-semibold text-center">Using Evaluation Benchmarks</p>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        </aside>
-
-        {/* Right: Overall Feedback + Solution Direction */}
-        <section className="flex-1 flex flex-col overflow-hidden bg-muted/30">
-          <Tabs defaultValue="feedback" value={activeTab} onValueChange={(v) => setActiveTab(v as string)} className="flex-1 flex flex-col overflow-hidden">
-            <div className="bg-background flex items-center justify-center border-b border-border shrink-0 h-12">
-              <TabsList className="bg-transparent p-0 h-full gap-0">
-                <TabsTrigger
-                  value="feedback"
-                  className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none gap-1.5 px-4"
-                >
-                  <StarIcon className="w-3.5 h-3.5" /> Overall feedback
-                </TabsTrigger>
-                <TabsTrigger
-                  value="solution"
-                  className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none gap-1.5 px-4"
-                >
-                  <Lightbulb className="w-3.5 h-3.5" /> Solution direction
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
-            {/* Overall Feedback Tab */}
-            <TabsContent value="feedback" className="flex-1 flex flex-col overflow-hidden outline-none">
-              <ScrollArea className="flex-1 px-8 pt-8 pb-4">
-                <div className="max-w-3xl mx-auto">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="eyebrow text-muted-foreground/40">Comprehensive Assessment Draft</div>
-                    <Badge variant={isAI ? "secondary" : "outline"} className={`text-xs font-bold h-5 px-2.5 rounded-full ${isAI ? 'bg-[color:var(--category-2-bg)] text-[color:var(--category-2)] border-[color:var(--category-2)]/30' : 'bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30'}`}>
-                       {isAI ? '✦ AI Generated' : '✎ Locally Adjusted'}
-                    </Badge>
-                  </div>
-
-                  <div className="bg-background border border-border/60 rounded-[20px] shadow-[0_4px_24px_rgb(0,0,0,0.02)] overflow-hidden relative">
-                    <div 
-                      className="p-10 text-sm leading-[1.85] text-foreground font-sans min-h-[500px] outline-none whitespace-pre-wrap cursor-text hover:bg-background transition-colors"
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={(e) => activeStudent && updateOverallFeedbackText(activeStudent.id, e.currentTarget.innerText)}
-                    >
-                      {(studentOverallFeedback?.documentText || '').split('\n\n').map((block, i) => {
-                        const [title, ...rest] = block.split('\n');
-                        const isTitle = title.startsWith('**') && title.endsWith('**');
-                        return (
-                          <div key={i} className="mb-6 last:mb-0">
-                            {isTitle ? (
-                              <>
-                                <div className="eyebrow font-extrabold text-foreground mb-3 flex items-center gap-2">
-                                   <div className="w-2 h-2 rounded-full bg-primary/20" /> {title.replace(/\*\*/g, '')}
-                                </div>
-                                <div className="text-muted-foreground/90 pl-4 border-l-2 border-border/40 ml-1">{rest.join('\n')}</div>
-                              </>
-                            ) : (
-                              block
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Toolbar overlay */}
-                    <div className="absolute bottom-4 right-4 flex items-center gap-2">
-                       <Button size="sm" variant="outline" onClick={handleCopy}>
-                          {copying ? <CheckCircle2 className="w-3.5 h-3.5 text-[color:var(--status-success)]" /> : <Copy className="w-3.5 h-3.5" />} {copying ? 'Copied' : 'Copy'}
-                       </Button>
-                    </div>
-                  </div>
-                </div>
-              </ScrollArea>
-
-              {/* Enlarged Instructor Workspace Panel */}
-              <div className="px-8 pb-8 pt-4 shrink-0 bg-muted/30">
-                 <div className="max-w-3xl mx-auto space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                       <div className="flex items-center gap-4">
-                          <span className="eyebrow text-xs text-foreground">Instructor Note Workspace</span>
-                          <div className="flex items-center gap-1.5 px-3 py-1 bg-[color:var(--status-success)]/10 rounded-full border border-[color:var(--status-success)]/20">
-                             <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--status-success)] animate-pulse" />
-                             <span className="eyebrow text-[color:var(--status-success)]/80">Active Sink</span>
-                          </div>
-                       </div>
-                       <Button variant="destructive" size="sm">
-                          <CircleDot className="w-3 h-3" /> Record transcription
-                       </Button>
-                    </div>
-
-                    <div className="relative group/panel">
-                       <textarea 
-                          value={instructorInput}
-                          onChange={(e) => setInstructorInput(e.target.value)}
-                          className="w-full min-h-[160px] text-sm leading-[1.75] text-foreground p-6 rounded-2xl border border-border shadow-[0_4px_20px_rgb(0,0,0,0.02)] focus:border-primary/40 focus:ring-0 bg-background transition-all placeholder:text-muted-foreground/30 placeholder:italic font-serif"
-                          placeholder="Dictate or type your concluding remarks, specific references to the student's process, or encouraging closing notes..."
-                       />
-                       <div className="absolute right-4 bottom-4 flex items-center gap-2">
-                          <span className="text-xs font-mono text-muted-foreground/30 px-3 py-1 bg-muted/30 rounded-full">{instructorInput.length} chars</span>
-                          <Button
-                            onClick={handleMerge}
-                            disabled={!instructorInput.trim()}
-                          >
-                             Append to summary <ArrowRight className="w-3.5 h-3.5" />
-                          </Button>
-                       </div>
-                    </div>
-                 </div>
-              </div>
-            </TabsContent>
-
-            {/* Solution Direction Tab */}
-            <TabsContent value="solution" className="flex-1 overflow-hidden outline-none bg-muted/30">
-              <ScrollArea className="h-full p-8 font-sans">
-                <div className="max-w-4xl mx-auto">
-                  <div className="flex flex-col items-center text-center mb-10">
-                     <h3 className="text-xl font-bold text-foreground tracking-tight mb-2">Priority Improvement Roadmap</h3>
-                     <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">Targeted action plan based on identified gaps. Focus on critical items first for maximum impact on future assessments.</p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* CRITICAL Column */}
-                    <div className="space-y-4">
-                       <div className="flex items-center gap-2 px-1">
-                          <div className="w-2 h-6 bg-destructive rounded-full" />
-                          <span className="eyebrow text-foreground">Priority 1 · Critical</span>
-                       </div>
-                       {displaySolutionSteps.filter(s => s.priority === 'critical').map((step, i) => (
-                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-background border-1.5 border-[color:var(--status-error)]/30 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(220,38,38,0.03)] hover:shadow-md transition-all">
-                            <div className="flex items-center justify-between mb-4">
-                               <div className="w-8 h-8 rounded-lg bg-[color:var(--status-error-bg)] flex items-center justify-center"><AlertTriangle className="w-4 h-4 text-[color:var(--status-error)]" /></div>
-                               <span className="text-xs font-semibold font-mono text-[color:var(--status-error)] bg-[color:var(--status-error-bg)] px-2 rounded-full h-5 flex items-center">{step.score}</span>
-                            </div>
-                            <h4 className="text-sm font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
-                            <div className="space-y-3">
-                               {step.steps.map((s: string, j: number) => (
-                                 <div key={j} className="flex gap-3 group/step">
-                                    <div className="text-xs font-semibold text-[color:var(--status-error)] mt-0.5">{j+1}.</div>
-                                    <p 
-                                       className="text-xs text-muted-foreground/90 leading-[1.6] outline-none cursor-text hover:bg-[color:var(--status-error-bg)]/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-[color:var(--status-error)]/50 focus:bg-[color:var(--status-error-bg)] focus:border-[color:var(--status-error)]/50"
-                                       contentEditable
-                                       suppressContentEditableWarning
-                                       onBlur={(e) => updateSolutionStep(activeStudent.id, step.criterionName, j, e.currentTarget.innerText)}
-                                    >
-                                       {s}
-                                    </p>
-                                 </div>
-                               ))}
-                            </div>
-                         </motion.div>
-                       ))}
-                       {displaySolutionSteps.filter(s => s.priority === 'critical').length === 0 && (
-                         <div className="bg-muted/10 border-1.5 border-dashed border-border rounded-[20px] p-8 text-center">
-                            <CheckCircle2 className="w-8 h-8 text-muted-foreground/20 mx-auto mb-2" />
-                            <p className="eyebrow text-muted-foreground/30">No Critical Gaps</p>
-                         </div>
-                       )}
-                    </div>
-
-                    {/* IMPORTANT Column */}
-                    <div className="space-y-4">
-                       <div className="flex items-center gap-2 px-1">
-                          <div className="w-2 h-6 bg-[color:var(--status-warning)] rounded-full" />
-                          <span className="eyebrow text-foreground">Priority 2 · Important</span>
-                       </div>
-                       {displaySolutionSteps.filter(s => s.priority === 'important').map((step, i) => (
-                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-background border-1.5 border-[color:var(--status-warning)]/30 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(217,119,6,0.03)] hover:shadow-md transition-all">
-                            <div className="flex items-center justify-between mb-4">
-                               <div className="w-8 h-8 rounded-lg bg-[color:var(--status-warning-bg)] flex items-center justify-center"><Lightbulb className="w-4 h-4 text-[color:var(--status-warning)]" /></div>
-                               <span className="text-xs font-semibold font-mono text-[color:var(--status-warning)] bg-[color:var(--status-warning-bg)] px-2 rounded-full h-5 flex items-center">{step.score}</span>
-                            </div>
-                            <h4 className="text-sm font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
-                            <div className="space-y-3">
-                               {step.steps.map((s: string, j: number) => (
-                                 <div key={j} className="flex gap-3 group/step">
-                                    <div className="text-xs font-semibold text-[color:var(--status-warning)] mt-0.5">{j+1}.</div>
-                                    <p 
-                                       className="text-xs text-muted-foreground/90 leading-[1.6] outline-none cursor-text hover:bg-[color:var(--status-warning-bg)]/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-[color:var(--status-warning)]/50 focus:bg-[color:var(--status-warning-bg)] focus:border-[color:var(--status-warning)]/50"
-                                       contentEditable
-                                       suppressContentEditableWarning
-                                       onBlur={(e) => updateSolutionStep(activeStudent.id, step.criterionName, j, e.currentTarget.innerText)}
-                                    >
-                                       {s}
-                                    </p>
-                                 </div>
-                               ))}
-                            </div>
-                         </motion.div>
-                       ))}
-                    </div>
-
-                    {/* MAINTAIN Column */}
-                    <div className="space-y-4">
-                       <div className="flex items-center gap-2 px-1">
-                          <div className="w-2 h-6 bg-[color:var(--status-success)] rounded-full" />
-                          <span className="eyebrow text-foreground">Maintain · Well Done</span>
-                       </div>
-                       {displaySolutionSteps.filter(s => s.priority === 'maintain').map((step, i) => (
-                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className="bg-background border-1.5 border-[color:var(--status-success)]/30 rounded-[20px] p-6 shadow-[0_4px_16px_rgb(5,150,105,0.03)] hover:shadow-md transition-all opacity-80 filter grayscale-[20%]">
-                            <div className="flex items-center justify-between mb-4">
-                               <div className="w-8 h-8 rounded-lg bg-[color:var(--status-success-bg)] flex items-center justify-center"><StarIcon className="w-4 h-4 text-[color:var(--status-success)]" /></div>
-                               <span className="text-xs font-semibold font-mono text-[color:var(--status-success)] bg-[color:var(--status-success-bg)] px-2 rounded-full h-5 flex items-center">{step.score}</span>
-                            </div>
-                            <h4 className="text-sm font-bold text-foreground mb-4 leading-tight">{step.criterionName}</h4>
-                            <div className="space-y-3">
-                               {step.steps.map((s: string, j: number) => (
-                                 <div key={j} className="flex gap-3 group/step">
-                                    <div className="w-1 h-1 rounded-full bg-[color:var(--status-success-bg)] mt-2" />
-                                    <p 
-                                       className="text-xs text-muted-foreground/70 leading-[1.6] italic outline-none cursor-text hover:bg-[color:var(--status-success-bg)]/50 rounded-md transition-colors px-1 -ml-1 border-b border-transparent hover:border-[color:var(--status-success)]/50 focus:bg-[color:var(--status-success-bg)] focus:border-[color:var(--status-success)]/50"
-                                       contentEditable
-                                       suppressContentEditableWarning
-                                       onBlur={(e) => updateSolutionStep(activeStudent.id, step.criterionName, j, e.currentTarget.innerText)}
-                                    >
-                                       {s}
-                                    </p>
-                                 </div>
-                               ))}
-                            </div>
-                         </motion.div>
-                       ))}
-                    </div>
-                  </div>
-                </div>
-              </ScrollArea>
-            </TabsContent>
-          </Tabs>
-        </section>
-      </main>
-
-      {/* Bottom Bar */}
-      <footer className="h-20 border-t border-border bg-background flex items-center justify-between px-8 shrink-0 z-50">
-        <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
-          <ChevronLeft className="w-4 h-4" /> Criteria desk
+    <div className="flex flex-col h-screen bg-background font-sans">
+      {/* Redesign Foundation Placeholder */}
+      <header className="h-16 border-b border-border bg-background flex items-center px-8">
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <ChevronLeft className="w-5 h-5" />
         </Button>
-        <div className="flex items-center gap-6">
-           <div className="hidden sm:flex flex-col items-end">
-              <span className="eyebrow text-primary mb-1">State: Ready for Publication</span>
-              <span className="text-xs font-medium text-muted-foreground/60">Final draft cached for cohort scheduling</span>
-           </div>
-           <Button
-            size="lg"
-            onClick={handleFinalSubmit}
-           >
-              <Send className="w-4 h-4" /> Submit grade & feedback
-           </Button>
+        <h1 className="ml-4 text-lg font-bold">Redesigning Overall Feedback</h1>
+      </header>
+      
+      <main className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Ready for Redesign</h2>
+          <p className="text-muted-foreground">Current content cleared. Awaiting new design specifications.</p>
         </div>
-      </footer>
+      </main>
     </div>
   );
 }
