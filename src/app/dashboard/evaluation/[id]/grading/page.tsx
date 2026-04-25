@@ -21,7 +21,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   CriterionStatusTag,
-  DemoControlPanel,
   ESCALATION_DISMISS_THRESHOLD,
   FloatingNudgeStack,
   type SessionTelemetry,
@@ -516,6 +515,38 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     setNudgeDismissState({})
     resetProgressiveNudges()
   }
+
+  // Global demo control posts ?demo=nudgeA|nudgeB|nudgeC|escalation|reset
+  // when the user picks a grading-page action from anywhere in the app.
+  // We mirror the per-page demo logic here so the global FAB can trigger
+  // it, then strip the param so it doesn't refire on subsequent renders.
+  const demoParam = searchParams.get("demo")
+  useEffect(() => {
+    if (!demoParam) return
+    if (demoParam === "nudgeA") {
+      setNudgeDismissState(p => ({ ...p, A: undefined }))
+      setDemoForce(f => ({ ...f, A: true }))
+    } else if (demoParam === "nudgeB") {
+      setNudgeDismissState(p => ({ ...p, B: undefined }))
+      setDemoForce(f => ({ ...f, B: true }))
+    } else if (demoParam === "nudgeC") {
+      setNudgeDismissState(p => ({ ...p, C: undefined }))
+      setDemoForce(f => ({ ...f, C: true }))
+    } else if (demoParam === "escalation") {
+      setDemoForce({ A: false, B: false, C: false })
+      resetProgressiveNudges()
+      for (let i = 0; i < ESCALATION_DISMISS_THRESHOLD; i++) incrementIgnoredNudge()
+      markSpotCheckAutoFired()
+      triggerSpotCheck()
+    } else if (demoParam === "reset") {
+      resetTelemetry()
+    }
+    // Strip the param without forcing a navigation in history.
+    const url = new URL(window.location.href)
+    url.searchParams.delete("demo")
+    window.history.replaceState({}, "", url.toString())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demoParam])
 
   // Note: the useEffect that marks the active criterion as "opened" + the
   // derived nudge visibility live below the `activeRubricCriterionIdx`
@@ -1918,23 +1949,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
       onDismissB={dismissNudgeB}
       onDismissC={dismissNudgeC}
       onReopenEvidence={reopenFromNudgeB}
-    />
-    <DemoControlPanel
-      onTriggerA={() => { setNudgeDismissState(p => ({ ...p, A: undefined })); setDemoForce(f => ({ ...f, A: true })) }}
-      onTriggerB={() => { setNudgeDismissState(p => ({ ...p, B: undefined })); setDemoForce(f => ({ ...f, B: true })) }}
-      onTriggerC={() => { setNudgeDismissState(p => ({ ...p, C: undefined })); setDemoForce(f => ({ ...f, C: true })) }}
-      onSimulateEscalation={() => {
-        // Fast-forward the store counter to threshold + fire the spot-check
-        // modal directly — simulates the flow a presenter would see if they
-        // ignored 3 nudges then hit Publish on the submissions-list page.
-        setDemoForce({ A: false, B: false, C: false })
-        resetProgressiveNudges()
-        for (let i = 0; i < ESCALATION_DISMISS_THRESHOLD; i++) incrementIgnoredNudge()
-        markSpotCheckAutoFired()
-        triggerSpotCheck()
-      }}
-      onOpenSpotCheck={() => triggerSpotCheck()}
-      onResetTelemetry={resetTelemetry}
     />
     </TooltipProvider>
   )
