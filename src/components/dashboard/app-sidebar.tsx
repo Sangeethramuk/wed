@@ -63,18 +63,16 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
-              asChild
+              render={<Link href="/dashboard" />}
               className="hover:bg-transparent"
               tooltip="Symbiosis University"
             >
-              <Link href="/dashboard">
-                <div className="flex aspect-square size-10 items-center justify-center rounded-full bg-red-50 text-red-600 shrink-0 border border-red-100 shadow-sm group-data-[collapsible=icon]:size-8">
-                  <span className="text-[10px] font-black tracking-tighter group-data-[collapsible=icon]:text-[8px]">SIU</span>
-                </div>
-                <div className="flex flex-col gap-0.5 leading-none ml-2 group-data-[collapsible=icon]:hidden">
-                  <span className="font-bold text-sm tracking-tight text-[#1E293B]">Symbiosis University</span>
-                </div>
-              </Link>
+              <div className="flex aspect-square size-10 items-center justify-center rounded-full bg-red-50 text-red-600 shrink-0 border border-red-100 shadow-sm group-data-[collapsible=icon]:size-8">
+                <span className="text-[10px] font-black tracking-tighter group-data-[collapsible=icon]:text-[8px]">SIU</span>
+              </div>
+              <div className="flex flex-col gap-0.5 leading-none ml-2 group-data-[collapsible=icon]:hidden">
+                <span className="font-bold text-sm tracking-tight text-[#1E293B]">Symbiosis University</span>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -88,7 +86,7 @@ export function AppSidebar() {
               return (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    asChild
+                    render={<Link href={item.url} />}
                     tooltip={item.title}
                     className={cn(
                       "h-11 px-4 rounded-xl transition-all duration-200 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center",
@@ -97,10 +95,8 @@ export function AppSidebar() {
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     )}
                   >
-                    <Link href={item.url}>
-                      <item.icon className={cn("size-5 shrink-0", !isActive && "text-muted-foreground/60")} />
-                      <span className="text-[14px] group-data-[collapsible=icon]:hidden ml-1">{item.title}</span>
-                    </Link>
+                    <item.icon className={cn("size-5 shrink-0", !isActive && "text-muted-foreground/60")} />
+                    <span className="text-[14px] group-data-[collapsible=icon]:hidden ml-1">{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               )
