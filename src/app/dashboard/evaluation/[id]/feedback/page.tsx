@@ -202,33 +202,11 @@ export default function FeedbackPage() {
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="flex flex-col items-end">
+          <div className="flex flex-col items-end mr-4">
             <div className="text-[18px] font-bold text-slate-900 leading-none tabular-nums">
               60<span className="text-[10px] text-slate-400 font-medium">/100</span>
             </div>
             <span className="text-[9px] font-bold uppercase tracking-tight text-[#F59E0B] mt-0.5">Satisfactory</span>
-          </div>
-
-          <div className="h-8 w-px bg-slate-200" />
-
-          <div className="flex items-center gap-4">
-            <div className="hidden lg:flex flex-col items-end">
-              <span className="text-[10px] font-bold text-[#1F4E8C] tracking-tight uppercase">Ready for Publication</span>
-              <span className="text-[9px] font-medium text-slate-400">Draft cached</span>
-            </div>
-            
-            <div className="flex flex-col items-center">
-              <Button
-                onClick={handleFinalSubmit}
-                className="bg-[#1F4E8C] hover:bg-[#1E3A5F] text-white rounded-lg px-6 py-2.5 h-auto text-[12px] font-bold shadow-sm transition-all active:scale-95 gap-2"
-              >
-                Submit & Continue <ArrowRight className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-          </div>
-
-          <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0">
-            {/* profile image */}
           </div>
         </div>
       </header>
