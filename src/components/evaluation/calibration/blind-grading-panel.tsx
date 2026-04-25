@@ -4,6 +4,7 @@ import { useGradingStore } from "@/lib/store/grading-store"
 import { useState, useEffect, useRef } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { motion } from "framer-motion"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
@@ -89,6 +90,7 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
   const [textSelectionMode, setTextSelectionMode] = useState<TextSelectionMode>({ active: false, criterionId: null })
   const [mappedEvidence, setMappedEvidence] = useState<MappedEvidence[]>([])
   const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null)
+  const [showScrollMsg, setShowScrollMsg] = useState(false)
   const manuscriptRef = useRef<HTMLDivElement>(null)
 
   const papers    = cal?.papers ?? []
@@ -243,30 +245,17 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                     </Badge>
                   </div>
 
-                  {/* Engagement gates strip */}
+                  {/* Scored status only (removed Read/Timer per user request) */}
                   <div className="flex items-center gap-4">
-                    <div className="eyebrow flex items-center gap-3 px-5 py-2 bg-accent/40 rounded-full border border-border/50 text-muted-foreground/60 transition-all cursor-default">
-                      <Tooltip>
-                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${hasScrolledToBottom ? "text-[color:var(--status-success)]" : ""}`} />}>
-                          {hasScrolledToBottom ? <CheckCircle2 className="h-3 w-3" /> : "○"} Read
-                        </TooltipTrigger>
-                        <TooltipContent>Scroll to the bottom of the manuscript to unlock</TooltipContent>
-                      </Tooltip>
-                      <Separator orientation="vertical" className="h-3 bg-border" />
-                      <Tooltip>
-                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${inspectionTime >= 3 ? "text-[color:var(--status-success)]" : ""}`} />}>
-                          <Timer className="h-3 w-3" /> {Math.min(inspectionTime, 3)}s/3s
-                        </TooltipTrigger>
-                        <TooltipContent>Spend at least 3 seconds reviewing the paper</TooltipContent>
-                      </Tooltip>
-                      <Separator orientation="vertical" className="h-3 bg-border" />
-                      <Tooltip>
-                        <TooltipTrigger render={<span className={`flex items-center gap-1.5 transition-colors ${isAllGraded ? "text-[color:var(--status-success)]" : ""}`} />}>
-                          {isAllGraded ? <CheckCircle2 className="h-3 w-3" /> : "○"} Scored
-                        </TooltipTrigger>
-                        <TooltipContent>Grade all {criteria.length} criteria to unlock</TooltipContent>
-                      </Tooltip>
-                    </div>
+                    <Tooltip>
+                      <TooltipTrigger render={<div className={`eyebrow flex items-center gap-2 px-4 py-1.5 rounded-full border transition-all ${isAllGraded ? "bg-[color:var(--status-success-bg)] border-[color:var(--status-success)]/30 text-[color:var(--status-success)]" : "bg-accent/40 border-border/50 text-muted-foreground/60"}`} />}>
+                        {isAllGraded ? <CheckCircle2 className="h-3 w-3" /> : <div className="size-2 rounded-full border border-current" />}
+                        {isAllGraded ? "All Criteria Scored" : `${gradedCriteria.length}/${criteria.length} scored`}
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {isAllGraded ? "Evaluation protocol complete" : `Grade all ${criteria.length} criteria to proceed`}
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               </header>
@@ -388,12 +377,16 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                         onClick={() => setActiveCriterionIdx(i)}
                         className="flex-1 h-auto flex-col gap-1 py-1"
                       >
-                        <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
-                          isDone ? 'bg-foreground border-foreground' :
+                        <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-all ${
+                          isDone ? 'bg-[color:var(--status-success)] border-[color:var(--status-success)]' :
                           isActive ? 'border-primary bg-background' :
                           'border-border bg-background'
                         }`}>
-                          {isActive && !isDone && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                          {isDone ? (
+                            <CheckCircle2 className="h-2.5 w-2.5 text-white stroke-[3px]" />
+                          ) : isActive ? (
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                          ) : null}
                         </div>
                         <span className={`text-xs font-semibold transition-colors ${isActive ? 'text-foreground' : 'text-muted-foreground/50'}`}>
                           {c.id.toUpperCase()}
@@ -558,12 +551,6 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                           />
                         </div>
 
-                        {/* Confirm */}
-                        <div className="px-4 py-3 flex justify-end">
-                          <Button size="sm" className="eyebrow rounded-full px-5 gap-1.5">
-                            <CheckCircle2 className="h-3.5 w-3.5" /> Confirm
-                          </Button>
-                        </div>
 
                       </div>
                     )
@@ -615,23 +602,41 @@ export function BlindGradingPanel({ assignmentId }: { assignmentId: string }) {
                       <TooltipTrigger render={<span className="inline-flex flex-1" />}>
                         <Button
                           size="sm"
-                          className="w-full"
-                          disabled={!isGateUnlocked}
-                          onClick={isGateUnlocked ? handleNext : undefined}
+                          className="w-full relative overflow-hidden group"
+                          disabled={!isAllGraded}
+                          onClick={() => {
+                            if (!hasScrolledToBottom) {
+                              // Trigger visual shake or show message
+                              setShowScrollMsg(true)
+                              setTimeout(() => setShowScrollMsg(false), 3000)
+                              return
+                            }
+                            if (isGateUnlocked) handleNext()
+                          }}
                         >
                           {isGateUnlocked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
                           {isLastPaper ? 'View delta' : 'Next paper'}
                           <ArrowRight className="h-4 w-4" />
+                          
+                          {showScrollMsg && (
+                            <motion.div 
+                              initial={{ opacity: 0, y: 10 }} 
+                              animate={{ opacity: 1, y: 0 }} 
+                              className="absolute inset-0 bg-destructive text-destructive-foreground flex items-center justify-center text-[10px] font-bold px-2 text-center leading-tight"
+                            >
+                              YOU NEED TO SCROLL ALL AND YOU HAVE TO SCROLL TO THE BOTTOM
+                            </motion.div>
+                          )}
                         </Button>
                       </TooltipTrigger>
-                      {!isGateUnlocked && (
-                        <TooltipContent className="max-w-xs p-3 space-y-1 mb-2">
-                          <p className="text-xs font-semibold text-foreground">Protocol gate locked</p>
-                          <p className="text-xs text-muted-foreground leading-relaxed">
-                            Scroll the manuscript, spend 3s reviewing, and score all {criteria.length} criteria.
-                          </p>
-                        </TooltipContent>
-                      )}
+                      <TooltipContent className="max-w-xs p-3 space-y-1 mb-2">
+                        <p className="text-xs font-semibold text-foreground">Protocol gate locked</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {!isAllGraded 
+                            ? `Grade all ${criteria.length} criteria to unlock.` 
+                            : "Scroll to the bottom of the manuscript to unlock."}
+                        </p>
+                      </TooltipContent>
                     </Tooltip>
                   )}
                 </div>

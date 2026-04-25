@@ -118,7 +118,7 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
 
   return (
     <div
-      onClick={handleAction}
+      onClick={() => router.push(`/dashboard/evaluation/${assignment.id}`)}
       className="group flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors border-b border-slate-200 last:border-0 cursor-pointer"
     >
       {/* Status dot */}
