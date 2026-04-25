@@ -5,9 +5,13 @@ import { useEvaluationOverviewStore } from "@/lib/store/evaluation-overview-stor
 import { StatsHeader } from "@/components/evaluation/overview/stats-header"
 import { FilterBar } from "@/components/evaluation/overview/filter-bar"
 import { AssignmentTable } from "@/components/evaluation/overview/assignment-table"
+import { DraftsTable } from "@/components/evaluation/overview/drafts-table"
 import { Button } from "@/components/ui/button"
 import { PlusCircle, ChevronRight } from "lucide-react"
 import { StartAssignmentModal } from "@/components/pre-evaluation/start-assignment-modal"
+import { MOCK_ASSIGNMENTS } from "@/lib/mock/assignments"
+
+type Tab = "published" | "drafts"
 
 // Page migrated to the EducAItors DS guide. Uses the guide's hex palette
 // (#F8F9FA page, #0F172A heading, slate-500 secondary), inline card shadows,
@@ -17,6 +21,14 @@ export default function EvaluationDashboard() {
   const { getStats } = useEvaluationOverviewStore()
   const stats = getStats()
   const [modalOpen, setModalOpen] = useState(false)
+  const [tab, setTab] = useState<Tab>("published")
+
+  const draftCount = MOCK_ASSIGNMENTS.filter((a) => a.status === "draft").length
+
+  const tabs: { id: Tab; label: string; count: number }[] = [
+    { id: "published", label: "Published", count: stats.total },
+    { id: "drafts", label: "Drafts", count: draftCount },
+  ]
 
   return (
     <>
@@ -45,19 +57,55 @@ export default function EvaluationDashboard() {
         </Button>
       </div>
 
-      {/* Stats */}
-      <StatsHeader
-        total={stats.total}
-        pendingCalibration={stats.pendingCalibration}
-        inGrading={stats.inGrading}
-        complete={stats.complete}
-      />
+      {/* Tabs */}
+      <div className="flex items-center gap-1 border-b border-slate-200">
+        {tabs.map((t) => {
+          const active = tab === t.id
+          return (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors -mb-px"
+              style={{
+                borderColor: active ? "#1F4E8C" : "transparent",
+                color: active ? "#1F4E8C" : "#64748B",
+              }}
+            >
+              {t.label}
+              <span
+                className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold tracking-wider"
+                style={
+                  active
+                    ? { backgroundColor: "#EFF6FF", color: "#1F4E8C" }
+                    : { backgroundColor: "#F1F5F9", color: "#94A3B8" }
+                }
+              >
+                {t.count}
+              </span>
+            </button>
+          )
+        })}
+      </div>
 
-      {/* Filters */}
-      <FilterBar />
+      {tab === "published" ? (
+        <>
+          {/* Stats */}
+          <StatsHeader
+            total={stats.total}
+            pendingCalibration={stats.pendingCalibration}
+            inGrading={stats.inGrading}
+            complete={stats.complete}
+          />
 
-      {/* Grouped Assignment Table */}
-      <AssignmentTable />
+          {/* Filters */}
+          <FilterBar />
+
+          {/* Grouped Assignment Table */}
+          <AssignmentTable />
+        </>
+      ) : (
+        <DraftsTable />
+      )}
     </div>
     </>
   )
