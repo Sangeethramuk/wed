@@ -2,7 +2,7 @@
 
 import { useState, use, useEffect, useMemo, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useGradingStore } from "@/lib/store/grading-store"
+import { useGradingStore, type InternalNote, type FeedbackTier } from "@/lib/store/grading-store"
 import { useEvaluationOverviewStore } from "@/lib/store/evaluation-overview-store"
 import { generateManuscript, generateArtifacts } from "@/lib/manuscript-generator"
 import ManuscriptRenderer, { CRITERION_COLORS } from "@/components/evaluation/manuscript-renderer"
@@ -64,6 +64,11 @@ import { FeedbackSummaryModal } from "@/components/evaluation/feedback-summary-m
 import { CriterionFeedbackCard } from "@/components/evaluation/feedback/criterion-feedback-card"
 import { FeedbackGenerating } from "@/components/evaluation/feedback/feedback-generating"
 import { InternalNotesPanel } from "@/components/evaluation/feedback/internal-notes-panel"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { generateCriterionFeedback } from "@/lib/feedback-generator"
 import { useGradingStore as useFeedbackStore } from "@/lib/store/grading-store"
 
@@ -103,12 +108,110 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     activeStudentId,
     setActiveStudent,
     triggerSpotCheck,
+    internalNotes,
     progressiveNudges,
     incrementIgnoredNudge,
     markSpotCheckAutoFired,
     resetProgressiveNudges,
+    setInternalNotes,
   } = useGradingStore()
   const assignment = assignments[id]
+
+  // Auto-seed notes if missing for demo purposes
+  useEffect(() => {
+    const seeds: Record<string, InternalNote[]> = {
+      'rohan': [
+        {
+          id: 'note-1',
+          author: 'Dr. Priya Mehta',
+          role: 'Secondary Grader',
+          initials: 'PM',
+          avatarColor: 'black',
+          text: 'Student has approved dyslexia accommodations. Focus on content quality over spelling/formatting as per support guidelines.',
+          timestamp: '2 hours ago',
+          category: 'Other',
+          isFlagged: false,
+          isOwn: false,
+          isSeen: false,
+        },
+        {
+          id: 'note-1-2',
+          author: 'Prof. Arjun Sharma',
+          role: 'Module Lead',
+          initials: 'AS',
+          avatarColor: 'black',
+          text: 'Student reached out regarding technical issues during submission. The 10% penalty is applied but keep the context of the hand-written supplement in mind.',
+          timestamp: '1 hour ago',
+          category: 'Other',
+          isFlagged: false,
+          isOwn: false,
+          isSeen: false,
+        }
+      ],
+      'AI-001': [
+        {
+          id: 'note-6',
+          author: 'Dr. Rohan Kapoor',
+          role: 'Course Coordinator',
+          initials: 'RK',
+          avatarColor: 'black',
+          text: 'Approved extension due to medical emergency. Please apply the late policy waiver for this submission.',
+          timestamp: '2 days ago',
+          category: 'Other',
+          isFlagged: false,
+          isOwn: false,
+          isSeen: false,
+        },
+        {
+          id: 'note-6-2',
+          author: 'Dr. Vivek Thomas',
+          role: 'Accessibility Lead',
+          initials: 'VT',
+          avatarColor: 'black',
+          text: 'Student uses specific screen-reading software. Some formatting in the logic flow section might be affected by export tools.',
+          timestamp: 'Yesterday',
+          category: 'Other',
+          isFlagged: false,
+          isOwn: false,
+          isSeen: false,
+        }
+      ],
+      'STU-100': [
+        {
+          id: 'note-10',
+          author: 'Dr. Priya Mehta',
+          role: 'Secondary Grader',
+          initials: 'PM',
+          avatarColor: 'black',
+          text: 'Student has approved medical leave for the week of submission. Late penalty should be manually waived.',
+          timestamp: '2 days ago',
+          category: 'Other',
+          isFlagged: false,
+          isOwn: false,
+          isSeen: false,
+        },
+        {
+          id: 'note-10-2',
+          author: 'Prof. Arjun Sharma',
+          role: 'Module Lead',
+          initials: 'AS',
+          avatarColor: 'black',
+          text: 'I have reviewed the medical docs. Agree with the waiver. Please proceed with standard grading criteria.',
+          timestamp: 'Yesterday',
+          category: 'Other',
+          isFlagged: false,
+          isOwn: false,
+          isSeen: false,
+        }
+      ]
+    };
+
+    const hasAllSeeds = Object.keys(seeds).every(sid => internalNotes[sid]);
+    if (!hasAllSeeds) {
+      setInternalNotes({ ...internalNotes, ...seeds });
+    }
+  }, [internalNotes, setInternalNotes]);
+
   
   // Resolve active student from multiple sources
   const [selectedSubmission, setSelectedSubmission] = useState(() => {
@@ -891,19 +994,47 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                 </Tabs>
 
                 <div className="flex items-center gap-3">
+                  {/* Internal Notes Popover */}
+                  <Popover>
+                    <PopoverTrigger
+                      render={
+                        <button
+                          className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer focus:outline-none border border-border relative"
+                        />
+                      }
+                    >
+                      <Tooltip>
+                        <TooltipTrigger render={<div className="flex items-center justify-center w-full h-full" />}>
+                          <MessageSquare className="h-4.5 w-4.5" />
+                          {(() => {
+                            const notes = (selectedSubmission ? internalNotes[selectedSubmission] : null) ?? []
+                            const hasUnread = notes.some(n => !n.isOwn && !n.isSeen)
+                            return hasUnread && (
+                              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background animate-pulse" />
+                            )
+                          })()}
+                        </TooltipTrigger>
+                        <TooltipContent>Internal Notes</TooltipContent>
+                      </Tooltip>
+                    </PopoverTrigger>
+                    <PopoverContent side="bottom" align="end" className="p-0 w-auto border-border shadow-2xl rounded-2xl overflow-hidden z-[100]">
+                      <InternalNotesPanel />
+                    </PopoverContent>
+                  </Popover>
+
                   <Tooltip>
-                    <TooltipTrigger>
-                      <div
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => setRevisionHistoryOpen(true)}
-                        className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer focus:outline-none border border-border relative"
-                      >
-                        <History className="h-4.5 w-4.5" />
-                        {revisionEvents.length > 0 && (
-                          <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center">{revisionEvents.length}</span>
-                        )}
-                      </div>
+                    <TooltipTrigger
+                      render={
+                        <button
+                          onClick={() => setRevisionHistoryOpen(true)}
+                          className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer focus:outline-none border border-border relative"
+                        />
+                      }
+                    >
+                      <History className="h-4.5 w-4.5" />
+                      {revisionEvents.length > 0 && (
+                        <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center">{revisionEvents.length}</span>
+                      )}
                     </TooltipTrigger>
                     <TooltipContent>Revision History</TooltipContent>
                   </Tooltip>
@@ -1129,10 +1260,8 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                             </div>
                             {lowConfidence && !done ? (
                               <Tooltip>
-                                <TooltipTrigger>
-                                  <span className="absolute -top-2 -right-2 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background">
-                                    <AlertTriangle className="h-3 w-3 text-[color:var(--status-warning)]" />
-                                  </span>
+                                <TooltipTrigger render={<span className="absolute -top-2 -right-2 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background" />}>
+                                  <AlertTriangle className="h-3 w-3 text-[color:var(--status-warning)]" />
                                 </TooltipTrigger>
                                 <TooltipContent>AI confidence is low for this criterion — please review.</TooltipContent>
                               </Tooltip>
@@ -1466,9 +1595,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                     </div>
                   </div>
                 </ScrollArea>
-
-                {/* Internal Notes */}
-                <InternalNotesPanel />
 
                 <div className="p-4 border-t border-border bg-background shrink-0 space-y-3">
                   <div className="flex items-center justify-between">
