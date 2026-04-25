@@ -44,8 +44,8 @@ export function FeedbackDraftPanel({
   ];
 
   return (
-    <div className="w-full bg-white">
-      <div className="max-w-3xl mx-auto py-10 px-8">
+    <div className="w-full bg-white px-8">
+      <div className="max-w-3xl mx-auto py-10">
         {/* Header Area */}
         <div className="flex items-center justify-between mb-8">
           <div className="space-y-1">
