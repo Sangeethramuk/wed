@@ -86,7 +86,7 @@ export function AppSidebar() {
                       "h-11 px-4 rounded-xl transition-all duration-200",
                       "group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl",
                       isActive
-                        ? "bg-[#2563EB]/5 text-[#2563EB] font-bold shadow-sm"
+                        ? "bg-[#2563EB]/5 text-[#2563EB] font-bold shadow-none"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     )}
                   >
