@@ -35,7 +35,7 @@ export function CriterionRecapSidebar({ criteria }: CriterionRecapSidebarProps) 
   };
 
   return (
-    <aside className="w-[320px] border-r border-slate-200 bg-[#F8F9FA] flex flex-col shrink-0 h-full">
+    <aside className="w-[320px] border-r border-slate-200 bg-[#F8F9FA] flex flex-col shrink-0">
       <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
         <span className="text-[11px] font-bold tracking-widest text-slate-500 uppercase">Criterion Feedback Recap</span>
         <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold">
