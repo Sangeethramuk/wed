@@ -28,7 +28,7 @@ function TooltipTrigger({ render, ...props }: TooltipPrimitive.Trigger.Props) {
     props: mergeProps<"button">(
       {
         "data-slot": "tooltip-trigger",
-      },
+      } as any,
       props
     ),
     render: (renderProps) => (
