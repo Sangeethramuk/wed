@@ -14,7 +14,6 @@ import {
   ArrowRight,
   Clock,
   AlertCircle,
-  BarChart3,
 } from "lucide-react"
 
 // Migrated to the EducAItors DS guide: white group cards with an inline
@@ -218,9 +217,6 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
 
 function DeptGroup({ department, assignments }: { department: string; assignments: EvaluationAssignment[] }) {
   const [open, setOpen] = useState(true)
-  const avgCal = Math.round(
-    assignments.reduce((s, a) => s + a.calibrationStatus, 0) / assignments.length
-  )
   const totalFlags = assignments.reduce((s, a) => s + a.integrityFlags, 0)
 
   return (
@@ -249,14 +245,6 @@ function DeptGroup({ department, assignments }: { department: string; assignment
           </span>
         </div>
         <div className="flex items-center gap-5 text-xs text-slate-500">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger render={<div className="flex items-center gap-1.5 cursor-help font-semibold" />}>
-                <BarChart3 className="h-3 w-3" /> Avg Cal: {avgCal}%
-              </TooltipTrigger>
-              <TooltipContent>Average calibration confidence across this department</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
           {totalFlags > 0 && (
             <span className="flex items-center gap-1.5 font-semibold" style={{ color: "#F59E0B" }}>
               <AlertCircle className="h-3 w-3" /> {totalFlags} flag{totalFlags !== 1 ? "s" : ""}

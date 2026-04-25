@@ -1,13 +1,25 @@
 "use client"
 
 import { useEvaluationOverviewStore } from "@/lib/store/evaluation-overview-store"
-import { Search, X } from "lucide-react"
-import { useState } from "react"
+import { Search, ChevronDown, Check, X } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
 
-const FILTER_GROUPS = [
+type FilterKey =
+  | "selectedDepartment"
+  | "selectedSemester"
+  | "selectedGradingStatus"
+  | "selectedCalibrationState"
+
+const FILTER_GROUPS: {
+  key: FilterKey
+  label: string
+  defaultLabel: string
+  options: { value: string; label: string }[]
+}[] = [
   {
-    key: "selectedDepartment" as const,
+    key: "selectedDepartment",
     label: "Department",
+    defaultLabel: "All Depts",
     options: [
       { value: "all", label: "All Depts" },
       { value: "Computer Science", label: "CS" },
@@ -16,8 +28,9 @@ const FILTER_GROUPS = [
     ],
   },
   {
-    key: "selectedSemester" as const,
+    key: "selectedSemester",
     label: "Semester",
+    defaultLabel: "All Sems",
     options: [
       { value: "all", label: "All Sems" },
       { value: "SEM V", label: "SEM V" },
@@ -25,8 +38,9 @@ const FILTER_GROUPS = [
     ],
   },
   {
-    key: "selectedGradingStatus" as const,
+    key: "selectedGradingStatus",
     label: "Grading",
+    defaultLabel: "All",
     options: [
       { value: "all", label: "All" },
       { value: "pending_calibration", label: "Pending Cal." },
@@ -35,8 +49,9 @@ const FILTER_GROUPS = [
     ],
   },
   {
-    key: "selectedCalibrationState" as const,
+    key: "selectedCalibrationState",
     label: "Calibration",
+    defaultLabel: "All",
     options: [
       { value: "all", label: "All" },
       { value: "not_started", label: "Not Started" },
@@ -46,10 +61,71 @@ const FILTER_GROUPS = [
   },
 ]
 
-// Filter bar migrated to the EducAItors DS guide. White rounded-lg search
-// field matching the guide's Search Field pattern, and filter chips that
-// flip between a muted slate rest state and a brand-navy active state on a
-// white capsule — mirrors the deployed app's segmented control look.
+interface FilterDropdownProps {
+  label: string
+  value: string
+  options: { value: string; label: string }[]
+  onChange: (value: string) => void
+}
+
+function FilterDropdown({ label, value, options, onChange }: FilterDropdownProps) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  const currentLabel = options.find((o) => o.value === value)?.label ?? options[0].label
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 hover:border-slate-300 transition-colors"
+      >
+        <span className="text-slate-400 font-semibold tracking-wider text-xs">{label}:</span>
+        <span className="font-semibold text-slate-900">{currentLabel}</span>
+        <ChevronDown
+          className={`h-4 w-4 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div
+          className="absolute top-full left-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg z-50 py-1"
+          style={{ boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)" }}
+        >
+          {options.map((opt) => {
+            const active = value === opt.value
+            return (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  onChange(opt.value)
+                  setOpen(false)
+                }}
+                className="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+              >
+                <span className={active ? "font-semibold text-slate-900" : ""}>{opt.label}</span>
+                {active && <Check className="h-4 w-4" style={{ color: "#1F4E8C" }} />}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Compact dropdown-based filter bar. Each filter renders as `Label: Value ▾`
+// and applied non-default values surface below as removable chips with a
+// global Clear all action.
 export function FilterBar() {
   const {
     setFilter,
@@ -60,15 +136,22 @@ export function FilterBar() {
   } = useEvaluationOverviewStore()
   const [search, setSearch] = useState("")
 
-  const activeValues: Record<string, string> = {
+  const activeValues: Record<FilterKey, string> = {
     selectedDepartment,
     selectedSemester,
     selectedGradingStatus,
     selectedCalibrationState,
   }
 
-  const hasActiveFilters =
-    Object.values(activeValues).some((v) => v !== "all") || search.length > 0
+  const appliedChips = FILTER_GROUPS.flatMap((group) => {
+    const v = activeValues[group.key]
+    if (v === "all") return []
+    const opt = group.options.find((o) => o.value === v)
+    if (!opt) return []
+    return [{ key: group.key, label: opt.label }]
+  })
+
+  const hasActiveFilters = appliedChips.length > 0 || search.length > 0
 
   const clearAll = () => {
     setFilter("selectedDepartment", "all")
@@ -79,55 +162,63 @@ export function FilterBar() {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      {/* Search field — guide's Search Field pattern */}
-      <div className="relative w-64">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search assignments..."
-          className="w-full pl-10 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-        />
+    <div className="space-y-3">
+      {/* Filter row */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Search field */}
+        <div className="relative w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search assignments..."
+            className="w-full pl-10 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+          />
+        </div>
+
+        {FILTER_GROUPS.map((group) => (
+          <FilterDropdown
+            key={group.key}
+            label={group.label}
+            value={activeValues[group.key]}
+            options={group.options}
+            onChange={(value) => setFilter(group.key, value)}
+          />
+        ))}
       </div>
 
-      {/* Filter groups */}
-      {FILTER_GROUPS.map((group) => (
-        <div
-          key={group.key}
-          className="flex items-center gap-1 px-2 py-1.5 bg-white border border-slate-200 rounded-lg"
-        >
-          <span className="text-xs font-semibold tracking-wider text-slate-400 px-1">
-            {group.label}
-          </span>
-          {group.options.map((opt) => {
-            const active = activeValues[group.key] === opt.value
-            return (
-              <button
-                key={opt.value}
-                onClick={() => setFilter(group.key, opt.value)}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
-                  active
-                    ? "text-white"
-                    : "text-slate-600 hover:bg-slate-50"
-                }`}
-                style={active ? { backgroundColor: "#1F4E8C" } : undefined}
-              >
-                {opt.label}
-              </button>
-            )
-          })}
-        </div>
-      ))}
-
+      {/* Applied filter chips */}
       {hasActiveFilters && (
-        <button
-          onClick={clearAll}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
-        >
-          <X className="h-3 w-3" /> Clear
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold tracking-wider text-slate-400">Active:</span>
+          {appliedChips.map((chip) => (
+            <button
+              key={chip.key}
+              onClick={() => setFilter(chip.key, "all")}
+              className="inline-flex items-center gap-1.5 pl-2.5 pr-2 py-1 rounded-full text-xs font-semibold border transition-colors"
+              style={{ backgroundColor: "#EFF6FF", color: "#1F4E8C", borderColor: "#BFDBFE" }}
+            >
+              {chip.label}
+              <X className="h-3 w-3 opacity-60 hover:opacity-100" />
+            </button>
+          ))}
+          {search.length > 0 && (
+            <button
+              onClick={() => setSearch("")}
+              className="inline-flex items-center gap-1.5 pl-2.5 pr-2 py-1 rounded-full text-xs font-semibold border bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 transition-colors"
+            >
+              &quot;{search}&quot;
+              <X className="h-3 w-3 opacity-60 hover:opacity-100" />
+            </button>
+          )}
+          <button
+            onClick={clearAll}
+            className="text-xs font-semibold text-slate-500 hover:text-slate-900 underline underline-offset-2 transition-colors ml-1"
+          >
+            Clear all
+          </button>
+        </div>
       )}
     </div>
   )
