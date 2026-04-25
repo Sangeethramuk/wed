@@ -20,8 +20,7 @@ export function InstructorFeedbackPanel({ value, onChange, onVoiceClick, onFinal
     setIsSaved(true);
     setTimeout(() => {
       onFinalSubmit();
-      setIsSaved(false);
-    }, 1000);
+    }, 2000);
   };
 
   return (
