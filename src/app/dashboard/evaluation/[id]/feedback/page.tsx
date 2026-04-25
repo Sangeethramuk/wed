@@ -254,7 +254,7 @@ export default function FeedbackPage() {
             />
 
             {/* Footer: Submit & Navigation (Sticky) */}
-            <footer className="h-20 border-t border-slate-100 bg-white flex items-center justify-end px-8 shrink-0">
+            <footer className="h-[72px] border-t border-slate-100 bg-white flex items-center justify-end px-8 shrink-0">
               <div className="flex items-center gap-8">
                 <div className="hidden sm:flex flex-col items-end">
                   <span className="text-[11px] font-bold text-[#1F4E8C] tracking-tight uppercase">State: Ready for Publication</span>
@@ -264,7 +264,7 @@ export default function FeedbackPage() {
                 <div className="flex flex-col items-center">
                   <Button
                     onClick={handleFinalSubmit}
-                    className="bg-[#1F4E8C] hover:bg-[#1E3A5F] text-white rounded-lg px-10 py-5 h-auto text-[14px] font-bold shadow-[0_4px_12px_rgba(31,78,140,0.2)] transition-all active:scale-95 gap-2"
+                    className="bg-[#1F4E8C] hover:bg-[#1E3A5F] text-white rounded-lg px-8 py-4 h-auto text-[13px] font-bold shadow-[0_4px_12px_rgba(31,78,140,0.2)] transition-all active:scale-95 gap-2"
                   >
                     Submit & Continue <ArrowRight className="w-4 h-4" />
                   </Button>
