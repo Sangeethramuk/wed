@@ -12,7 +12,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Progress } from "@/components/ui/progress"
 import {
   ArrowLeft, Download, Users, TrendingUp, ShieldCheck, CheckCircle2,
-  AlertTriangle, Sparkles, BarChart3, ArrowRight, FileText, Search, MoreVertical, Check
+  AlertTriangle, Sparkles, BarChart3, FileText, Search, MoreVertical, Check
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -400,12 +400,6 @@ function EvaluationResults() {
         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">
           EducAItors · Evaluation Complete · {assignment.title}
         </p>
-        <Link
-          href="/dashboard/post-evaluation"
-          className="text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-2 h-9 px-4 text-muted-foreground hover:text-foreground transition-colors group"
-        >
-          Full Insights <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-        </Link>
       </div>
     </div>
   )
