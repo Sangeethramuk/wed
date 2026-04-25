@@ -334,7 +334,7 @@ export default function PublishResultsPage() {
                     >
                       <div className={cn(
                         "h-4 w-4 rounded border shrink-0 mt-0.5 transition-all flex items-center justify-center",
-                        isAcknowledged ? "bg-primary border-primary text-white" : "border-border/60 bg-white group-hover:border-primary/50"
+                        isAcknowledged ? "bg-primary border-primary text-white" : "border-border bg-white group-hover:border-primary/50"
                       )}>
                         {isAcknowledged && <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }}><CheckCircle2 className="h-3 w-3" /></motion.div>}
                       </div>
@@ -374,10 +374,6 @@ export default function PublishResultsPage() {
                           Publish Results
                         </>
                       )}
-                    </Button>
-                    <Button variant="outline" className="w-full h-12 font-bold rounded-xl border-border/40 text-sm hover:bg-muted/30 transition-colors bg-white">
-                      <Save className="mr-2 h-4 w-4" />
-                      Save for Later
                     </Button>
                     <p className="text-[9px] text-center text-muted-foreground/40 pt-2 italic">
                       Protocol v2.4.1 • Secure Release
