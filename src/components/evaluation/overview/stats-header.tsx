@@ -64,7 +64,7 @@ export function StatsHeader({ total, pendingCalibration, inGrading, complete }: 
                 {stat.value}
               </p>
             </div>
-            <stat.icon className="h-5 w-5 mt-1 opacity-80" style={{ color: stat.accent }} />
+            <stat.icon className="h-5 w-5 mt-1 opacity-40" style={{ color: stat.accent }} />
           </div>
         </Card>
       ))}
