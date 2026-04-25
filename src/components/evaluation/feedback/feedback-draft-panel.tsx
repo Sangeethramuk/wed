@@ -94,6 +94,11 @@ export function FeedbackDraftPanel({
             const content = feedback[section.key];
             const isEdited = editedSections.has(section.key);
             
+            // Only show Instructor's Feedback if it has content
+            if (section.key === 'instructorNote' && !content) {
+              return null;
+            }
+            
             return (
               <div key={section.key} className="group relative">
                 <div className="flex items-center justify-between mb-0.5">
