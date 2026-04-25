@@ -201,15 +201,34 @@ export default function FeedbackPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col items-end mr-2">
-            <div className="text-[20px] font-bold text-slate-900 leading-none tabular-nums">
-              60<span className="text-[11px] text-slate-400 font-medium">/100</span>
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col items-end">
+            <div className="text-[18px] font-bold text-slate-900 leading-none tabular-nums">
+              60<span className="text-[10px] text-slate-400 font-medium">/100</span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-tight text-[#F59E0B] mt-1">Satisfactory</span>
+            <span className="text-[9px] font-bold uppercase tracking-tight text-[#F59E0B] mt-0.5">Satisfactory</span>
           </div>
-          <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
-            {/* profile image if needed */}
+
+          <div className="h-8 w-px bg-slate-200" />
+
+          <div className="flex items-center gap-4">
+            <div className="hidden lg:flex flex-col items-end">
+              <span className="text-[10px] font-bold text-[#1F4E8C] tracking-tight uppercase">Ready for Publication</span>
+              <span className="text-[9px] font-medium text-slate-400">Draft cached</span>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <Button
+                onClick={handleFinalSubmit}
+                className="bg-[#1F4E8C] hover:bg-[#1E3A5F] text-white rounded-lg px-6 py-2.5 h-auto text-[12px] font-bold shadow-sm transition-all active:scale-95 gap-2"
+              >
+                Submit & Continue <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0">
+            {/* profile image */}
           </div>
         </div>
       </header>
@@ -232,46 +251,25 @@ export default function FeedbackPage() {
               onRefine={handleRefine}
               editedSections={editedSections}
             />
-          </div>
-
-          {/* Fixed Bottom Zone: Instructor Note + Footer */}
-          <div className="shrink-0 border-t border-slate-200">
-            <InstructorFeedbackPanel 
-              value={instructorNote}
-              onChange={(val) => {
-                if (val === 'APPEND_TO_DRAFT') {
-                  if (instructorNote.trim() && feedbackDraft) {
-                    const currentSnapshot = feedbackDraft.performanceSnapshot;
-                    const newSnapshot = `${instructorNote.trim()}\n\n${currentSnapshot}`;
-                    handleUpdateSection('performanceSnapshot', newSnapshot);
-                    setInstructorNote('');
-                    toast.success('Note added to summary draft');
+            {/* Fixed Bottom Zone: Instructor Note Only */}
+            <div className="shrink-0 border-t border-slate-200">
+              <InstructorFeedbackPanel 
+                value={instructorNote}
+                onChange={(val) => {
+                  if (val === 'APPEND_TO_DRAFT') {
+                    if (instructorNote.trim() && feedbackDraft) {
+                      const currentSnapshot = feedbackDraft.performanceSnapshot;
+                      const newSnapshot = `${instructorNote.trim()}\n\n${currentSnapshot}`;
+                      handleUpdateSection('performanceSnapshot', newSnapshot);
+                      setInstructorNote('');
+                      toast.success('Note added to summary draft');
+                    }
+                  } else {
+                    setInstructorNote(val);
                   }
-                } else {
-                  setInstructorNote(val);
-                }
-              }}
-            />
-
-            {/* Footer: Submit & Navigation (Sticky) */}
-            <footer className="h-[72px] border-t border-slate-100 bg-white flex items-center justify-end px-8 shrink-0">
-              <div className="flex items-center gap-8">
-                <div className="hidden sm:flex flex-col items-end">
-                  <span className="text-[11px] font-bold text-[#1F4E8C] tracking-tight uppercase">State: Ready for Publication</span>
-                  <span className="text-[10px] font-medium text-slate-400">Final draft cached for cohort scheduling</span>
-                </div>
-                
-                <div className="flex flex-col items-center">
-                  <Button
-                    onClick={handleFinalSubmit}
-                    className="bg-[#1F4E8C] hover:bg-[#1E3A5F] text-white rounded-lg px-8 py-4 h-auto text-[13px] font-bold shadow-[0_4px_12px_rgba(31,78,140,0.2)] transition-all active:scale-95 gap-2"
-                  >
-                    Submit & Continue <ArrowRight className="w-4 h-4" />
-                  </Button>
-                  <span className="text-[10px] font-bold text-slate-400 mt-1.5 tracking-tight uppercase">Grade next student</span>
-                </div>
-              </div>
-            </footer>
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
