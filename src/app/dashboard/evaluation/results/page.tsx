@@ -1,405 +1,456 @@
 "use client"
 
-import { Suspense, useMemo, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { motion } from "framer-motion"
-import Link from "next/link"
+import { Suspense, useMemo, useState, useRef, useEffect } from "react"
 import { useGradingStore } from "@/lib/store/grading-store"
-import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { Progress } from "@/components/ui/progress"
 import {
-  ArrowLeft, Download, Users, TrendingUp, ShieldCheck, CheckCircle2,
-  AlertTriangle, Sparkles, BarChart3, FileText, Search, MoreVertical, Check
+  ChevronDown, ChevronRight, AlertTriangle, CheckCircle2,
+  ShieldAlert, TrendingDown, Users, BarChart3, Lock,
+  ArrowRight, BookOpen
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-// ── Grade helpers ──────────────────────────────────────────────────────────────
+// ── Course selector dropdown ───────────────────────────────────────────────────
 
-function getGrade(pct: number): string {
-  if (pct >= 90) return "A+"
-  if (pct >= 80) return "A"
-  if (pct >= 70) return "B+"
-  if (pct >= 60) return "B"
-  if (pct >= 50) return "C+"
-  if (pct >= 40) return "C"
-  return "F"
+function CourseDropdown({
+  courses,
+  selected,
+  onChange,
+}: {
+  courses: { id: string; label: string }[]
+  selected: string | null
+  onChange: (id: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", onClickOutside)
+    return () => document.removeEventListener("mousedown", onClickOutside)
+  }, [])
+
+  const label = selected ? courses.find(c => c.id === selected)?.label : "Select a course"
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-slate-300 transition-colors min-w-[180px] justify-between"
+      >
+        <span className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#1F4E8C] shrink-0" />
+          {label}
+        </span>
+        <ChevronDown className={cn("h-4 w-4 text-slate-400 transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-slate-200 rounded-lg z-50 py-1" style={{ boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)" }}>
+          {courses.map((c, i) => {
+            const colors = ["#1F4E8C", "#10B981", "#6D28D9", "#64748B", "#F59E0B", "#EF4444"]
+            return (
+              <button
+                key={c.id}
+                onClick={() => { onChange(c.id); setOpen(false) }}
+                className="w-full px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2.5"
+              >
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: colors[i % colors.length] }} />
+                {c.label}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
 }
 
-function gradeColorClass(grade: string): string {
-  if (grade.startsWith("A")) return "bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] border-[color:var(--status-success)]/30"
-  if (grade.startsWith("B")) return "bg-[color:var(--status-info-bg)] text-[color:var(--status-info)] border-[color:var(--status-info)]/30"
-  if (grade.startsWith("C")) return "bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] border-[color:var(--status-warning)]/30"
-  return "bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] border-[color:var(--status-error)]/30"
+// ── Empty state ────────────────────────────────────────────────────────────────
+
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-32 gap-4">
+      <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+        <BarChart3 className="w-6 h-6 text-slate-400" />
+      </div>
+      <div className="text-center space-y-1">
+        <p className="text-base font-semibold text-slate-900">Select a course to see insights</p>
+        <p className="text-sm text-slate-400 max-w-xs">
+          Choose a course from the dropdown above to see how your class is doing, which students need attention, and how your grading is going.
+        </p>
+      </div>
+    </div>
+  )
 }
 
-function barColor(pct: number): string {
-  if (pct >= 80) return "bg-[#2563EB]"
-  if (pct >= 60) return "bg-[#2563EB]/70"
-  if (pct >= 40) return "bg-amber-500"
-  return "bg-destructive"
-}
+// ── Main page ──────────────────────────────────────────────────────────────────
 
-// ── Grade distribution bands ──────────────────────────────────────────────────
-
-const BANDS = [
-  { label: "A+ / A", range: "80 – 100", min: 80, max: 101, color: "bg-[#2563EB]" },
-  { label: "B+ / B", range: "60 – 79",  min: 60, max: 80,  color: "bg-[#2563EB]/80" },
-  { label: "C+ / C", range: "40 – 59",  min: 40, max: 60,  color: "bg-amber-500" },
-  { label: "D+ / D", range: "20 – 39",  min: 20, max: 40,  color: "bg-orange-500" },
-  { label: "E / F",  range: "0 – 19",   min: 0,  max: 20,  color: "bg-destructive" },
-]
-
-// ── Page ──────────────────────────────────────────────────────────────────────
-
-export default function EvaluationResultsPage() {
+export default function ResultInsightsPage() {
   return (
     <Suspense fallback={null}>
-      <EvaluationResults />
+      <ResultInsights />
     </Suspense>
   )
 }
 
-function EvaluationResults() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { assignments, currentAssignmentId, criterionFeedbacks, overallFeedback } = useGradingStore()
-  const [sortBy, setSortBy] = useState<"score" | "name" | "grade">("score")
+function ResultInsights() {
+  const { assignments, criterionFeedbacks, overallFeedback } = useGradingStore()
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<"courses" | "grading">("courses")
 
-  const idFromQuery = searchParams.get("id")
-  const assignmentId =
-    (idFromQuery && assignments[idFromQuery] ? idFromQuery : null)
-    ?? currentAssignmentId
-    ?? Object.keys(assignments)[0]
-    ?? null
-  const assignment   = assignmentId ? assignments[assignmentId] : null
-  const students     = assignment?.students ?? []
+  const courses = useMemo(
+    () => Object.values(assignments).map(a => ({ id: a.id, label: a.title })),
+    [assignments]
+  )
 
-  const rows = useMemo(() => students.map(student => {
-    const criteriaList = Object.values(student.criteria)
-    const avgLevel  = criteriaList.length > 0
-      ? criteriaList.reduce((s, c) => s + c.level, 0) / criteriaList.length
-      : 0
-    const scorePct  = Math.round((avgLevel / 5) * 100)
-    const grade     = getGrade(scorePct)
-    const submitted = overallFeedback[student.id]?.isSubmitted ?? false
-    const flagged   = student.status !== "clean"
-    const levelMap  = Object.fromEntries(criteriaList.map(c => [c.id, c.level]))
-    return { student, avgLevel, scorePct, grade, submitted, flagged, levelMap, criteriaList }
-  }), [students, overallFeedback])
+  const assignment = selectedId ? assignments[selectedId] : null
+  const students = assignment?.students ?? []
 
-  const sorted = useMemo(() => [...rows].sort((a, b) => {
-    if (sortBy === "name")  return a.student.name.localeCompare(b.student.name)
-    if (sortBy === "grade") return b.scorePct - a.scorePct
-    return b.scorePct - a.scorePct
-  }), [rows, sortBy])
+  // ── Derived insights ─────────────────────────────────────────────────────────
 
-  const classAvg       = rows.length > 0 ? Math.round(rows.reduce((s, r) => s + r.scorePct, 0) / rows.length) : 0
-  const submittedCount = rows.filter(r => r.submitted).length
-  const flaggedCount   = rows.filter(r => r.flagged).length
-  const completionPct  = rows.length > 0 ? Math.round((submittedCount / rows.length) * 100) : 0
+  const insights = useMemo(() => {
+    if (!assignment || students.length === 0) return null
 
-  const distribution = BANDS.map(b => ({
-    ...b,
-    count: rows.filter(r => r.scorePct >= b.min && r.scorePct < b.max).length,
-  }))
-  const maxCount = Math.max(...distribution.map(d => d.count), 1)
-
-  const criterionIds  = students.length > 0 ? Object.keys(students[0].criteria) : []
-  const criterionStats = criterionIds.map(cid => {
-    const levels = rows.map(r => r.levelMap[cid] ?? 0)
-    const avg    = levels.length > 0 ? levels.reduce((a, b) => a + b, 0) / levels.length : 0
-    const name   = students[0]?.criteria[cid]?.name ?? cid.toUpperCase()
-    const tierCounts = { perfect: 0, minor: 0, gap: 0, major: 0 } as Record<string, number>
-    rows.forEach(r => {
-      const tier = criterionFeedbacks[r.student.id]?.[cid]?.tier
-      if (tier) tierCounts[tier] = (tierCounts[tier] ?? 0) + 1
+    // Per-student avg score
+    const studentRows = students.map(s => {
+      const criteria = Object.values(s.criteria)
+      const avgLevel = criteria.length > 0 ? criteria.reduce((sum, c) => sum + c.level, 0) / criteria.length : 0
+      const scorePct = Math.round((avgLevel / 5) * 100)
+      return { student: s, scorePct, criteria }
     })
-    return { cid, name, avg, avgPct: Math.round((avg / 5) * 100), tierCounts }
-  })
 
-  if (!assignment) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[60vh] gap-6">
-        <div className="w-16 h-16 rounded-2xl bg-muted/30 flex items-center justify-center">
-          <FileText className="w-7 h-7 text-muted-foreground/30" />
-        </div>
-        <div className="text-center space-y-2">
-          <p className="eyebrow text-muted-foreground/40">No Evaluation Data</p>
-          <p className="text-sm font-medium text-muted-foreground">Complete an evaluation first to see the class report.</p>
-        </div>
-        <Button onClick={() => router.push("/dashboard/evaluation")} variant="outline">
-          <ArrowLeft /> Back to Evaluation
-        </Button>
-      </div>
-    )
-  }
+    const classAvg = Math.round(studentRows.reduce((sum, r) => sum + r.scorePct, 0) / studentRows.length)
 
-  const stats = [
-    { label: "Class Average", value: `${classAvg}%`, sub: `${students.length} students`, icon: TrendingUp },
-    { label: "Feedback Submitted", value: `${submittedCount} / ${students.length}`, sub: `${completionPct}% complete`, icon: CheckCircle2 },
-    { label: "Integrity Flags", value: String(flaggedCount), sub: flaggedCount === 0 ? "Clean audit" : "Require review", icon: ShieldCheck },
-    { label: "Criteria Assessed", value: String(criterionIds.length), sub: "per submission", icon: BarChart3 },
-  ]
+    // Criterion struggle analysis
+    const criterionIds = students.length > 0 ? Object.keys(students[0].criteria) : []
+    const criterionData = criterionIds.map(cid => {
+      const name = students[0].criteria[cid]?.name ?? cid
+      const levels = students.map(s => s.criteria[cid]?.level ?? 0)
+      const avgLevel = levels.reduce((a, b) => a + b, 0) / levels.length
+      const below50Count = levels.filter(l => (l / 5) * 100 < 50).length
+      const below60Count = levels.filter(l => (l / 5) * 100 < 60).length
+
+      // AI changes: instructor_edited authorship
+      const editedCount = students.filter(s => {
+        const fb = criterionFeedbacks[s.id]?.[cid]
+        return fb?.authorship === "instructor_edited"
+      }).length
+
+      const agreedCount = students.filter(s => {
+        const fb = criterionFeedbacks[s.id]?.[cid]
+        return fb?.authorship === "ai_generated" && fb?.isConfirmed
+      }).length
+      const confirmedCount = students.filter(s => criterionFeedbacks[s.id]?.[cid]?.isConfirmed).length
+      const agreementPct = confirmedCount > 0 ? Math.round((agreedCount / confirmedCount) * 100) : 0
+
+      return { cid, name, avgLevel, below50Count, below60Count, editedCount, agreementPct, confirmedCount }
+    })
+
+    // Top struggling criteria (sorted by below-50 count)
+    const strugglingCriteria = [...criterionData]
+      .filter(c => c.below50Count > 0 || c.below60Count > 0)
+      .sort((a, b) => b.below50Count - a.below50Count)
+      .slice(0, 3)
+
+    // Students needing attention: score < 50% or flagged
+    const atRiskStudents = studentRows
+      .filter(r => r.scorePct < 50 || r.student.status !== "clean")
+      .sort((a, b) => a.scorePct - b.scorePct)
+      .slice(0, 4)
+
+    // AI grading stats
+    const totalEdited = criterionData.reduce((sum, c) => sum + c.editedCount, 0)
+    const mostEditedCriterion = [...criterionData].sort((a, b) => b.editedCount - a.editedCount)[0]
+    const mostAgreedCriterion = [...criterionData].sort((a, b) => b.agreementPct - a.agreementPct)[0]
+
+    const submittedCount = students.filter(s => overallFeedback[s.id]?.isSubmitted).length
+    const totalAIChanges = totalEdited
+
+    // Section anomaly: compare first half vs second half avg
+    const half = Math.floor(studentRows.length / 2)
+    const sectionAAvg = half > 0 ? Math.round(studentRows.slice(0, half).reduce((s, r) => s + r.scorePct, 0) / half) : 0
+    const sectionBAvg = half > 0 ? Math.round(studentRows.slice(half).reduce((s, r) => s + r.scorePct, 0) / (studentRows.length - half)) : 0
+    const sectionGap = Math.abs(sectionAAvg - sectionBAvg)
+
+    return {
+      classAvg,
+      studentCount: students.length,
+      submittedCount,
+      strugglingCriteria,
+      atRiskStudents,
+      totalAIChanges,
+      mostEditedCriterion,
+      mostAgreedCriterion,
+      sectionAAvg,
+      sectionBAvg,
+      sectionGap,
+    }
+  }, [assignment, students, criterionFeedbacks, overallFeedback])
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]/50 pb-20">
-      {/* Top Breadcrumb/Nav */}
-      <div className="max-w-7xl mx-auto px-8 pt-8 mb-6">
-        <Link href="/dashboard/evaluation">
-          <Button variant="ghost" size="sm" className="pl-0 text-muted-foreground hover:text-foreground transition-colors group h-8 gap-2">
-            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" /> 
-            <span className="text-sm font-medium">Back to evaluation</span>
-          </Button>
-        </Link>
+    <div className="min-h-screen" style={{ backgroundColor: "#F8F9FA" }}>
+      {/* Privacy banner */}
+      <div className="px-6 pt-4">
+        <div className="flex items-center justify-between px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-500" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+          <span>🔒 Only you see this · Your insights are always private · HOD is notified only if something looks very unusual</span>
+          <button className="text-[#1F4E8C] font-medium hover:underline">Privacy settings →</button>
+        </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-8 space-y-12">
-        {/* Header Section */}
-        <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-black tracking-tight text-[#1E293B]">Class Report</h1>
-              <Badge variant="outline" className="bg-[#E2F5EE] text-[#10B981] border-none font-bold px-3 py-0.5 rounded-full text-xs">
-                Evaluation Complete
-              </Badge>
-            </div>
-            <p className="text-muted-foreground font-medium flex items-center gap-2">
-              {assignment.title} <span className="text-border">·</span> {students.length} Students <span className="text-border">·</span> {criterionIds.length} Criteria
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <Button variant="outline" className="h-11 px-6 border-border/60 bg-white hover:bg-muted/50 text-sm font-bold text-[#1E293B] shadow-sm rounded-xl gap-2">
-              <Download className="h-4 w-4 text-muted-foreground" />
-              Export report
-            </Button>
-            <Link href={`/dashboard/evaluation/publish?id=${assignmentId}`}>
-              <Button className="h-11 px-6 bg-[#2563EB] hover:bg-[#1D4ED8] text-sm font-bold shadow-lg shadow-blue-500/20 rounded-xl gap-2">
-                <Sparkles className="h-4 w-4" />
-                Publish outcomes
-              </Button>
-            </Link>
-          </div>
+      {/* Controls bar */}
+      <div className="px-6 pt-4 flex items-center gap-3 flex-wrap">
+        {/* Tab toggle */}
+        <div className="flex items-center bg-slate-100 rounded-lg p-1 gap-0.5">
+          <button
+            onClick={() => setActiveTab("courses")}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all",
+              activeTab === "courses" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            )}
+          >
+            <BookOpen className="h-3.5 w-3.5" /> Courses
+          </button>
+          <button
+            onClick={() => setActiveTab("grading")}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all",
+              activeTab === "grading" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            )}
+          >
+            <BarChart3 className="h-3.5 w-3.5" /> My Grading
+          </button>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat) => (
-            <Card key={stat.label} className="border border-border/40 shadow-sm rounded-2xl overflow-hidden bg-white/80 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <p className="text-xs font-bold text-muted-foreground/60 tracking-wide uppercase">{stat.label}</p>
-                  <stat.icon className={cn("h-4 w-4", stat.label === "Integrity Flags" && flaggedCount > 0 ? "text-amber-500" : "text-blue-500/40")} />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-4xl font-black tracking-tighter text-[#1E293B]">{stat.value}</p>
-                  <p className="text-xs font-bold text-muted-foreground/40">{stat.sub}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* Course selector */}
+        <CourseDropdown courses={courses} selected={selectedId} onChange={setSelectedId} />
 
-        {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Grade Distribution */}
-          <Card className="lg:col-span-2 border border-border/40 shadow-sm rounded-3xl bg-white/80 backdrop-blur-sm">
-            <CardHeader className="p-8 pb-4">
-              <div className="flex items-center justify-between">
+        {/* Semester filter */}
+        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-slate-300 transition-colors">
+          This Semester <ChevronDown className="h-4 w-4 text-slate-400" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="px-6 py-6 space-y-4">
+        {!selectedId || !insights ? (
+          <EmptyState />
+        ) : (
+          <>
+            {/* Course header card */}
+            <Card className="bg-white border border-slate-200 rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+              <div className="flex items-start justify-between mb-3">
                 <div>
-                  <CardTitle className="text-xl font-black text-[#1E293B] tracking-tight">Grade Distribution</CardTitle>
-                  <p className="text-xs font-bold text-muted-foreground/40 tracking-wide uppercase mt-1">Cohort Performance Spread</p>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#1F4E8C]" />
+                    <h2 className="text-base font-semibold text-slate-900">{assignment!.title}</h2>
+                  </div>
+                  <p className="text-xs text-slate-400 ml-4.5">
+                    {insights.studentCount} students
+                  </p>
                 </div>
-                <Badge variant="outline" className="bg-muted/30 border-none font-bold text-[10px] px-3 h-6">
-                  {students.length} Total
-                </Badge>
+                <button className="text-xs font-medium text-[#1F4E8C] flex items-center gap-1 hover:underline">
+                  📝 See Insights <ArrowRight className="h-3 w-3" />
+                </button>
               </div>
-            </CardHeader>
-            <CardContent className="p-8 pt-4 space-y-8">
-              {distribution.map((item) => (
-                <div key={item.label} className="space-y-2">
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-[#1E293B]">{item.label}</span>
-                    <div className="flex items-center gap-4">
-                      <span className="text-muted-foreground/40">{item.range}</span>
-                      <span className="text-[#1E293B] tabular-nums">{item.count}</span>
-                    </div>
-                  </div>
-                  <div className="h-6 w-full bg-muted/20 rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(item.count / Math.max(students.length, 1)) * 100}%` }}
-                      className={cn("h-full rounded-full transition-all duration-1000", item.color)} 
-                    />
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${insights.classAvg}%`, backgroundColor: insights.classAvg >= 70 ? "#10B981" : insights.classAvg >= 50 ? "#F59E0B" : "#EF4444" }}
+                  />
                 </div>
-              ))}
-            </CardContent>
-          </Card>
+                <span className="text-sm font-semibold text-slate-700 shrink-0">{insights.classAvg}% avg</span>
+              </div>
+            </Card>
 
-          {/* Criterion Averages */}
-          <Card className="border border-border/40 shadow-sm rounded-3xl bg-white/80 backdrop-blur-sm">
-            <CardHeader className="p-8 pb-4">
-              <CardTitle className="text-xl font-black text-[#1E293B] tracking-tight">Criterion Averages</CardTitle>
-              <p className="text-xs font-bold text-muted-foreground/40 tracking-wide uppercase mt-1">Per Standard · Out of 5</p>
-            </CardHeader>
-            <CardContent className="p-8 pt-4 space-y-10">
-              {criterionStats.map((crit) => (
-                <div key={crit.name} className="space-y-3">
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-[#1E293B]">{crit.name}</span>
-                    <span className="text-[#1E293B] tabular-nums">
-                      {crit.avg.toFixed(1)}<span className="text-muted-foreground/30 ml-0.5">/5</span>
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-1.5 w-full bg-muted/20 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${crit.avgPct}%` }}
-                        className={cn("h-full rounded-full transition-all duration-1000", barColor(crit.avgPct))} 
-                      />
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {(Object.entries(crit.tierCounts) as [string, number][])
-                        .filter(([, n]) => n > 0)
-                        .map(([tier, n]) => (
-                          <span
-                            key={tier}
-                            className={cn(
-                              "text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full",
-                              tier === "perfect" ? "bg-emerald-50 text-emerald-600" :
-                              tier === "minor"   ? "bg-blue-50 text-blue-600" :
-                              tier === "gap"     ? "bg-amber-50 text-amber-600" :
-                                                  "bg-red-50 text-red-600"
-                            )}
-                          >
-                            {n} {tier}
-                          </span>
-                        ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Full Cohort Roster */}
-        <Card className="border border-border/40 shadow-sm rounded-3xl bg-white/80 backdrop-blur-sm overflow-hidden">
-          <CardHeader className="p-8 pb-4 flex flex-row items-center justify-between space-y-0">
-            <div className="space-y-1">
-              <CardTitle className="text-2xl font-black text-[#1E293B] tracking-tight">Full Cohort Roster</CardTitle>
-              <p className="text-xs font-bold text-muted-foreground/40 tracking-wide uppercase">{students.length} Students · {submittedCount} Submitted</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mr-2">Sort</span>
-              {(["score", "name", "grade"] as const).map((sort) => (
-                <Button
-                  key={sort}
-                  variant={sortBy === sort ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSortBy(sort)}
-                  className={cn(
-                    "h-8 px-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all",
-                    sortBy === sort ? "bg-[#2563EB] shadow-lg shadow-blue-500/20" : "border-border/60 hover:bg-muted/50 text-muted-foreground"
-                  )}
-                >
-                  {sort}
-                </Button>
-              ))}
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-border/20 bg-muted/5">
-                    <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 w-16">#</th>
-                    <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Student</th>
-                    <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Roll No.</th>
-                    {criterionIds.map(cid => (
-                      <th key={cid} className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
-                        {cid.toUpperCase()}
-                      </th>
-                    ))}
-                    <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Score</th>
-                    <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 text-center">Grade</th>
-                    <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 text-center">Status</th>
-                    <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 text-center">Integrity</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/10">
-                  {sorted.map(({ student, scorePct, grade, submitted, flagged, levelMap }, idx) => (
-                    <tr key={student.id} className="hover:bg-muted/10 transition-colors">
-                      <td className="px-8 py-5 text-sm font-bold text-muted-foreground/30 tabular-nums">{(idx + 1).toString().padStart(2, '0')}</td>
-                      <td className="px-4 py-5">
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-muted/30 flex items-center justify-center text-[10px] font-black text-[#1E293B] border border-border/10">
-                            {student.name.split(' ').map(n => n[0]).join('')}
+            {/* Where students struggled most */}
+            {insights.strugglingCriteria.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold tracking-wider text-slate-400 mb-2 px-1">WHERE STUDENTS STRUGGLED MOST</p>
+                <div className="space-y-2">
+                  {insights.strugglingCriteria.map((c, i) => {
+                    const isCritical = c.below50Count > insights.studentCount * 0.4
+                    return (
+                      <Card
+                        key={c.cid}
+                        className="bg-white border rounded-xl p-4"
+                        style={{
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                          borderColor: isCritical ? "#FECACA" : "#FDE68A",
+                          backgroundColor: isCritical ? "#FFF5F5" : "#FFFBEB",
+                        }}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className={cn("w-2 h-2 rounded-full shrink-0", isCritical ? "bg-red-500" : "bg-amber-400")} />
+                              <p className="text-sm font-semibold text-slate-900">{c.name}</p>
+                            </div>
+                            <p className="text-xs text-slate-500 ml-4">
+                              {isCritical
+                                ? `${c.below50Count} of ${insights.studentCount} students scored below 50%`
+                                : `${c.below60Count} of ${insights.studentCount} students scored below 60%`}
+                            </p>
+                            <p className="text-xs text-slate-400 italic ml-4">
+                              {isCritical
+                                ? `"This topic may need more time in class next semester"`
+                                : `"Students are getting there — worth more practice examples"`}
+                            </p>
                           </div>
-                          <span className="text-[13px] font-bold text-[#1E293B]">{student.name}</span>
+                          <button className="text-xs font-medium text-[#1F4E8C] hover:underline whitespace-nowrap flex items-center gap-1 shrink-0 ml-4">
+                            Review criterion <ArrowRight className="h-3 w-3" />
+                          </button>
                         </div>
-                      </td>
-                      <td className="px-4 py-5 text-[11px] font-bold text-muted-foreground/60 tracking-wider uppercase">{student.roll}</td>
-                      {criterionIds.map(cid => (
-                        <td key={cid} className="px-4 py-5 text-[11px] font-black text-[#1E293B] tabular-nums">
-                          {levelMap[cid] ?? "—"}/5
-                        </td>
-                      ))}
-                      <td className="px-4 py-5 text-[13px] font-black text-[#1E293B] tabular-nums">{scorePct}%</td>
-                      <td className="px-4 py-5 text-center">
-                        <Badge variant="outline" className={cn(
-                          "h-6 w-8 rounded-md p-0 flex items-center justify-center font-bold text-[10px]",
-                          gradeColorClass(grade)
-                        )}>
-                          {grade}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-5 text-center">
-                        <Badge variant="secondary" className={cn(
-                          "h-6 px-3 rounded-full font-bold text-[9px] uppercase tracking-widest",
-                          submitted ? "bg-emerald-50 text-emerald-600 border border-emerald-500/10" : "bg-muted text-muted-foreground"
-                        )}>
-                          {submitted ? "Done" : "Pending"}
-                        </Badge>
-                      </td>
-                      <td className="px-8 py-5 text-center">
-                        <div className="flex items-center justify-center">
-                          {!flagged ? (
-                            <div className="h-5 w-5 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center border border-emerald-200 shadow-sm">
-                              <Check className="h-3 w-3 stroke-[3px]" />
-                            </div>
-                          ) : (
-                            <div className="h-5 w-5 rounded-full bg-red-50 text-red-500 flex items-center justify-center border border-red-200 shadow-sm">
-                              <ShieldCheck className="h-3 w-3 stroke-[3px]" />
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {sorted.length === 0 && (
-              <div className="py-20 text-center">
-                <Users className="w-8 h-8 text-muted-foreground/20 mx-auto mb-3" />
-                <p className="eyebrow text-muted-foreground/30">No student data</p>
+                      </Card>
+                    )
+                  })}
+                </div>
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Footer */}
-      <div className="max-w-7xl mx-auto px-8 flex items-center justify-between pt-12">
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">
-          EducAItors · Evaluation Complete · {assignment.title}
-        </p>
+            {/* Students who need attention */}
+            {insights.atRiskStudents.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <p className="text-xs font-semibold tracking-wider text-slate-400">STUDENTS WHO NEED ATTENTION</p>
+                  <p className="text-xs text-slate-400">{insights.atRiskStudents.length} student{insights.atRiskStudents.length !== 1 ? "s" : ""}</p>
+                </div>
+                <div className="space-y-2">
+                  {insights.atRiskStudents.map(r => {
+                    const initials = r.student.name.split(" ").map(n => n[0]).join("").slice(0, 2)
+                    const isFlagged = r.student.status !== "clean"
+                    const avatarColors = ["#1F4E8C", "#10B981", "#F59E0B", "#6D28D9"]
+                    const colorIdx = r.student.id.charCodeAt(0) % avatarColors.length
+
+                    return (
+                      <Card key={r.student.id} className="bg-white border border-slate-200 rounded-xl p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                              style={{ backgroundColor: avatarColors[colorIdx] }}
+                            >
+                              {initials}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-slate-900">{r.student.name}</p>
+                              <p className="text-xs text-slate-400">
+                                {r.scorePct < 50 ? `Below 50% overall (${r.scorePct}%)` : "Integrity flag detected"}
+                              </p>
+                              {isFlagged && (
+                                <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+                                  <ShieldAlert className="h-2.5 w-2.5" /> Flagged
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <button className="text-xs font-medium text-[#1F4E8C] hover:underline flex items-center gap-1 shrink-0">
+                            See submission <ArrowRight className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </Card>
+                    )
+                  })}
+                </div>
+                <button className="w-full mt-2 text-sm font-medium text-[#1F4E8C] hover:underline py-2 text-center">
+                  See all {insights.studentCount} students →
+                </button>
+              </div>
+            )}
+
+            {/* How you graded this course — private */}
+            <div>
+              <p className="text-xs font-semibold tracking-wider text-slate-400 mb-1 px-1">HOW YOU GRADED THIS COURSE</p>
+              <p className="text-xs text-slate-400 px-1 mb-2 flex items-center gap-1">
+                <Lock className="h-3 w-3" /> Only you see this section
+              </p>
+
+              <div className="space-y-2">
+                {/* AI Score Changes */}
+                <Card className="bg-white border border-slate-200 rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                  <p className="text-xs font-semibold tracking-wider text-slate-400 mb-3">AI SCORE CHANGES · THIS COURSE</p>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-4xl font-semibold text-slate-900 tabular-nums">{insights.totalAIChanges}</span>
+                    <span className="text-sm text-slate-500">scores changed from AI suggestions</span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden mb-2">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.min(100, (insights.totalAIChanges / Math.max(insights.studentCount * 3, 1)) * 100)}%`,
+                        backgroundColor: "#1F4E8C"
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <CheckCircle2 className="h-3 w-3" /> Healthy range
+                    </span>
+                    {insights.mostEditedCriterion && (
+                      <span className="text-xs text-slate-400">
+                        Most changes on {insights.mostEditedCriterion.name}
+                      </span>
+                    )}
+                  </div>
+                </Card>
+
+                {/* Where you changed AI most */}
+                {insights.mostEditedCriterion && insights.mostEditedCriterion.editedCount > 0 && (
+                  <Card className="bg-white border border-slate-200 rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                    <p className="text-xs font-semibold tracking-wider text-slate-400 mb-3">WHERE YOU CHANGED AI MOST</p>
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-slate-900">{insights.mostEditedCriterion.name}</p>
+                          <span className="text-xs text-slate-400">Changed {insights.mostEditedCriterion.editedCount} time{insights.mostEditedCriterion.editedCount !== 1 ? "s" : ""}</span>
+                        </div>
+                        <p className="text-xs text-slate-500 max-w-sm">
+                          The description for this criterion may need to be clearer — when you change the AI often on one topic, it usually means the grading guide needs more specific language.
+                        </p>
+                      </div>
+                      <button className="text-xs font-medium text-[#1F4E8C] hover:underline flex items-center gap-1 shrink-0 ml-4 whitespace-nowrap">
+                        Improve this criterion <ArrowRight className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </Card>
+                )}
+
+                {/* Where you and AI agreed most */}
+                {insights.mostAgreedCriterion && insights.mostAgreedCriterion.agreementPct > 0 && (
+                  <Card className="bg-white border border-slate-200 rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                    <p className="text-xs font-semibold tracking-wider text-slate-400 mb-3">WHERE YOU AND AI AGREED MOST</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-sm font-semibold text-slate-900">{insights.mostAgreedCriterion.name}</p>
+                      <span className="text-xs font-semibold text-emerald-600">{insights.mostAgreedCriterion.agreementPct}% agreement</span>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      Your grading guide for this criterion is very clear. This is what good looks like.
+                    </p>
+                  </Card>
+                )}
+
+                {/* Section anomaly */}
+                {insights.sectionGap >= 8 && (
+                  <Card className="bg-amber-50 border border-amber-200 rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                    <div className="flex items-start gap-2 mb-2">
+                      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <p className="text-sm font-semibold text-amber-700">One thing worth checking</p>
+                    </div>
+                    <p className="text-xs text-amber-600 mb-3 ml-6">
+                      Section A scored {insights.sectionGap}% {insights.sectionAAvg < insights.sectionBAvg ? "lower" : "higher"} than Section B on the same assignment. This could be a genuine performance difference — or worth a quick look before releasing grades.
+                    </p>
+                    <button className="ml-6 text-xs font-medium text-[#1F4E8C] hover:underline flex items-center gap-1">
+                      Compare sections <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </Card>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
