@@ -1,12 +1,19 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   Home,
   PlusCircle,
   ClipboardCheck,
   BarChart3,
   RefreshCcw,
+  LayoutGrid,
+  FileText,
+  Search,
+  Bell,
+  PanelLeft,
+  ChevronDown
 } from "lucide-react"
 
 import {
@@ -30,9 +37,9 @@ const mainNavItems = [
     icon: Home,
   },
   {
-    title: "Prepare Assignment",
+    title: "Assignments",
     url: "/dashboard/pre-evaluation",
-    icon: PlusCircle,
+    icon: FileText,
   },
   {
     title: "Grading Desk",
@@ -40,74 +47,90 @@ const mainNavItems = [
     icon: ClipboardCheck,
   },
   {
-    title: "Result Insights",
-    url: "/dashboard/post-evaluation",
-    icon: BarChart3,
-  },
-  {
-    title: "Re-evaluation Requests",
+    title: "Re-evaluation",
     url: "/dashboard/re-evaluation",
     icon: RefreshCcw,
+  },
+  {
+    title: "Result Insights",
+    url: "/dashboard/evaluation/results",
+    icon: BarChart3,
   },
 ]
 
 export function AppSidebar() {
+  const pathname = usePathname()
+
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border h-14 justify-center">
+    <Sidebar collapsible="icon" className="border-r border-border/10">
+      <SidebarHeader className="border-b border-border/10 h-16 justify-center px-4">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
+              className="hover:bg-transparent"
               render={<Link href="/dashboard" />}
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-red-100 text-red-800 shrink-0">
-                <span className="text-[10px] font-bold">IIMB</span>
+              <div className="flex aspect-square size-10 items-center justify-center rounded-full bg-red-50 text-red-600 shrink-0 border border-red-100 shadow-sm">
+                <span className="text-[10px] font-black tracking-tighter">SIU</span>
               </div>
-              <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-semibold text-base tracking-tight">IIM Bangalore</span>
+              <div className="flex flex-col gap-0.5 leading-none ml-2">
+                <span className="font-bold text-sm tracking-tight text-[#1E293B]">Symbiosis University</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2 pt-4">
         <SidebarGroup>
-          <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="gap-2">
-              {mainNavItems.map((item) => (
+          <SidebarMenu className="gap-1">
+            {mainNavItems.map((item) => {
+              const isActive = pathname === item.url || (item.url !== "/dashboard" && pathname.startsWith(item.url))
+              return (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     render={<Link href={item.url} />}
                     tooltip={item.title}
+                    className={cn(
+                      "h-11 px-4 rounded-xl transition-all duration-200",
+                      isActive 
+                        ? "bg-[#2563EB]/5 text-[#2563EB] font-bold shadow-sm" 
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
                   >
-                    <item.icon className="size-4" />
-                    <span>{item.title}</span>
+                    <item.icon className={cn("size-5 mr-1", isActive ? "text-[#2563EB]" : "text-muted-foreground/60")} />
+                    <span className="text-[14px]">{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
+              )
+            })}
+          </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4 group-data-[collapsible=icon]:p-2">
-        {/* Expanded View */}
-        <div className="flex w-full flex-col items-center justify-center gap-1 group-data-[collapsible=icon]:hidden">
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider text-center">
-            Powered by
-          </span>
-          <span className="font-semibold normal-case text-muted-foreground text-xs">
-            Educ<span className="text-blue-500">AI</span>tors
-          </span>
+      <SidebarFooter className="border-t border-border/10 p-6 space-y-4">
+        <div className="flex flex-col gap-4">
+          <Link href="#" className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors group">
+            <div className="p-1.5 rounded-lg bg-muted/50 group-hover:bg-muted transition-colors">
+              <span className="text-sm">?</span>
+            </div>
+            <span className="text-sm font-medium">Help & Information</span>
+          </Link>
+          <Link href="#" className="flex items-center gap-3 text-red-500/80 hover:text-red-600 transition-colors group">
+            <div className="p-1.5 rounded-lg bg-red-50 group-hover:bg-red-100 transition-colors">
+              <span className="text-sm">↩</span>
+            </div>
+            <span className="text-sm font-medium">Log out</span>
+          </Link>
         </div>
 
-        {/* Collapsed View */}
-        <div className="hidden w-full items-center justify-center group-data-[collapsible=icon]:flex">
-          <span className="font-bold text-muted-foreground">
-            E<span className="text-blue-500">AI</span>
+        <div className="flex w-full flex-col items-center justify-center gap-1.5 pt-4 opacity-40">
+          <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest text-center">
+            Powered by
+          </span>
+          <span className="font-bold text-muted-foreground text-xs tracking-tight">
+            Educ<span className="text-blue-500">AI</span>tors
           </span>
         </div>
       </SidebarFooter>
@@ -115,4 +138,8 @@ export function AppSidebar() {
       <SidebarRail />
     </Sidebar>
   )
+}
+
+function cn(...inputs: any[]) {
+  return inputs.filter(Boolean).join(" ")
 }

@@ -68,7 +68,7 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
 
   const handleAction = () => {
     if (assignment.gradingStatus === "complete") {
-      router.push(`/dashboard/evaluation/results`)
+      router.push(`/dashboard/evaluation/results?id=${assignment.id}`)
       return
     }
     if (!isCalibrated) {

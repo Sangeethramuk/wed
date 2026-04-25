@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -24,9 +24,13 @@ import {
   FileDown
 } from "lucide-react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { cn } from "@/lib/utils"
 
-export default function PublishResultsPage() {
+function PublishResultsContent() {
+  const searchParams = useSearchParams()
+  const assignmentId = searchParams.get("id") || "SWE-PH2"
+  
   const [releaseTime, setReleaseTime] = useState<"standard" | "immediate" | "custom">("standard")
   const [appealsEnabled, setAppealsEnabled] = useState(false)
   const [appealDuration, setAppealDuration] = useState("7 Days")
@@ -75,12 +79,18 @@ export default function PublishResultsPage() {
     }
   ]
 
+  const assignmentInfo = {
+    course: assignmentId === "DB-Q1" ? "Symbiosis University" : "Advanced Algorithm Design",
+    name: assignmentId === "DB-Q1" ? "Database Queries - Quiz 1" : "Final Project",
+    students: assignmentId === "DB-Q1" ? "1 Students" : "45 Students"
+  }
+
   return (
     <div className="min-h-screen bg-muted/40 -m-4 p-8 animate-in fade-in duration-500">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header Section */}
         <header className="space-y-4">
-          <Link href="/dashboard/evaluation/results">
+          <Link href={`/dashboard/evaluation/results?id=${assignmentId}`}>
             <Button variant="ghost" size="sm" className="pl-0 text-muted-foreground hover:text-foreground transition-colors group">
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" /> Back to Insights
             </Button>
@@ -290,15 +300,15 @@ export default function PublishResultsPage() {
                 <div className="px-6 pt-1 pb-6 space-y-4">
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-wide">Course Name</p>
-                    <p className="text-[13px] font-bold text-foreground leading-snug">Advanced Algorithm Design</p>
+                    <p className="text-[13px] font-bold text-foreground leading-snug">{assignmentInfo.course}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-wide">Assignment Name</p>
-                    <p className="text-[13px] font-bold text-foreground leading-snug">Final Project</p>
+                    <p className="text-[13px] font-bold text-foreground leading-snug">{assignmentInfo.name}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-wide">Class Strength</p>
-                    <p className="text-[13px] font-bold text-foreground">45 Students</p>
+                    <p className="text-[13px] font-bold text-foreground">{assignmentInfo.students}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-wide">Publishing Date</p>
@@ -506,7 +516,7 @@ export default function PublishResultsPage() {
                   transition={{ delay: 0.5 }}
                   className="text-muted-foreground font-medium"
                 >
-                  45 students can now view grades and feedback.
+                  {assignmentInfo.students} can now view grades and feedback.
                 </motion.p>
               </div>
 
@@ -546,12 +556,12 @@ export default function PublishResultsPage() {
                 <Button className="w-full h-13 font-bold rounded-xl bg-primary text-white shadow-xl shadow-primary/10 transition-transform active:scale-95">
                   Preview Student View
                 </Button>
-                <Link href="/dashboard" className="block w-full">
+                <Link href={`/dashboard/evaluation/results?id=${assignmentId}`} className="block w-full">
                   <Button 
                     variant="ghost" 
                     className="w-full h-11 font-bold rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/30"
                   >
-                    Return to Dashboard
+                    Return to Report
                   </Button>
                 </Link>
                 <Button variant="link" className="text-xs font-bold text-primary/60 hover:text-primary">
@@ -564,5 +574,13 @@ export default function PublishResultsPage() {
         )}
       </AnimatePresence>
     </div>
+  )
+}
+
+export default function PublishResultsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading Publish Settings...</div>}>
+      <PublishResultsContent />
+    </Suspense>
   )
 }

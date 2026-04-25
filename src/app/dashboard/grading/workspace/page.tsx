@@ -253,7 +253,7 @@ export default function WorkspacePage() {
           </div>
 
           <Button 
-            onClick={() => window.location.href = '/dashboard/grading'}
+            onClick={() => window.location.href = `/dashboard/evaluation/results?id=${currentAssignmentId}`}
             className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-xl transition-all"
           >
             Return to Hub
