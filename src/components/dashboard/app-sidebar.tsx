@@ -4,7 +4,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   Home,
-  PlusCircle,
   ClipboardCheck,
   BarChart3,
   RefreshCcw,
@@ -28,7 +27,6 @@ import { cn } from "@/lib/utils"
 
 const mainNavItems = [
   { title: "Home", url: "/dashboard", icon: Home },
-  { title: "Prepare Assignment", url: "/dashboard/pre-evaluation", icon: PlusCircle },
   { title: "Assignments", url: "/dashboard/assignments", icon: ClipboardCheck },
   { title: "Grading Desk", url: "/dashboard/evaluation", icon: ClipboardCheck },
   { title: "Re-evaluation", url: "/dashboard/re-evaluation/triage", icon: RefreshCcw },

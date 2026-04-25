@@ -1,22 +1,20 @@
 "use client"
 
 import { usePreEvalStore } from "@/lib/store/pre-evaluation-store"
-import { CourseSelection, MOCK_COURSES } from "@/components/pre-evaluation/course-selection"
+import { CourseSelection } from "@/components/pre-evaluation/course-selection"
 import { CreationMode } from "@/components/pre-evaluation/creation-mode"
 import { AssignmentSpecs } from "@/components/pre-evaluation/assignment-specs"
 import { RubricTweak } from "@/components/pre-evaluation/rubric-tweak"
 import { CalibrationCheck } from "@/components/pre-evaluation/calibration-check"
 import { StudentPreview } from "@/components/pre-evaluation/student-preview"
 import { Progress } from "@/components/ui/progress"
-import { AuditSidebar } from "@/components/pre-evaluation/audit-sidebar"
 import { CloudCheck } from "lucide-react"
 import { useEffect, useState } from "react"
 
 import { TooltipProvider } from "@/components/ui/tooltip"
 
 export default function PreEvaluationPage() {
-  const { currentStep, lastSaved, selectedCourse } = usePreEvalStore()
-  const courseData = MOCK_COURSES.find(c => c.name === selectedCourse)
+  const { currentStep, lastSaved } = usePreEvalStore()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -60,30 +58,17 @@ export default function PreEvaluationPage() {
   return (
     <TooltipProvider delay={100}>
       <div className="flex flex-col min-h-[calc(100vh-8rem)] relative">
-        <div className="sticky top-0 z-50 bg-background/60 backdrop-blur-md pt-4 pb-8 mb-8 border-b border-border/10">
+        <div className="pt-4 pb-8 mb-8 border-b border-border/10">
           <div className="max-w-6xl mx-auto w-full px-4">
             <div className="flex items-center justify-between mb-4">
               <div className="eyebrow flex items-center gap-3 transition-all">
                 <span className="text-primary opacity-100 font-semibold">Step {currentStep} of 6 — {currentStepData?.label}</span>
               </div>
-              
-              <div className="flex items-center gap-6">
-                <div className="eyebrow flex items-center gap-2 text-muted-foreground/30">
-                    <CloudCheck className="h-3.5 w-3.5 text-[color:var(--status-success)]/40" />
-                    <span>Auto-saved at {lastSaved}</span>
-                </div>
-                <AuditSidebar />
+              <div className="eyebrow flex items-center gap-2 text-muted-foreground/30">
+                <CloudCheck className="h-3.5 w-3.5 text-[color:var(--status-success)]/40" />
+                <span>Auto-saved at {lastSaved}</span>
               </div>
             </div>
-            {selectedCourse && courseData && (
-              <div className="flex items-center gap-2 mb-3 flex-wrap">
-                <span className="eyebrow text-foreground/60">{courseData.name}</span>
-                <span className="text-muted-foreground/20 text-xs">·</span>
-                <span className="eyebrow text-muted-foreground/50">{courseData.semester}</span>
-                <span className="text-muted-foreground/20 text-xs">·</span>
-                <span className="eyebrow text-muted-foreground/40">{courseData.code}</span>
-              </div>
-            )}
             <Progress value={progressPercent} className="h-0.5 transition-all duration-1000 ease-in-out bg-primary/10" />
           </div>
         </div>
