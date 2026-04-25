@@ -1731,7 +1731,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleScoreConfirm(point.id, state.score ?? point.aiScore)}
+                      onClick={() => handleScoreConfirm(point.id)}
                     >
                       Save
                     </Button>
