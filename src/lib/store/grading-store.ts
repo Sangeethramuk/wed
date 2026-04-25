@@ -19,6 +19,8 @@ export interface InternalNote {
   category: 'Medical Leave' | 'Academic Context' | 'Grading Decision' | 'Conduct' | 'Other';
   isFlagged: boolean;
   isOwn: boolean;
+  isSeen: boolean;
+  isEdited?: boolean;
 }
 
 export interface CriterionFeedbackState {
@@ -711,7 +713,11 @@ interface GradingState {
   updateSolutionStep: (studentId: string, criterionName: string, stepIndex: number, newText: string) => void;
   mergeInstructorNote: (studentId: string, note: string) => void;
   submitFinalFeedback: (studentId: string) => void;
+  markNotesAsSeen: (studentId: string) => void;
+  updateInternalNote: (studentId: string, noteId: string, text: string) => void;
+  deleteInternalNote: (studentId: string, noteId: string) => void;
   syncAssignments: () => void;
+  setInternalNotes: (notes: Record<string, InternalNote[]>) => void;
 }
 
 export const useGradingStore = create<GradingState>()(
@@ -722,7 +728,193 @@ export const useGradingStore = create<GradingState>()(
       phase: 'selection',
       spotCheckActive: false,
       calibration: {},
-      internalNotes: {},
+      internalNotes: {
+        'rohan': [
+          {
+            id: 'note-1',
+            author: 'Dr. Priya Mehta',
+            role: 'Secondary Grader',
+            initials: 'PM',
+            avatarColor: 'black',
+            text: 'Student has approved dyslexia accommodations. Focus on content quality over spelling/formatting as per support guidelines.',
+            timestamp: '2 hours ago',
+            category: 'Other',
+            isFlagged: false,
+            isOwn: false,
+            isSeen: false,
+          },
+          {
+            id: 'note-1-2',
+            author: 'Prof. Arjun Sharma',
+            role: 'Module Lead',
+            initials: 'AS',
+            avatarColor: 'black',
+            text: 'Student reached out regarding technical issues during submission. The 10% penalty is applied but keep the context of the hand-written supplement in mind.',
+            timestamp: '1 hour ago',
+            category: 'Other',
+            isFlagged: false,
+            isOwn: false,
+            isSeen: false,
+          }
+        ],
+        'meghna': [
+          {
+            id: 'note-2',
+            author: 'Prof. Arjun Sharma',
+            role: 'Module Lead',
+            initials: 'AS',
+            avatarColor: 'black',
+            text: 'Student submitted medical documentation for temporary hand injury. Minor handwriting inconsistency expected.',
+            timestamp: 'Yesterday',
+            category: 'Other',
+            isFlagged: false,
+            isOwn: false,
+            isSeen: false,
+          }
+        ],
+        'arjun': [
+          {
+            id: 'note-3',
+            author: 'Dr. Rohan Kapoor',
+            role: 'Course Coordinator',
+            initials: 'RK',
+            avatarColor: 'black',
+            text: 'Student received approved extension due to hospitalization. Apply late policy exemption.',
+            timestamp: '3 days ago',
+            category: 'Other',
+            isFlagged: false,
+            isOwn: false,
+            isSeen: false,
+          }
+        ],
+        'priya': [
+          {
+            id: 'note-4',
+            author: 'Dr. Vivek Thomas',
+            role: 'Accessibility Lead',
+            initials: 'VT',
+            avatarColor: 'black',
+            text: 'Student uses speech-to-text assistive tools. Sentence structure may differ from standard writing patterns.',
+            timestamp: '1 day ago',
+            category: 'Other',
+            isFlagged: false,
+            isOwn: false,
+            isSeen: false,
+          },
+          {
+            id: 'note-5',
+            author: 'Prof. Meera Gupta',
+            role: 'Module Lead',
+            initials: 'MG',
+            avatarColor: 'black',
+            text: 'Please review rubric criterion 3 carefully. Student has approved exemption for lab attendance component.',
+            timestamp: 'Today',
+            category: 'Other',
+            isFlagged: false,
+            isOwn: false,
+            isSeen: false,
+          }
+        ],
+        'AI-001': [
+          {
+            id: 'note-6',
+            author: 'Dr. Rohan Kapoor',
+            role: 'Course Coordinator',
+            initials: 'RK',
+            avatarColor: 'black',
+            text: 'Approved extension due to medical emergency. Please apply the late policy waiver for this submission.',
+            timestamp: '2 days ago',
+            category: 'Other',
+            isFlagged: false,
+            isOwn: false,
+            isSeen: false,
+          },
+          {
+            id: 'note-6-2',
+            author: 'Dr. Vivek Thomas',
+            role: 'Accessibility Lead',
+            initials: 'VT',
+            avatarColor: 'black',
+            text: 'Student uses specific screen-reading software. Some formatting in the logic flow section might be affected by export tools.',
+            timestamp: 'Yesterday',
+            category: 'Other',
+            isFlagged: false,
+            isOwn: false,
+            isSeen: false,
+          }
+        ],
+        'AI-002': [
+          {
+            id: 'note-7',
+            author: 'Dr. Vivek Thomas',
+            role: 'Accessibility Lead',
+            initials: 'VT',
+            avatarColor: 'black',
+            text: 'Student has approved extra time for reading components. Focus on core ethical framework application.',
+            timestamp: 'Yesterday',
+            category: 'Other',
+            isFlagged: false,
+            isOwn: false,
+            isSeen: false,
+          }
+        ],
+        'STU-101': [
+          {
+            id: 'note-8',
+            author: 'Prof. Arjun Sharma',
+            role: 'Module Lead',
+            initials: 'AS',
+            avatarColor: 'black',
+            text: 'Student submission includes a complex architecture pattern that deviates from the standard rubric example. Review logic flow carefully.',
+            timestamp: '3 hours ago',
+            category: 'Other',
+            isFlagged: false,
+            isOwn: false,
+            isSeen: false,
+          },
+          {
+            id: 'note-8-2',
+            author: 'Dr. Rohan Kapoor',
+            role: 'Course Coordinator',
+            initials: 'RK',
+            avatarColor: 'black',
+            text: 'Noted the deviation. I have verified the external library usage; it is approved for this cohort.',
+            timestamp: '1 hour ago',
+            category: 'Other',
+            isFlagged: false,
+            isOwn: false,
+            isSeen: false,
+          }
+        ],
+        'STU-102': [
+          {
+            id: 'note-9',
+            author: 'Dr. Priya Mehta',
+            role: 'Secondary Grader',
+            initials: 'PM',
+            avatarColor: 'black',
+            text: 'Excellent documentation. Focus on the API design section as it shows high proficiency.',
+            timestamp: 'Yesterday',
+            category: 'Other',
+            isFlagged: false,
+            isOwn: false,
+            isSeen: false,
+          },
+          {
+            id: 'note-9-2',
+            author: 'Prof. Meera Gupta',
+            role: 'Module Lead',
+            initials: 'MG',
+            avatarColor: 'black',
+            text: 'Agreed. This student is a candidate for the advanced module next semester.',
+            timestamp: 'Today',
+            category: 'Other',
+            isFlagged: false,
+            isOwn: false,
+            isSeen: false,
+          }
+        ]
+      },
       criterionFeedbacks: {},
       overallFeedback: {},
 
@@ -995,6 +1187,33 @@ export const useGradingStore = create<GradingState>()(
           },
         };
       }),
+
+      markNotesAsSeen: (studentId) => set((state) => ({
+        internalNotes: {
+          ...state.internalNotes,
+          [studentId]: (state.internalNotes[studentId] || []).map(n => ({
+            ...n,
+            isSeen: n.isOwn ? n.isSeen : true
+          }))
+        }
+      })),
+      setInternalNotes: (notes) => set({ internalNotes: notes }),
+
+      updateInternalNote: (studentId, noteId, text) => set((state) => ({
+        internalNotes: {
+          ...state.internalNotes,
+          [studentId]: (state.internalNotes[studentId] || []).map(n =>
+            n.id === noteId ? { ...n, text, isEdited: true } : n
+          )
+        }
+      })),
+
+      deleteInternalNote: (studentId, noteId) => set((state) => ({
+        internalNotes: {
+          ...state.internalNotes,
+          [studentId]: (state.internalNotes[studentId] || []).filter(n => n.id !== noteId)
+        }
+      })),
 
       syncAssignments: () => set((state) => ({
         assignments: {
