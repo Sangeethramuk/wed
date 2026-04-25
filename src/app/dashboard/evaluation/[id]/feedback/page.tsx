@@ -65,10 +65,8 @@ export default function FeedbackPage() {
   , [assignment, activeStudentId]);
 
   // Transform store data into CriterionData for the logic & sidebar
-  const confirmedCriteria: CriterionData[] | null = useMemo(() => {
-    if (!mounted || !activeStudent) {
-      return null;
-    }
+  const confirmedCriteria: CriterionData[] = useMemo(() => {
+    if (!activeStudent) return [];
     
     const storeCriteria = Object.values(activeStudent.criteria)
       .filter(c => studentCriterionFeedbacks?.[c.id])
