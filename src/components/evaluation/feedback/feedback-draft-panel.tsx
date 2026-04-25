@@ -35,13 +35,14 @@ export function FeedbackDraftPanel({
   onRefine,
   editedSections
 }: FeedbackDraftPanelProps) {
-  const sections: { key: keyof GeneratedOverallFeedback; label: string }[] = [
+  const sections = [
+    { key: 'instructorNote', label: "Instructor's Feedback" },
     { key: 'performanceSnapshot', label: 'Performance Snapshot' },
     { key: 'strengths', label: 'What Went Well' },
     { key: 'keyGaps', label: 'Improvement Focus' },
     { key: 'improvementDirection', label: 'Next Steps' },
     { key: 'closingNote', label: 'Closing Note' },
-  ];
+  ] as const;
 
   return (
     <div className="w-full bg-white px-8">

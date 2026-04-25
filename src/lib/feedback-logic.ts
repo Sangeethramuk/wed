@@ -9,7 +9,17 @@ export interface CriterionData {
   tierLabel: string;
 }
 
+export interface FeedbackDraft {
+  instructorNote: string;
+  performanceSnapshot: string;
+  whatWentWell: string[];
+  improvementFocus: string[];
+  nextSteps: string[];
+  closingNote: string;
+}
+
 export interface GeneratedOverallFeedback {
+  instructorNote: string;
   performanceSnapshot: string;
   strengths: string[];
   keyGaps: string[];
