@@ -26,6 +26,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { TriageSidebar } from "@/components/evaluation/triage-sidebar"
 import { AssignmentSubmissionsTable } from "@/components/evaluation/assignment-submissions-table"
+import { AssignmentPreviewBody } from "@/components/pre-evaluation/student-preview"
+import { usePreEvalStore } from "@/lib/store/pre-evaluation-store"
 import { motion } from "framer-motion"
 import { Empty, EmptyContent, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
 
@@ -41,6 +43,8 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
     initCalibration,
   } = useGradingStore()
   const assignment = assignments[id]
+  const previewAssignment = usePreEvalStore(s => s.assignment)
+  const previewRubric = usePreEvalStore(s => s.rubric)
   const [activeTab, setActiveTab] = useState("submissions")
   const [gradedSubmissions, setGradedSubmissions] = useState<string[]>([])
   const [cohortPublished, setCohortPublished] = useState(false)
@@ -385,17 +389,7 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
         </TabsContent>
 
         <TabsContent value="preview" className="outline-none pt-6">
-          <Empty className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.04)] py-24">
-            <EmptyContent>
-              <EmptyMedia variant="icon" className="bg-blue-50 text-[#1F4E8C] size-12">
-                <Eye className="size-6" />
-              </EmptyMedia>
-              <EmptyTitle className="text-lg font-semibold text-slate-900">No data available yet</EmptyTitle>
-              <EmptyDescription className="text-slate-500">
-                Preview the assignment as it appears to students. Coming soon in the next update.
-              </EmptyDescription>
-            </EmptyContent>
-          </Empty>
+          <AssignmentPreviewBody assignment={previewAssignment} rubric={previewRubric} />
         </TabsContent>
       </Tabs>
     </div>

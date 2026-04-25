@@ -255,6 +255,88 @@ export function StudentPreview() {
   )
 }
 
+// ─── Reusable Preview Body ────────────────────────────────────────────────────
+//
+// Renders the same Student/Instructor toggle + view that StudentPreview shows,
+// but without the back-arrow header or publish footer. Other surfaces (e.g.,
+// the Assignments detail page Preview tab) embed this directly.
+export function AssignmentPreviewBody({
+  assignment,
+  rubric,
+}: {
+  assignment: Assignment
+  rubric: MatrixCriterion[]
+}) {
+  const [viewMode, setViewMode] = useState<"student" | "instructor">("student")
+
+  const questionBlocks = assignment.blocks.filter(b => b.type === "questions") as Extract<Block, { type: "questions" }>[]
+  const deliverableBlocks = assignment.blocks.filter(b => b.type === "deliverables") as Extract<Block, { type: "deliverables" }>[]
+  const allQuestions = questionBlocks.flatMap(b => b.questions).filter(q => q.text.trim())
+  const allDeliverables = deliverableBlocks.flatMap(b => b.items).filter(i => i.name.trim())
+  const instructionBlock = assignment.blocks.find(b => b.type === "instructions") as Extract<Block, { type: "instructions" }> | undefined
+
+  const deadlineDate = assignment.deadline
+    ? new Date(assignment.deadline).toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+    : "Not set"
+  const deadlineTime = assignment.deadline
+    ? new Date(assignment.deadline).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
+    : ""
+
+  const latePolicyLabel: Record<string, string> = {
+    "no-late": "Not allowed",
+    "grace-24": "24-hour grace period",
+    "penalty-10": "10% penalty per day",
+    "penalty-20": "20% penalty per day",
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-end">
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-slate-100 border border-slate-200">
+          <Button
+            variant={viewMode === "student" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("student")}
+          >
+            <Users className="h-3 w-3" />
+            Student view
+          </Button>
+          <Button
+            variant={viewMode === "instructor" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("instructor")}
+          >
+            <GraduationCap className="h-3 w-3" />
+            Instructor view
+          </Button>
+        </div>
+      </div>
+
+      {viewMode === "student" ? (
+        <StudentView
+          assignment={assignment}
+          rubric={rubric}
+          allQuestions={allQuestions}
+          allDeliverables={allDeliverables}
+          instructionBlock={instructionBlock}
+          deadlineDate={deadlineDate}
+          deadlineTime={deadlineTime}
+          latePolicyLabel={latePolicyLabel}
+        />
+      ) : (
+        <InstructorView
+          assignment={assignment}
+          rubric={rubric}
+          allQuestions={allQuestions}
+          deadlineDate={deadlineDate}
+          deadlineTime={deadlineTime}
+          latePolicyLabel={latePolicyLabel}
+        />
+      )}
+    </div>
+  )
+}
+
 // ─── Student View ─────────────────────────────────────────────────────────────
 
 function StudentView({
