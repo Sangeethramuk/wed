@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Mic, MessageSquare } from 'lucide-react';
+import { Mic, MessageSquare, ChevronUp, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 
 interface InstructorFeedbackPanelProps {
