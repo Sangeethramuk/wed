@@ -32,10 +32,14 @@ export default function FeedbackPage() {
   const router = useRouter();
   const {
     currentAssignmentId, assignments, activeStudentId,
-    studentCriterionFeedbacks, overallFeedback,
+    criterionFeedbacks, overallFeedback,
     setOverallFeedback, updateOverallFeedbackText,
     submitFinalFeedback, setActiveStudent, syncAssignments
   } = useGradingStore();
+
+  const studentCriterionFeedbacks = useMemo(() => 
+    (activeStudentId && criterionFeedbacks[activeStudentId]) || {}
+  , [activeStudentId, criterionFeedbacks]);
 
   const [mode, setMode] = useState<'standard' | 'detailed'>('standard');
   const [isSaving, setIsSaving] = useState(false);
