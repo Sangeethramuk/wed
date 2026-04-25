@@ -14,6 +14,15 @@ interface InstructorFeedbackPanelProps {
 
 export function InstructorFeedbackPanel({ value, onChange, onVoiceClick, onFinalSubmit }: InstructorFeedbackPanelProps) {
   const isDisabled = !value.trim();
+  const [isSaved, setIsSaved] = React.useState(false);
+
+  const handleFinalSubmit = () => {
+    setIsSaved(true);
+    setTimeout(() => {
+      onFinalSubmit();
+      setIsSaved(false);
+    }, 1000);
+  };
 
   return (
     <div className="shrink-0 border-t border-slate-100 bg-white px-8 py-5 transition-all duration-300">
@@ -74,10 +83,35 @@ export function InstructorFeedbackPanel({ value, onChange, onVoiceClick, onFinal
                 Include in feedback
               </Button>
               <Button 
-                onClick={onFinalSubmit}
-                className="h-9 px-6 bg-[#1F4E8C] hover:bg-[#1E3A5F] text-white rounded-lg text-[12px] font-bold shadow-sm gap-2"
+                onClick={handleFinalSubmit}
+                disabled={isSaved}
+                className={`h-9 min-w-[160px] px-6 rounded-lg text-[12px] font-bold shadow-sm transition-all duration-300 ${
+                  isSaved ? 'bg-[#10B981] hover:bg-[#059669]' : 'bg-[#1F4E8C] hover:bg-[#1E3A5F]'
+                } text-white flex items-center justify-center gap-2`}
               >
-                Submit & Continue <ArrowRight className="w-4 h-4" />
+                <AnimatePresence mode="wait">
+                  {isSaved ? (
+                    <motion.span
+                      key="saved"
+                      initial={{ y: 10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -10, opacity: 0 }}
+                      className="flex items-center gap-2"
+                    >
+                      <CheckCircle2 className="w-4 h-4" /> Saved
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="submit"
+                      initial={{ y: 10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -10, opacity: 0 }}
+                      className="flex items-center gap-2"
+                    >
+                      Submit & Continue <ArrowRight className="w-4 h-4" />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </Button>
             </div>
           </div>
