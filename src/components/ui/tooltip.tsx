@@ -25,12 +25,12 @@ function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
 
 function TooltipTrigger({ render, ...props }: TooltipPrimitive.Trigger.Props) {
   return useRender({
-    props: mergeProps<"button">(
+    props: mergeProps(
       {
         "data-slot": "tooltip-trigger",
       } as any,
-      props
-    ),
+      props as any
+    ) as any,
     render: (renderProps) => (
       <TooltipPrimitive.Trigger {...renderProps} render={render} />
     ),
