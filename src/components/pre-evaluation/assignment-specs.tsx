@@ -201,7 +201,7 @@ export function AssignmentSpecs() {
   return (
     <TooltipProvider delay={150}>
     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-20">
-        <div className="flex items-center justify-between border-b border-border/40 pb-4 sticky top-0 z-50 bg-background/80 backdrop-blur-md -mx-4 px-4 pt-4">
+        <div className="flex items-center justify-between border-b border-border/40 pb-4 -mx-4 px-4 pt-4">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={prevStep}>
               <ArrowLeft className="h-4 w-4" />

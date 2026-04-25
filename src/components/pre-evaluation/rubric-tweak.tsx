@@ -75,7 +75,7 @@ export function RubricTweak() {
   return (
     <TooltipProvider delay={120}>
       <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 pt-6 px-4">
-        <div className="flex items-center justify-between border-b border-border/10 pb-6 sticky top-0 z-50 bg-background/80 backdrop-blur-md -mx-4 px-4 pt-4">
+        <div className="flex items-center justify-between border-b border-border/10 pb-6 -mx-4 px-4 pt-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={prevStep}>
               <ArrowLeft className="h-4 w-4" />
