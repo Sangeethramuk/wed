@@ -63,7 +63,7 @@ import { RevisionHistorySheet, RevisionEvent } from "@/components/evaluation/rev
 import { FeedbackSummaryModal } from "@/components/evaluation/feedback-summary-modal"
 import { CriterionFeedbackCard } from "@/components/evaluation/feedback/criterion-feedback-card"
 import { FeedbackGenerating } from "@/components/evaluation/feedback/feedback-generating"
-import { InternalNotesPanel } from "@/components/evaluation/feedback/internal-notes-panel"
+
 import { generateCriterionFeedback } from "@/lib/feedback-generator"
 import { useGradingStore as useFeedbackStore } from "@/lib/store/grading-store"
 
@@ -1467,8 +1467,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                   </div>
                 </ScrollArea>
 
-                {/* Internal Notes */}
-                <InternalNotesPanel />
 
                 <div className="p-4 border-t border-border bg-background shrink-0 space-y-3">
                   <div className="flex items-center justify-between">
