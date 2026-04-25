@@ -131,22 +131,9 @@ export function FeedbackDraftPanel({
                       ))}
                     </div>
                   ) : (
-                    <textarea
+                    <AutoResizingTextarea 
                       value={content as string}
-                      onChange={(e) => onUpdateSection(section.key, e.target.value)}
-                      className="w-full text-[14px] leading-relaxed text-slate-600 bg-transparent border-none p-0 resize-none focus:outline-none placeholder:text-slate-300 font-medium overflow-hidden"
-                      rows={1}
-                      onInput={(e) => {
-                        const target = e.target as HTMLTextAreaElement;
-                        target.style.height = 'auto';
-                        target.style.height = `${target.scrollHeight}px`;
-                      }}
-                      ref={(el) => {
-                        if (el) {
-                          el.style.height = 'auto';
-                          el.style.height = `${el.scrollHeight}px`;
-                        }
-                      }}
+                      onChange={(value) => onUpdateSection(section.key, value)}
                     />
                   )}
                 </div>
@@ -156,6 +143,32 @@ export function FeedbackDraftPanel({
         </div>
       </div>
     </div>
+  );
+}
+
+function AutoResizingTextarea({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const ref = React.useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.style.height = 'auto';
+      ref.current.style.height = `${ref.current.scrollHeight}px`;
+    }
+  }, [value]);
+
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full text-[14px] leading-relaxed text-slate-600 bg-transparent border-none p-0 resize-none focus:outline-none placeholder:text-slate-300 font-medium overflow-hidden"
+      rows={1}
+      onInput={(e) => {
+        const target = e.target as HTMLTextAreaElement;
+        target.style.height = 'auto';
+        target.style.height = `${target.scrollHeight}px`;
+      }}
+    />
   );
 }
 
@@ -173,15 +186,24 @@ function ActionButton({ icon: Icon, label, onClick }: { icon: any; label: string
 }
 
 function EditableItem({ text, onUpdate }: { text: string; onUpdate: (text: string) => void }) {
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [text]);
+
   return (
     <div className="flex gap-2.5 items-start group/item">
       <div className="mt-2 w-1.5 h-1.5 rounded-full bg-slate-200 shrink-0" />
       <textarea
+        ref={textareaRef}
         value={text}
         onChange={(e) => onUpdate(e.target.value)}
-        className="flex-1 text-[14px] leading-relaxed text-slate-600 bg-transparent border-none p-0 resize-none focus:outline-none placeholder:text-slate-300 font-medium"
+        className="flex-1 text-[14px] leading-relaxed text-slate-600 bg-transparent border-none p-0 resize-none focus:outline-none placeholder:text-slate-300 font-medium overflow-hidden"
         rows={1}
-        style={{ height: 'auto' }}
         onInput={(e) => {
           const target = e.target as HTMLTextAreaElement;
           target.style.height = 'auto';
