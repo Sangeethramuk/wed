@@ -65,10 +65,26 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
   if (!cal) return null
   const { papers, criteria, scores } = cal
 
+  // ── Stable Discrepancy Set ───────────────────────────────────────────────
+  // We capture the set of paper+criterion IDs that are discrepancies at mount
+  // so the list doesn't grow or shrink as items are resolved.
+  const [stableDiscIds] = useState(() => {
+    return scores
+      .filter(s => s.instructorLevel > 0 && s.delta >= 1)
+      .map(s => scoreKey(s))
+  })
+
   // ── Derived ───────────────────────────────────────────────────────────────
-  const discrepancies: CalibrationScore[] = [...scores]
-    .filter(s => s.instructorLevel > 0 && s.delta >= 1)
-    .sort((a, b) => b.delta - a.delta)
+  const discrepancies: CalibrationScore[] = stableDiscIds
+    .map(id => scores.find(s => scoreKey(s) === id)!)
+    .sort((a, b) => {
+      // Keep pending items at top, then by delta desc
+      const aPend = a.status === "pending" || a.status === "negotiating"
+      const bPend = b.status === "pending" || b.status === "negotiating"
+      if (aPend && !bPend) return -1
+      if (!aPend && bPend) return 1
+      return b.delta - a.delta
+    })
 
   // Group by paper (preserving paper order), sort criteria within each paper by delta desc
   const discrepanciesByPaper = papers
@@ -205,63 +221,75 @@ export function NegotiationDialogue({ assignmentId }: { assignmentId: string }) 
       <div className="flex-1 flex overflow-hidden">
 
         {/* ── Left: manuscript ── */}
-        <div className="w-[60%] border-r border-border/40 bg-background flex flex-col overflow-hidden">
-
+        <div className="w-[60%] border-r border-border/40 bg-muted/10 flex flex-col overflow-hidden">
           {/* Paper selector header */}
-          <div className="shrink-0 px-5 py-2.5 border-b border-border/30 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <span className="text-xs font-semibold font-mono bg-muted/50 border border-border/50 rounded px-2 py-0.5 text-muted-foreground">
-                Paper {activePaperIdx + 1}
-              </span>
-              <span className="text-xs text-muted-foreground/70">
-                {papers.length} papers
-              </span>
-            </div>
-            <div className="flex gap-1.5">
-              {papers.map((p, i) => (
-                <button
-                  key={p.paperId}
-                  onClick={() => setActivePaperIdx(i)}
-                  className={`w-7 h-7 rounded-lg border text-xs font-semibold font-mono transition-colors ${
-                    activePaperIdx === i
-                      ? "bg-foreground text-background border-foreground"
-                      : "bg-muted/20 border-border/50 text-muted-foreground hover:border-border"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
+          <div className="shrink-0 px-5 py-2 z-10 bg-background border-b border-border/30 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="eyebrow text-primary/40 font-semibold tracking-wider">Calibration Review</span>
+              <div className="h-4 w-px bg-border/40 mx-1" />
+              <div className="flex gap-1">
+                {papers.map((p, i) => (
+                  <button
+                    key={p.paperId}
+                    onClick={() => setActivePaperIdx(i)}
+                    className={`h-7 px-3 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-all ${
+                      activePaperIdx === i
+                        ? "bg-foreground text-background shadow-md translate-y-[-1px]"
+                        : "bg-background border border-border/50 text-muted-foreground/60 hover:text-foreground"
+                    }`}
+                  >
+                    Paper {i + 1}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Essay content — native scroll for reliable height */}
-          <div className="flex-1 min-h-0 overflow-y-auto">
-            <div className="px-12 py-9 pb-16">
-              <h1 className="text-xl font-bold tracking-tight leading-snug mb-1.5">
-                Student Submission
-              </h1>
-              <p className="text-xs font-mono text-muted-foreground/60 mb-7 pb-5 border-b border-border/30">
-                {papers[activePaperIdx]?.anonymizedLabel} · Submitted for review
-              </p>
-              {MOCK_SECTIONS.map(sec => {
-                const isActive = sec.id === activeCriterionId
-                return (
-                  <div key={sec.id} className="mb-7">
-                    <h2 className={`text-sm font-semibold mb-2 ${isActive ? "text-foreground" : "text-foreground/70"}`}>
-                      {sec.label}
-                    </h2>
-                    <p
-                      className={`text-sm leading-[1.85] rounded px-1.5 py-0.5 transition-colors ${
-                        isActive
-                          ? "text-foreground bg-[color:var(--status-warning-bg)] border-b-2 border-[color:var(--status-warning)]/60"
-                          : "text-muted-foreground/75"
-                      }`}
-                    >
-                      {sec.content}
-                    </p>
+          <div className="flex-1 overflow-y-auto p-10 lg:p-14">
+            <div
+              className="bg-background shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-border/50 mx-auto transition-all duration-300 relative group/page cursor-text flex flex-col"
+              style={{ width: "100%", maxWidth: "800px", minHeight: "100%" }}
+            >
+              <div className="absolute top-8 left-8 flex flex-col items-start gap-1">
+                <span className="eyebrow text-primary/40 group-hover/page:text-primary transition-colors">Digital Manuscript</span>
+                <span className="eyebrow text-[#E6E1D6] group-hover/page:text-muted-foreground/70 transition-colors">Calibration Phase</span>
+              </div>
+
+              <div className="p-16 lg:p-24 h-full font-serif overflow-hidden flex-1">
+                <div className="max-w-3xl mx-auto space-y-10">
+                  <div className="space-y-6 border-b border-border/80 pb-8">
+                    <div className="flex items-center justify-between mt-8">
+                      <h1 className="text-4xl font-serif text-foreground leading-tight italic tracking-tight underline decoration-primary/20">Software Engineering — Phase 2</h1>
+                    </div>
+                    <div className="flex items-center gap-2">
+                       <span className="text-xs text-muted-foreground/70 italic px-2 py-0.5 rounded bg-muted/40 font-sans">
+                         {papers[activePaperIdx]?.anonymizedLabel}
+                       </span>
+                       <span className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/40 font-sans">Identity Anonymized</span>
+                    </div>
                   </div>
-                )
-              })}
+
+                  <div className="space-y-12">
+                    {MOCK_SECTIONS.map((sec) => {
+                      const isActive = sec.id === activeCriterionId
+                      return (
+                        <div key={sec.id} className="relative">
+                          <h2 className="eyebrow text-primary/40 mb-3 block">{sec.label.toUpperCase()}</h2>
+                          <p
+                            className={`text-[15px] leading-[1.8] font-serif transition-all duration-500 ${
+                              isActive
+                                ? "text-foreground bg-[color:var(--status-warning-bg)] ring-8 ring-[color:var(--status-warning-bg)] rounded-sm"
+                                : "text-muted-foreground/80 hover:text-foreground/90"
+                            }`}
+                          >
+                            {sec.content}
+                          </p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
