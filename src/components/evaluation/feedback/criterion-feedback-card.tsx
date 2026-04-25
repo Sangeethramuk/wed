@@ -188,7 +188,7 @@ export function CriterionFeedbackCard({
             size="sm"
             className="h-8 px-4 bg-emerald-50 text-[#10B981] border border-[#10B981]/30 gap-2 ml-auto cursor-default hover:bg-emerald-50 rounded-full text-[11px] font-bold tracking-tight"
           >
-            <CheckCircle2 className="w-3.5 h-3.5" /> FINALIZED
+            <CheckCircle2 className="w-3.5 h-3.5" /> CONFIRMED
           </Button>
         ) : (
           <Button
