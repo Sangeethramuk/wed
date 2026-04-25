@@ -9,9 +9,10 @@ interface InstructorFeedbackPanelProps {
   value: string;
   onChange: (value: string) => void;
   onVoiceClick?: () => void;
+  onFinalSubmit?: () => void;
 }
 
-export function InstructorFeedbackPanel({ value, onChange, onVoiceClick }: InstructorFeedbackPanelProps) {
+export function InstructorFeedbackPanel({ value, onChange, onVoiceClick, onFinalSubmit }: InstructorFeedbackPanelProps) {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const isDisabled = !value.trim();
 
@@ -71,19 +72,27 @@ export function InstructorFeedbackPanel({ value, onChange, onVoiceClick }: Instr
                     Voice note
                   </Button>
 
-                  <Button 
-                    variant={isDisabled ? "secondary" : "default"}
-                    size="sm" 
-                    className={`h-8 px-4 gap-2 rounded-lg text-[11px] font-bold transition-all ${
-                      !isDisabled 
-                        ? 'bg-[#1F4E8C] text-white hover:bg-[#1E3A5F]' 
-                        : 'bg-slate-100 text-slate-400 border-none opacity-50 cursor-not-allowed'
-                    }`}
-                    onClick={() => onChange('APPEND_TO_DRAFT')}
-                    disabled={isDisabled}
-                  >
-                    Include in feedback
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant={isDisabled ? "secondary" : "default"}
+                      size="sm" 
+                      className={`h-8 px-4 gap-2 rounded-lg text-[11px] font-bold transition-all ${
+                        !isDisabled 
+                          ? 'bg-blue-50 text-[#1F4E8C] border-[#1F4E8C]/10 hover:bg-blue-100' 
+                          : 'bg-slate-100 text-slate-400 border-none opacity-50 cursor-not-allowed'
+                      }`}
+                      onClick={() => onChange('APPEND_TO_DRAFT')}
+                      disabled={isDisabled}
+                    >
+                      Include in feedback
+                    </Button>
+                    <Button 
+                      onClick={onFinalSubmit}
+                      className="h-8 px-5 bg-[#1F4E8C] hover:bg-[#1E3A5F] text-white rounded-lg text-[11px] font-bold shadow-sm gap-2"
+                    >
+                      Submit & Continue <ArrowRight className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </motion.div>

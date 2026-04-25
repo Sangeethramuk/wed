@@ -268,6 +268,7 @@ export default function FeedbackPage() {
                     setInstructorNote(val);
                   }
                 }}
+                onFinalSubmit={handleFinalSubmit}
               />
             </div>
           </div>
