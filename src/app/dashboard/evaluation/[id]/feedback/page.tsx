@@ -41,6 +41,12 @@ export default function FeedbackPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [editedSections, setEditedSections] = useState<Set<string>>(new Set());
   const [instructorNote, setInstructorNote] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  // Handle hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Sync assignments from store
   useEffect(() => {
@@ -59,8 +65,10 @@ export default function FeedbackPage() {
   , [assignment, activeStudentId]);
 
   // Transform store data into CriterionData for the logic & sidebar
-  const confirmedCriteria: CriterionData[] = useMemo(() => {
-    if (!activeStudent) return [];
+  const confirmedCriteria: CriterionData[] | null = useMemo(() => {
+    if (!mounted || !activeStudent) {
+      return null;
+    }
     
     const storeCriteria = Object.values(activeStudent.criteria)
       .filter(c => studentCriterionFeedbacks?.[c.id])
@@ -168,7 +176,7 @@ export default function FeedbackPage() {
     }, 1000);
   };
 
-  if (!assignment || !activeStudent || !feedbackDraft) {
+  if (!mounted || !assignment || !activeStudent || !feedbackDraft) {
     return (
       <div className="flex items-center justify-center h-screen bg-[#F8F9FA]">
         <div className="text-center space-y-4">
