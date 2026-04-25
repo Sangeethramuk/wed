@@ -181,7 +181,7 @@ export default function FeedbackPage() {
 
   return (
     <div className="flex flex-col h-screen bg-[#F8F9FA] font-sans select-none overflow-hidden">
-      {/* 1:1 Layout Header */}
+      {/* 1:1 Layout Header - Cleaned up */}
       <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0 z-50">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-4">
@@ -208,61 +208,82 @@ export default function FeedbackPage() {
             </div>
             <span className="text-[10px] font-bold uppercase tracking-tight text-[#F59E0B] mt-1">Satisfactory</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-8 border-slate-200 text-slate-600 gap-2 rounded-lg text-[11px] font-bold">
-               Spot check
-            </Button>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1F4E8C] to-[#3B82F6]" />
+          <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
+            {/* profile image if needed */}
           </div>
         </div>
       </header>
 
       {/* Main 3-Panel Layout */}
-      <main className="flex-1 flex overflow-hidden">
-        {/* Left Panel: Recap */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Panel: Recap (Fixed Height) */}
         <CriterionRecapSidebar criteria={confirmedCriteria} />
 
-        {/* Center Panel: Draft (Scrollable) */}
-        <FeedbackDraftPanel 
-          feedback={feedbackDraft}
-          mode={mode}
-          onModeChange={handleModeChange}
-          onUpdateSection={handleUpdateSection}
-          isSaving={isSaving}
-          onRefine={handleRefine}
-          editedSections={editedSections}
-        />
-      </main>
-
-      {/* Bottom Fixed Area: Instructor Note */}
-      <InstructorFeedbackPanel 
-        value={instructorNote}
-        onChange={setInstructorNote}
-      />
-
-      {/* Footer: Submit & Navigation */}
-      <footer className="h-20 border-t border-slate-200 bg-white flex items-center justify-between px-8 shrink-0 z-50">
-        <Button variant="ghost" size="sm" onClick={() => router.back()} className="text-[11px] font-bold text-slate-400 hover:text-[#1F4E8C] gap-2">
-          <ChevronLeft className="w-3.5 h-3.5" /> Criteria desk
-        </Button>
-        
-        <div className="flex items-center gap-6">
-          <div className="hidden sm:flex flex-col items-end">
-            <span className="text-[11px] font-bold text-[#1F4E8C] tracking-tight uppercase">State: Ready for Publication</span>
-            <span className="text-[10px] font-medium text-slate-400">Final draft cached for cohort scheduling</span>
+        {/* Right Section: Workspace */}
+        <div className="flex-1 flex flex-col overflow-hidden relative bg-white">
+          {/* Scrollable Draft Summary Area */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar scroll-smooth">
+            <FeedbackDraftPanel 
+              feedback={feedbackDraft}
+              mode={mode}
+              onModeChange={handleModeChange}
+              onUpdateSection={handleUpdateSection}
+              isSaving={isSaving}
+              onRefine={handleRefine}
+              editedSections={editedSections}
+            />
           </div>
-          
-          <div className="flex flex-col items-center">
-            <Button
-              onClick={handleFinalSubmit}
-              className="bg-[#1F4E8C] hover:bg-[#1E3A5F] text-white rounded-lg px-8 py-5 h-auto text-[13px] font-bold shadow-md transition-all active:scale-95 gap-2"
-            >
-              Submit & Continue <ArrowRight className="w-4 h-4" />
-            </Button>
-            <span className="text-[10px] font-bold text-slate-400 mt-1.5 tracking-tight uppercase">Grade next student</span>
+
+          {/* Fixed Bottom Zone: Instructor Note + Footer */}
+          <div className="shrink-0 border-t border-slate-200">
+            <InstructorFeedbackPanel 
+              value={instructorNote}
+              onChange={setInstructorNote}
+            />
+
+            {/* Footer: Submit & Navigation (Sticky) */}
+            <footer className="h-20 border-t border-slate-100 bg-white flex items-center justify-between px-8 shrink-0">
+              <Button variant="ghost" size="sm" onClick={() => router.back()} className="text-[11px] font-bold text-slate-400 hover:text-[#1F4E8C] gap-2">
+                <ChevronLeft className="w-3.5 h-3.5" /> Criteria desk
+              </Button>
+              
+              <div className="flex items-center gap-8">
+                <div className="hidden sm:flex flex-col items-end">
+                  <span className="text-[11px] font-bold text-[#1F4E8C] tracking-tight uppercase">State: Ready for Publication</span>
+                  <span className="text-[10px] font-medium text-slate-400">Final draft cached for cohort scheduling</span>
+                </div>
+                
+                <div className="flex flex-col items-center">
+                  <Button
+                    onClick={handleFinalSubmit}
+                    className="bg-[#1F4E8C] hover:bg-[#1E3A5F] text-white rounded-lg px-10 py-5 h-auto text-[14px] font-bold shadow-[0_4px_12px_rgba(31,78,140,0.2)] transition-all active:scale-95 gap-2"
+                  >
+                    Submit & Continue <ArrowRight className="w-4 h-4" />
+                  </Button>
+                  <span className="text-[10px] font-bold text-slate-400 mt-1.5 tracking-tight uppercase">Grade next student</span>
+                </div>
+              </div>
+            </footer>
           </div>
         </div>
-      </footer>
+      </div>
+
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #E2E8F0;
+          border-radius: 10px;
+          border: 2px solid white;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #CBD5E1;
+        }
+      `}</style>
     </div>
   );
 }

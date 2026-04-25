@@ -44,7 +44,7 @@ export function FeedbackDraftPanel({
   ];
 
   return (
-    <div className="flex-1 overflow-y-auto bg-white">
+    <div className="w-full bg-white">
       <div className="max-w-3xl mx-auto py-10 px-8">
         {/* Header Area */}
         <div className="flex items-center justify-between mb-8">
@@ -108,12 +108,10 @@ export function FeedbackDraftPanel({
                     )}
                   </div>
 
-                  {/* Quick AI Actions */}
+                  {/* Quick AI Actions - Cleanup as per request */}
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ActionButton icon={Type} label="Shorter" onClick={() => onRefine(section.key, 'shorter')} />
-                    <ActionButton icon={Zap} label="Specific" onClick={() => onRefine(section.key, 'specific')} />
-                    <ActionButton icon={MessageSquareText} label="Softer" onClick={() => onRefine(section.key, 'softer')} />
-                    <ActionButton icon={RotateCcw} label="Regen" onClick={() => onRefine(section.key, 'regen')} />
+                    <ActionButton icon={MessageSquareText} label="Softer Tone" onClick={() => onRefine(section.key, 'softer')} />
+                    <ActionButton icon={RotateCcw} label="Regenerate" onClick={() => onRefine(section.key, 'regen')} />
                   </div>
                 </div>
 
@@ -136,8 +134,19 @@ export function FeedbackDraftPanel({
                     <textarea
                       value={content as string}
                       onChange={(e) => onUpdateSection(section.key, e.target.value)}
-                      className="w-full text-[14px] leading-relaxed text-slate-600 bg-transparent border-none p-0 resize-none focus:outline-none placeholder:text-slate-300 font-medium min-h-[40px]"
-                      rows={Math.max(1, (content as string).split('\n').length)}
+                      className="w-full text-[14px] leading-relaxed text-slate-600 bg-transparent border-none p-0 resize-none focus:outline-none placeholder:text-slate-300 font-medium overflow-hidden"
+                      rows={1}
+                      onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = 'auto';
+                        target.style.height = `${target.scrollHeight}px`;
+                      }}
+                      ref={(el) => {
+                        if (el) {
+                          el.style.height = 'auto';
+                          el.style.height = `${el.scrollHeight}px`;
+                        }
+                      }}
                     />
                   )}
                 </div>
