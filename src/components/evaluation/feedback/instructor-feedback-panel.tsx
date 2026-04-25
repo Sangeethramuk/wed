@@ -16,9 +16,9 @@ export function InstructorFeedbackPanel({ value, onChange, onVoiceClick }: Instr
   const isDisabled = !value.trim();
 
   return (
-    <div className="shrink-0 border-t border-slate-100 bg-white px-8 py-4 transition-all duration-300">
+    <div className="shrink-0 border-t border-slate-100 bg-white px-8 py-3 transition-all duration-300">
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between mb-4 cursor-pointer group" onClick={() => setIsCollapsed(!isCollapsed)}>
+        <div className={`flex items-center justify-between cursor-pointer group ${isCollapsed ? 'mb-0' : 'mb-4'}`} onClick={() => setIsCollapsed(!isCollapsed)}>
           <div className="space-y-0.5">
             <h4 className="text-[12px] font-bold text-slate-900 tracking-tight flex items-center gap-2">
               <MessageSquare className="w-3.5 h-3.5 text-[#1F4E8C]" />
