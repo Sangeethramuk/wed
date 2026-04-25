@@ -254,11 +254,7 @@ export default function FeedbackPage() {
             />
 
             {/* Footer: Submit & Navigation (Sticky) */}
-            <footer className="h-20 border-t border-slate-100 bg-white flex items-center justify-between px-8 shrink-0">
-              <Button variant="ghost" size="sm" onClick={() => router.back()} className="text-[11px] font-bold text-slate-400 hover:text-[#1F4E8C] gap-2">
-                <ChevronLeft className="w-3.5 h-3.5" /> Criteria desk
-              </Button>
-              
+            <footer className="h-20 border-t border-slate-100 bg-white flex items-center justify-end px-8 shrink-0">
               <div className="flex items-center gap-8">
                 <div className="hidden sm:flex flex-col items-end">
                   <span className="text-[11px] font-bold text-[#1F4E8C] tracking-tight uppercase">State: Ready for Publication</span>
