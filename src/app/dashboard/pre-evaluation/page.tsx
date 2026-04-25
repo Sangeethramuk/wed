@@ -1,21 +1,22 @@
 "use client"
 
 import { usePreEvalStore } from "@/lib/store/pre-evaluation-store"
-import { CourseSelection } from "@/components/pre-evaluation/course-selection"
-import { CreationMode } from "@/components/pre-evaluation/creation-mode"
 import { AssignmentSpecs } from "@/components/pre-evaluation/assignment-specs"
+import { CreationMode } from "@/components/pre-evaluation/creation-mode"
 import { RubricTweak } from "@/components/pre-evaluation/rubric-tweak"
 import { CalibrationCheck } from "@/components/pre-evaluation/calibration-check"
 import { StudentPreview } from "@/components/pre-evaluation/student-preview"
 import { Progress } from "@/components/ui/progress"
 import { CloudCheck } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 
 import { TooltipProvider } from "@/components/ui/tooltip"
 
 export default function PreEvaluationPage() {
-  const { currentStep, lastSaved } = usePreEvalStore()
+  const { currentStep, lastSaved, creationMode, selectedHistoryId } = usePreEvalStore()
   const [mounted, setMounted] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
@@ -23,37 +24,45 @@ export default function PreEvaluationPage() {
 
   if (!mounted) return null
 
-  const progressPercent = (currentStep / 6) * 100
+  const showPicker = creationMode === "history" && !selectedHistoryId
+
+  const progressPercent = (currentStep / 4) * 100
 
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <CourseSelection />
-      case 2:
-        return <CreationMode />
-      case 3:
         return <AssignmentSpecs />
-      case 4:
+      case 2:
         return <RubricTweak />
-      case 5:
+      case 3:
         return <CalibrationCheck />
-      case 6:
+      case 4:
         return <StudentPreview />
       default:
-        return <CourseSelection />
+        return <AssignmentSpecs />
     }
   }
 
   const steps = [
-    { id: 1, label: "Choose course" },
-    { id: 2, label: "Starting point" },
-    { id: 3, label: "Assignment details" },
-    { id: 4, label: "Grading rubric" },
-    { id: 5, label: "Calibration" },
-    { id: 6, label: "Preview & publish" },
+    { id: 1, label: "Assignment details" },
+    { id: 2, label: "Grading rubric" },
+    { id: 3, label: "Calibration" },
+    { id: 4, label: "Preview & publish" },
   ]
 
   const currentStepData = steps.find(s => s.id === currentStep)
+
+  if (showPicker) {
+    return (
+      <TooltipProvider delay={100}>
+        <div className="flex flex-col min-h-[calc(100vh-8rem)] relative">
+          <div className="max-w-6xl mx-auto w-full flex-1 pb-20 px-4 pt-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <CreationMode onBack={() => router.push("/dashboard/assignments")} />
+          </div>
+        </div>
+      </TooltipProvider>
+    )
+  }
 
   return (
     <TooltipProvider delay={100}>
@@ -62,7 +71,7 @@ export default function PreEvaluationPage() {
           <div className="max-w-6xl mx-auto w-full px-4">
             <div className="flex items-center justify-between mb-4">
               <div className="eyebrow flex items-center gap-3 transition-all">
-                <span className="text-primary opacity-100 font-semibold">Step {currentStep} of 6 — {currentStepData?.label}</span>
+                <span className="text-primary opacity-100 font-semibold">Step {currentStep} of 4 — {currentStepData?.label}</span>
               </div>
               <div className="eyebrow flex items-center gap-2 text-muted-foreground/30">
                 <CloudCheck className="h-3.5 w-3.5 text-[color:var(--status-success)]/40" />

@@ -16,6 +16,7 @@ import { PlusCircle, ChevronRight, ChevronLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { statusStyles, type StatusKey } from "@/lib/design-tokens"
 import { MOCK_ASSIGNMENTS, type AssignmentStatus } from "@/lib/mock/assignments"
+import { StartAssignmentModal } from "@/components/pre-evaluation/start-assignment-modal"
 import { usePreEvalStore } from "@/lib/store/pre-evaluation-store"
 
 type Tab = "all" | "published" | "draft"
@@ -51,8 +52,9 @@ function getDaysLabel(dateStr: string, status: AssignmentStatus): { label: strin
 
 export default function AssignmentsPage() {
   const router = useRouter()
-  const { setStep } = usePreEvalStore()
   const [tab, setTab] = useState<Tab>("all")
+  const [modalOpen, setModalOpen] = useState(false)
+  const { setCourse, updateAssignment, setStep } = usePreEvalStore()
 
   const filtered = MOCK_ASSIGNMENTS.filter((a) => {
     if (tab === "all") return true
@@ -75,6 +77,8 @@ export default function AssignmentsPage() {
   ]
 
   return (
+    <>
+    <StartAssignmentModal open={modalOpen} onOpenChange={setModalOpen} />
     <div className="max-w-6xl mx-auto space-y-8 py-4 px-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
@@ -83,7 +87,7 @@ export default function AssignmentsPage() {
             Manage and track all your assignments across courses.
           </p>
         </div>
-        <Button size="lg" onClick={() => { setStep(1); router.push("/dashboard/pre-evaluation") }}>
+        <Button size="lg" onClick={() => setModalOpen(true)}>
           <PlusCircle className="h-4 w-4" />
           Start Preparing Assignment
           <ChevronRight className="h-4 w-4 opacity-60" />
@@ -132,7 +136,6 @@ export default function AssignmentsPage() {
                   <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto">Course · Code</TableHead>
                   <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 120 }}>Semester</TableHead>
                   <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 130 }}>Due Date</TableHead>
-                  <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 130 }}>Status</TableHead>
                   <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto text-center" style={{ width: 150 }}>Action</TableHead>
                 </TableRow>
               </TableHeader>
@@ -182,13 +185,6 @@ export default function AssignmentsPage() {
                         </div>
                       </TableCell>
 
-                      {/* Status pill */}
-                      <TableCell className="px-4 py-4 align-middle">
-                        <span className={cn("eyebrow px-2 py-0.5 rounded-md border", s.bg, s.text, s.border)}>
-                          {STATUS_LABEL[assignment.status]}
-                        </span>
-                      </TableCell>
-
                       {/* Action */}
                       <TableCell className="px-4 py-4 align-middle text-center">
                         {isPublished ? (
@@ -201,7 +197,12 @@ export default function AssignmentsPage() {
                           </button>
                         ) : (
                           <button
-                            onClick={() => { setStep(3); router.push("/dashboard/pre-evaluation") }}
+                            onClick={() => {
+                              setCourse(assignment.course)
+                              updateAssignment({ title: assignment.title, type: assignment.type })
+                              setStep(1)
+                              router.push("/dashboard/pre-evaluation")
+                            }}
                             className="group/btn inline-flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium border border-border/40 bg-card hover:bg-muted/30 transition-all text-foreground/70"
                           >
                             Continue
@@ -218,5 +219,6 @@ export default function AssignmentsPage() {
         )}
       </div>
     </div>
+    </>
   )
 }

@@ -24,7 +24,6 @@ import {
   ListChecks,
   Layers,
   BookOpen,
-  TrendingUp,
 } from "lucide-react"
 import {
   MOCK_HISTORY,
@@ -37,13 +36,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 const strengthClasses: Record<COStrength, string> = {
   Strong: "border-[color:var(--status-success)]/30 text-[color:var(--status-success)]/80 bg-[color:var(--status-success)]/[0.04]",
   Moderate: "border-[color:var(--status-warning)]/30 text-[color:var(--status-warning)]/80 bg-[color:var(--status-warning)]/[0.04]",
-  Weak: "border-muted-foreground/20 text-muted-foreground/60 bg-muted/20",
+  Weak: "border-muted-foreground/20 text-slate-400 bg-slate-100",
 }
 
 const strengthTextClass: Record<COStrength, string> = {
   Strong: "text-[color:var(--status-success)]",
   Moderate: "text-[color:var(--status-warning)]",
-  Weak: "text-muted-foreground/50",
+  Weak: "text-slate-400",
 }
 
 // Short, action-focused CO briefs for scanning (not the full definition)
@@ -55,20 +54,16 @@ const CO_BRIEF: Record<string, string> = {
   CO5: "Collaborative process and peer engagement are assessed",
 }
 
-export function CreationMode() {
-  const { creationMode, selectedCourse, setCreationMode, selectedHistoryId, selectHistory, nextStep, prevStep } = usePreEvalStore()
+export function CreationMode({ onBack }: { onBack?: () => void } = {}) {
+  const { creationMode, selectedCourse, setCreationMode, selectedHistoryId, selectHistory } = usePreEvalStore()
   const [previewId, setPreviewId] = useState<string | null>(null)
 
   const handleModeSelect = (mode: "history" | "scratch" | "suggestions") => {
     setCreationMode(mode)
-    if (mode === "scratch" || mode === "suggestions") {
-      nextStep()
-    }
   }
 
   const handleHistorySelect = (id: string) => {
     selectHistory(id)
-    nextStep()
   }
 
   const similarHistory = selectedCourse
@@ -87,18 +82,18 @@ export function CreationMode() {
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => creationMode ? setCreationMode(null) : prevStep()} className="gap-2 px-3 text-muted-foreground hover:text-foreground group">
+        <Button variant="ghost" size="sm" onClick={onBack ?? (() => setCreationMode(null))} className="gap-2 px-3 text-slate-500 hover:text-slate-900 group">
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="eyebrow">{creationMode ? "Back" : "Back to courses"}</span>
+          <span className="eyebrow">Back</span>
         </Button>
       </div>
 
       <div className="space-y-1">
-        <h1 className="text-4xl font-semibold tracking-tight secondary-text">
+        <h1 className="text-2xl font-semibold text-slate-900">
           {showHistoryList ? "Pick an assignment to adapt" : "How would you like to start?"}
         </h1>
         {showHistoryList && (
-          <p className="eyebrow text-base text-muted-foreground font-medium opacity-70 border-b border-border/10 pb-6">
+          <p className="eyebrow text-base text-slate-500 font-medium opacity-70 border-b border-slate-100 pb-6">
             {displayed.length} past assignments for {selectedCourse ?? "this course"} — we&apos;ll copy the structure and rubric so you can tweak.
           </p>
         )}
@@ -108,7 +103,7 @@ export function CreationMode() {
         <div className="grid gap-5 md:grid-cols-2">
           {/* Option 1 — Modify existing */}
           <Card
-            className="group cursor-pointer hover:border-primary/40 transition-all border border-border/40 bg-card p-4 flex flex-col shadow-none"
+            className="group cursor-pointer hover:border-primary/40 transition-all border border-slate-200 bg-white p-4 flex flex-col " style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
             onClick={() => handleModeSelect("history")}
           >
             <CardHeader className="pb-2">
@@ -117,8 +112,8 @@ export function CreationMode() {
                   <History className="h-6 w-6" />
                 </div>
               </div>
-              <CardTitle className="text-2xl font-semibold tracking-tight">Modify existing assignment</CardTitle>
-              <CardDescription className="text-sm font-medium leading-relaxed mt-3 opacity-70">
+              <CardTitle className="text-xl font-semibold text-slate-900">Modify existing assignment</CardTitle>
+              <CardDescription className="text-sm text-slate-500">
                 We&apos;ll show relevant assignments you can adapt — fastest way to get started.
               </CardDescription>
             </CardHeader>
@@ -126,7 +121,7 @@ export function CreationMode() {
 
           {/* Option 2 — Create new */}
           <Card
-            className="group cursor-pointer hover:border-primary/40 transition-all border border-border/40 bg-card p-4 flex flex-col shadow-none"
+            className="group cursor-pointer hover:border-primary/40 transition-all border border-slate-200 bg-white p-4 flex flex-col " style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
             onClick={() => handleModeSelect("suggestions")}
           >
             <CardHeader className="pb-2">
@@ -135,8 +130,8 @@ export function CreationMode() {
                   <Sparkles className="h-6 w-6" />
                 </div>
               </div>
-              <CardTitle className="text-2xl font-semibold tracking-tight">Create new assignment</CardTitle>
-              <CardDescription className="text-sm font-medium leading-relaxed mt-3 opacity-70">
+              <CardTitle className="text-xl font-semibold text-slate-900">Create new assignment</CardTitle>
+              <CardDescription className="text-sm text-slate-500">
                 We&apos;ll guide you step-by-step as you build — full control over every detail.
               </CardDescription>
             </CardHeader>
@@ -152,7 +147,7 @@ export function CreationMode() {
                 <h2 className="eyebrow text-primary/80">
                   Best matches · Top {bestMatches.length}
                 </h2>
-                <span className="eyebrow text-muted-foreground opacity-40">
+                <span className="eyebrow text-slate-500">
                   ranked by CO alignment &amp; past performance
                 </span>
               </div>
@@ -172,12 +167,12 @@ export function CreationMode() {
           {rest.length > 0 && (
             <section className="space-y-4">
               <div className="flex items-center gap-2">
-                <Layers className="h-3.5 w-3.5 text-muted-foreground opacity-60" />
-                <h2 className="eyebrow text-muted-foreground opacity-60">
+                <Layers className="h-3.5 w-3.5 text-slate-500" />
+                <h2 className="eyebrow text-slate-500">
                   {bestMatches.length > 0 ? "Other past assignments" : "All past assignments"}
                 </h2>
               </div>
-              <div className="flex flex-col divide-y divide-border/10 rounded-xl border border-border/30 overflow-hidden bg-card">
+              <div className="flex flex-col divide-y divide-slate-100 rounded-xl border border-slate-200 overflow-hidden bg-white">
                 {rest.map(hist => (
                   <HistoryCard
                     key={hist.id}
@@ -190,10 +185,10 @@ export function CreationMode() {
           )}
 
           {/* Fallback */}
-          <div className="flex items-center justify-between rounded-xl border border-dashed border-border/40 bg-card px-6 py-5">
+          <div className="flex items-center justify-between rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 py-5">
             <div className="space-y-1">
               <p className="text-sm font-semibold tracking-tight">Can&apos;t find a good match?</p>
-              <p className="text-xs text-muted-foreground opacity-60 font-medium">
+              <p className="text-xs text-slate-500 font-medium">
                 Skip the library and start a fresh assignment — we&apos;ll guide you step-by-step.
               </p>
             </div>
@@ -260,12 +255,12 @@ function DetailSheetContent({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <SheetHeader className="px-6 pt-6 pb-5 border-b border-border/10 shrink-0">
+      <SheetHeader className="px-6 pt-6 pb-5 border-b border-slate-100 shrink-0">
         <div className="pr-4">
           <SheetTitle className="text-xl font-semibold tracking-tight leading-snug">
             {previewed.title}
           </SheetTitle>
-          <p className="eyebrow text-muted-foreground/40 mt-1.5">
+          <p className="eyebrow text-slate-400 mt-1.5">
             {previewed.course} · {previewed.semester} · {previewed.lastUsed}
           </p>
         </div>
@@ -284,15 +279,15 @@ function DetailSheetContent({
             {/* Outcome alignment */}
             {previewed.coAlignment && previewed.coAlignment.length > 0 && (
               <div className="space-y-1.5">
-                <p className="eyebrow text-muted-foreground/50">Outcome alignment</p>
+                <p className="text-xs text-slate-400">Outcome alignment</p>
                 <div className="space-y-1">
                   {previewed.coAlignment.map(a => (
                     <div key={a.co} className="flex items-baseline gap-1 text-xs">
                       <span className={`font-bold shrink-0 ${strengthTextClass[a.strength]}`}>
                         {a.co} · {a.strength}
                       </span>
-                      <span className="text-foreground/30 shrink-0">—</span>
-                      <span className="text-foreground/55 font-medium leading-snug">
+                      <span className="text-slate-900/30 shrink-0">—</span>
+                      <span className="text-slate-500 font-medium leading-snug">
                         {CO_BRIEF[a.co] ?? CO_DEFINITIONS[a.co]}
                       </span>
                     </div>
@@ -306,13 +301,13 @@ function DetailSheetContent({
 
             {/* Student performance */}
             <div className="space-y-1">
-              <p className="eyebrow text-muted-foreground/50">Student performance</p>
-              <p className="text-xs font-semibold text-foreground/70">
+              <p className="text-xs text-slate-400">Student performance</p>
+              <p className="text-xs font-semibold text-slate-700">
                 Average score: <span className={`font-bold ${scoreColor}`}>{previewed.avgScore}%</span>
               </p>
               <div className="space-y-0.5 pt-0.5">
                 {perfLines.map((line, i) => (
-                  <p key={i} className="text-xs font-medium text-foreground/50 flex items-center gap-1.5">
+                  <p key={i} className="text-xs font-medium text-slate-900/50 flex items-center gap-1.5">
                     <span className={`h-1 w-1 rounded-full shrink-0 ${i === 0 ? "bg-foreground/30" : "bg-foreground/20"}`} />
                     {line}
                   </p>
@@ -330,15 +325,15 @@ function DetailSheetContent({
         </div>
 
         {/* Remaining sections — separated by borders */}
-        <div className="divide-y divide-border/10 border-t border-border/10">
+        <div className="divide-y divide-slate-100 border-t border-slate-100">
 
           {/* 2 — Instructions */}
           {previewed.instructionsPreview && (
             <div className="px-6 py-4 space-y-2">
-              <p className="eyebrow flex items-center gap-1.5 text-muted-foreground/40">
+              <p className="eyebrow flex items-center gap-1.5 text-slate-400">
                 <FileText className="h-3 w-3" /> Instructions
               </p>
-              <p className={`text-sm leading-relaxed text-foreground/70 font-medium ${expandInstructions ? "" : "line-clamp-3"}`}>
+              <p className={`text-sm leading-relaxed text-slate-700 font-medium ${expandInstructions ? "" : "line-clamp-3"}`}>
                 {previewed.instructionsPreview}
               </p>
               <button
@@ -353,13 +348,13 @@ function DetailSheetContent({
           {/* 3 — What to do (Tasks) */}
           {tasks.length > 0 && (
             <div className="px-6 py-4 space-y-3">
-              <p className="eyebrow flex items-center gap-1.5 text-muted-foreground/40">
+              <p className="eyebrow flex items-center gap-1.5 text-slate-400">
                 <ListChecks className="h-3 w-3" /> What to do
               </p>
               <ol className="space-y-2.5">
                 {visibleTasks.map((q, i) => (
-                  <li key={i} className="flex gap-3 text-sm leading-relaxed text-foreground/70 font-medium">
-                    <span className="eyebrow text-muted-foreground/30 shrink-0 tabular-nums w-5">{i + 1}</span>
+                  <li key={i} className="flex gap-3 text-sm leading-relaxed text-slate-700 font-medium">
+                    <span className="eyebrow text-slate-400 shrink-0 tabular-nums w-5">{i + 1}</span>
                     <span>{q}</span>
                   </li>
                 ))}
@@ -378,12 +373,12 @@ function DetailSheetContent({
           {/* 4 — What to submit (Deliverables) */}
           {deliverables.length > 0 && (
             <div className="px-6 py-4 space-y-3">
-              <p className="eyebrow flex items-center gap-1.5 text-muted-foreground/40">
+              <p className="eyebrow flex items-center gap-1.5 text-slate-400">
                 <BookOpen className="h-3 w-3" /> What to submit
               </p>
               <ul className="space-y-2">
                 {visibleDeliverables.map((d, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-sm font-medium text-foreground/70 leading-relaxed">
+                  <li key={i} className="flex items-start gap-2.5 text-sm font-medium text-slate-700 leading-relaxed">
                     <span className="mt-2 h-1 w-1 rounded-full bg-muted-foreground/40 shrink-0" />
                     {d}
                   </li>
@@ -403,12 +398,12 @@ function DetailSheetContent({
           {/* 5 — How it will be graded (Rubric) */}
           {previewed.rubricSummary && previewed.rubricSummary.length > 0 && (
             <div className="px-6 py-4 space-y-3">
-              <p className="eyebrow flex items-center gap-1.5 text-muted-foreground/40">
+              <p className="eyebrow flex items-center gap-1.5 text-slate-400">
                 <Target className="h-3 w-3" /> How it will be graded
               </p>
               <ul className="space-y-1.5">
                 {previewed.rubricSummary.map((r, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm font-semibold text-foreground/70">
+                  <li key={i} className="flex items-center gap-2 text-sm font-semibold text-slate-700">
                     <CheckCircle2 className="h-3.5 w-3.5 text-[color:var(--status-success)]/60 shrink-0" />
                     {r}
                   </li>
@@ -421,7 +416,7 @@ function DetailSheetContent({
       </div>{/* end scrollable body */}
 
       {/* Sticky footer */}
-      <div className="shrink-0 border-t border-border/20 bg-background px-6 py-4 flex justify-end">
+      <div className="shrink-0 border-t border-slate-200 bg-white px-6 py-4 flex justify-end">
         <button
           onClick={onUse}
           className="group/btn inline-flex items-center gap-2 whitespace-nowrap px-6 py-2.5 rounded-lg text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 transition-all shadow-sm"
@@ -442,13 +437,13 @@ function HistoryCard({
   onDetails: () => void
 }) {
   return (
-    <div className="group flex items-center gap-6 px-5 py-4 rounded-xl border border-border/30 bg-card hover:border-primary/30 transition-colors shadow-none">
+    <div className="group flex items-center gap-6 px-5 py-4 rounded-xl border border-slate-200 bg-white hover:border-primary/30 transition-colors " style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
       {/* Left: all info */}
       <div className="flex-1 min-w-0 space-y-2">
-        <p className="text-sm font-semibold tracking-tight text-foreground leading-snug line-clamp-1">
+        <p className="text-sm font-semibold tracking-tight text-slate-900 leading-snug line-clamp-1">
           {hist.title}
         </p>
-        <p className="eyebrow text-muted-foreground/40">
+        <p className="text-xs text-slate-400">
           Average Student Performance: <span className="text-[color:var(--status-warning)] font-bold">{hist.avgScore}%</span>
         </p>
         {hist.coAlignment && hist.coAlignment.length > 0 && (
