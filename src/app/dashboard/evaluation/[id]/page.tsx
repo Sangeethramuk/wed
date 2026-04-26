@@ -126,9 +126,32 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
 
   // Stats per EDUCAITORS_DS_GUIDE.md: hex accents, number takes the accent,
   // icon sits in a soft-tinted square of the same hue, slate-400 label.
+  // When the cohort has been marked ready (demo trigger or full grading
+  // session), the "To Grade" card flips to a green "Ready to Release"
+  // card and the Submissions card picks up an "All graded" subtext.
+  const isCohortReady = !!cohortReadyForRelease[id]
   const stats: { label: string; value: string; subtext?: string; icon: typeof Users; accent: string }[] = [
-    { label: "Submissions", value: "42 / 50 Submitted", icon: Users, accent: "#1F4E8C" },
-    { label: "To Grade", value: "14 Remaining", icon: Clock, accent: "#F59E0B" },
+    {
+      label: "Submissions",
+      value: "42 / 50 Submitted",
+      subtext: isCohortReady ? "All graded · ready to publish" : undefined,
+      icon: Users,
+      accent: "#1F4E8C",
+    },
+    isCohortReady
+      ? {
+          label: "Ready to Release",
+          value: "42 / 42",
+          subtext: "Awaiting publish",
+          icon: CheckCircle2,
+          accent: "#10B981",
+        }
+      : {
+          label: "To Grade",
+          value: "14 Remaining",
+          icon: Clock,
+          accent: "#F59E0B",
+        },
   ]
 
   const handleStudentSelect = (studentId: string) => {
