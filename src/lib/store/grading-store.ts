@@ -1455,9 +1455,9 @@ export const useGradingStore = create<GradingState>()(
         }
       })),
     }),
-    { 
+    {
       name: 'grading-hub-storage',
-      version: 3 // Bumped for structural change
+      version: 4 // Bumped: added MBA-BCA-01 to DEFAULT_ASSIGNMENTS
     }
   )
 );
