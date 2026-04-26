@@ -1457,7 +1457,7 @@ export const useGradingStore = create<GradingState>()(
     }),
     {
       name: 'grading-hub-storage',
-      version: 5 // Bumped: MBA-BCA-01 cohort surfaced in submissions table
+      version: 6 // Bumped: MBA-BCA-01 cohort starts ungraded
     }
   )
 );
