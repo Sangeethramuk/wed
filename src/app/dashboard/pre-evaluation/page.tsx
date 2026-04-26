@@ -57,7 +57,7 @@ export default function PreEvaluationPage() {
       <TooltipProvider delay={100}>
         <div className="flex flex-col min-h-[calc(100vh-8rem)] relative">
           <div className="max-w-6xl mx-auto w-full flex-1 pb-20 px-4 pt-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <CreationMode onBack={() => router.push("/dashboard/assignments")} />
+            <CreationMode onBack={() => router.push("/dashboard/evaluation")} />
           </div>
         </div>
       </TooltipProvider>

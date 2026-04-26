@@ -205,7 +205,7 @@ export function AssignmentSpecs() {
     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-20">
         <div className="flex items-center justify-between border-b border-slate-200 pb-4 -mx-4 px-4 pt-4">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/assignments")}>
+            <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/evaluation")}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="space-y-0">
