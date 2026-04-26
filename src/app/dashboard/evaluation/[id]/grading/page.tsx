@@ -21,7 +21,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   CriterionStatusTag,
-  ESCALATION_DISMISS_THRESHOLD,
+  FAST_CONFIRM_MS,
   FloatingNudgeStack,
   type SessionTelemetry,
   deriveNudges,
@@ -444,6 +444,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   // cohort-level Publish action on the submissions-list page can read it too.
   // Ticked by dismissNudgeA / dismissNudgeB / dismissNudgeC below.
   const { ignoredCount: ignoredNudgeCount } = progressiveNudges
+  const lastBlockedItemId = useRef<string | null>(null)
 
   // Telemetry mutators — each corresponds to one observable instructor action.
   const markCriterionOpened = (criterionId: string) => {
@@ -564,7 +565,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
 
   const totalMaxPoints = rubricPoints.reduce((sum, p) => sum + p.maxPoints, 0)
   const currentTotalScore = calculateTotalScore()  
-  const handleScoreConfirm = (id: string) => {
+  const handleScoreConfirm = (id: string, targetIdx?: number) => {
     const point = rubricPoints.find(p => p.id === id)
     if (!point) return
 
@@ -582,7 +583,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
       } 
     }))
     
-    markCriterionConfirmed(id, { overridden: isOverridden })
+    markCriterionConfirmed(id, { overridden: isOverridden, reasoning: state?.instructorReasoning })
     
     addRevisionEvent({
       type: 'score_confirmed',
@@ -591,9 +592,41 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
       details: { newScore: finalScore }
     })
 
-    const nextIndex = rubricPoints.findIndex(p => p.id === id) + 1
-    if (nextIndex < rubricPoints.length) {
-      setActiveRubricCriterionIdx(nextIndex)
+    // Nudge navigation gate logic:
+    // If confirmation triggers a nudge (A or B), we stay on the current criterion 
+    // so the instructor sees and addresses the nudge immediately.
+    
+    // Nudge A check: 2+ confirmed and scroll < 75%
+    const confirmedCount = rubricPoints.filter(p => p.id === id || criterionState[p.id]?.confirmed).length
+    const maxScroll = sessionTelemetry.maxScrollByStudent[selectedSubmission] ?? 0
+    const willTriggerA = confirmedCount >= 2 && maxScroll < 0.75
+    
+    // Nudge B check: confirmed in < 8s with no evidence/override
+    const t = sessionTelemetry.byCriterion[telemetryKey(selectedSubmission, id)]
+    const duration = t?.openedAt ? Date.now() - t.openedAt : 0
+    const evidenceOpens = t?.evidenceOpens ?? 0
+    const willTriggerB = !isOverridden && evidenceOpens === 0 && duration < FAST_CONFIRM_MS
+
+    // Soft navigation gate: 
+    // If a nudge triggers, we block navigation exactly ONCE to ensure the instructor
+    // sees the message. If they click again on the same item, we let them proceed.
+    if ((willTriggerA || willTriggerB) && lastBlockedItemId.current !== id) {
+      lastBlockedItemId.current = id
+      return
+    }
+    
+    lastBlockedItemId.current = null
+
+    const currentIdx = rubricPoints.findIndex(p => p.id === id)
+    const nextIdx = targetIdx !== undefined ? targetIdx : currentIdx + 1
+
+    if (nextIdx >= 0 && nextIdx < rubricPoints.length) {
+      setActiveRubricCriterionIdx(nextIdx)
+      markCriterionOpened(rubricPoints[nextIdx].id)
+    } else if (nextIdx >= rubricPoints.length) {
+      // If confirmed last one and no nudges, proceed to summary
+      const allDone = rubricPoints.every(p => p.id === id || criterionState[p.id]?.confirmed)
+      if (allDone) router.push(`/dashboard/evaluation/${id}/feedback`)
     }
   }
 
@@ -619,10 +652,11 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
           ...prev[criterionId], 
           score: proposedScore, 
           isOverridden: false, 
-          confirmed: false 
+          confirmed: true 
         } 
       }))
       setActiveOverrideId(null)
+      markCriterionConfirmed(criterionId, { overridden: false })
       return
     }
     const direction = proposedScore > aiScore ? 'increase' : 'decrease'
@@ -659,10 +693,12 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
         ...prev[criterionId], 
         score: draft.proposedScore, 
         isOverridden: true, 
-        confirmed: false, // Wait for final confirm
+        confirmed: true,
         instructorReasoning: draft.scoreReasoning 
       }
     }))
+    
+    markCriterionConfirmed(criterionId, { overridden: true, reasoning: draft.scoreReasoning })
     
     // Trigger feedback generation for the new score
     handleAutoRefreshFeedback(criterionId, rubricPoints.find(p => p.id === criterionId)?.label || '', draft.proposedScore)
@@ -860,6 +896,9 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   useEffect(() => {
     const activeId = rubricPoints[activeRubricCriterionIdx]?.id
     if (activeId) markCriterionOpened(activeId)
+    // Clear the navigation gate state whenever we successfully move to a new item
+    // or student, so nudges can trigger for the next one.
+    lastBlockedItemId.current = null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSubmission, activeRubricCriterionIdx])
 
@@ -1407,27 +1446,25 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                     {rubricPoints.map((p, idx) => {
                       const done = !!criterionState[p.id]?.confirmed
                       const active = idx === activeRubricCriterionIdx
-                      const lowConfidence = (p.aiConfidence ?? 1) < LOW_CONFIDENCE_THRESHOLD
                       return (
-                        <Button key={p.id} variant="ghost" size="sm" onClick={() => { setActiveRubricCriterionIdx(idx); markCriterionOpened(p.id) }} className="flex-1 h-auto flex-col gap-1 py-1 relative">
+                        <Button key={p.id} variant="ghost" size="sm" onClick={() => { 
+                          if (idx === activeRubricCriterionIdx) return
+                          handleScoreConfirm(rubricPoints[activeRubricCriterionIdx].id, idx)
+                        }} className="flex-1 h-auto flex-col gap-1 py-1 relative">
                           <div className="relative">
-                            <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
-                              done ? 'bg-foreground border-foreground' :
-                              active ? 'border-[color:var(--category-2)]/30 bg-background' :
+                            <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-all ${
+                              done ? 'bg-[color:var(--status-success)] border-[color:var(--status-success)]' :
+                              active ? 'border-primary bg-background' :
                               'border-border bg-background'
                             }`}>
-                              {active && !done && <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--category-2)]" />}
+                              {done ? (
+                                <CheckCircle2 className="h-2.5 w-2.5 text-white stroke-[3px]" />
+                              ) : active ? (
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                              ) : null}
                             </div>
-                            {lowConfidence && !done ? (
-                              <Tooltip>
-                                <TooltipTrigger render={<span className="absolute -top-2 -right-2 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background" />}>
-                                  <AlertTriangle className="h-3 w-3 text-[color:var(--status-warning)]" />
-                                </TooltipTrigger>
-                                <TooltipContent>AI confidence is low for this criterion — please review.</TooltipContent>
-                              </Tooltip>
-                            ) : null}
                           </div>
-                          <span className={`text-xs font-bold transition-colors ${active ? 'text-foreground' : 'text-muted-foreground/50'}`}>C{p.id}</span>
+                          <span className={`text-xs font-bold transition-colors ${active ? 'text-foreground' : 'text-muted-foreground/50'}`}>{p.id}</span>
                         </Button>
                       )
                     })}
@@ -1452,7 +1489,6 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                           )}
                           <div className="flex items-start justify-between gap-2 pr-2">
                             <h3 className="text-sm font-bold text-foreground leading-tight">{point.label}</h3>
-                            <CriterionStatusTag tag={deriveTag(sessionTelemetry.byCriterion[telemetryKey(selectedSubmission, point.id)])} />
                           </div>
                         </div>
 
@@ -1759,30 +1795,18 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                     >
                       Previous
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleScoreConfirm(point.id)}
-                    >
-                      Save
-                    </Button>
                     {isLastCriterion ? (
                       <Button
                         size="sm"
-                        disabled={!allConfirmed}
-                        onClick={() => {
-                          if (allConfirmed) {
-                            router.push(`/dashboard/evaluation/${id}/feedback`)
-                          }
-                        }}
+                        onClick={() => handleScoreConfirm(point.id, rubricPoints.length)}
                         className="flex-1"
                       >
-                        {allConfirmed ? 'Overall feedback →' : `· ${rubricPoints.length - confirmedCount} remaining`}
+                        {allConfirmed || !!criterionState[point.id]?.confirmed ? 'Overall feedback →' : 'Confirm & Review Summary'}
                       </Button>
                     ) : (
                       <Button
                         size="sm"
-                        onClick={() => setActiveRubricCriterionIdx(i => i + 1)}
+                        onClick={() => handleScoreConfirm(point.id)}
                         className="flex-1"
                       >
                         Next criterion
@@ -1849,7 +1873,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <LinkIcon className="h-3.5 w-3.5 text-[color:var(--status-info)]" />
-                    <span className="eyebrow text-[color:var(--status-info)]">Link to C{activeCriterion.id}</span>
+                    <span className="eyebrow text-[color:var(--status-info)]">Link to {activeCriterion.id}</span>
                   </div>
                   <span className="text-xs font-semibold text-[color:var(--status-info)] tabular-nums">Folio {currentPage}</span>
                 </div>
@@ -1859,7 +1883,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                   </p>
                 </div>
                 <p className="text-xs text-muted-foreground/60">
-                  Link this text as evidence for <span className="font-bold text-[color:var(--status-info)]">C{activeCriterion.id} — {activeCriterion.label}</span>?
+                  Link this text as evidence for <span className="font-bold text-[color:var(--status-info)]">{activeCriterion.id} — {activeCriterion.label}</span>?
                 </p>
                 <div className="flex gap-2">
                   <Button
