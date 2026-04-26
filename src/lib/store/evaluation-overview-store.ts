@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export type AssignmentType = 'Project' | 'MCQ' | 'Essay' | 'Lab Record' | 'Case Study' | 'Viva';
-export type GradingStatus = 'pending_calibration' | 'in_grading' | 'complete';
+export type GradingStatus = 'pending_calibration' | 'in_grading' | 'complete' | 'released';
 export type CalibrationState = 'not_started' | 'in_progress' | 'complete';
 
 export interface EvaluationAssignment {
@@ -60,7 +60,7 @@ const MOCK_ASSIGNMENTS: EvaluationAssignment[] = [
     integrityFlags: 0,
     calibrationStatus: 100,
     calibrationState: 'complete',
-    gradingStatus: 'complete',
+    gradingStatus: 'released',
     dueDate: 'Mar 15, 2026',
     lastActivity: '3d ago',
   },
@@ -159,7 +159,7 @@ const MOCK_ASSIGNMENTS: EvaluationAssignment[] = [
     integrityFlags: 0,
     calibrationStatus: 100,
     calibrationState: 'complete',
-    gradingStatus: 'complete',
+    gradingStatus: 'released',
     dueDate: 'Mar 30, 2026',
     lastActivity: '1w ago',
   },
@@ -223,7 +223,9 @@ export const useEvaluationOverviewStore = create<EvaluationOverviewState>()((set
       total: assignments.length,
       pendingCalibration: assignments.filter(a => a.calibrationState !== 'complete').length,
       inGrading: assignments.filter(a => a.gradingStatus === 'in_grading').length,
-      complete: assignments.filter(a => a.gradingStatus === 'complete').length,
+      complete: assignments.filter(
+        a => a.gradingStatus === 'complete' || a.gradingStatus === 'released',
+      ).length,
     };
   },
 
