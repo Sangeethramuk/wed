@@ -410,6 +410,14 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   })
 
   const currentStudent = allSubmissions.find(s => s.id === selectedSubmission)
+  // Fallback name resolution: when selectedSubmission was sourced from
+  // the assignment's actual students list (ids don't match the synthetic
+  // STU-* allSubmissions), we still want a real name in the header
+  // instead of "Evaluating...".
+  const studentDisplayName =
+    currentStudent?.name
+    ?? assignment?.students.find(s => s.id === selectedSubmission)?.name
+    ?? "Evaluating..."
 
   const LOW_CONFIDENCE_THRESHOLD = 0.7
   const rubricPoints = [
@@ -1170,7 +1178,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                   <div className="flex flex-col">
                     <span className="eyebrow text-primary/60 mb-0.5">Authoring Identity</span>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-sm font-semibold tracking-tight text-foreground">{currentStudent?.name || "Evaluating..."}</h2>
+                      <h2 className="text-sm font-semibold tracking-tight text-foreground">{studentDisplayName}</h2>
                       {currentStudent && !currentStudent.checkpoints.timeline ? (
                         <Badge
                           variant="outline"
