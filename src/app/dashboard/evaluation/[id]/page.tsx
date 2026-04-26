@@ -2,7 +2,6 @@
 
 import { use, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { toast } from "sonner"
 import { useGradingStore } from "@/lib/store/grading-store"
 import { useEvaluationOverviewStore } from "@/lib/store/evaluation-overview-store"
 import { ESCALATION_DISMISS_THRESHOLD } from "@/components/evaluation/progressive-nudges"
@@ -51,7 +50,7 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
   const previewRubric = usePreEvalStore(s => s.rubric)
   const [activeTab, setActiveTab] = useState("submissions")
   const [gradedSubmissions, setGradedSubmissions] = useState<string[]>([])
-  const [cohortPublished, setCohortPublished] = useState(false)
+  const [cohortPublished] = useState(false)
 
   /**
    * Cohort-level publish — the LEVEL-3 failsafe gate.
@@ -70,11 +69,10 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
       triggerSpotCheck()
       return
     }
-    setCohortPublished(true)
-    toast.success("Cohort grades published", {
-      description: `All 60 submissions for ${assignment?.title ?? "this assignment"} finalized.`,
-      duration: 4000,
-    })
+    // Once every submission has been finalized, the cohort Publish CTA
+    // routes the instructor into the dedicated publish flow (release
+    // timing, appeal rules, etc.) rather than firing the toast inline.
+    router.push(`/dashboard/evaluation/publish?id=${id}`)
   }
 
   // The Triage overview store is the source of truth for whether a row's

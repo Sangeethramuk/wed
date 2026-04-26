@@ -333,6 +333,10 @@ export type DemoControls = {
   onShowNegotiation?: () => void
   /** Trigger the final \"Updating Calibration\" loading modal. */
   onShowCalibrationComplete?: () => void
+  // ── Publish flow demo ─────────────────────────────────────────────────
+  /** Mark every submission ready so the cohort Publish grades CTA
+   *  activates on the assignment detail page. */
+  onMarkAllReadyToPublish?: () => void
 }
 
 /**
@@ -345,6 +349,7 @@ export function DemoControlPanel(ctrl: DemoControls) {
   const hasNudges = ctrl.onTriggerA || ctrl.onTriggerB || ctrl.onTriggerC
   const hasCalibration =
     ctrl.onShowDeltaReview || ctrl.onShowNegotiation || ctrl.onShowCalibrationComplete
+  const hasPublish = !!ctrl.onMarkAllReadyToPublish
 
   return (
     <div className="fixed bottom-6 right-6 z-[100]">
@@ -455,6 +460,22 @@ export function DemoControlPanel(ctrl: DemoControls) {
               >
                 <AlertTriangle className="h-3.5 w-3.5 text-[color:var(--status-error)]" />
                 Simulate low-engagement publish
+              </Button>
+            </>
+          )}
+
+          {hasPublish && (
+            <>
+              <Separator className="my-1" />
+              <p className="eyebrow text-muted-foreground px-2 py-1">Publish flow</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 font-normal"
+                onClick={ctrl.onMarkAllReadyToPublish}
+              >
+                <Play className="h-3.5 w-3.5 text-[color:var(--status-success)]" />
+                Mark all submissions ready
               </Button>
             </>
           )}

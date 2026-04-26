@@ -26,6 +26,7 @@ export function GlobalDemoControl() {
     setCalibrationPhase,
     initCalibration,
     resolveAllCalibrationScores,
+    markAllSubmissionsReady,
     incrementIgnoredNudge,
     markSpotCheckAutoFired,
     resetProgressiveNudges,
@@ -63,6 +64,14 @@ export function GlobalDemoControl() {
         // Resolve everything after navigation so NegotiationDialogue's
         // useEffect picks it up and fires the loading modal.
         setTimeout(() => resolveAllCalibrationScores(DEMO_CALIBRATION_ID), 250)
+      }}
+      // ── Publish flow ───────────────────────────────────────────────────
+      onMarkAllReadyToPublish={() => {
+        // OS-LAB-03 already has calibration complete + grading in
+        // progress, so it's the cleanest target for showing the Publish
+        // grades CTA flip from disabled -> enabled.
+        markAllSubmissionsReady(DEMO_GRADING_ID)
+        router.push(`/dashboard/evaluation/${DEMO_GRADING_ID}`)
       }}
       // ── Progressive nudges ─────────────────────────────────────────────
       // Routed through query params so the grading-page's local state can

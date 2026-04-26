@@ -702,6 +702,9 @@ interface GradingState {
   /** Demo helper: marks every score as resolved so the negotiation page's
    *  completion modal fires immediately. */
   resolveAllCalibrationScores: (assignmentId: string) => void;
+  /** Demo helper: stamps every student's overall feedback as submitted so
+   *  the cohort Publish grades CTA activates without grading through. */
+  markAllSubmissionsReady: (assignmentId: string) => void;
 
   // Feedback & Notes State
   internalNotes: Record<string, InternalNote[]>; // studentId -> notes
@@ -1091,6 +1094,26 @@ export const useGradingStore = create<GradingState>()(
             [assignmentId]: { ...cal, scores },
           },
         };
+      }),
+
+      markAllSubmissionsReady: (assignmentId) => set((state) => {
+        const a = state.assignments[assignmentId];
+        if (!a) return state;
+        const overallFeedback = { ...state.overallFeedback };
+        for (const s of a.students) {
+          const existing = overallFeedback[s.id];
+          overallFeedback[s.id] = existing
+            ? { ...existing, isSubmitted: true }
+            : {
+                studentId: s.id,
+                documentText: '',
+                originalDocumentText: '',
+                instructorNote: '',
+                authorship: 'ai_generated',
+                isSubmitted: true,
+              };
+        }
+        return { overallFeedback };
       }),
 
       // --- Feedback Actions ---
