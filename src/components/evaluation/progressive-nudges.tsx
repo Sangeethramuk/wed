@@ -27,7 +27,6 @@ import {
   CheckCircle2,
   Clock,
   EyeOff,
-  Play,
   RotateCcw,
   ScanSearch,
   Sparkles,
@@ -37,7 +36,6 @@ import { AnimatePresence, motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Separator } from "@/components/ui/separator"
 
 // ---------- Telemetry types ----------
 
@@ -350,6 +348,9 @@ export function DemoControlPanel(ctrl: DemoControls) {
   const hasCalibration =
     ctrl.onShowDeltaReview || ctrl.onShowNegotiation || ctrl.onShowCalibrationComplete
   const hasPublish = !!ctrl.onMarkAllReadyToPublish
+  const hasFinalization = !!ctrl.onSimulateEscalation
+  const hasSpotCheck = !!ctrl.onOpenSpotCheck
+  const hasReset = !!ctrl.onResetTelemetry
 
   return (
     <div className="fixed bottom-6 right-6 z-[100]">
@@ -360,159 +361,171 @@ export function DemoControlPanel(ctrl: DemoControls) {
           <Sparkles className="h-4 w-4" />
           Demo
         </PopoverTrigger>
-        <PopoverContent side="top" align="end" className="w-64 p-2">
-          <div className="px-2 py-1.5">
+        <PopoverContent
+          side="top"
+          align="end"
+          className="w-[340px] p-0 overflow-hidden"
+        >
+          {/* Header */}
+          <div className="px-3 py-2 border-b border-border/40">
             <p className="text-xs font-semibold text-foreground">Demo controls</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Trigger every flow without grading a full session.
+            <p className="text-[10px] text-muted-foreground/80 mt-0.5">
+              Shortcuts to every flow — no full session needed.
             </p>
           </div>
 
-          {hasCalibration && (
-            <>
-              <Separator className="my-1" />
-              <p className="eyebrow text-muted-foreground px-2 py-1">Calibration flow</p>
-              {ctrl.onShowDeltaReview && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start gap-2 font-normal"
-                  onClick={ctrl.onShowDeltaReview}
-                >
-                  <Play className="h-3.5 w-3.5 text-[color:var(--status-info)]" />
-                  Show delta review
-                </Button>
-              )}
-              {ctrl.onShowNegotiation && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start gap-2 font-normal"
-                  onClick={ctrl.onShowNegotiation}
-                >
-                  <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
-                  Show resolve differences
-                </Button>
-              )}
-              {ctrl.onShowCalibrationComplete && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start gap-2 font-normal"
-                  onClick={ctrl.onShowCalibrationComplete}
-                >
-                  <Play className="h-3.5 w-3.5 text-[color:var(--status-success)]" />
-                  Show completion modal
-                </Button>
-              )}
-            </>
-          )}
+          {/* Scrollable body — sections in a 2-col grid */}
+          <div className="max-h-[70vh] overflow-y-auto p-2 space-y-2">
+            {hasCalibration && (
+              <DemoSection title="Calibration flow">
+                {ctrl.onShowDeltaReview && (
+                  <DemoBtn
+                    label="Delta review"
+                    onClick={ctrl.onShowDeltaReview}
+                    color="var(--status-info)"
+                  />
+                )}
+                {ctrl.onShowNegotiation && (
+                  <DemoBtn
+                    label="Resolve diffs"
+                    onClick={ctrl.onShowNegotiation}
+                    color="var(--status-warning)"
+                  />
+                )}
+                {ctrl.onShowCalibrationComplete && (
+                  <DemoBtn
+                    label="Completion"
+                    onClick={ctrl.onShowCalibrationComplete}
+                    color="var(--status-success)"
+                  />
+                )}
+              </DemoSection>
+            )}
 
-          {hasNudges && (
-            <>
-              <Separator className="my-1" />
-              <p className="eyebrow text-muted-foreground px-2 py-1">Progressive nudges</p>
-              {ctrl.onTriggerA && (
+            {hasNudges && (
+              <DemoSection title="Progressive nudges">
+                {ctrl.onTriggerA && (
+                  <DemoBtn
+                    label="Nudge A"
+                    sub="scroll"
+                    onClick={ctrl.onTriggerA}
+                    color="var(--status-info)"
+                  />
+                )}
+                {ctrl.onTriggerB && (
+                  <DemoBtn
+                    label="Nudge B"
+                    sub="fast confirm"
+                    onClick={ctrl.onTriggerB}
+                    color="var(--status-warning)"
+                  />
+                )}
+                {ctrl.onTriggerC && (
+                  <DemoBtn
+                    label="Nudge C"
+                    sub="streak"
+                    onClick={ctrl.onTriggerC}
+                    color="var(--status-warning)"
+                  />
+                )}
+              </DemoSection>
+            )}
+
+            {hasPublish && (
+              <DemoSection title="Publish">
+                {ctrl.onMarkAllReadyToPublish && (
+                  <DemoBtn
+                    label="Mark all submissions ready"
+                    onClick={ctrl.onMarkAllReadyToPublish}
+                    color="var(--status-success)"
+                    full
+                  />
+                )}
+              </DemoSection>
+            )}
+
+            {(hasFinalization || hasSpotCheck) && (
+              <DemoSection title="Gates">
+                {hasFinalization && (
+                  <DemoBtn
+                    icon={<AlertTriangle className="h-3 w-3 text-[color:var(--status-error)]" />}
+                    label="Low-engagement"
+                    onClick={ctrl.onSimulateEscalation!}
+                    color="var(--status-error)"
+                  />
+                )}
+                {hasSpotCheck && (
+                  <DemoBtn
+                    icon={<ScanSearch className="h-3 w-3 text-primary" />}
+                    label="Spot-check"
+                    onClick={ctrl.onOpenSpotCheck!}
+                    color="var(--primary)"
+                  />
+                )}
+              </DemoSection>
+            )}
+
+            {hasReset && (
+              <div className="pt-1 border-t border-border/40">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full justify-start gap-2 font-normal"
-                  onClick={ctrl.onTriggerA}
+                  className="w-full justify-start gap-2 font-normal text-muted-foreground h-7 text-xs"
+                  onClick={ctrl.onResetTelemetry}
                 >
-                  <Play className="h-3.5 w-3.5 text-[color:var(--status-info)]" />
-                  Nudge A — incomplete scroll
+                  <RotateCcw className="h-3 w-3" />
+                  Reset session telemetry
                 </Button>
-              )}
-              {ctrl.onTriggerB && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start gap-2 font-normal"
-                  onClick={ctrl.onTriggerB}
-                >
-                  <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
-                  Nudge B — fast confirm
-                </Button>
-              )}
-              {ctrl.onTriggerC && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start gap-2 font-normal"
-                  onClick={ctrl.onTriggerC}
-                >
-                  <Play className="h-3.5 w-3.5 text-[color:var(--status-warning)]" />
-                  Nudge C — agreement streak
-                </Button>
-              )}
-            </>
-          )}
-
-          {ctrl.onSimulateEscalation && (
-            <>
-              <Separator className="my-1" />
-              <p className="eyebrow text-muted-foreground px-2 py-1">Finalization gate</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-2 font-normal"
-                onClick={ctrl.onSimulateEscalation}
-              >
-                <AlertTriangle className="h-3.5 w-3.5 text-[color:var(--status-error)]" />
-                Simulate low-engagement publish
-              </Button>
-            </>
-          )}
-
-          {hasPublish && (
-            <>
-              <Separator className="my-1" />
-              <p className="eyebrow text-muted-foreground px-2 py-1">Publish flow</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-2 font-normal"
-                onClick={ctrl.onMarkAllReadyToPublish}
-              >
-                <Play className="h-3.5 w-3.5 text-[color:var(--status-success)]" />
-                Mark all submissions ready
-              </Button>
-            </>
-          )}
-
-          {ctrl.onOpenSpotCheck && (
-            <>
-              <Separator className="my-1" />
-              <p className="eyebrow text-muted-foreground px-2 py-1">Spot check</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-2 font-normal"
-                onClick={ctrl.onOpenSpotCheck}
-              >
-                <ScanSearch className="h-3.5 w-3.5 text-primary" />
-                Open spot-check modal
-              </Button>
-            </>
-          )}
-
-          {ctrl.onResetTelemetry && (
-            <>
-              <Separator className="my-1" />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-2 font-normal text-muted-foreground"
-                onClick={ctrl.onResetTelemetry}
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-                Reset session telemetry
-              </Button>
-            </>
-          )}
+              </div>
+            )}
+          </div>
         </PopoverContent>
       </Popover>
     </div>
+  )
+}
+
+// Compact section + button primitives for the demo popover.
+
+function DemoSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <p className="eyebrow text-muted-foreground/70 px-1 text-[9px]">{title}</p>
+      <div className="grid grid-cols-2 gap-1">{children}</div>
+    </div>
+  )
+}
+
+function DemoBtn({
+  label, onClick, color, sub, full, icon,
+}: {
+  label: string
+  onClick: () => void
+  color: string
+  sub?: string
+  full?: boolean
+  icon?: React.ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`group flex items-center gap-1.5 h-8 px-2 rounded-md border border-border/40 hover:border-foreground/20 hover:bg-muted/40 transition-colors text-left ${
+        full ? "col-span-2" : ""
+      }`}
+    >
+      {icon ?? (
+        <span
+          className="h-1.5 w-1.5 rounded-full shrink-0"
+          style={{ backgroundColor: `color-mix(in srgb, ${color} 80%, transparent)` }}
+        />
+      )}
+      <span className="flex-1 min-w-0 text-[11px] font-medium text-foreground truncate">
+        {label}
+      </span>
+      {sub && (
+        <span className="text-[9px] text-muted-foreground/70 shrink-0">{sub}</span>
+      )}
+    </button>
   )
 }
 
