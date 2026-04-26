@@ -181,15 +181,6 @@ export function CriterionFeedbackCard({
           {regenCount >= 2 ? 'MAX USES' : 'REGENERATE'}
           {regenCount > 0 && <span className="text-[9px] opacity-40">({regenCount}/2)</span>}
         </Button>
-
-        <Button
-          size="sm"
-          className="h-8 px-6 bg-[#1F4E8C] text-white gap-2 ml-auto shadow-sm hover:bg-[#1E3A5F] hover:scale-[1.02] active:scale-[0.98] transition-all rounded-full text-[11px] font-bold tracking-tight disabled:opacity-50 disabled:pointer-events-none"
-          onClick={onApprove}
-          disabled={isPendingOverride}
-        >
-          <CheckCircle2 className="w-3.5 h-3.5" /> CONFIRM
-        </Button>
       </div>
     </motion.div>
   );
