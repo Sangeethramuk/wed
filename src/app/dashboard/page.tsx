@@ -35,9 +35,6 @@ export default function DashboardPage() {
     >
       {/* Page Header */}
       <div className="space-y-1">
-        <p className="text-xs font-semibold tracking-wider text-slate-400">
-          Academic Evaluation Suite
-        </p>
         <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
           Welcome, Professor
         </h1>
