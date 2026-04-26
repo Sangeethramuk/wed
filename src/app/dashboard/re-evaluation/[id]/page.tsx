@@ -178,8 +178,8 @@ export default function ReEvalWorkspacePage() {
                   to be a tab). Keeps the existing `view` / `setView` state intact. */}
               <Tabs value={view} onValueChange={(v) => setView(v as 'scan' | 'ocr')}>
                 <TabsList className="border border-border">
-                  <TabsTrigger value="scan" className="px-4">Scanned</TabsTrigger>
-                  <TabsTrigger value="ocr" className="px-4">OCR Original</TabsTrigger>
+                  <TabsTrigger value="scan" className="px-4">Original</TabsTrigger>
+                  <TabsTrigger value="ocr" className="px-4">Extracted</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
