@@ -421,6 +421,33 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     ?? SUBMISSION_ROWS.find(r => r.id === selectedSubmission)?.name
     ?? "Evaluating..."
 
+  // Derived review-flag banners. Synthetic STU-* students carry their
+  // own reviewFlags; for cohorts seeded from SUBMISSION_ROWS or the
+  // grading-store narrative, synthesize banners from `issues` / the
+  // student's `integrityFlags` so the OCR / plagiarism / history strip
+  // still shows up regardless of where the route id came from.
+  type DisplayReviewFlag = { severity: 'info' | 'success' | 'warning' | 'danger'; message: string }
+  const displayReviewFlags: DisplayReviewFlag[] = (() => {
+    if (currentStudent?.reviewFlags?.length) return currentStudent.reviewFlags
+    const submissionIssues = SUBMISSION_ROWS.find(r => r.id === selectedSubmission)?.issues ?? []
+    const fromIssues: DisplayReviewFlag[] = submissionIssues.map(issue => {
+      if (/plagiarism|cheating/i.test(issue))
+        return { severity: 'danger', message: 'Possible cheating or plagiarism detected — please review.' }
+      if (/ocr|extraction/i.test(issue))
+        return { severity: 'info', message: 'OCR quality is low on this submission — please review.' }
+      if (/flagged previously|history/i.test(issue))
+        return { severity: 'warning', message: 'Submission is not in this student\'s usual pattern — please review carefully.' }
+      if (/rubric/i.test(issue))
+        return { severity: 'warning', message: 'Rubric alignment is unclear — please review.' }
+      if (/clarity|low answer/i.test(issue))
+        return { severity: 'info', message: 'Answer clarity is low — please review.' }
+      return { severity: 'warning', message: issue }
+    })
+    if (fromIssues.length) return fromIssues
+    const fromIntegrity = assignment?.students.find(s => s.id === selectedSubmission)?.integrityFlags ?? []
+    return fromIntegrity.map<DisplayReviewFlag>(msg => ({ severity: 'warning', message: msg }))
+  })()
+
   const LOW_CONFIDENCE_THRESHOLD = 0.7
   const rubricPoints = [
     { id: "c1", type: "c1", label: "Problem Understanding & Direction", maxPoints: 10, aiScore: 6, aiScoreLabel: "Meets expectations with fewer issues", reasoning: "At least 80% of the problem framing, user/task clarity, assumptions/constraints, outcomes/non-goals, and scoped use-case mapping is present, and 20% of the work has issues that need to be addressed.", status: "REVIEW_NEEDED", note: "Extraction confidence moderate.", aiConfidence: 0.92, working: ["Problem scope is clearly defined with boundaries", "User tasks and goals are well articulated", "Assumptions and constraints explicitly stated"], gaps: ["Outcome metrics are vague and unmeasurable", "Use-case mapping is incomplete — 2 of 5 scenarios missing"], levels: [{val: 5, name: "Exceeds expectations", points: 10}, {val: 4, name: "Meets expectations", points: 8}, {val: 3, name: "Meets expectations with fewer issues", points: 6}, {val: 2, name: "Below Expectations", points: 4}, {val: 1, name: "Significant issues identified", points: 2}] },
@@ -1253,9 +1280,9 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
             </header>
 
             {/* Per-student review flags — surfaced as shadcn Alert strip(s) above the full manuscript viewer. */}
-            {currentStudent?.reviewFlags?.length ? (
+            {displayReviewFlags.length ? (
               <div className="px-6 pt-3 space-y-2 shrink-0">
-                {currentStudent.reviewFlags.map((flag, i) => {
+                {displayReviewFlags.map((flag, i) => {
                   const variant =
                     flag.severity === "danger" ? "danger" :
                     flag.severity === "warning" ? "warning" :
