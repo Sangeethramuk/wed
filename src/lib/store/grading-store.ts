@@ -711,6 +711,10 @@ interface GradingState {
   criterionFeedbacks: Record<string, Record<string, CriterionFeedbackState>>; // studentId -> criterionId -> feedback
   feedbackCache: Record<string, Record<string, Record<number, CriterionFeedbackState>>>; // studentId -> criterionId -> score -> feedback
   overallFeedback: Record<string, OverallFeedbackState>; // studentId -> feedback
+  /** Demo helper flag: when true for an assignmentId, the submissions
+   *  list treats every row as "Ready to Release" regardless of the row's
+   *  hardcoded status. Set by markAllSubmissionsReady. */
+  cohortReadyForRelease: Record<string, boolean>;
 
   // Feedback Actions
   addInternalNote: (studentId: string, note: Omit<InternalNote, 'id' | 'timestamp'>) => void;
@@ -929,6 +933,7 @@ export const useGradingStore = create<GradingState>()(
       },
       criterionFeedbacks: {},
       overallFeedback: {},
+      cohortReadyForRelease: {},
 
       assignments: DEFAULT_ASSIGNMENTS,
 
@@ -1113,7 +1118,13 @@ export const useGradingStore = create<GradingState>()(
                 isSubmitted: true,
               };
         }
-        return { overallFeedback };
+        return {
+          overallFeedback,
+          cohortReadyForRelease: {
+            ...state.cohortReadyForRelease,
+            [assignmentId]: true,
+          },
+        };
       }),
 
       // --- Feedback Actions ---
