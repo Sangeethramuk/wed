@@ -74,30 +74,34 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
   const calData = calibration[assignment.id]
   const isCalibrated = calData?.phase === "complete" || assignment.calibrationState === "complete"
 
+  const isReleased = assignment.gradingStatus === "released"
+  const isComplete = assignment.gradingStatus === "complete" || isReleased
+
   const handleAction = () => {
-    if (assignment.gradingStatus === "complete") {
+    if (isComplete) {
       router.push(`/dashboard/evaluation/results?id=${assignment.id}`)
       return
     }
-    
+
     if (!isCalibrated) {
       if (!calData) initCalibration(assignment.id)
       router.push(`/dashboard/evaluation/${assignment.id}/calibrate`)
       return
     }
-    
+
     router.push(`/dashboard/evaluation/${assignment.id}`)
   }
 
   const actionLabel = () => {
+    if (isReleased) return "View Released"
     if (assignment.gradingStatus === "complete") return "View Insights"
     if (!isCalibrated && (!calData || calData.phase === "not_started")) return "Begin Calibration"
     if (!isCalibrated && calData?.phase && calData.phase !== "complete") return "Continue Calibration"
     return "Enter Desk"
   }
 
-  const isWarningAction = !isCalibrated && assignment.gradingStatus !== "complete"
-  const isCompleteAction = assignment.gradingStatus === "complete"
+  const isWarningAction = !isCalibrated && !isComplete
+  const isCompleteAction = isComplete
 
   const gradingProgress =
     assignment.totalSubmissions > 0
@@ -105,14 +109,14 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
       : 0
 
   const statusDotColor =
-    assignment.gradingStatus === "complete"
+    isComplete
       ? "#10B981"
       : assignment.gradingStatus === "in_grading"
         ? "#1F4E8C"
         : "#F59E0B"
 
   const progressBarColor =
-    assignment.gradingStatus === "complete"
+    isComplete
       ? "#10B981"
       : "#1F4E8C"
 
@@ -132,6 +136,15 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
         <div className="flex items-center gap-2 mb-0.5">
           <span className="text-sm font-semibold text-slate-900 truncate">{assignment.title}</span>
           <TypeBadge type={assignment.assignmentType} />
+          {isReleased && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider border"
+              style={{ backgroundColor: "#ECFDF5", color: "#047857", borderColor: "#A7F3D0" }}
+            >
+              <CheckCircle2 className="h-2.5 w-2.5" />
+              Released
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <span className="font-semibold">{assignment.courseCode}</span>

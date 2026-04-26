@@ -46,6 +46,7 @@ const FILTER_GROUPS: {
       { value: "pending_calibration", label: "Pending Cal." },
       { value: "in_grading", label: "In Grading" },
       { value: "complete", label: "Complete" },
+      { value: "released", label: "Released" },
     ],
   },
   {
