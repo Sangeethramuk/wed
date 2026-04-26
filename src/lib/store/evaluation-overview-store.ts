@@ -184,14 +184,23 @@ const MOCK_ASSIGNMENTS: EvaluationAssignment[] = [
   },
 ];
 
+type FilterKey =
+  | 'selectedDepartment'
+  | 'selectedSemester'
+  | 'selectedGradingStatus'
+  | 'selectedCalibrationState';
+
 interface EvaluationOverviewState {
   assignments: EvaluationAssignment[];
-  selectedDepartment: string;
-  selectedSemester: string;
-  selectedGradingStatus: string;
-  selectedCalibrationState: string;
+  // Empty array on any of these = "all" (no filter applied).
+  selectedDepartment: string[];
+  selectedSemester: string[];
+  selectedGradingStatus: string[];
+  selectedCalibrationState: string[];
 
-  setFilter: (key: 'selectedDepartment' | 'selectedSemester' | 'selectedGradingStatus' | 'selectedCalibrationState', value: string) => void;
+  toggleFilter: (key: FilterKey, value: string) => void;
+  clearFilter: (key: FilterKey) => void;
+  clearAllFilters: () => void;
   getFilteredAssignments: () => EvaluationAssignment[];
   getStats: () => { total: number; pendingCalibration: number; inGrading: number; complete: number };
   getDepartments: () => string[];
@@ -199,20 +208,44 @@ interface EvaluationOverviewState {
 
 export const useEvaluationOverviewStore = create<EvaluationOverviewState>()((set, get) => ({
   assignments: MOCK_ASSIGNMENTS,
-  selectedDepartment: 'all',
-  selectedSemester: 'all',
-  selectedGradingStatus: 'all',
-  selectedCalibrationState: 'all',
+  selectedDepartment: [],
+  selectedSemester: [],
+  selectedGradingStatus: [],
+  selectedCalibrationState: [],
 
-  setFilter: (key, value) => set({ [key]: value }),
+  toggleFilter: (key, value) =>
+    set((state) => {
+      const current = state[key];
+      const next = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value];
+      return { [key]: next } as Partial<Pick<EvaluationOverviewState, FilterKey>>;
+    }),
+
+  clearFilter: (key) =>
+    set({ [key]: [] } as Partial<Pick<EvaluationOverviewState, FilterKey>>),
+
+  clearAllFilters: () =>
+    set({
+      selectedDepartment: [],
+      selectedSemester: [],
+      selectedGradingStatus: [],
+      selectedCalibrationState: [],
+    }),
 
   getFilteredAssignments: () => {
-    const { assignments, selectedDepartment, selectedSemester, selectedGradingStatus, selectedCalibrationState } = get();
-    return assignments.filter(a => {
-      if (selectedDepartment !== 'all' && a.department !== selectedDepartment) return false;
-      if (selectedSemester !== 'all' && a.semester !== selectedSemester) return false;
-      if (selectedGradingStatus !== 'all' && a.gradingStatus !== selectedGradingStatus) return false;
-      if (selectedCalibrationState !== 'all' && a.calibrationState !== selectedCalibrationState) return false;
+    const {
+      assignments,
+      selectedDepartment,
+      selectedSemester,
+      selectedGradingStatus,
+      selectedCalibrationState,
+    } = get();
+    return assignments.filter((a) => {
+      if (selectedDepartment.length > 0 && !selectedDepartment.includes(a.department)) return false;
+      if (selectedSemester.length > 0 && !selectedSemester.includes(a.semester)) return false;
+      if (selectedGradingStatus.length > 0 && !selectedGradingStatus.includes(a.gradingStatus)) return false;
+      if (selectedCalibrationState.length > 0 && !selectedCalibrationState.includes(a.calibrationState)) return false;
       return true;
     });
   },

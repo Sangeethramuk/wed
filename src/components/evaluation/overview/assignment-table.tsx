@@ -93,7 +93,7 @@ function AssignmentRow({ assignment }: { assignment: EvaluationAssignment }) {
   }
 
   const actionLabel = () => {
-    if (isReleased) return "View Released"
+    if (isReleased) return "View Results"
     if (assignment.gradingStatus === "complete") return "View Insights"
     if (!isCalibrated && (!calData || calData.phase === "not_started")) return "Begin Calibration"
     if (!isCalibrated && calData?.phase && calData.phase !== "complete") return "Continue Calibration"
