@@ -6,9 +6,11 @@ import { DemoControlPanel } from "@/components/evaluation/progressive-nudges"
 import { ESCALATION_DISMISS_THRESHOLD } from "@/components/evaluation/progressive-nudges"
 
 // Default targets used when a demo trigger needs a concrete assignment id.
-// AI-ETH-01 has calibration in progress; SWE-PH2 has grading in progress.
+// AI-ETH-01 has calibration in progress (good for showing the calibration
+// flow). OS-LAB-03 has calibration already complete + grading in progress
+// — required for the grading page (it redirects to /calibrate otherwise).
 const DEMO_CALIBRATION_ID = "AI-ETH-01"
-const DEMO_GRADING_ID = "SWE-PH2"
+const DEMO_GRADING_ID = "OS-LAB-03"
 
 /**
  * Single floating demo button mounted at the dashboard layout. Routes the
