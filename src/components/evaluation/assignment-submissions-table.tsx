@@ -69,18 +69,19 @@ const MOCK_DATA: StudentRow[] = [
 ]
 
 // MBA cohort for the Business Case Analysis assignment (MBA-BCA-01).
-// Riya Sharma sits on top so the demo lands on her by default.
+// All rows start ungraded ("In Progress", no score) so the demo can walk
+// through manual grading from a clean slate. Riya Sharma sits on top.
 const MOCK_DATA_MBA: StudentRow[] = [
-  { id: "BA-101", name: "Riya Sharma",   rollNo: "MBA25-BA-101", submission: "On Time", status: "Ready to Release", score: 88, issues: [], submissionTime: "2026-04-25T09:30:00Z" },
-  { id: "BA-102", name: "Aarav Mehta",   rollNo: "MBA25-BA-102", submission: "On Time", status: "In Progress",      score: null, issues: ["Rubric alignment unclear"], submissionTime: "2026-04-25T11:10:00Z" },
-  { id: "BA-103", name: "Ishaan Kapoor", rollNo: "MBA25-BA-103", submission: "On Time", status: "In Progress",      score: null, issues: [], submissionTime: "2026-04-25T13:45:00Z" },
-  { id: "BA-104", name: "Anaya Nair",    rollNo: "MBA25-BA-104", submission: "Late",    status: "Ready to Release", score: 92, issues: ["Possible plagiarism pattern"], submissionTime: "2026-04-26T18:20:00Z" },
-  { id: "BA-105", name: "Vivaan Joshi",  rollNo: "MBA25-BA-105", submission: "On Time", status: "Not Started",      score: null, issues: [], submissionTime: "2026-04-25T15:05:00Z" },
-  { id: "BA-106", name: "Kavya Reddy",   rollNo: "MBA25-BA-106", submission: "On Time", status: "Ready to Release", score: 81, issues: [], submissionTime: "2026-04-25T10:25:00Z" },
-  { id: "BA-107", name: "Arnav Bansal",  rollNo: "MBA25-BA-107", submission: "On Time", status: "In Progress",      score: null, issues: ["Low answer clarity"], submissionTime: "2026-04-25T16:40:00Z" },
-  { id: "BA-108", name: "Saanvi Pillai", rollNo: "MBA25-BA-108", submission: "On Time", status: "Ready to Release", score: 79, issues: [], submissionTime: "2026-04-25T09:55:00Z" },
-  { id: "BA-109", name: "Reyansh Khanna",rollNo: "MBA25-BA-109", submission: "Missing", status: "Not Started",      score: null, issues: [], submissionTime: "" },
-  { id: "BA-110", name: "Diya Sethi",    rollNo: "MBA25-BA-110", submission: "On Time", status: "Ready to Release", score: 84, issues: [], submissionTime: "2026-04-25T08:10:00Z" },
+  { id: "BA-101", name: "Riya Sharma",   rollNo: "MBA25-BA-101", submission: "On Time", status: "In Progress", score: null, issues: [], submissionTime: "2026-04-25T09:30:00Z" },
+  { id: "BA-102", name: "Aarav Mehta",   rollNo: "MBA25-BA-102", submission: "On Time", status: "In Progress", score: null, issues: ["Rubric alignment unclear"], submissionTime: "2026-04-25T11:10:00Z" },
+  { id: "BA-103", name: "Ishaan Kapoor", rollNo: "MBA25-BA-103", submission: "On Time", status: "In Progress", score: null, issues: [], submissionTime: "2026-04-25T13:45:00Z" },
+  { id: "BA-104", name: "Anaya Nair",    rollNo: "MBA25-BA-104", submission: "Late",    status: "In Progress", score: null, issues: ["Possible plagiarism pattern"], submissionTime: "2026-04-26T18:20:00Z" },
+  { id: "BA-105", name: "Vivaan Joshi",  rollNo: "MBA25-BA-105", submission: "On Time", status: "In Progress", score: null, issues: [], submissionTime: "2026-04-25T15:05:00Z" },
+  { id: "BA-106", name: "Kavya Reddy",   rollNo: "MBA25-BA-106", submission: "On Time", status: "In Progress", score: null, issues: [], submissionTime: "2026-04-25T10:25:00Z" },
+  { id: "BA-107", name: "Arnav Bansal",  rollNo: "MBA25-BA-107", submission: "On Time", status: "In Progress", score: null, issues: ["Low answer clarity"], submissionTime: "2026-04-25T16:40:00Z" },
+  { id: "BA-108", name: "Saanvi Pillai", rollNo: "MBA25-BA-108", submission: "On Time", status: "In Progress", score: null, issues: [], submissionTime: "2026-04-25T09:55:00Z" },
+  { id: "BA-109", name: "Reyansh Khanna",rollNo: "MBA25-BA-109", submission: "On Time", status: "In Progress", score: null, issues: [], submissionTime: "2026-04-25T12:15:00Z" },
+  { id: "BA-110", name: "Diya Sethi",    rollNo: "MBA25-BA-110", submission: "On Time", status: "In Progress", score: null, issues: [], submissionTime: "2026-04-25T08:10:00Z" },
 ]
 
 // Map assignment ids to their cohort. Falls back to the generic CS24 list
