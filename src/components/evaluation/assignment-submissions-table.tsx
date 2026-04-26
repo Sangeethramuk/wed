@@ -70,9 +70,13 @@ const MOCK_DATA: StudentRow[] = [
 
 interface AssignmentSubmissionsTableProps {
   onRowClick?: (studentId: string) => void
+  /** When true, every row is rendered as "Ready to Release" (a placeholder
+   *  score is filled in for the rows that didn't have one) — used by the
+   *  demo control's "Mark all submissions ready" trigger. */
+  forceReady?: boolean
 }
 
-export function AssignmentSubmissionsTable({ onRowClick }: AssignmentSubmissionsTableProps) {
+export function AssignmentSubmissionsTable({ onRowClick, forceReady }: AssignmentSubmissionsTableProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("All")
   const [submissionFilter, setSubmissionFilter] = useState<string>("All")
@@ -80,7 +84,16 @@ export function AssignmentSubmissionsTable({ onRowClick }: AssignmentSubmissions
   const [sortBy, setSortBy] = useState<string>("Issues (High → Low)")
 
   const filteredData = useMemo(() => {
-    let data = [...MOCK_DATA]
+    let data: StudentRow[] = MOCK_DATA.map(row => {
+      if (!forceReady) return { ...row }
+      // Skip Missing submissions — those have no paper to release.
+      if (row.submission === "Missing") return { ...row }
+      // Synthesize a plausible score for rows that hadn't been graded yet
+      // so the "Ready to Release" status doesn't render with a blank score.
+      const synthScore =
+        row.score ?? 70 + ((row.id.charCodeAt(row.id.length - 1) ?? 0) % 25)
+      return { ...row, status: "Ready to Release", score: synthScore }
+    })
 
     // Search
     if (searchQuery) {
@@ -130,7 +143,7 @@ export function AssignmentSubmissionsTable({ onRowClick }: AssignmentSubmissions
     })
 
     return data
-  }, [searchQuery, statusFilter, submissionFilter, issuesFilter, sortBy])
+  }, [searchQuery, statusFilter, submissionFilter, issuesFilter, sortBy, forceReady])
 
   const getStatusBadge = (status: StudentRow["status"]) => {
     switch (status) {

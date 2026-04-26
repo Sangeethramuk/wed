@@ -44,6 +44,7 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
     calibration,
     initCalibration,
     overallFeedback,
+    cohortReadyForRelease,
   } = useGradingStore()
   const assignment = assignments[id]
   const previewAssignment = usePreEvalStore(s => s.assignment)
@@ -387,7 +388,10 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
               </div>
 
               {/* Full Width Submissions Table */}
-              <AssignmentSubmissionsTable onRowClick={handleStudentSelect} />
+              <AssignmentSubmissionsTable
+                onRowClick={handleStudentSelect}
+                forceReady={!!cohortReadyForRelease[id]}
+              />
             </>
           )}
         </TabsContent>
