@@ -68,10 +68,38 @@ const MOCK_DATA: StudentRow[] = [
   { id: "20", name: "Ashok Verma", rollNo: "CS24-020", submission: "On Time", status: "Not Started", score: null, issues: [], submissionTime: "2024-10-23T14:55:00Z" },
 ]
 
+// MBA cohort for the Business Case Analysis assignment (MBA-BCA-01).
+// Riya Sharma sits on top so the demo lands on her by default.
+const MOCK_DATA_MBA: StudentRow[] = [
+  { id: "BA-101", name: "Riya Sharma",   rollNo: "MBA25-BA-101", submission: "On Time", status: "Ready to Release", score: 88, issues: [], submissionTime: "2026-04-25T09:30:00Z" },
+  { id: "BA-102", name: "Aarav Mehta",   rollNo: "MBA25-BA-102", submission: "On Time", status: "In Progress",      score: null, issues: ["Rubric alignment unclear"], submissionTime: "2026-04-25T11:10:00Z" },
+  { id: "BA-103", name: "Ishaan Kapoor", rollNo: "MBA25-BA-103", submission: "On Time", status: "In Progress",      score: null, issues: [], submissionTime: "2026-04-25T13:45:00Z" },
+  { id: "BA-104", name: "Anaya Nair",    rollNo: "MBA25-BA-104", submission: "Late",    status: "Ready to Release", score: 92, issues: ["Possible plagiarism pattern"], submissionTime: "2026-04-26T18:20:00Z" },
+  { id: "BA-105", name: "Vivaan Joshi",  rollNo: "MBA25-BA-105", submission: "On Time", status: "Not Started",      score: null, issues: [], submissionTime: "2026-04-25T15:05:00Z" },
+  { id: "BA-106", name: "Kavya Reddy",   rollNo: "MBA25-BA-106", submission: "On Time", status: "Ready to Release", score: 81, issues: [], submissionTime: "2026-04-25T10:25:00Z" },
+  { id: "BA-107", name: "Arnav Bansal",  rollNo: "MBA25-BA-107", submission: "On Time", status: "In Progress",      score: null, issues: ["Low answer clarity"], submissionTime: "2026-04-25T16:40:00Z" },
+  { id: "BA-108", name: "Saanvi Pillai", rollNo: "MBA25-BA-108", submission: "On Time", status: "Ready to Release", score: 79, issues: [], submissionTime: "2026-04-25T09:55:00Z" },
+  { id: "BA-109", name: "Reyansh Khanna",rollNo: "MBA25-BA-109", submission: "Missing", status: "Not Started",      score: null, issues: [], submissionTime: "" },
+  { id: "BA-110", name: "Diya Sethi",    rollNo: "MBA25-BA-110", submission: "On Time", status: "Ready to Release", score: 84, issues: [], submissionTime: "2026-04-25T08:10:00Z" },
+]
+
+// Map assignment ids to their cohort. Falls back to the generic CS24 list
+// when an id isn't covered.
+const ASSIGNMENT_COHORTS: Record<string, StudentRow[]> = {
+  "MBA-BCA-01": MOCK_DATA_MBA,
+}
+
+function rowsForAssignment(assignmentId?: string): StudentRow[] {
+  if (assignmentId && ASSIGNMENT_COHORTS[assignmentId]) {
+    return ASSIGNMENT_COHORTS[assignmentId]
+  }
+  return MOCK_DATA
+}
+
 // Re-exported so other surfaces (e.g., the grading header) can resolve a
 // student name from the same mock cohort instead of falling back to a
 // generic placeholder when the route id matches one of these rows.
-export const SUBMISSION_ROWS = MOCK_DATA
+export const SUBMISSION_ROWS = [...MOCK_DATA, ...MOCK_DATA_MBA]
 
 interface AssignmentSubmissionsTableProps {
   onRowClick?: (studentId: string) => void
@@ -79,9 +107,12 @@ interface AssignmentSubmissionsTableProps {
    *  score is filled in for the rows that didn't have one) — used by the
    *  demo control's "Mark all submissions ready" trigger. */
   forceReady?: boolean
+  /** Identifies which mock cohort to render. Defaults to the generic
+   *  CS24 list when omitted. */
+  assignmentId?: string
 }
 
-export function AssignmentSubmissionsTable({ onRowClick, forceReady }: AssignmentSubmissionsTableProps) {
+export function AssignmentSubmissionsTable({ onRowClick, forceReady, assignmentId }: AssignmentSubmissionsTableProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("All")
   const [submissionFilter, setSubmissionFilter] = useState<string>("All")
@@ -89,7 +120,8 @@ export function AssignmentSubmissionsTable({ onRowClick, forceReady }: Assignmen
   const [sortBy, setSortBy] = useState<string>("Issues (High → Low)")
 
   const filteredData = useMemo(() => {
-    let data: StudentRow[] = MOCK_DATA.map(row => {
+    const cohort = rowsForAssignment(assignmentId)
+    let data: StudentRow[] = cohort.map(row => {
       if (!forceReady) return { ...row }
       // Skip Missing submissions — those have no paper to release.
       if (row.submission === "Missing") return { ...row }
@@ -148,7 +180,7 @@ export function AssignmentSubmissionsTable({ onRowClick, forceReady }: Assignmen
     })
 
     return data
-  }, [searchQuery, statusFilter, submissionFilter, issuesFilter, sortBy, forceReady])
+  }, [searchQuery, statusFilter, submissionFilter, issuesFilter, sortBy, forceReady, assignmentId])
 
   const getStatusBadge = (status: StudentRow["status"]) => {
     switch (status) {

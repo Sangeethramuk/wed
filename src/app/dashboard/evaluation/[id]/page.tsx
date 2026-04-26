@@ -414,6 +414,7 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
               <AssignmentSubmissionsTable
                 onRowClick={handleStudentSelect}
                 forceReady={!!cohortReadyForRelease[id]}
+                assignmentId={id}
               />
             </>
           )}

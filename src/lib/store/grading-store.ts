@@ -1457,7 +1457,7 @@ export const useGradingStore = create<GradingState>()(
     }),
     {
       name: 'grading-hub-storage',
-      version: 4 // Bumped: added MBA-BCA-01 to DEFAULT_ASSIGNMENTS
+      version: 5 // Bumped: MBA-BCA-01 cohort surfaced in submissions table
     }
   )
 );
