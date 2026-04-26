@@ -1787,33 +1787,65 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={activeRubricCriterionIdx === 0}
-                      onClick={() => setActiveRubricCriterionIdx(i => i - 1)}
-                    >
-                      Previous
-                    </Button>
-                    {isLastCriterion ? (
-                      <Button
-                        size="sm"
-                        onClick={() => handleScoreConfirm(point.id, rubricPoints.length)}
-                        className="flex-1"
-                      >
-                        {allConfirmed || !!criterionState[point.id]?.confirmed ? 'Overall feedback →' : 'Confirm & Review Summary'}
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={() => handleScoreConfirm(point.id)}
-                        className="flex-1"
-                      >
-                        Next criterion
-                      </Button>
-                    )}
-                  </div>
+                  {(() => {
+                    // Gate the Next / Confirm CTA on evidence review: the
+                    // instructor must click at least one evidence pill on
+                    // the active criterion (telemetry.evidenceOpens > 0)
+                    // before navigating onward. Unblocks once any pill on
+                    // this criterion has been clicked.
+                    const tEvidence = sessionTelemetry.byCriterion[telemetryKey(selectedSubmission, point.id)]
+                    const evidenceReviewed = (tEvidence?.evidenceOpens ?? 0) > 0
+                    const tooltipMsg = "Review the evidence attached to this criterion and confirm it's correct before moving on."
+                    return (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={activeRubricCriterionIdx === 0}
+                          onClick={() => setActiveRubricCriterionIdx(i => i - 1)}
+                        >
+                          Previous
+                        </Button>
+                        {isLastCriterion ? (
+                          <Tooltip>
+                            <TooltipTrigger
+                              render={<div className={`flex-1 ${evidenceReviewed ? "" : "cursor-not-allowed"}`} />}
+                            >
+                              <Button
+                                size="sm"
+                                onClick={() => handleScoreConfirm(point.id, rubricPoints.length)}
+                                disabled={!evidenceReviewed}
+                                className="w-full"
+                              >
+                                {allConfirmed || !!criterionState[point.id]?.confirmed ? 'Overall feedback →' : 'Confirm & Review Summary'}
+                              </Button>
+                            </TooltipTrigger>
+                            {!evidenceReviewed && (
+                              <TooltipContent side="top">{tooltipMsg}</TooltipContent>
+                            )}
+                          </Tooltip>
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger
+                              render={<div className={`flex-1 ${evidenceReviewed ? "" : "cursor-not-allowed"}`} />}
+                            >
+                              <Button
+                                size="sm"
+                                onClick={() => handleScoreConfirm(point.id)}
+                                disabled={!evidenceReviewed}
+                                className="w-full"
+                              >
+                                Next criterion
+                              </Button>
+                            </TooltipTrigger>
+                            {!evidenceReviewed && (
+                              <TooltipContent side="top">{tooltipMsg}</TooltipContent>
+                            )}
+                          </Tooltip>
+                        )}
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>
             )
