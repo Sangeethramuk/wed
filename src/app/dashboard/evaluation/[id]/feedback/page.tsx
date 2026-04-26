@@ -152,30 +152,47 @@ export default function FeedbackPage() {
     if (!activeStudent || !assignment) return;
 
     submitFinalFeedback(activeStudent.id);
-    
-    toast.success(`Grades submitted for ${activeStudent.name}`, {
-      description: "Opening next student's paper...",
-    });
 
-    // Compute next student ID (STU-NNN sequence)
-    const match = activeStudent.id.match(/^STU-(\d+)$/);
+    // Determine the next student. Try the STU-NNN sequence first (the grading
+    // page's local 60-student mock), then fall back to the order in the
+    // store-seeded assignment.students list.
     let nextId: string | null = null;
-    
-    if (match) {
-      const currentNum = parseInt(match[1], 10);
+    let nextName: string | null = null;
+    const stuMatch = activeStudent.id.match(/^STU-(\d+)$/);
+    if (stuMatch) {
+      const currentNum = parseInt(stuMatch[1], 10);
       if (currentNum < 159) {
         nextId = `STU-${currentNum + 1}`;
+        nextName = `Student ${nextId}`;
+      }
+    } else {
+      const idx = assignment.students.findIndex(s => s.id === activeStudent.id);
+      if (idx >= 0 && idx < assignment.students.length - 1) {
+        const next = assignment.students[idx + 1];
+        nextId = next.id;
+        nextName = next.name;
       }
     }
 
-    setTimeout(() => {
-      if (nextId) {
-        setActiveStudent(nextId);
+    if (nextId) {
+      toast.success(`Grades submitted for ${activeStudent.name}`, {
+        description: `Opening ${nextName}'s paper…`,
+      });
+      setTimeout(() => {
+        setActiveStudent(nextId!);
         router.push(`/dashboard/evaluation/${assignmentId}/grading?studentId=${nextId}`);
-      } else {
+      }, 1000);
+    } else {
+      // Last submission — cohort grading complete. Surface the ready state
+      // and route back to the assignment overview where Publish unlocks.
+      toast.success(`All submissions graded for ${assignment.title}`, {
+        description: "Assignment is ready to release. You can now publish grades.",
+        duration: 5000,
+      });
+      setTimeout(() => {
         router.push(`/dashboard/evaluation/${assignmentId}`);
-      }
-    }, 1000);
+      }, 1500);
+    }
   };
 
   if (!mounted || !assignment || !activeStudent || !feedbackDraft) {
