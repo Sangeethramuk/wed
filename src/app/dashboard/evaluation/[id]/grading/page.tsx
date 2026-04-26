@@ -627,7 +627,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
     } else if (nextIdx >= rubricPoints.length) {
       // If confirmed last one and no nudges, proceed to summary
       const allDone = rubricPoints.every(p => p.id === id || criterionState[p.id]?.confirmed)
-      if (allDone) router.push(`/dashboard/evaluation/${id}/feedback`)
+      if (allDone) router.push(`/dashboard/evaluation/${params.id}/feedback`)
     }
   }
 
