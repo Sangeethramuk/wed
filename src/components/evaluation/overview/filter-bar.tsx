@@ -24,6 +24,7 @@ const FILTER_GROUPS: {
       { value: "Computer Science", label: "CS" },
       { value: "Information Technology", label: "IT" },
       { value: "Electronics", label: "EC" },
+      { value: "MBA", label: "MBA" },
     ],
   },
   {

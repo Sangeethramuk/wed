@@ -437,6 +437,98 @@ export const DEFAULT_ASSIGNMENTS: Record<string, AssignmentNarrative> = {
         }
       }
     ]
+  },
+  'MBA-BCA-01': {
+    id: 'MBA-BCA-01',
+    title: 'Business Case Analysis',
+    description: 'BA601 · Business Analytics — analyse the provided case and recommend a strategy.',
+    targetFix: 'f1',
+    students: [
+      {
+        id: 'BA-101',
+        name: 'Riya Sharma',
+        roll: 'MBA25-BA-101',
+        status: 'clean',
+        isDoubleBlind: false,
+        progress: 100,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'Problem Framing', level: 4, confidence: 0.92, reasoning: 'Defines the business problem with clear scope and assumptions.', evidence: [] },
+          c2: { id: 'c2', name: 'Data Analysis', level: 4, confidence: 0.88, reasoning: 'Quantitative analysis cleanly tied back to the recommendation.', evidence: [] },
+          c3: { id: 'c3', name: 'Strategic Recommendation', level: 5, confidence: 0.94, reasoning: 'Well-defended recommendation with risk-mitigation alternatives.', evidence: [] },
+        }
+      },
+      {
+        id: 'BA-102',
+        name: 'Aarav Mehta',
+        roll: 'MBA25-BA-102',
+        status: 'clean',
+        isDoubleBlind: false,
+        progress: 80,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'Problem Framing', level: 3, confidence: 0.78, reasoning: 'Problem stated but constraints under-specified.', evidence: [] },
+          c2: { id: 'c2', name: 'Data Analysis', level: 4, confidence: 0.82, reasoning: 'Solid use of cohort segmentation.', evidence: [] },
+          c3: { id: 'c3', name: 'Strategic Recommendation', level: 3, confidence: 0.74, reasoning: 'Recommendation is reasonable but lacks downside scenario.', evidence: [] },
+        }
+      },
+      {
+        id: 'BA-103',
+        name: 'Ishaan Kapoor',
+        roll: 'MBA25-BA-103',
+        status: 'clean',
+        isDoubleBlind: false,
+        progress: 60,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'Problem Framing', level: 4, confidence: 0.86, reasoning: 'Clear framing with industry context.', evidence: [] },
+          c2: { id: 'c2', name: 'Data Analysis', level: 3, confidence: 0.71, reasoning: 'Some calculation errors in the unit-economics model.', evidence: [] },
+          c3: { id: 'c3', name: 'Strategic Recommendation', level: 4, confidence: 0.83, reasoning: 'Recommendation aligns with the analysis.', evidence: [] },
+        }
+      },
+      {
+        id: 'BA-104',
+        name: 'Anaya Nair',
+        roll: 'MBA25-BA-104',
+        status: 'suspicious',
+        isDoubleBlind: false,
+        progress: 100,
+        integrityFlags: ['Possible reuse from prior cohort'],
+        criteria: {
+          c1: { id: 'c1', name: 'Problem Framing', level: 5, confidence: 0.95, reasoning: 'Framing is exemplary.', evidence: [] },
+          c2: { id: 'c2', name: 'Data Analysis', level: 5, confidence: 0.96, reasoning: 'Exhaustive analysis.', evidence: [] },
+          c3: { id: 'c3', name: 'Strategic Recommendation', level: 4, confidence: 0.85, reasoning: 'Solid recommendation.', evidence: [] },
+        }
+      },
+      {
+        id: 'BA-105',
+        name: 'Vivaan Joshi',
+        roll: 'MBA25-BA-105',
+        status: 'clean',
+        isDoubleBlind: false,
+        progress: 50,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'Problem Framing', level: 3, confidence: 0.7, reasoning: 'Problem stated but boundaries unclear.', evidence: [] },
+          c2: { id: 'c2', name: 'Data Analysis', level: 3, confidence: 0.7, reasoning: 'Analysis is partial.', evidence: [] },
+          c3: { id: 'c3', name: 'Strategic Recommendation', level: 3, confidence: 0.72, reasoning: 'Generic recommendation.', evidence: [] },
+        }
+      },
+      {
+        id: 'BA-106',
+        name: 'Kavya Reddy',
+        roll: 'MBA25-BA-106',
+        status: 'clean',
+        isDoubleBlind: false,
+        progress: 100,
+        integrityFlags: [],
+        criteria: {
+          c1: { id: 'c1', name: 'Problem Framing', level: 4, confidence: 0.87, reasoning: 'Framing covers customer + competitor angles.', evidence: [] },
+          c2: { id: 'c2', name: 'Data Analysis', level: 4, confidence: 0.89, reasoning: 'Cohort retention analysis is strong.', evidence: [] },
+          c3: { id: 'c3', name: 'Strategic Recommendation', level: 4, confidence: 0.84, reasoning: 'Recommendation is well-defended.', evidence: [] },
+        }
+      },
+    ]
   }
 };
 
