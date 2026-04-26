@@ -1148,8 +1148,8 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
                     can branch on `manuscriptView` once the OCR view is wired. */}
                 <Tabs value={manuscriptView} onValueChange={(v) => setManuscriptView(v as "scanned" | "ocr")}>
                   <TabsList className="border border-border">
-                    <TabsTrigger value="scanned" className="px-4">Scanned</TabsTrigger>
-                    <TabsTrigger value="ocr" className="px-4">OCR Original</TabsTrigger>
+                    <TabsTrigger value="scanned" className="px-4">Original</TabsTrigger>
+                    <TabsTrigger value="ocr" className="px-4">Extracted</TabsTrigger>
                   </TabsList>
                 </Tabs>
 
