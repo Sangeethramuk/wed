@@ -21,7 +21,6 @@ const FILTER_GROUPS: {
     label: "Department",
     defaultLabel: "All Depts",
     options: [
-      { value: "all", label: "All Depts" },
       { value: "Computer Science", label: "CS" },
       { value: "Information Technology", label: "IT" },
       { value: "Electronics", label: "EC" },
@@ -32,7 +31,6 @@ const FILTER_GROUPS: {
     label: "Semester",
     defaultLabel: "All Sems",
     options: [
-      { value: "all", label: "All Sems" },
       { value: "SEM V", label: "SEM V" },
       { value: "SEM VI", label: "SEM VI" },
     ],
@@ -42,7 +40,6 @@ const FILTER_GROUPS: {
     label: "Grading",
     defaultLabel: "All",
     options: [
-      { value: "all", label: "All" },
       { value: "pending_calibration", label: "Pending Cal." },
       { value: "in_grading", label: "In Grading" },
       { value: "complete", label: "Complete" },
@@ -54,7 +51,6 @@ const FILTER_GROUPS: {
     label: "Calibration",
     defaultLabel: "All",
     options: [
-      { value: "all", label: "All" },
       { value: "not_started", label: "Not Started" },
       { value: "in_progress", label: "In Progress" },
       { value: "complete", label: "Calibrated" },
@@ -64,12 +60,14 @@ const FILTER_GROUPS: {
 
 interface FilterDropdownProps {
   label: string
-  value: string
+  defaultLabel: string
+  values: string[]
   options: { value: string; label: string }[]
-  onChange: (value: string) => void
+  onToggle: (value: string) => void
+  onClear: () => void
 }
 
-function FilterDropdown({ label, value, options, onChange }: FilterDropdownProps) {
+function FilterDropdown({ label, defaultLabel, values, options, onToggle, onClear }: FilterDropdownProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -83,7 +81,15 @@ function FilterDropdown({ label, value, options, onChange }: FilterDropdownProps
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const currentLabel = options.find((o) => o.value === value)?.label ?? options[0].label
+  // Compose the trigger label: default when nothing selected, the single
+  // option's label when one is selected, otherwise "N selected".
+  const displayLabel = (() => {
+    if (values.length === 0) return defaultLabel
+    if (values.length === 1) {
+      return options.find((o) => o.value === values[0])?.label ?? defaultLabel
+    }
+    return `${values.length} selected`
+  })()
 
   return (
     <div className="relative" ref={ref}>
@@ -92,29 +98,49 @@ function FilterDropdown({ label, value, options, onChange }: FilterDropdownProps
         className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 hover:border-slate-300 transition-colors"
       >
         <span className="text-slate-400 font-semibold tracking-wider text-xs">{label}:</span>
-        <span className="font-semibold text-slate-900">{currentLabel}</span>
+        <span className="font-semibold text-slate-900">{displayLabel}</span>
         <ChevronDown
           className={`h-4 w-4 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
       {open && (
         <div
-          className="absolute top-full left-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg z-50 py-1"
+          className="absolute top-full left-0 mt-1 w-52 bg-white border border-slate-200 rounded-lg z-50 py-1"
           style={{ boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)" }}
         >
+          {/* All / clear option */}
+          <button
+            onClick={() => {
+              onClear()
+              setOpen(false)
+            }}
+            className="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between border-b border-slate-100 mb-1"
+          >
+            <span className={values.length === 0 ? "font-semibold text-slate-900" : ""}>
+              {defaultLabel}
+            </span>
+            {values.length === 0 && <Check className="h-4 w-4" style={{ color: "#1F4E8C" }} />}
+          </button>
+
           {options.map((opt) => {
-            const active = value === opt.value
+            const checked = values.includes(opt.value)
             return (
               <button
                 key={opt.value}
-                onClick={() => {
-                  onChange(opt.value)
-                  setOpen(false)
-                }}
-                className="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+                onClick={() => onToggle(opt.value)}
+                className="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
               >
-                <span className={active ? "font-semibold text-slate-900" : ""}>{opt.label}</span>
-                {active && <Check className="h-4 w-4" style={{ color: "#1F4E8C" }} />}
+                <span
+                  className="h-4 w-4 rounded border flex items-center justify-center shrink-0"
+                  style={
+                    checked
+                      ? { backgroundColor: "#1F4E8C", borderColor: "#1F4E8C" }
+                      : { borderColor: "#CBD5E1", backgroundColor: "#FFFFFF" }
+                  }
+                >
+                  {checked && <Check className="h-3 w-3" style={{ color: "#FFFFFF" }} />}
+                </span>
+                <span className={checked ? "font-semibold text-slate-900" : ""}>{opt.label}</span>
               </button>
             )
           })}
@@ -124,12 +150,15 @@ function FilterDropdown({ label, value, options, onChange }: FilterDropdownProps
   )
 }
 
-// Compact dropdown-based filter bar. Each filter renders as `Label: Value ▾`
-// and applied non-default values surface below as removable chips with a
-// global Clear all action.
+// Compact dropdown-based multi-select filter bar. Each filter renders as
+// `Label: <selection summary> ▾`; the dropdown lets the user toggle any
+// number of options. Applied values surface below as removable chips with
+// a global Clear all action.
 export function FilterBar() {
   const {
-    setFilter,
+    toggleFilter,
+    clearFilter,
+    clearAllFilters,
     selectedDepartment,
     selectedSemester,
     selectedGradingStatus,
@@ -137,28 +166,26 @@ export function FilterBar() {
   } = useEvaluationOverviewStore()
   const [search, setSearch] = useState("")
 
-  const activeValues: Record<FilterKey, string> = {
+  const activeValues: Record<FilterKey, string[]> = {
     selectedDepartment,
     selectedSemester,
     selectedGradingStatus,
     selectedCalibrationState,
   }
 
-  const appliedChips = FILTER_GROUPS.flatMap((group) => {
-    const v = activeValues[group.key]
-    if (v === "all") return []
-    const opt = group.options.find((o) => o.value === v)
-    if (!opt) return []
-    return [{ key: group.key, label: opt.label }]
-  })
+  const appliedChips = FILTER_GROUPS.flatMap((group) =>
+    activeValues[group.key]
+      .map((v) => {
+        const opt = group.options.find((o) => o.value === v)
+        return opt ? { key: group.key, value: v, label: opt.label } : null
+      })
+      .filter((x): x is { key: FilterKey; value: string; label: string } => x !== null)
+  )
 
   const hasActiveFilters = appliedChips.length > 0 || search.length > 0
 
   const clearAll = () => {
-    setFilter("selectedDepartment", "all")
-    setFilter("selectedSemester", "all")
-    setFilter("selectedGradingStatus", "all")
-    setFilter("selectedCalibrationState", "all")
+    clearAllFilters()
     setSearch("")
   }
 
@@ -182,9 +209,11 @@ export function FilterBar() {
           <FilterDropdown
             key={group.key}
             label={group.label}
-            value={activeValues[group.key]}
+            defaultLabel={group.defaultLabel}
+            values={activeValues[group.key]}
             options={group.options}
-            onChange={(value) => setFilter(group.key, value)}
+            onToggle={(value) => toggleFilter(group.key, value)}
+            onClear={() => clearFilter(group.key)}
           />
         ))}
       </div>
@@ -195,8 +224,8 @@ export function FilterBar() {
           <span className="text-xs font-semibold tracking-wider text-slate-400">Active:</span>
           {appliedChips.map((chip) => (
             <button
-              key={chip.key}
-              onClick={() => setFilter(chip.key, "all")}
+              key={`${chip.key}:${chip.value}`}
+              onClick={() => toggleFilter(chip.key, chip.value)}
               className="inline-flex items-center gap-1.5 pl-2.5 pr-2 py-1 rounded-full text-xs font-semibold border transition-colors"
               style={{ backgroundColor: "#EFF6FF", color: "#1F4E8C", borderColor: "#BFDBFE" }}
             >
