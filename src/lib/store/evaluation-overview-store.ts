@@ -182,6 +182,27 @@ const MOCK_ASSIGNMENTS: EvaluationAssignment[] = [
     dueDate: 'Apr 19, 2026',
     lastActivity: '4h ago',
   },
+
+  // --- MBA ---
+  {
+    id: 'MBA-BCA-01',
+    title: 'Business Case Analysis',
+    course: 'BA601: Business Analytics',
+    courseCode: 'BA601',
+    department: 'MBA',
+    semester: 'SEM V',
+    academicYear: '2025–26',
+    assignmentType: 'Case Study',
+    totalSubmissions: 30,
+    gradedSubmissions: 12,
+    readyToGrade: 18,
+    integrityFlags: 1,
+    calibrationStatus: 100,
+    calibrationState: 'complete',
+    gradingStatus: 'in_grading',
+    dueDate: 'Apr 26, 2026',
+    lastActivity: '15m ago',
+  },
 ];
 
 type FilterKey =
