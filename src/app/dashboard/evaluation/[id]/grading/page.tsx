@@ -4,6 +4,7 @@ import { useState, use, useEffect, useMemo, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useGradingStore, type InternalNote, type FeedbackTier } from "@/lib/store/grading-store"
 import { useEvaluationOverviewStore } from "@/lib/store/evaluation-overview-store"
+import { SUBMISSION_ROWS } from "@/components/evaluation/assignment-submissions-table"
 import { generateManuscript, generateArtifacts } from "@/lib/manuscript-generator"
 import ManuscriptRenderer, { CRITERION_COLORS } from "@/components/evaluation/manuscript-renderer"
 import ArtifactSidebar from "@/components/evaluation/artifact-sidebar"
@@ -417,6 +418,7 @@ function GradingDeskContent({ params }: { params: { id: string } }) {
   const studentDisplayName =
     currentStudent?.name
     ?? assignment?.students.find(s => s.id === selectedSubmission)?.name
+    ?? SUBMISSION_ROWS.find(r => r.id === selectedSubmission)?.name
     ?? "Evaluating..."
 
   const LOW_CONFIDENCE_THRESHOLD = 0.7

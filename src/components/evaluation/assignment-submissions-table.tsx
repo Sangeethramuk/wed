@@ -68,6 +68,11 @@ const MOCK_DATA: StudentRow[] = [
   { id: "20", name: "Ashok Verma", rollNo: "CS24-020", submission: "On Time", status: "Not Started", score: null, issues: [], submissionTime: "2024-10-23T14:55:00Z" },
 ]
 
+// Re-exported so other surfaces (e.g., the grading header) can resolve a
+// student name from the same mock cohort instead of falling back to a
+// generic placeholder when the route id matches one of these rows.
+export const SUBMISSION_ROWS = MOCK_DATA
+
 interface AssignmentSubmissionsTableProps {
   onRowClick?: (studentId: string) => void
   /** When true, every row is rendered as "Ready to Release" (a placeholder
