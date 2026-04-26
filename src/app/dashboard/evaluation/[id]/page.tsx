@@ -44,6 +44,7 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
     markSpotCheckAutoFired,
     calibration,
     initCalibration,
+    overallFeedback,
   } = useGradingStore()
   const assignment = assignments[id]
   const previewAssignment = usePreEvalStore(s => s.assignment)
@@ -139,10 +140,16 @@ export default function AssignmentDetails({ params }: { params: Promise<{ id: st
     setGradedSubmissions(prev => [...new Set([...prev, ...ids])])
   }
 
-  // Check if all submissions are ready (for publish button enablement)
-  // Since we are using mock data in the table, we'll assume there are 14 more to grade
-  const allSubmissionsReady = false 
-  const remainingToGrade = 14
+  // Publish enables once every student in the assignment has had their
+  // overall feedback submitted (driven by submitFinalFeedback on the
+  // feedback page). The "remaining" count powers the disabled-button
+  // tooltip below.
+  const studentList = assignment.students
+  const remainingToGrade = studentList.filter(
+    s => !overallFeedback[s.id]?.isSubmitted,
+  ).length
+  const allSubmissionsReady =
+    studentList.length > 0 && remainingToGrade === 0
 
   return (
     <div
