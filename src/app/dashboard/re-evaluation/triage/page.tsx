@@ -1,14 +1,46 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, Download } from 'lucide-react'
+import { 
+  ChevronLeft, 
+  Download, 
+  ChevronRight, 
+  Search, 
+  Filter, 
+  ChevronDown,
+  AlertTriangle,
+  Clock,
+  CheckCircle2,
+  Layers,
+  ArrowRight,
+  BarChart3,
+  BookOpen
+} from 'lucide-react'
 import { STUDENTS, STUDENT_ORDER, ageStatusKind } from '@/lib/data/re-evaluation-data'
 import { useReEvalStore } from '@/lib/store/re-evaluation-store'
 import { BriefingModal } from '@/components/re-evaluation/briefing-modal'
+import { ReEvalAnalytics } from '@/components/re-evaluation/analytics-view'
+import { AuditTrailView } from '@/components/re-evaluation/audit-trail-view'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { statusStyles, type StatusKey } from '@/lib/design-tokens'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const TOTAL = 7
 const INITIAL_RESOLVED = 12
@@ -21,20 +53,23 @@ const CONCERN_KINDS: Record<'red' | 'orange' | 'blue', StatusKey> = {
 
 export default function ReEvaluationPage() {
   const router = useRouter()
-  const { getStatus, hodPendingIds, resolvedIds } = useReEvalStore()
+  const { resolvedIds, hodPendingIds, getStatus } = useReEvalStore()
+  const [tab, setTab] = useState<'submissions' | 'analytics'>('submissions')
   const [briefingId, setBriefingId] = useState<string | null>(null)
 
-  const pending = TOTAL - resolvedIds.length - hodPendingIds.length
-  const resolved = INITIAL_RESOLVED + resolvedIds.length
-  const hodCount = hodPendingIds.length
-  const done = resolvedIds.length + hodPendingIds.length
-  const progressPct = Math.round((done / TOTAL) * 100)
+  // Search & Filters state
+  const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState("All Status")
+  const [submissionFilter, setSubmissionFilter] = useState("All Concerns")
+  const [courseFilter, setCourseFilter] = useState("All Courses")
 
-  const GLOBAL_KPIS: Array<{ label: string; value: number; sub: string; tone: StatusKey }> = [
-    { label: 'Pending', value: pending, sub: 'Awaiting your response', tone: 'error' },
-    { label: 'Due Today', value: 2, sub: 'Over 48 hrs — respond', tone: 'warning' },
-    { label: 'Awaiting HOD', value: hodCount, sub: 'Institutional review', tone: 'warning' },
-    { label: 'Resolved', value: resolved, sub: 'This batch total', tone: 'success' },
+  const pendingCount = TOTAL - resolvedIds.length - hodPendingIds.length
+  const resolvedCount = INITIAL_RESOLVED + resolvedIds.length
+  const hodCount = hodPendingIds.length
+
+  const GLOBAL_KPIS = [
+    { label: 'Academic Load', value: `${pendingCount + 10} Items`, subtext: 'Total across portfolio', icon: Clock, accent: '#1F4E8C' },
+    { label: 'Integrity Risk', value: `2 Critical`, subtext: 'Border-fail cases', icon: AlertTriangle, accent: '#EF4444' },
   ]
 
   const orderedStudents = [
@@ -43,229 +78,346 @@ export default function ReEvaluationPage() {
     ...STUDENT_ORDER.filter((id) => getStatus(id) === 'resolved'),
   ]
 
+  const filteredStudents = useMemo(() => {
+    return orderedStudents.filter(id => {
+      const st = STUDENTS[id]
+      const status = getStatus(id)
+      
+      // Search
+      const matchesSearch = st.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            st.rollId.toLowerCase().includes(searchQuery.toLowerCase())
+      if (!matchesSearch) return false
+
+      // Status Filter
+      if (statusFilter !== "All Status") {
+        if (statusFilter === "Pending" && status !== 'pending') return false
+        if (statusFilter === "Awaiting HOD" && status !== 'hod') return false
+        if (statusFilter === "Resolved" && status !== 'resolved') return false
+      }
+
+      // Course Filter
+      if (courseFilter !== "All Courses") {
+        if (st.assign.split(' ')[0] !== courseFilter) return false
+      }
+
+      // Concern Filter
+      if (submissionFilter !== "All Concerns") {
+        if (st.concernType !== submissionFilter) return false
+      }
+
+      return true
+    })
+  }, [searchQuery, statusFilter, submissionFilter, courseFilter, hodPendingIds, resolvedIds])
+
   return (
-    <div className="flex flex-col min-h-[calc(100vh-8rem)] relative bg-muted/20">
-      {/* Header Section — Sticky with blur matching Pre-evaluation */}
-      <div className="sticky top-0 z-50 bg-background/60 backdrop-blur-md pt-6 pb-6 border-b border-border/10">
-        <div className="max-w-6xl mx-auto w-full px-4">
-          <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={() => router.push('/dashboard/re-evaluation')}
-              className="eyebrow group flex items-center gap-1.5 text-muted-foreground/40 hover:text-primary transition-all"
-            >
-              <ChevronLeft className="size-3 group-hover:-translate-x-0.5 transition-transform" />
-              Back to Assignments
-            </button>
-          </div>
-
-          <div className="flex items-start justify-between mb-8">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="eyebrow text-muted-foreground/40">Symbiosis University</span>
-                <span className="text-muted-foreground/20 text-xs">·</span>
-                <span className="eyebrow text-primary/80">DSA · Batch 4</span>
-                <span className="text-muted-foreground/20 text-xs">·</span>
-                <span className="eyebrow text-muted-foreground/40">Re-Evaluation Desk</span>
-              </div>
-              <h1 className="text-4xl font-semibold tracking-tight secondary-text">Review Requests</h1>
-              <div className="flex items-center gap-2 pt-1">
-                <p className="text-xs text-muted-foreground opacity-60 font-medium">
-                  Results released Mon 9:00 AM · Appeal window closes Sunday night
-                </p>
-              </div>
+    <div className="space-y-8 pb-20 -m-6 p-6 min-h-[calc(100svh-4rem)] animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ backgroundColor: '#F8F9FA' }}>
+      
+      {/* Metadata Panel */}
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div className="space-y-3 max-w-3xl">
+          <p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+            Institutional Oversight • Quality Assurance
+          </p>
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 leading-tight">
+            Departmental Review Queue
+          </h1>
+          <p className="text-sm md:text-base text-slate-500 leading-relaxed italic">
+            Standardizing evaluation integrity across <b>DSA</b>, <b>OS</b>, and <b>DBMS</b>. Use departmental filters to isolate pedagogical friction points.
+          </p>
+          <div className="flex flex-wrap gap-4 pt-1">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+              <BookOpen className="h-3.5 w-3.5" />
+              Active Portfolio: <span className="text-slate-900 font-bold">3 Courses</span>
             </div>
-            
-            <div className="flex flex-col items-end gap-3">
-              <button
-                className="eyebrow flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/30 bg-card/50 text-muted-foreground hover:bg-card hover:border-border transition-all"
-              >
-                <Download className="size-3" />
-                Download Record
-              </button>
+            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Quality Compliance: <span className="text-emerald-600 font-bold">92% SLA</span>
             </div>
           </div>
-
-          <div className="grid grid-cols-4 gap-3">
-            {GLOBAL_KPIS.map((kpi, i) => (
-              <div key={i} className="group px-4 py-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-all flex flex-col justify-center">
-                <span className="eyebrow text-muted-foreground/50">{kpi.label}</span>
-                <div className="flex items-baseline gap-1.5 mt-1">
-                  <span className={cn("text-xl font-semibold tracking-tight", statusStyles[kpi.tone].text)}>{kpi.value}</span>
-                  <span className="text-xs font-bold text-muted-foreground/30">{kpi.sub}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          
         </div>
+        
+        <Button variant="outline" className="h-11 border-slate-200 bg-white shadow-sm text-slate-600 gap-2 font-semibold">
+          <Download className="size-4" />
+          Export Audit Trail
+        </Button>
       </div>
 
-      {/* Main Content Sections */}
-      <div className="max-w-6xl mx-auto w-full pb-20 px-4 pt-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-        
-        {/* Table — DS primitive. Borders: only row-level (border-b via
-            TableRow); no vertical cell dividers. Container uses the full
-            border token (not /10) for DS-consistent visibility. */}
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <Table className="text-left">
-            <TableHeader className="bg-muted/40">
-              <TableRow className="hover:bg-muted/40">
-                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 260 }}>Student</TableHead>
-                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 180 }}>Assignment · Criterion</TableHead>
-                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 150 }}>Concern</TableHead>
-                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto">Student reasoning</TableHead>
-                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 110 }}>Submitted</TableHead>
-                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto" style={{ width: 140 }}>Status</TableHead>
-                <TableHead className="eyebrow text-muted-foreground/60 px-4 py-4 h-auto text-center" style={{ width: 170 }}>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orderedStudents.map((id) => {
-                const st = STUDENTS[id]
-                const status = getStatus(id)
-                const concernKind = CONCERN_KINDS[st.concernVariant as keyof typeof CONCERN_KINDS] ?? 'neutral'
-                const concern = statusStyles[concernKind]
-                const avatarKind: StatusKey = st.isNew ? 'info' : st.ageStatus === 'overdue' ? 'error' : 'neutral'
-                const avatar = statusStyles[avatarKind]
+      {/* Tabs */}
+      <div className="flex items-center gap-8 border-b border-slate-200">
+        {[
+          { id: 'submissions', label: 'Review Queue' },
+          { id: 'analytics', label: 'Academic Insights' },
+        ].map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id as any)}
+            className={cn(
+              "px-0 py-3 border-b-2 text-xs font-semibold tracking-wider transition-colors -mb-px",
+              tab === t.id 
+                ? "border-[#1F4E8C] text-slate-900" 
+                : "border-transparent text-slate-500 hover:text-slate-700"
+            )}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-                // Resolved / HOD rows: single full-width banner cell
-                // replacing the 7 data columns (same UX as the old
-                // absolute-positioned overlay, now semantically correct
-                // as a colSpan TableCell).
-                if (status === 'resolved') {
-                  return (
-                    <TableRow key={id} className="group/row">
-                      <TableCell colSpan={7} className={cn("px-4 py-4 text-xs font-semibold", statusStyles.success.bg, statusStyles.success.text)}>
-                        <div className="flex items-center gap-2.5">
-                          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                            <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5" />
-                            <path d="M6 10l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                          Resolved · Student notified
-                        </div>
-                      </TableCell>
+      <div className="space-y-8 animate-in fade-in duration-500">
+        {tab === 'submissions' && (
+          <>
+            {/* KPI Row: High Fidelity */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {GLOBAL_KPIS.map((stat, i) => (
+                <div
+                  key={stat.label}
+                  className="rounded-xl border border-slate-200 bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                >
+                  <div className="flex flex-col h-full justify-between gap-3">
+                    <div className="flex items-start justify-between">
+                      <p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">{stat.label}</p>
+                      <div className="p-1.5 rounded-lg" style={{ backgroundColor: `${stat.accent}10` }}>
+                        <stat.icon className="h-4 w-4" style={{ color: stat.accent }} />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-lg font-bold tracking-tight text-slate-900">{stat.value}</p>
+                      <p className="text-xs text-slate-500 font-medium">{stat.subtext}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Filters + Table Container */}
+            <div className="space-y-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-3 flex-1">
+                  <div className="relative w-full md:w-80">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input
+                      placeholder="Search by student, roll no, or course..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 h-10 bg-white border-slate-200 rounded-lg text-sm"
+                    />
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button variant="outline" className="h-10 border-slate-200 bg-white text-slate-600 gap-2 rounded-lg text-sm font-medium">
+                          Course: {courseFilter.replace("All ", "")}
+                          <ChevronDown className="h-4 w-4 opacity-50" />
+                        </Button>
+                      }
+                    />
+                    <DropdownMenuContent align="end" className="w-48">
+                      {["All Courses", "DSA", "OS", "DBMS"].map((s) => (
+                        <DropdownMenuItem key={s} onClick={() => setCourseFilter(s)}>{s}</DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button variant="outline" className="h-10 border-slate-200 bg-white text-slate-600 gap-2 rounded-lg text-sm font-medium">
+                          <Filter className="h-4 w-4 text-slate-400" />
+                          Status: {statusFilter.replace("All ", "")}
+                          <ChevronDown className="h-4 w-4 opacity-50" />
+                        </Button>
+                      }
+                    />
+                    <DropdownMenuContent align="end" className="w-48">
+                      {["All Status", "Pending", "Awaiting HOD", "Resolved"].map((s) => (
+                        <DropdownMenuItem key={s} onClick={() => setStatusFilter(s)}>{s}</DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50 hover:bg-slate-50 border-b border-slate-200">
+                      <TableHead className="py-4 px-6 text-xs font-bold text-slate-400 uppercase tracking-wider">Student</TableHead>
+                      <TableHead className="py-4 px-6 text-xs font-bold text-slate-400 uppercase tracking-wider">Course · Criterion</TableHead>
+                      <TableHead className="py-4 px-6 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Submitted</TableHead>
+                      <TableHead className="py-4 px-6 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Status</TableHead>
+                      <TableHead className="py-4 px-6 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Concern</TableHead>
+                      <TableHead className="py-4 px-6 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Score</TableHead>
                     </TableRow>
-                  )
-                }
-
-                if (status === 'hod') {
-                  return (
-                    <TableRow key={id} className="group/row">
-                      <TableCell colSpan={7} className={cn("px-4 py-4 text-xs font-semibold", statusStyles.warning.bg, statusStyles.warning.text)}>
-                        <div className="flex items-center gap-2">
-                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                            <path d="M8 2l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-                          </svg>
-                          Awaiting HOD approval · Dr. R. Kumar · Student notified once HOD approves
-                          <button
-                            onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
-                            className={cn("ml-auto inline-flex items-center whitespace-nowrap px-3 py-1.5 rounded-md text-xs font-semibold border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--status-warning)]/30", statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text)}
-                          >
-                            View →
-                          </button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                }
-
-                return (
-                  <TableRow key={id} className="group/row hover:bg-muted/20">
-                    {/* Student */}
-                    <TableCell className="p-0 align-middle whitespace-normal">
-                      <div className="flex items-stretch">
-                        <div className={cn("w-1 flex-shrink-0 self-stretch", statusStyles[ageStatusKind(st.ageStatus)].dot)} />
-                        <div className="px-4 py-4 flex-1 flex flex-col gap-1.5">
-                          <div className="flex items-center gap-3">
-                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 border", avatar.bg, avatar.border, avatar.text)}>
-                              {st.name.split(' ').map((n) => n[0]).join('')}
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <div>
-                                <div className="text-sm font-semibold tracking-tight flex items-center gap-1.5 text-foreground">
-                                  {st.name}
-                                  {st.isNew && <span className="w-1.5 h-1.5 rounded-full inline-block bg-primary" />}
+                  </TableHeader>
+                  <TableBody>
+                    {filteredStudents.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="py-20 text-center text-slate-400 text-sm font-medium">
+                          No students match your portfolio filters.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredStudents.map((id) => {
+                        const st = STUDENTS[id]
+                        const status = getStatus(id)
+                        const concernKind = CONCERN_KINDS[st.concernVariant as keyof typeof CONCERN_KINDS] ?? 'neutral'
+                        
+                        if (status === 'resolved') {
+                          return (
+                            <TableRow key={id} className="bg-emerald-50/20">
+                              <TableCell colSpan={6} className="py-4 px-6">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2.5 text-xs font-bold text-emerald-700">
+                                        <div className="size-5 rounded-full bg-emerald-500 flex items-center justify-center text-white">
+                                            <CheckCircle2 className="size-3" />
+                                        </div>
+                                        {st.name} ({st.rollId}) · Resolved · {st.assign}
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Score: {st.origScore}/{st.maxScore}</span>
                                 </div>
-                                <div className="eyebrow text-muted-foreground/60">{st.rollId}</div>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        }
+
+                        if (status === 'hod') {
+                          return (
+                            <TableRow key={id} className="bg-amber-50/20">
+                              <TableCell colSpan={6} className="py-4 px-6">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2.5 text-xs font-bold text-amber-700">
+                                        <div className="size-5 rounded-full bg-amber-500 flex items-center justify-center text-white">
+                                            <Layers className="size-3" />
+                                        </div>
+                                        {st.name} ({st.rollId}) · Awaiting HOD Approval · {st.assign}
+                                    </div>
+                                    <button
+                                        onClick={() => router.push(`/dashboard/re-evaluation/${id}`)}
+                                        className="px-3 py-1 rounded bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-amber-600 transition-colors"
+                                    >
+                                        View →
+                                    </button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        }
+
+                        return (
+                          <TableRow 
+                            key={id} 
+                            className="group hover:bg-slate-50/50 border-b border-slate-100 last:border-0 transition-colors cursor-pointer"
+                            onClick={() => setBriefingId(id)}
+                          >
+                            <TableCell className="py-4 px-6">
+                              <div className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-semibold text-slate-900 group-hover:text-[#1F4E8C] transition-colors">{st.name}</span>
+                                    {(st.origScore === 4 || st.origScore === 3 || st.origScore === 9) && (
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                        <TooltipTrigger
+                                          render={
+                                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-50 border border-red-100 text-[9px] font-black uppercase tracking-widest text-red-600">
+                                                High Stakes
+                                            </div>
+                                          }
+                                        />
+                                                <TooltipContent className="bg-slate-900 text-white border-none p-2 rounded-lg shadow-xl">
+                                                    <p className="text-[10px] font-medium leading-relaxed">
+                                                        Border Case: Score change here may affect <br /> 
+                                                        Pass/Fail status or Grade Boundary.
+                                                    </p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    )}
+                                </div>
+                                <span className="text-xs font-medium text-slate-400 uppercase tracking-tighter">{st.rollId}</span>
                               </div>
-                              {st.isCluster && (
-                                <span className={cn("eyebrow self-start whitespace-nowrap px-2 py-0.5 rounded-md border w-fit", statusStyles.warning.bg, statusStyles.warning.border, statusStyles.warning.text)}>
-                                  C2 cluster
+                            </TableCell>
+
+                            <TableCell className="py-4 px-6">
+                               <div className="flex flex-col gap-1">
+                                  <span className="text-xs font-bold text-slate-900">{st.assign.split(' ').slice(0, 2).join(' ')}</span>
+                                  <span className="eyebrow text-[9px] font-black text-[#1F4E8C] uppercase tracking-widest">{st.critShort}</span>
+                               </div>
+                            </TableCell>
+                            
+                            <TableCell className="py-4 px-6">
+                              <div className="flex flex-col items-center gap-0.5">
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger
+                                      render={
+                                        <div className={cn("text-xs font-semibold", st.ageStatus === 'overdue' ? "text-amber-600" : "text-slate-600")}>
+                                          {st.ageLabel}
+                                        </div>
+                                      }
+                                    />
+                                    <TooltipContent>
+                                      {st.ageStatus === 'overdue' ? 'Action required immediately' : 'Within normal timeframe'}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+                                    {st.ageStatus === 'overdue' ? 'Overdue' : 'Pending'}
                                 </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
+                              </div>
+                            </TableCell>
 
-                    {/* Assignment · Criterion */}
-                    <TableCell className="px-4 py-4 align-middle whitespace-normal">
-                      <div className="flex flex-col gap-1.5">
-                        <div className="text-xs font-semibold tracking-tight text-foreground">{st.assign}</div>
-                        <span className="eyebrow self-start whitespace-nowrap px-2 py-0.5 rounded-md bg-primary/5 text-primary border border-primary/10">
-                          {st.critShort} · {st.origScore}/{st.maxScore}
-                        </span>
-                      </div>
-                    </TableCell>
+                            <TableCell className="py-4 px-6">
+                              <div className="flex justify-center">
+                                <StatusPill status={status} ageStatus={st.ageStatus} />
+                              </div>
+                            </TableCell>
 
-                    {/* Concern */}
-                    <TableCell className="px-4 py-4 align-middle whitespace-normal">
-                      <div className="flex flex-col gap-1.5">
-                        <div className="text-xs font-bold text-muted-foreground">{st.concern}</div>
-                        <span className={cn("eyebrow self-start whitespace-nowrap px-1.5 py-0.5 rounded-md border", concern.bg, concern.text, concern.border)}>
-                          {st.concernType}
-                        </span>
-                      </div>
-                    </TableCell>
+                            <TableCell className="py-4 px-6">
+                              <div className="flex justify-center">
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger
+                                      render={
+                                        <div className={cn(
+                                            "flex items-center gap-1.5 px-2 py-0.5 rounded-full border cursor-help transition-all",
+                                            st.concernVariant === 'red' ? "bg-red-50 text-red-700 border-red-100" :
+                                            st.concernVariant === 'orange' ? "bg-amber-50 text-amber-700 border-amber-100" :
+                                            "bg-blue-50 text-blue-700 border-blue-100"
+                                        )}>
+                                          <AlertTriangle className="h-3 w-3" />
+                                          <span className="text-[10px] font-bold uppercase tracking-wider">{st.concernType}</span>
+                                        </div>
+                                      }
+                                    />
+                                    <TooltipContent side="right" className="p-3 bg-white border border-slate-200 shadow-xl rounded-lg max-w-xs">
+                                      <div className="space-y-2">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Student Reasoning</p>
+                                        <p className="text-xs text-slate-600 leading-relaxed italic">"{st.sv}"</p>
+                                      </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
+                            </TableCell>
 
-                    {/* Student reasoning */}
-                    <TableCell className="px-4 py-4 align-middle whitespace-normal">
-                      <div
-                        className="text-xs font-medium leading-relaxed overflow-hidden text-muted-foreground italic"
-                        style={{
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical' as const,
-                        }}
-                      >
-                        "{st.sv}"
-                      </div>
-                    </TableCell>
+                            <TableCell className="py-4 px-6 text-right">
+                              <div className="flex flex-col items-end gap-0.5">
+                                <span className="text-sm font-bold text-slate-900">{st.origScore}<span className="text-slate-300 font-medium">/{st.maxScore}</span></span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Original</span>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </>
+        )}
 
-                    {/* Submitted */}
-                    <TableCell className="px-4 py-4 align-middle whitespace-normal">
-                      <div className="flex flex-col">
-                        <div className={cn("text-xs font-semibold tracking-tight", statusStyles[st.ageStatus === 'overdue' ? 'error' : st.ageStatus === 'new' ? 'neutral' : 'warning'].text)}>
-                          {st.ageLabel}
-                        </div>
-                        <div className="eyebrow text-muted-foreground/60">
-                          {st.ageStatus === 'overdue' ? 'Overdue' : st.ageStatus === 'new' ? 'New' : 'Pending'}
-                        </div>
-                      </div>
-                    </TableCell>
-
-                    {/* Status */}
-                    <TableCell className="px-4 py-4 align-middle">
-                      <StatusPill status={status} ageStatus={st.ageStatus} />
-                    </TableCell>
-
-                    {/* Action */}
-                    <TableCell className="px-4 py-4 align-middle text-center">
-                      <button
-                        onClick={() => setBriefingId(id)}
-                        className="group/btn inline-flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-                      >
-                        Review now
-                        <ChevronLeft className="size-3 rotate-180 group-hover/btn:translate-x-0.5 transition-transform" />
-                      </button>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </div>
+        {tab === 'analytics' && <ReEvalAnalytics />}
+      </div>
 
       {/* Briefing modal */}
       {briefingId && (
@@ -273,43 +425,18 @@ export default function ReEvaluationPage() {
           studentId={briefingId}
           onClose={() => setBriefingId(null)}
           onStart={() => {
-            // Allow smooth navigation by keeping the modal open while routing
             router.push(`/dashboard/re-evaluation/${briefingId}`)
           }}
         />
       )}
-      </div>
     </div>
   )
 }
 
-
 function StatusPill({ status, ageStatus }: { status: 'pending' | 'hod' | 'resolved'; ageStatus: string }) {
-  if (status === 'resolved') {
-    const s = statusStyles.success
-    return (
-      <span className={cn("eyebrow px-2 py-0.5 rounded-md border", s.bg, s.text, s.border)}>Resolved</span>
-    )
-  }
-  if (status === 'hod') {
-    const s = statusStyles.warning
-    return (
-      <span className={cn("eyebrow px-2 py-0.5 rounded-md border", s.bg, s.text, s.border)}>Awaiting HOD</span>
-    )
-  }
+  const base = "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-none"
   if (ageStatus === 'overdue') {
-    return (
-      <span className="eyebrow px-2 py-0.5 rounded-md bg-destructive text-destructive-foreground">Overdue</span>
-    )
+    return <Badge className={cn(base, "bg-amber-50 text-amber-700 border-amber-100")}>In Progress</Badge>
   }
-  if (ageStatus === 'new') {
-    const s = statusStyles.info
-    return (
-      <span className={cn("eyebrow px-2 py-0.5 rounded-md border", s.bg, s.text, s.border)}>New</span>
-    )
-  }
-  const s = statusStyles.neutral
-  return (
-    <span className={cn("eyebrow px-2 py-0.5 rounded-md border", s.bg, s.text, s.border)}>Pending</span>
-  )
+  return <Badge variant="secondary" className={cn(base, "bg-slate-50 text-slate-500 border-slate-100")}>In Queue</Badge>
 }

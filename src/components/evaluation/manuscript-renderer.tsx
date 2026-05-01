@@ -75,6 +75,7 @@ const HIGHLIGHTER_BG: Record<string, string> = {
   c2: 'bg-[color:var(--category-2)]/18 hover:bg-[color:var(--category-2)]/28',
   c3: 'bg-[color:var(--category-3)]/18 hover:bg-[color:var(--category-3)]/28',
   c4: 'bg-[color:var(--category-4)]/18 hover:bg-[color:var(--category-4)]/28',
+  dispute: 'bg-amber-500/20 border-b-2 border-amber-500/40 hover:bg-amber-500/30',
 }
 
 function UserHighlightedSpan({
@@ -110,6 +111,16 @@ function UserHighlightedSpan({
           </p>
           <div className="space-y-2">
             {evidences.map((ev) => {
+              if (ev.criterionId === 'dispute') {
+                return (
+                  <div key={ev.id} className="flex items-start gap-2 pl-2 border-l-2 border-amber-500">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-amber-700 leading-tight">Student Cited Evidence</p>
+                      <p className="text-xs text-amber-600/80 mt-0.5">This section is explicitly mentioned in the re-evaluation request.</p>
+                    </div>
+                  </div>
+                )
+              }
               const style = CRITERION_COLORS[ev.criterionId] ?? CRITERION_COLORS['c1']
               const label = CRITERION_LABELS[ev.criterionId] ?? `Criterion ${ev.criterionId}`
               return (

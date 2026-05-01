@@ -84,207 +84,112 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
           className="bg-card border border-border/10 rounded-2xl flex flex-col overflow-hidden relative shadow-2xl"
         >
           {/* Header */}
-          <div className="px-8 pt-8 pb-4 flex-shrink-0 bg-background/20">
+          <div className="px-10 pt-10 pb-4 flex-shrink-0">
             <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className="size-6 rounded-lg flex items-center justify-center flex-shrink-0 bg-primary/10 border border-primary/20">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="text-primary">
-                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                  <span className="eyebrow text-primary/60">AI Case Briefing</span>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                   <div className="size-2 rounded-full bg-primary animate-pulse" />
+                   <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Oversight Briefing</span>
                 </div>
-                <h2 className="text-3xl font-semibold tracking-tight secondary-text flex items-center gap-3">
+                <h2 className="text-3xl font-bold tracking-tight text-slate-900">
                   {st.name}
-                  {st.isNew && <span className="size-2 rounded-full bg-primary" />}
                 </h2>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="eyebrow text-muted-foreground/40">{st.rollId}</span>
-                  <span className="text-muted-foreground/20 text-xs">·</span>
-                  <span className="eyebrow text-muted-foreground/40">{st.assign}</span>
-                  <span className="text-muted-foreground/20 text-xs">·</span>
-                  <span className="eyebrow text-primary/40">{st.crit}</span>
+                <div className="flex items-center gap-2.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <span>{st.rollId}</span>
+                  <span className="text-slate-200">/</span>
+                  <span>{st.assign}</span>
+                  <span className="text-slate-200">/</span>
+                  <span className="text-[#1F4E8C]">{st.critShort}</span>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="size-8 flex items-center justify-center rounded-xl bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all"
+                className="size-10 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-all border border-slate-200"
               >
-                <XIcon className="size-4" />
+                <XIcon className="size-5" />
               </button>
             </div>
+
+            {/* Integrity Status Row - Blended into Header */}
+            <div className="flex flex-wrap gap-2 mt-6">
+                <div className="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 flex items-center gap-2">
+                    <div className="size-1 rounded-full bg-amber-500" />
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">
+                      {st.isCluster ? 'Multi-Student Cluster' : 'Isolated Case'}
+                    </span>
+                </div>
+                <div className="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 flex items-center gap-2">
+                    <div className="size-1 rounded-full bg-blue-500" />
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">First Appeal</span>
+                </div>
+                {st.hasOverride && (
+                  <div className="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 flex items-center gap-2">
+                      <div className="size-1 rounded-full bg-emerald-500" />
+                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Manual Override</span>
+                  </div>
+                )}
+                <div className="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 flex items-center gap-2">
+                    <div className="size-1 rounded-full bg-slate-400" />
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Confidence: {st.confScore}</span>
+                </div>
+            </div>
           </div>
+
+          <div className="h-px bg-slate-100 mx-10" />
 
           {/* Scrollable body */}
           <div
             ref={bodyRef}
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto px-8 py-4 space-y-8"
+            className="flex-1 overflow-y-auto px-10 py-8 space-y-12"
             style={{ scrollbarWidth: 'thin' }}
           >
-            {/* 1. Executive Case Briefing */}
+            {/* 1. The Mission (Slim & Blended) */}
             <section>
-              <div className="rounded-2xl p-6 bg-primary/[0.03] border border-primary/10 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                  <ShieldCheckIcon className="size-20" />
-                </div>
-                <div className="flex items-center gap-2.5 mb-4">
-                  <div className="size-5 rounded-md flex items-center justify-center bg-primary/20">
-                    <ZapIcon className="size-3 text-primary" />
+                <div className="flex items-center justify-between pb-6 border-b border-slate-100">
+                  <div className="flex items-center gap-4">
+                    <div className="size-10 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
+                      <Target className="size-5 text-white" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Verification Mission</span>
+                      <h4 className="text-base font-bold text-slate-900 tracking-tight">
+                        Locate {st.evidence} for {st.critShort} Alignment
+                      </h4>
+                    </div>
                   </div>
-                  <span className="eyebrow text-primary/80">Intelligence Summary</span>
+                  <div className="px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
+                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">Audit Required</span>
+                  </div>
                 </div>
-                <div className="space-y-4 relative z-10">
-                  <p className="text-sm font-bold leading-tight text-foreground">
-                    {isCredible ? "Credible dispute detected." : "Low-validity request."} {caseSummary}
+            </section>
+
+            {/* 2. The Dispute Content */}
+            <section className="relative">
+              <div className="space-y-8">
+                <div className="space-y-3">
+                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Candidate's Rationale</span>
+                  <p className="text-base font-bold leading-relaxed text-slate-900">
+                    "{st.sv}"
                   </p>
-                  <p className="text-sm leading-relaxed font-medium text-muted-foreground italic">
-                    "{caseInsight}"
-                  </p>
+                </div>
+                <div className="flex items-start gap-4 p-5 rounded-2xl bg-[#1F4E8C]/[0.03] border border-[#1F4E8C]/10">
+                  <div className="size-8 rounded-lg bg-white border border-[#1F4E8C]/20 flex items-center justify-center shrink-0 shadow-sm">
+                    <ZapIcon className="size-4 text-[#1F4E8C]" />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-black text-[#1F4E8C] uppercase tracking-widest">Structural Observation</span>
+                    <p className="text-sm font-medium text-slate-600 leading-relaxed">
+                      {isCredible ? "Evidence discrepancy detected." : "Standard verification required."} {caseSummary}
+                    </p>
+                  </div>
                 </div>
               </div>
             </section>
 
-            {/* 2. Reconstruction of Original Grading */}
-            <section className="space-y-4">
-               <div className="eyebrow text-muted-foreground/30">Case Reconstruction</div>
-               <div className="flex items-center justify-between gap-1.5 p-1.5 bg-muted/10 rounded-2xl border border-border/5">
-                  {/* AI Evaluation */}
-                  <div className="flex-1 flex flex-col items-center justify-center py-2.5 px-3 rounded-xl bg-background/50 border border-background min-w-0">
-                    <span className="eyebrow text-muted-foreground/40 mb-1 whitespace-nowrap">AI Evaluation</span>
-                    <div className="text-lg font-semibold tracking-tight text-muted-foreground">
-                      {Math.max(0, st.origScore - (st.hasOverride ? 1 : 0))}/10
-                    </div>
-                  </div>
-
-                  <div className="flex-shrink-0 text-muted-foreground/20 px-0.5">
-                    <ArrowRightIcon className="size-3.5" />
-                  </div>
-
-                  {/* Manual Override */}
-                  <div className={cn("flex-1 flex flex-col items-center justify-center py-2.5 px-3 rounded-xl border min-w-0", st.hasOverride ? cn(statusStyles.warning.bg, statusStyles.warning.border) : 'bg-background/30 border-dashed opacity-50')}>
-                    <span className={cn("eyebrow mb-1 whitespace-nowrap", st.hasOverride ? statusStyles.warning.text : 'text-muted-foreground/40')}>
-                      {st.hasOverride ? 'Instructor Override' : 'No Override'}
-                    </span>
-                    <div className={cn("text-lg font-semibold tracking-tight", st.hasOverride ? statusStyles.warning.text : 'text-muted-foreground')}>
-                      {st.hasOverride ? `+1 pt` : '--'}
-                    </div>
-                  </div>
-
-                  <div className="flex-shrink-0 text-muted-foreground/20 px-0.5">
-                    <ArrowRightIcon className="size-3.5" />
-                  </div>
-
-                  {/* Final Score */}
-                  <div className="flex-1 flex flex-col items-center justify-center py-2.5 px-3 rounded-xl bg-primary border border-primary shadow-lg shadow-primary/20 min-w-0">
-                    <span className="eyebrow text-primary-foreground/60 mb-1 whitespace-nowrap">Released Score</span>
-                    <div className="text-lg font-semibold tracking-tight text-primary-foreground">
-                      {st.origScore}/10
-                    </div>
-                  </div>
-               </div>
-               {st.hasOverride && (
-                 <div className={cn("px-4 py-3 rounded-xl border flex items-start gap-3", statusStyles.warning.bg, statusStyles.warning.border)}>
-                   <InfoIcon className={cn("size-4 mt-0.5", statusStyles.warning.text)} />
-                   <p className={cn("text-xs leading-relaxed font-medium", statusStyles.warning.text)}>
-                     Instructor previously acknowledged additional evidence on {st.critShort} but stopped at {st.origScore}/10. The student argues the adjustment was insufficient.
-                   </p>
-                 </div>
-               )}
-            </section>
-
-            {/* 3. The Dispute Context */}
-            <div className="grid grid-cols-2 gap-6">
-              <section className="space-y-4">
-                <div className="eyebrow text-muted-foreground/30">Why student appealed</div>
-                <div className={cn("rounded-2xl p-5 h-full border", statusStyles.info.bg, statusStyles.info.border)}>
-                  <div className={cn("eyebrow mb-2.5 opacity-60", statusStyles.info.text)}>Student Reasoning</div>
-                  <div className="text-sm font-medium leading-relaxed italic text-foreground mb-4">"{st.sv}"</div>
-                  <div className={cn("flex items-center gap-2 pt-3 border-t", statusStyles.info.border)}>
-                    <div className={cn("size-1.5 rounded-full", statusStyles[verdictKind(st.vcolor)].dot)} />
-                    <span className="eyebrow text-muted-foreground/50">{st.verdict}</span>
-                  </div>
-                </div>
-              </section>
-
-              <section className="space-y-4">
-                <div className="eyebrow text-muted-foreground/30">Actionable focus</div>
-                <div className="rounded-2xl p-5 bg-foreground border border-foreground h-full flex flex-col justify-between">
-                  <div>
-                    <div className="eyebrow text-background/30 mb-3">What to check first</div>
-                    <ul className="space-y-3">
-                      <li className="flex items-start gap-3">
-                        <CheckIcon className="size-3.5 text-primary mt-0.5" />
-                        <span className="text-xs font-bold text-background/90">Verify cited lines: {st.evidence}</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <CheckIcon className="size-3.5 text-primary mt-0.5" />
-                        <span className="text-xs font-bold text-background/90">Reassess {st.critShort} rubric depth</span>
-                      </li>
-                      {st.isCluster && (
-                        <li className="flex items-start gap-3">
-                          <CheckIcon className="size-3.5 text-primary mt-0.5" />
-                          <span className="text-xs font-bold text-background/90">Check for rubric ambiguity</span>
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                  <div className="pt-4 mt-4 border-t border-background/5 flex items-center justify-between">
-                    <span className="eyebrow text-background/20">Target Decision</span>
-                    <span className="text-xs font-semibold text-primary tracking-tight">± {isCredible ? '1.5' : '0'} pts Est.</span>
-                  </div>
-                </div>
-              </section>
-            </div>
-
-            {/* 4. Intelligence Signals */}
-            <section className="space-y-4">
-              <div className="eyebrow text-muted-foreground/30">Intelligence Signals</div>
-              <div className="flex flex-col gap-2">
-                {brf.flags.map((f, i) => {
-                  const kind = FLAG_KINDS[f.type as keyof typeof FLAG_KINDS] ?? 'neutral'
-                  const s = statusStyles[kind]
-                  return (
-                    <div key={i} className={cn("flex items-start gap-3 px-4 py-3 rounded-xl border transition-colors", s.bg, s.border)}>
-                      <div className={cn("size-1.5 rounded-full flex-shrink-0 mt-1.5", s.dot)} />
-                      <span className={cn("text-xs font-bold leading-tight", s.text)}>{f.text}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </section>
-
-            {/* 5. Metrics & Patterns */}
-            <section className="grid grid-cols-3 gap-3">
-                <div className="rounded-2xl p-4 bg-card/30 border border-border/10 flex flex-col justify-center">
-                  <span className="eyebrow text-muted-foreground/50">AI Confidence</span>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <div className={cn("size-2 rounded-full", confidenceStyles[confidenceKind(st.confLabel)].dot)} />
-                    <span className="text-sm font-semibold tracking-tight text-foreground">{st.confScore}</span>
-                  </div>
-                  <span className="eyebrow text-muted-foreground/30 mt-0.5">{st.confLabel} at grading</span>
-                </div>
-                
-                <div className="rounded-2xl p-4 bg-card/30 border border-border/10 flex flex-col justify-center">
-                  <span className="eyebrow text-muted-foreground/50">Student History</span>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-sm font-semibold tracking-tight text-foreground">1st appeal</span>
-                  </div>
-                  <span className="eyebrow text-muted-foreground/30 mt-0.5">This Semester</span>
-                </div>
-
-                <div className="rounded-2xl p-4 bg-card/30 border border-border/10 flex flex-col justify-center">
-                  <span className="eyebrow text-muted-foreground/50">Batch Impact</span>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-sm font-semibold tracking-tight text-foreground">{st.isCluster ? '4 cases' : 'Isolated'}</span>
-                  </div>
-                  <span className="eyebrow text-muted-foreground/30 mt-0.5">Cluster size</span>
-                </div>
-            </section>
-
-            {/* 6. Expandable Sections */}
-            <section className="space-y-2">
+            {/* 3. Deep Context (The Accordions) */}
+            <section className="space-y-3">
+              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest block mb-4">Historical Evidence</span>
               <Accordion
                 id="timeline"
                 open={!!accOpen['timeline']}
@@ -307,20 +212,6 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                   ))}
                 </div>
               </Accordion>
-
-              <Accordion
-                id="evidence"
-                open={!!accOpen['evidence']}
-                onToggle={() => toggleAcc('evidence')}
-                label="Evidence used in original grading"
-                icon={<FileIcon className="size-4" />}
-              >
-                <div className="space-y-3 py-2">
-                  {brf.gradingEvidenceLines.map((line, i) => (
-                    <p key={i} className="text-xs leading-relaxed text-muted-foreground border-l-2 border-primary/10 pl-4">{line}</p>
-                  ))}
-                </div>
-              </Accordion>
             </section>
 
             <div className="h-24" />
@@ -336,23 +227,15 @@ export function BriefingModal({ studentId, onClose, onStart }: Props) {
                 {onStart ? <ChevronLeftIcon className="size-3 group-hover:-translate-x-0.5 transition-transform" /> : <XIcon className="size-3 group-hover:scale-110 transition-transform" />}
                 {onStart ? 'Back to list' : 'Close Briefing'}
               </button>
-              {!scrolled && onStart && (
-                <div className="eyebrow flex items-center gap-1.5 text-muted-foreground/30 animate-pulse">
-                  <ArrowDownIcon className="size-3" />
-                  Scroll to briefing
-                </div>
-              )}
             </div>
             {onStart && (
               <button
-                onClick={canStart && !isNavigating ? handleStart : undefined}
-                disabled={!canStart || isNavigating}
+                onClick={!isNavigating ? handleStart : undefined}
+                disabled={isNavigating}
                 className={`eyebrow group/btn flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl transition-all min-w-[180px] ${
-                  canStart && !isNavigating
+                  !isNavigating
                     ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 translate-y-0 active:scale-[0.98]'
-                    : isNavigating
-                      ? 'bg-primary/80 text-primary-foreground cursor-wait shadow-lg shadow-primary/15'
-                      : 'bg-muted/50 text-muted-foreground/50 border border-border/10 opacity-50 cursor-not-allowed'
+                    : 'bg-primary/80 text-primary-foreground cursor-wait shadow-lg shadow-primary/15'
                 }`}
               >
                 {isNavigating ? (
@@ -381,22 +264,24 @@ function Accordion({
   id: string; open: boolean; onToggle: () => void; label: string; icon: React.ReactNode; children: React.ReactNode
 }) {
   return (
-    <div className={`rounded-2xl overflow-hidden border border-border/10 transition-all ${open ? 'bg-card/30' : 'bg-card/5 hover:bg-card/10'}`}>
+    <div className={`rounded-xl border border-slate-200 transition-all ${open ? 'bg-white shadow-sm' : 'bg-slate-50 hover:bg-slate-100'}`}>
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-5 py-4 cursor-pointer"
+        className="w-full flex items-center justify-between px-5 py-4 cursor-pointer text-left"
       >
         <div className="flex items-center gap-3">
-          <div className={`size-5 flex items-center justify-center ${open ? 'text-primary' : 'text-muted-foreground/30'}`}>
+          <div className={`size-8 rounded-lg flex items-center justify-center transition-colors ${open ? 'bg-primary text-primary-foreground' : 'bg-white border border-slate-200 text-slate-400'}`}>
             {icon}
           </div>
-          <span className="eyebrow text-foreground">{label}</span>
+          <span className="text-[11px] font-black text-slate-900 uppercase tracking-widest">{label}</span>
         </div>
-        <ChevronDownIcon className={`size-4 transition-transform duration-300 text-muted-foreground/30 ${open ? 'rotate-180' : ''}`} />
+        <div className={`size-6 flex items-center justify-center rounded-full transition-all ${open ? 'bg-slate-900 text-white rotate-180' : 'bg-slate-200 text-slate-500'}`}>
+           <ChevronDownIcon className="size-3" />
+        </div>
       </button>
       {open && (
         <div className="px-5 pb-5 pt-0 animate-in fade-in slide-in-from-top-1 duration-200">
-          <div className="pt-4 border-t border-border/10">
+          <div className="pt-4 border-t border-slate-100">
             {children}
           </div>
         </div>
@@ -406,6 +291,16 @@ function Accordion({
 }
 
 // Minimal Icons
+function Target({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
+  )
+}
+
 function XIcon({ className }: { className?: string }) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>

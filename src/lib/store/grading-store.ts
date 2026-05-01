@@ -1457,7 +1457,15 @@ export const useGradingStore = create<GradingState>()(
     }),
     {
       name: 'grading-hub-storage',
-      version: 6 // Bumped: MBA-BCA-01 cohort starts ungraded
+      version: 6,
+      migrate: (persistedState: any, version: number) => {
+        if (version !== 6) {
+          // If version mismatch, return state as-is to prevent crash.
+          // In a production environment, you would map old state to new structure here.
+          return persistedState;
+        }
+        return persistedState;
+      }
     }
   )
 );
