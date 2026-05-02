@@ -61,6 +61,7 @@ export interface Criterion {
   evidence: string[];
   confidence: number;
   isOverridden?: boolean;
+  co?: string;
 }
 
 export type ReviewFlagSeverity = 'info' | 'success' | 'warning' | 'danger';
@@ -92,6 +93,7 @@ export interface AssignmentNarrative {
   description: string;
   targetFix: FixType;
   students: StudentSubmission[];
+  releasedAt?: string;
 }
 
 // --- Calibration Types ---
@@ -825,6 +827,8 @@ interface GradingState {
   deleteInternalNote: (studentId: string, noteId: string) => void;
   syncAssignments: () => void;
   setInternalNotes: (notes: Record<string, InternalNote[]>) => void;
+  releaseGrades: (assignmentId: string) => void;
+  gradingTimestamps: Record<string, { startedAt: string; completedAt?: string }>;
 }
 
 export const useGradingStore = create<GradingState>()(
@@ -836,6 +840,7 @@ export const useGradingStore = create<GradingState>()(
       spotCheckActive: false,
       calibration: {},
       feedbackCache: {},
+      gradingTimestamps: {},
       internalNotes: {
         'rohan': [
           {
@@ -1047,7 +1052,18 @@ export const useGradingStore = create<GradingState>()(
       }),
       selectAssignment: (id) => set({ currentAssignmentId: id, phase: 'blind' }),
       setPhase: (phase) => set({ phase }),
-      setActiveStudent: (id) => set({ activeStudentId: id }),
+      setActiveStudent: (id) => set((state) => {
+        if (id && !state.gradingTimestamps[id]?.startedAt) {
+          return {
+            activeStudentId: id,
+            gradingTimestamps: {
+              ...state.gradingTimestamps,
+              [id]: { startedAt: new Date().toISOString() },
+            },
+          };
+        }
+        return { activeStudentId: id };
+      }),
       updateCriterion: (studentId, criterionId, updates) => set((state) => {
         const assignment = state.assignments[state.currentAssignmentId || ''];
         if (!assignment) return state;
@@ -1413,10 +1429,19 @@ export const useGradingStore = create<GradingState>()(
       submitFinalFeedback: (studentId) => set((state) => {
         const fb = state.overallFeedback[studentId];
         if (!fb) return state;
+        const now = new Date().toISOString();
+        const existing = state.gradingTimestamps[studentId];
         return {
           overallFeedback: {
             ...state.overallFeedback,
-            [studentId]: { ...fb, isSubmitted: true }
+            [studentId]: { ...fb, isSubmitted: true },
+          },
+          gradingTimestamps: {
+            ...state.gradingTimestamps,
+            [studentId]: {
+              startedAt: existing?.startedAt ?? now,
+              completedAt: now,
+            },
           },
         };
       }),
@@ -1454,18 +1479,22 @@ export const useGradingStore = create<GradingState>()(
           ...state.assignments
         }
       })),
+
+      releaseGrades: (assignmentId) => set((state) => {
+        const a = state.assignments[assignmentId];
+        if (!a || a.releasedAt) return state;
+        return {
+          assignments: {
+            ...state.assignments,
+            [assignmentId]: { ...a, releasedAt: new Date().toISOString() }
+          }
+        };
+      }),
     }),
     {
       name: 'grading-hub-storage',
-      version: 6,
-      migrate: (persistedState: any, version: number) => {
-        if (version !== 6) {
-          // If version mismatch, return state as-is to prevent crash.
-          // In a production environment, you would map old state to new structure here.
-          return persistedState;
-        }
-        return persistedState;
-      }
+      version: 8,
+      migrate: (persistedState: any) => persistedState,
     }
   )
 );
