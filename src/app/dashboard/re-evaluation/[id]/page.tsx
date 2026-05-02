@@ -189,7 +189,7 @@ export default function ReEvalWorkspacePage() {
     <div className="h-[calc(100vh-4rem)] overflow-hidden border rounded-xl bg-background shadow-sm">
       {/* Main Workspace Panels */}
       <main className="h-full relative overflow-hidden">
-        <ResizablePanelGroup direction="horizontal">
+        <ResizablePanelGroup orientation="horizontal">
           {/* Left: Manuscript Viewer */}
           <ResizablePanel defaultSize={65} minSize={40}>
             <div className="h-full flex flex-col bg-muted/10 overflow-hidden relative">
